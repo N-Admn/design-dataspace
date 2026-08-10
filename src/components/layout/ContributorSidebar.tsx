@@ -1,23 +1,31 @@
-import { ArrowLeft, Database, FolderKanban, LineChart, Sparkles, User, Users } from 'lucide-react'
+import { Link, useLocation } from 'react-router-dom'
+import {
+  ArrowLeft,
+  CalendarDays,
+  Database,
+  FolderKanban,
+  LineChart,
+  Sparkles,
+  User,
+  Users,
+} from 'lucide-react'
 
 import { cn } from '@/lib/utils'
 import { WORKSPACE_HEIGHT_CLASS } from '@/lib/layout'
 
 const NAV_ITEMS = [
-  { key: 'datasets', label: 'Datasets', icon: Database },
-  { key: 'use-cases', label: 'Use Cases', icon: FolderKanban },
-  { key: 'ai-models', label: 'AI Models', icon: Sparkles },
-  { key: 'collaboratives', label: 'Collaboratives', icon: Users },
-  { key: 'charts', label: 'Charts', icon: LineChart },
-  { key: 'profile', label: 'Profile', icon: User },
+  { key: 'datasets', label: 'Datasets', icon: Database, path: '/dashboard/datasets' },
+  { key: 'use-cases', label: 'Use Cases', icon: FolderKanban, path: null },
+  { key: 'ai-models', label: 'AI Models', icon: Sparkles, path: null },
+  { key: 'collaboratives', label: 'Collaboratives', icon: Users, path: null },
+  { key: 'charts', label: 'Charts', icon: LineChart, path: null },
+  { key: 'events', label: 'Events', icon: CalendarDays, path: '/dashboard/events' },
+  { key: 'profile', label: 'Profile', icon: User, path: null },
 ] as const
 
-interface ContributorSidebarProps {
-  active?: (typeof NAV_ITEMS)[number]['key']
-  onSelectDatasets?: () => void
-}
+function ContributorSidebar() {
+  const location = useLocation()
 
-function ContributorSidebar({ active = 'datasets', onSelectDatasets }: ContributorSidebarProps) {
   return (
     <aside
       className={cn(
@@ -43,25 +51,33 @@ function ContributorSidebar({ active = 'datasets', onSelectDatasets }: Contribut
 
       <nav className="flex flex-col gap-1 p-3">
         {NAV_ITEMS.map((item) => {
-          const isActive = item.key === active
+          const isActive = item.path ? location.pathname.startsWith(item.path) : false
           const Icon = item.icon
-          return (
-            <button
-              key={item.key}
-              type="button"
-              onClick={item.key === 'datasets' ? onSelectDatasets : undefined}
-              className={cn(
-                'relative flex items-center gap-3 rounded-md px-3 py-2.5 text-left text-sm font-medium transition-colors',
-                isActive
-                  ? 'bg-primary/10 text-primary'
-                  : 'text-muted-foreground hover:bg-muted hover:text-foreground',
-              )}
-            >
-              {isActive && (
-                <span className="absolute inset-y-1 left-0 w-1 rounded-full bg-accent" />
-              )}
+          const content = (
+            <>
+              {isActive && <span className="absolute inset-y-1 left-0 w-1 rounded-full bg-accent" />}
               <Icon className="size-4" />
               {item.label}
+            </>
+          )
+          const className = cn(
+            'relative flex items-center gap-3 rounded-md px-3 py-2.5 text-left text-sm font-medium transition-colors',
+            isActive
+              ? 'bg-primary/10 text-primary'
+              : 'text-muted-foreground hover:bg-muted hover:text-foreground',
+          )
+
+          if (item.path) {
+            return (
+              <Link key={item.key} to={item.path} className={className}>
+                {content}
+              </Link>
+            )
+          }
+
+          return (
+            <button key={item.key} type="button" className={className}>
+              {content}
             </button>
           )
         })}

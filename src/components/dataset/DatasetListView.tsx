@@ -147,7 +147,9 @@ function DatasetListView({
                         ? optionLabel(GEOGRAPHY_OPTIONS, dataset.form.metadata.geography)
                         : '—'}
                     </td>
-                    <td className="px-5 py-4 text-muted-foreground">{dataset.form.files.length}</td>
+                    <td className="px-5 py-4 text-muted-foreground">
+                      {dataset.form.files.length + (dataset.form.resources?.length ?? 0)}
+                    </td>
                     <td className="px-5 py-4">
                       {dataset.status === 'published' ? (
                         <Badge variant="success">Published</Badge>

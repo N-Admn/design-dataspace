@@ -21,10 +21,23 @@ export interface DatasetMetadata {
   license: string
 }
 
+export type DatasetResourceType = 'csv' | 'api' | 'link'
+
+export interface DatasetResource {
+  id: string
+  type: DatasetResourceType
+  file?: DatasetFile
+  url?: string
+}
+
 export interface DatasetFormState {
   metadata: DatasetMetadata
   files: DatasetFile[]
   enablePreview: boolean
+  /** Populated only for datasets created through the lightweight Event → Related
+   * Content mini-wizard, which supports CSV/API/Link resources instead of the
+   * multi-file uploader the full Dataset flow uses. */
+  resources?: DatasetResource[]
 }
 
 export type DatasetStatus = 'published' | 'draft'
@@ -84,4 +97,5 @@ export const LICENSE_OPTIONS = [
   { value: 'cc0-1.0', label: 'CC0 1.0 (Public Domain)' },
   { value: 'odc-by', label: 'Open Data Commons Attribution' },
   { value: 'gov-ogd-india', label: 'Government Open Data License – India' },
+  { value: 'other', label: 'Other' },
 ]
