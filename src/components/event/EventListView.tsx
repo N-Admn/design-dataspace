@@ -55,17 +55,27 @@ function EventListView({ events, onAddEvent, onViewEvent, onEditEvent, onDeleteE
           </p>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[960px] border-collapse text-sm">
+            <table className="w-full min-w-[880px] table-fixed border-collapse text-sm">
+              <colgroup>
+                <col className="w-[15%]" />
+                <col className="w-[6%]" />
+                <col className="w-[22%]" />
+                <col className="w-[11%]" />
+                <col className="w-[8%]" />
+                <col className="w-[9%]" />
+                <col className="w-[17%]" />
+                <col className="w-[12%]" />
+              </colgroup>
               <thead>
                 <tr className="border-b border-border bg-muted/40 text-left text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                  <th className="px-5 py-3 font-medium">Event Name &amp; Description</th>
-                  <th className="px-5 py-3 font-medium">Event Type</th>
-                  <th className="px-5 py-3 font-medium">Date</th>
-                  <th className="px-5 py-3 font-medium">Access</th>
-                  <th className="px-5 py-3 font-medium">Status</th>
-                  <th className="px-5 py-3 font-medium">Registration</th>
-                  <th className="px-5 py-3 font-medium">Updated</th>
-                  <th className="px-5 py-3 font-medium text-right">Action</th>
+                  <th className="truncate px-2 py-3 font-medium">Event Name &amp; Description</th>
+                  <th className="truncate px-2 py-3 font-medium">Event Type</th>
+                  <th className="truncate px-2 py-3 font-medium">Date</th>
+                  <th className="truncate px-2 py-3 font-medium">Access</th>
+                  <th className="truncate px-2 py-3 font-medium">Status</th>
+                  <th className="truncate px-2 py-3 font-medium">Registration</th>
+                  <th className="truncate px-2 py-3 font-medium">Updated</th>
+                  <th className="truncate px-2 py-3 text-right font-medium">Action</th>
                 </tr>
               </thead>
               <tbody>
@@ -73,30 +83,28 @@ function EventListView({ events, onAddEvent, onViewEvent, onEditEvent, onDeleteE
                   const registration = getRegistrationStatus(event.form.metadata)
                   return (
                     <tr key={event.id} className="border-b border-border last:border-b-0 hover:bg-muted/30">
-                      <td className="px-5 py-4">
-                        <div className="max-w-xs">
-                          <p className="truncate font-medium text-foreground">
-                            {event.form.metadata.title || 'Untitled event'}
-                          </p>
-                          <p className="truncate text-xs text-muted-foreground">
-                            {event.form.metadata.subtitle || '—'}
-                          </p>
-                        </div>
+                      <td className="px-2 py-4">
+                        <p className="truncate font-medium text-foreground">
+                          {event.form.metadata.title || 'Untitled event'}
+                        </p>
+                        <p className="truncate text-xs text-muted-foreground">
+                          {event.form.metadata.subtitle || '—'}
+                        </p>
                       </td>
-                      <td className="px-5 py-4 text-muted-foreground">
+                      <td className="truncate px-2 py-4 text-muted-foreground">
                         {event.form.metadata.eventType ? eventTypeLabel(event.form.metadata.eventType) : '—'}
                       </td>
-                      <td className="px-5 py-4 whitespace-nowrap text-muted-foreground">
+                      <td className="truncate px-2 py-4 text-muted-foreground">
                         {formatEventDateRange(event.form.metadata)}
                       </td>
-                      <td className="whitespace-nowrap px-5 py-4">
+                      <td className="truncate px-2 py-4">
                         {event.form.metadata.accessType ? (
                           <Badge variant="outline">{ACCESS_TYPE_LABELS[event.form.metadata.accessType]}</Badge>
                         ) : (
                           <span className="text-muted-foreground">—</span>
                         )}
                       </td>
-                      <td className="whitespace-nowrap px-5 py-4">
+                      <td className="truncate px-2 py-4">
                         {event.status === 'published' ? (
                           <Badge variant="success">Published</Badge>
                         ) : (
@@ -105,18 +113,19 @@ function EventListView({ events, onAddEvent, onViewEvent, onEditEvent, onDeleteE
                           </Badge>
                         )}
                       </td>
-                      <td className="whitespace-nowrap px-5 py-4">
+                      <td className="truncate px-2 py-4">
                         {registration === 'open' && <Badge variant="success">Open</Badge>}
                         {registration === 'closed' && <Badge variant="muted">Closed</Badge>}
                         {registration === 'not-required' && <Badge variant="muted">Not Required</Badge>}
                       </td>
-                      <td className="px-5 py-4 whitespace-nowrap text-muted-foreground">{event.updatedAt}</td>
-                      <td className="px-5 py-4">
-                        <div className="flex items-center justify-end gap-1">
+                      <td className="truncate px-2 py-4 text-muted-foreground">{event.updatedAt}</td>
+                      <td className="px-2 py-4">
+                        <div className="flex items-center justify-end gap-0.5">
                           <Button
                             type="button"
                             variant="ghost"
                             size="icon"
+                            className="size-8"
                             aria-label={`View ${event.form.metadata.title || 'event'}`}
                             onClick={() => onViewEvent(event.id)}
                           >
@@ -126,6 +135,7 @@ function EventListView({ events, onAddEvent, onViewEvent, onEditEvent, onDeleteE
                             type="button"
                             variant="ghost"
                             size="icon"
+                            className="size-8"
                             aria-label={`Edit ${event.form.metadata.title || 'event'}`}
                             onClick={() => onEditEvent(event.id)}
                           >
@@ -135,9 +145,9 @@ function EventListView({ events, onAddEvent, onViewEvent, onEditEvent, onDeleteE
                             type="button"
                             variant="ghost"
                             size="icon"
+                            className="size-8 text-destructive hover:bg-destructive/10 hover:text-destructive"
                             aria-label={`Delete ${event.form.metadata.title || 'event'}`}
                             onClick={() => onDeleteEvent(event.id)}
-                            className="text-destructive hover:bg-destructive/10 hover:text-destructive"
                           >
                             <Trash2 className="size-4" />
                           </Button>
