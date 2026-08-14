@@ -6,6 +6,7 @@ interface WizardFooterProps {
   onPrevious: () => void
   onContinue: () => void
   onSaveDraft: () => void
+  saveLabel?: string
 }
 
 function WizardFooter({
@@ -14,6 +15,7 @@ function WizardFooter({
   onPrevious,
   onContinue,
   onSaveDraft,
+  saveLabel = 'Save as Draft',
 }: WizardFooterProps) {
   return (
     <div className="flex items-center justify-between px-6 py-4">
@@ -26,7 +28,7 @@ function WizardFooter({
       </div>
       <div className="flex items-center gap-3">
         <Button type="button" variant="successOutline" onClick={onSaveDraft}>
-          Save as Draft
+          {saveLabel}
         </Button>
         {showContinue && (
           <Button type="button" onClick={onContinue}>

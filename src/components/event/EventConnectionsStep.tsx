@@ -1,12 +1,12 @@
 import * as React from 'react'
-import { Building2, Plus, Search, X } from 'lucide-react'
+import { Building2, Plus, X } from 'lucide-react'
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { AddOrganisationForm } from '@/components/event/AddOrganisationForm'
+import { OrganisationSearchField } from '@/components/shared/OrganisationSearchField'
 import { useAppData } from '@/context/AppDataContext'
 import type { EventFormState, Organisation } from '@/types/event'
 
@@ -42,76 +42,6 @@ function OrganisationCard({ org, onRemove }: { org: Organisation; onRemove: () =
         <X className="size-4" />
       </Button>
     </div>
-  )
-}
-
-function OrganisationSearchField({
-  organisations,
-  excludeIds,
-  onSelect,
-  placeholder,
-}: {
-  organisations: Organisation[]
-  excludeIds: string[]
-  onSelect: (org: Organisation) => void
-  placeholder: string
-}) {
-  const [open, setOpen] = React.useState(false)
-  const [query, setQuery] = React.useState('')
-
-  const results = organisations
-    .filter((o) => !excludeIds.includes(o.id))
-    .filter((o) => o.name.toLowerCase().includes(query.trim().toLowerCase()))
-
-  return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <button
-          type="button"
-          className="flex h-10 w-full items-center gap-2 rounded-md border border-input bg-background px-3 text-sm text-muted-foreground transition-colors hover:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-        >
-          <Search className="size-4 shrink-0" />
-          {placeholder}
-        </button>
-      </PopoverTrigger>
-      <PopoverContent className="p-0" onOpenAutoFocus={(e) => e.preventDefault()}>
-        <div className="flex items-center gap-2 border-b border-border px-3 py-2">
-          <Search className="size-4 shrink-0 text-muted-foreground" />
-          <input
-            autoFocus
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search organisations..."
-            className="h-6 w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
-          />
-        </div>
-        <div className="max-h-60 overflow-y-auto p-1">
-          {results.length === 0 && (
-            <p className="px-2 py-4 text-center text-sm text-muted-foreground">No organisations found.</p>
-          )}
-          {results.map((org) => (
-            <button
-              key={org.id}
-              type="button"
-              onClick={() => {
-                onSelect(org)
-                setOpen(false)
-                setQuery('')
-              }}
-              className="flex w-full items-center gap-2.5 rounded-sm px-2 py-2 text-left text-sm hover:bg-muted"
-            >
-              <Building2 className="size-4 shrink-0 text-muted-foreground" />
-              <span>
-                <span className="block text-foreground">{org.name}</span>
-                <span className="block text-xs text-muted-foreground">
-                  {org.isRegistered ? 'Registered organisation' : 'New organisation'}
-                </span>
-              </span>
-            </button>
-          ))}
-        </div>
-      </PopoverContent>
-    </Popover>
   )
 }
 
@@ -189,31 +119,30 @@ function EventConnectionsStep({ form, onChange }: EventConnectionsStepProps) {
         </CardContent>
       </Card>
 
-      {showAddOrg ? (
-        <AddOrganisationForm
-          onCancel={() => setShowAddOrg(false)}
-          onCreate={(org) => {
-            addOrganisation(org)
-            setShowAddOrg(false)
-          }}
-        />
-      ) : (
-        <Card>
-          <CardHeader className="flex-row items-center justify-between">
-            <CardTitle>Add Organisation</CardTitle>
-            <Button type="button" variant="outline" size="sm" onClick={() => setShowAddOrg(true)}>
-              <Plus className="size-4" />
-              Add Organisation
-            </Button>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground">
-              Can't find an organisation above? Add it here — it becomes selectable for this event
-              immediately.
-            </p>
-          </CardContent>
-        </Card>
-      )}
+      <Card>
+        <CardHeader className="flex-row items-center justify-between">
+          <CardTitle>Add Organisation</CardTitle>
+          <Button type="button" variant="outline" size="sm" onClick={() => setShowAddOrg(true)}>
+            <Plus className="size-4" />
+            Add Organisation
+          </Button>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-muted-foreground">
+            Can't find an organisation above? Add it here — it becomes selectable for this event
+            immediately.
+          </p>
+        </CardContent>
+      </Card>
+
+      <AddOrganisationForm
+        open={showAddOrg}
+        onOpenChange={setShowAddOrg}
+        onCreate={(org) => {
+          addOrganisation(org)
+          setShowAddOrg(false)
+        }}
+      />
     </div>
   )
 }

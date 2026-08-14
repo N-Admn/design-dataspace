@@ -1,6 +1,6 @@
 import type { UploadedAsset } from '@/lib/generic-upload'
 
-export type EventStatus = 'draft' | 'published'
+export type EventStatus = 'draft' | 'published' | 'pending'
 export type EventAccessType = 'online' | 'hybrid' | 'in-person'
 export type RegistrationStatus = 'not-required' | 'open' | 'closed'
 export type RelatedContentType = 'dataset' | 'use-case' | 'collaborative' | 'ai-model'

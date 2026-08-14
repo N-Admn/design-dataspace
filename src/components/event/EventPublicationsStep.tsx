@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { PublicationForm } from '@/components/event/PublicationForm'
+import { EventDatasetsSection } from '@/components/event/EventDatasetsSection'
 import { RelatedContentPanel } from '@/components/event/RelatedContentPanel'
 import { PUBLICATION_TYPE_OPTIONS, type EventFormState, type EventPublication } from '@/types/event'
 
@@ -18,14 +19,24 @@ function publicationTypeLabel(value: string): string {
 }
 
 function EventPublicationsStep({ form, onChange }: EventPublicationsStepProps) {
-  const [showForm, setShowForm] = React.useState(false)
+  const [formOpen, setFormOpen] = React.useState(false)
   const [editingId, setEditingId] = React.useState<string | null>(null)
 
   const editingPublication = form.publications.find((p) => p.id === editingId)
 
   const closeForm = () => {
-    setShowForm(false)
+    setFormOpen(false)
     setEditingId(null)
+  }
+
+  const openAddForm = () => {
+    setEditingId(null)
+    setFormOpen(true)
+  }
+
+  const openEditForm = (id: string) => {
+    setEditingId(id)
+    setFormOpen(true)
   }
 
   const upsertPublication = (publication: EventPublication) => {
@@ -55,7 +66,7 @@ function EventPublicationsStep({ form, onChange }: EventPublicationsStepProps) {
           </p>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
-          {form.publications.length === 0 && !showForm && (
+          {form.publications.length === 0 && (
             <p className="py-4 text-center text-sm text-muted-foreground">No publications added yet.</p>
           )}
 
@@ -77,10 +88,7 @@ function EventPublicationsStep({ form, onChange }: EventPublicationsStepProps) {
                   variant="ghost"
                   size="icon"
                   aria-label={`Edit ${publication.title}`}
-                  onClick={() => {
-                    setEditingId(publication.id)
-                    setShowForm(true)
-                  }}
+                  onClick={() => openEditForm(publication.id)}
                 >
                   <Pencil className="size-4" />
                 </Button>
@@ -98,29 +106,30 @@ function EventPublicationsStep({ form, onChange }: EventPublicationsStepProps) {
             </div>
           ))}
 
-          {showForm ? (
-            <PublicationForm
-              onCancel={closeForm}
-              onAdd={upsertPublication}
-              initial={
-                editingPublication
-                  ? {
-                      id: editingPublication.id,
-                      title: editingPublication.title,
-                      description: editingPublication.description,
-                      publicationType: editingPublication.publicationType,
-                    }
-                  : undefined
-              }
-            />
-          ) : (
-            <Button type="button" variant="outline" size="sm" className="self-start" onClick={() => setShowForm(true)}>
-              <Plus className="size-4" />
-              Add Publication
-            </Button>
-          )}
+          <Button type="button" variant="outline" size="sm" className="self-start" onClick={openAddForm}>
+            <Plus className="size-4" />
+            Add Publication
+          </Button>
         </CardContent>
       </Card>
+
+      <PublicationForm
+        open={formOpen}
+        onOpenChange={setFormOpen}
+        onAdd={upsertPublication}
+        initial={
+          editingPublication
+            ? {
+                id: editingPublication.id,
+                title: editingPublication.title,
+                description: editingPublication.description,
+                publicationType: editingPublication.publicationType,
+              }
+            : undefined
+        }
+      />
+
+      <EventDatasetsSection form={form} onChange={onChange} />
 
       <RelatedContentPanel form={form} onChange={onChange} />
     </div>

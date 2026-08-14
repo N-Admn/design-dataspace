@@ -1,10 +1,13 @@
 import * as React from 'react'
+import { Loader2 } from 'lucide-react'
 
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { Stepper } from '@/components/ui/stepper'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
 import { DatasetBasicDetails } from '@/components/event/DatasetBasicDetails'
 import { DatasetResourceStep } from '@/components/event/DatasetResource'
 import { DatasetLicenseAccess } from '@/components/event/DatasetLicenseAccess'
+import { useConfirm } from '@/components/ui/confirm-dialog'
 import { useAppData } from '@/context/AppDataContext'
 import {
   validateMiniDatasetBasics,
@@ -15,20 +18,6 @@ import {
 } from '@/lib/mini-dataset-validation'
 import { emptyDatasetForm, type DatasetFormState, type DatasetMetadata, type DatasetResource } from '@/types/dataset'
 
-type MiniStep = 1 | 2 | 3
-
-const MINI_STEPS = [
-  { step: 1, label: 'Basic Details' },
-  { step: 2, label: 'Resource' },
-  { step: 3, label: 'License & Access' },
-]
-
-const MINI_STEP_TITLES: Record<MiniStep, string> = {
-  1: 'Add Dataset',
-  2: 'Resource',
-  3: 'License & Access',
-}
-
 interface DatasetCreationWizardProps {
   open: boolean
   onOpenChange: (open: boolean) => void
@@ -37,17 +26,18 @@ interface DatasetCreationWizardProps {
 
 function DatasetCreationWizard({ open, onOpenChange, onCreated }: DatasetCreationWizardProps) {
   const { upsertDataset } = useAppData()
-  const [step, setStep] = React.useState<MiniStep>(1)
+  const confirm = useConfirm()
   const [metadata, setMetadata] = React.useState<DatasetMetadata>(emptyDatasetForm.metadata)
   const [resources, setResources] = React.useState<DatasetResource[]>([])
   const [showErrors, setShowErrors] = React.useState(false)
+  const [isSubmitting, setIsSubmitting] = React.useState(false)
 
   React.useEffect(() => {
     if (open) {
-      setStep(1)
       setMetadata(emptyDatasetForm.metadata)
       setResources([])
       setShowErrors(false)
+      setIsSubmitting(false)
     }
   }, [open])
 
@@ -58,88 +48,132 @@ function DatasetCreationWizard({ open, onOpenChange, onCreated }: DatasetCreatio
   const basicErrors = validateMiniDatasetBasics(metadata)
   const resourceError = validateMiniDatasetResources(resources)
   const licenseErrors = validateMiniDatasetLicense(metadata)
+  const isFormValid = isMiniDatasetBasicsValid(metadata) && !resourceError && isMiniDatasetLicenseValid(metadata)
 
-  const handleNextFromBasics = () => {
-    if (!isMiniDatasetBasicsValid(metadata)) {
-      setShowErrors(true)
+  const hasUnsavedChanges =
+    metadata.name.trim() !== '' ||
+    metadata.description.trim() !== '' ||
+    metadata.sector !== '' ||
+    metadata.license !== '' ||
+    resources.length > 0
+
+  const requestClose = async () => {
+    if (hasUnsavedChanges) {
+      const ok = await confirm({
+        title: 'Discard changes?',
+        description: 'You have unsaved dataset details. This cannot be undone.',
+        confirmLabel: 'Discard',
+        variant: 'destructive',
+      })
+      if (ok) onOpenChange(false)
       return
     }
-    setShowErrors(false)
-    setStep(2)
-  }
-
-  const handleNextFromResource = () => {
-    if (validateMiniDatasetResources(resources)) {
-      setShowErrors(true)
-      return
-    }
-    setShowErrors(false)
-    setStep(3)
+    onOpenChange(false)
   }
 
   const handleSubmit = () => {
-    if (!isMiniDatasetLicenseValid(metadata)) {
+    if (!isFormValid) {
       setShowErrors(true)
       return
     }
-    const form: DatasetFormState = {
-      metadata: {
-        ...emptyDatasetForm.metadata,
-        name: metadata.name,
-        description: metadata.description,
-        sector: metadata.sector,
-        license: metadata.license,
-        accessType: metadata.accessType,
-      },
-      files: [],
-      enablePreview: false,
-      resources,
-    }
-    const id = upsertDataset(null, 'published', form)
-    onCreated(id, metadata.name)
+    setIsSubmitting(true)
+    window.setTimeout(() => {
+      const form: DatasetFormState = {
+        metadata: {
+          ...emptyDatasetForm.metadata,
+          name: metadata.name,
+          description: metadata.description,
+          sector: metadata.sector,
+          license: metadata.license,
+          accessType: metadata.accessType,
+        },
+        files: [],
+        enablePreview: false,
+        resources,
+      }
+      const id = upsertDataset(null, 'published', form)
+      onCreated(id, metadata.name)
+    }, 500)
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-xl gap-0 p-0">
-        <DialogHeader>
-          <DialogTitle>{MINI_STEP_TITLES[step]}</DialogTitle>
-          <DialogDescription>Create a lightweight dataset without leaving this event.</DialogDescription>
+    <Dialog
+      open={open}
+      onOpenChange={(next) => {
+        if (!next) {
+          requestClose()
+          return
+        }
+        onOpenChange(next)
+      }}
+    >
+      <DialogContent variant="right-drawer" className="gap-0 p-0" showClose={!isSubmitting}>
+        <DialogHeader className="shrink-0">
+          <DialogTitle>Add Dataset</DialogTitle>
+          <DialogDescription>Create the essential dataset information and connect it to this event.</DialogDescription>
         </DialogHeader>
-        <div className="px-6 py-5">
-          <div className="mb-5">
-            <Stepper compact steps={MINI_STEPS} currentStep={step} />
-          </div>
 
-          {step === 1 && (
-            <DatasetBasicDetails
-              metadata={metadata}
-              errors={showErrors ? basicErrors : {}}
-              onChange={updateMetadata}
-              onCancel={() => onOpenChange(false)}
-              onNext={handleNextFromBasics}
-            />
-          )}
-          {step === 2 && (
-            <DatasetResourceStep
-              resources={resources}
-              onAddResource={(resource) => setResources((prev) => [...prev, resource])}
-              onRemoveResource={(id) => setResources((prev) => prev.filter((r) => r.id !== id))}
-              error={showErrors ? resourceError : undefined}
-              onBack={() => setStep(1)}
-              onNext={handleNextFromResource}
-            />
-          )}
-          {step === 3 && (
-            <DatasetLicenseAccess
-              metadata={metadata}
-              resources={resources}
-              errors={showErrors ? licenseErrors : {}}
-              onChange={updateMetadata}
-              onBack={() => setStep(2)}
-              onSubmit={handleSubmit}
-            />
-          )}
+        <div className="min-h-0 flex-1 overflow-y-auto px-6 py-5">
+          <div className="flex flex-col gap-5">
+            <Card>
+              <CardHeader>
+                <CardTitle>Dataset Details</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <DatasetBasicDetails
+                  metadata={metadata}
+                  errors={showErrors ? basicErrors : {}}
+                  onChange={updateMetadata}
+                />
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Resource</CardTitle>
+                <p className="mt-1 text-sm font-normal text-muted-foreground">
+                  Add at least one resource for this dataset.
+                </p>
+              </CardHeader>
+              <CardContent>
+                <DatasetResourceStep
+                  resources={resources}
+                  onAddResource={(resource) => setResources((prev) => [...prev, resource])}
+                  onRemoveResource={(id) => setResources((prev) => prev.filter((r) => r.id !== id))}
+                  error={showErrors ? resourceError : undefined}
+                />
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>License &amp; Access</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <DatasetLicenseAccess
+                  metadata={metadata}
+                  errors={showErrors ? licenseErrors : {}}
+                  onChange={updateMetadata}
+                />
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+
+        <div className="flex shrink-0 items-center justify-between border-t border-border px-6 py-4">
+          <Button type="button" variant="ghost" onClick={requestClose} disabled={isSubmitting}>
+            Cancel
+          </Button>
+          <Button type="button" onClick={handleSubmit} disabled={isSubmitting}>
+            {isSubmitting ? (
+              <>
+                <Loader2 className="size-4 animate-spin" />
+                Creating...
+              </>
+            ) : (
+              'Create & Add Dataset'
+            )}
+          </Button>
         </div>
       </DialogContent>
     </Dialog>

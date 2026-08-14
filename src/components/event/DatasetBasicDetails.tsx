@@ -3,7 +3,6 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { SearchableSelect } from '@/components/ui/searchable-select'
 import { FieldError } from '@/components/ui/field-error'
-import { Button } from '@/components/ui/button'
 import { SECTOR_OPTIONS, type DatasetMetadata } from '@/types/dataset'
 import type { MiniDatasetBasicErrors } from '@/lib/mini-dataset-validation'
 
@@ -11,11 +10,9 @@ interface DatasetBasicDetailsProps {
   metadata: DatasetMetadata
   errors: MiniDatasetBasicErrors
   onChange: <K extends keyof DatasetMetadata>(field: K, value: DatasetMetadata[K]) => void
-  onCancel: () => void
-  onNext: () => void
 }
 
-function DatasetBasicDetails({ metadata, errors, onChange, onCancel, onNext }: DatasetBasicDetailsProps) {
+function DatasetBasicDetails({ metadata, errors, onChange }: DatasetBasicDetailsProps) {
   return (
     <div className="flex flex-col gap-5">
       <div>
@@ -40,7 +37,7 @@ function DatasetBasicDetails({ metadata, errors, onChange, onCancel, onNext }: D
         <Textarea
           id="mini-dataset-description"
           className="mt-1.5"
-          rows={4}
+          rows={3}
           placeholder="Briefly describe what this dataset contains and how it relates to the event."
           value={metadata.description}
           aria-invalid={Boolean(errors.description)}
@@ -64,15 +61,6 @@ function DatasetBasicDetails({ metadata, errors, onChange, onCancel, onNext }: D
           />
         </div>
         <FieldError message={errors.sector} />
-      </div>
-
-      <div className="flex items-center justify-end gap-3 pt-1">
-        <Button type="button" variant="ghost" onClick={onCancel}>
-          Cancel
-        </Button>
-        <Button type="button" onClick={onNext}>
-          Next
-        </Button>
       </div>
     </div>
   )

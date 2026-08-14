@@ -1,0 +1,126 @@
+import * as React from 'react'
+import { useNavigate, useParams } from 'react-router-dom'
+import { Loader2, Send } from 'lucide-react'
+
+import { Button } from '@/components/ui/button'
+import { UseCasePreview } from '@/components/usecase/UseCasePreview'
+import { useToast } from '@/components/ui/toast'
+import { useConfirm } from '@/components/ui/confirm-dialog'
+import { useAppData } from '@/context/AppDataContext'
+import { isUseCaseReadyToPublish } from '@/lib/usecase-validation'
+import { clearUseCaseDraftSnapshot, loadUseCaseDraftSnapshot } from '@/lib/usecase-draft-storage'
+
+function UseCasePreviewPage() {
+  const { id } = useParams<{ id: string }>()
+  const navigate = useNavigate()
+  const { useCases, upsertUseCase } = useAppData()
+  const confirm = useConfirm()
+  const toast = useToast()
+  const [isSubmitting, setIsSubmitting] = React.useState(false)
+  const [justPublished, setJustPublished] = React.useState(false)
+
+  const record = id ? useCases.find((u) => u.id === id) : undefined
+  // Load once on mount and freeze — re-reading after our own publish action would
+  // pick up the just-updated status and flip "Publish" into "Submit Changes" mid-flow.
+  const [snapshot] = React.useState(() => (id ? loadUseCaseDraftSnapshot(id) : null))
+  const form = snapshot?.form ?? record?.form
+  const [initialStatus] = React.useState(() => snapshot?.status ?? record?.status ?? 'draft')
+  const hasLiveVersion = initialStatus === 'published' || initialStatus === 'pending'
+
+  const handleEditInWorkspace = () => {
+    window.close()
+    window.setTimeout(() => {
+      navigate('/dashboard/use-cases/new', { state: { useCaseId: id, initialStep: 1 } })
+    }, 50)
+  }
+
+  if (!id || !form) {
+    return (
+      <div className="mx-auto flex max-w-lg flex-col items-center gap-3 py-24 text-center">
+        <p className="text-lg font-semibold text-foreground">Preview unavailable</p>
+        <p className="text-sm text-muted-foreground">
+          This Use Case preview could not be found. It may have been removed.
+        </p>
+        <Button type="button" variant="outline" onClick={() => navigate('/dashboard/use-cases')}>
+          Back to Use Cases
+        </Button>
+      </div>
+    )
+  }
+
+  const ready = isUseCaseReadyToPublish(form)
+
+  const handlePublish = async () => {
+    if (!ready) return
+    const ok = await confirm({
+      title: hasLiveVersion ? 'Submit changes?' : 'Publish use case?',
+      description: hasLiveVersion
+        ? `Your changes to "${form.metadata.title}" will be submitted for review before going live.`
+        : `You're about to publish "${form.metadata.title}". Once published, this Use Case will be visible to the public.`,
+      confirmLabel: hasLiveVersion ? 'Submit Changes' : 'Publish Use Case',
+    })
+    if (!ok) return
+    setIsSubmitting(true)
+    window.setTimeout(() => {
+      const nextStatus = hasLiveVersion ? 'pending' : 'published'
+      upsertUseCase(id, nextStatus, form)
+      clearUseCaseDraftSnapshot(id)
+      setIsSubmitting(false)
+      setJustPublished(true)
+      toast({
+        title: hasLiveVersion ? 'Changes submitted' : 'Use case published',
+        description: hasLiveVersion
+          ? 'Your changes are pending review. The current published version remains live.'
+          : 'Your use case is now publicly available.',
+        variant: 'success',
+      })
+    }, 500)
+  }
+
+  return (
+    <div className="mx-auto flex max-w-4xl flex-col gap-6 py-6">
+      <div className="sticky top-4 z-10 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-card px-5 py-4 shadow-sm">
+        <div>
+          <p className="text-sm font-semibold text-foreground">Use Case Preview</p>
+          <p className="text-xs text-muted-foreground">
+            {justPublished
+              ? hasLiveVersion
+                ? 'Changes submitted for review.'
+                : 'Published — now publicly available.'
+              : 'This is what your Use Case will look like when published.'}
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button type="button" variant="outline" onClick={handleEditInWorkspace}>
+            Edit in Workspace
+          </Button>
+          {!justPublished && (
+            <Button type="button" onClick={handlePublish} disabled={!ready || isSubmitting}>
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="size-4 animate-spin" />
+                  {hasLiveVersion ? 'Submitting...' : 'Publishing...'}
+                </>
+              ) : (
+                <>
+                  {hasLiveVersion ? 'Submit Changes' : 'Publish'}
+                  <Send className="size-4" />
+                </>
+              )}
+            </Button>
+          )}
+        </div>
+      </div>
+
+      {!ready && !justPublished && (
+        <p className="rounded-md border border-warning/40 bg-warning/10 px-4 py-2.5 text-sm text-warning-foreground">
+          This Use Case isn't ready to publish yet. Return to the workspace to complete the required fields.
+        </p>
+      )}
+
+      <UseCasePreview form={form} />
+    </div>
+  )
+}
+
+export { UseCasePreviewPage }

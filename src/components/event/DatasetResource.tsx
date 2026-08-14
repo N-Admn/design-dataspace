@@ -14,8 +14,6 @@ interface DatasetResourceStepProps {
   onAddResource: (resource: DatasetResource) => void
   onRemoveResource: (id: string) => void
   error?: string
-  onBack: () => void
-  onNext: () => void
 }
 
 let resourceIdCounter = 0
@@ -26,14 +24,7 @@ const RESOURCE_TABS: { type: DatasetResourceType; label: string; icon: typeof Fi
   { type: 'link', label: 'Link', icon: Link2 },
 ]
 
-function DatasetResourceStep({
-  resources,
-  onAddResource,
-  onRemoveResource,
-  error,
-  onBack,
-  onNext,
-}: DatasetResourceStepProps) {
+function DatasetResourceStep({ resources, onAddResource, onRemoveResource, error }: DatasetResourceStepProps) {
   const [type, setType] = React.useState<DatasetResourceType>('csv')
   const [csvFile, setCsvFile] = React.useState<File | null>(null)
   const [csvError, setCsvError] = React.useState<string | undefined>(undefined)
@@ -215,15 +206,6 @@ function DatasetResourceStep({
       )}
 
       <FieldError message={error} />
-
-      <div className="flex items-center justify-between pt-1">
-        <Button type="button" variant="ghost" onClick={onBack}>
-          Back
-        </Button>
-        <Button type="button" onClick={onNext}>
-          Next
-        </Button>
-      </div>
     </div>
   )
 }

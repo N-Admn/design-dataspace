@@ -2,10 +2,10 @@ import * as React from 'react'
 import { ChevronLeft, ChevronRight, Eye, FileText, Pencil, Plus, Trash2 } from 'lucide-react'
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { StatusBadge } from '@/components/shared/StatusBadge'
 import { cn } from '@/lib/utils'
-import { WORKSPACE_HEIGHT_CLASS } from '@/lib/layout'
+import { TABLE_ROW_HEIGHT_PX, WORKSPACE_HEIGHT_CLASS } from '@/lib/layout'
 import { GEOGRAPHY_OPTIONS, SECTOR_OPTIONS, type DatasetRecord, type DatasetStatus } from '@/types/dataset'
 
 interface DatasetListViewProps {
@@ -16,7 +16,7 @@ interface DatasetListViewProps {
   onDeleteDataset: (id: string) => void
 }
 
-const PAGE_SIZE = 12
+const PAGE_SIZE = 8
 
 type StatusFilter = 'all' | DatasetStatus
 
@@ -36,11 +36,13 @@ function DatasetListView({
 
   const publishedCount = datasets.filter((d) => d.status === 'published').length
   const draftCount = datasets.filter((d) => d.status === 'draft').length
+  const pendingCount = datasets.filter((d) => d.status === 'pending').length
 
   const TABS: { key: StatusFilter; label: string; count: number }[] = [
     { key: 'all', label: 'All', count: datasets.length },
     { key: 'published', label: 'Published', count: publishedCount },
     { key: 'draft', label: 'Draft', count: draftCount },
+    { key: 'pending', label: 'Pending', count: pendingCount },
   ]
 
   const filteredDatasets =
@@ -108,64 +110,73 @@ function DatasetListView({
       <CardContent className="min-h-0 flex-1 overflow-y-auto p-0">
         {filteredDatasets.length === 0 ? (
           <p className="px-5 py-10 text-center text-sm text-muted-foreground">
-            {datasets.length === 0
-              ? 'No datasets yet. Click "Add Dataset" to create your first one.'
-              : `No ${filter} datasets.`}
+            {datasets.length === 0 && 'No content yet. Click "Add Dataset" to create your first one.'}
+            {datasets.length > 0 && filter === 'published' && 'No published content yet.'}
+            {datasets.length > 0 && filter === 'draft' && 'No drafts yet.'}
+            {datasets.length > 0 && filter === 'pending' && 'No pending content.'}
           </p>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[720px] border-collapse text-sm">
+            <table className="w-full min-w-[1040px] table-fixed border-collapse text-sm">
+              <colgroup>
+                <col className="w-[30%]" />
+                <col className="w-[12%]" />
+                <col className="w-[11%]" />
+                <col className="w-[8%]" />
+                <col className="w-[11%]" />
+                <col className="w-[16%]" />
+                <col className="w-[12%]" />
+              </colgroup>
               <thead>
                 <tr className="border-b border-border bg-muted/40 text-left text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                  <th className="px-5 py-3 font-medium">Dataset Name</th>
-                  <th className="px-5 py-3 font-medium">Sector</th>
-                  <th className="px-5 py-3 font-medium">Geography</th>
-                  <th className="px-5 py-3 font-medium">Files</th>
-                  <th className="px-5 py-3 font-medium">Status</th>
-                  <th className="px-5 py-3 font-medium">Last Updated</th>
-                  <th className="px-5 py-3 font-medium text-right">Actions</th>
+                  <th className="truncate px-5 py-3 font-medium">Dataset Name</th>
+                  <th className="truncate px-5 py-3 font-medium">Sector</th>
+                  <th className="truncate px-5 py-3 font-medium">Geography</th>
+                  <th className="truncate px-5 py-3 font-medium">Files</th>
+                  <th className="truncate px-5 py-3 font-medium">Status</th>
+                  <th className="truncate px-5 py-3 font-medium">Last Updated</th>
+                  <th className="truncate px-5 py-3 text-right font-medium">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {pageDatasets.map((dataset) => (
-                  <tr key={dataset.id} className="border-b border-border last:border-b-0 hover:bg-muted/30">
-                    <td className="px-5 py-4">
-                      <div className="flex items-center gap-2">
+                  <tr
+                    key={dataset.id}
+                    style={{ height: TABLE_ROW_HEIGHT_PX }}
+                    className="border-b border-border last:border-b-0 hover:bg-muted/30"
+                  >
+                    <td className="px-5 py-3">
+                      <div className="flex min-w-0 items-center gap-2">
                         <FileText className="size-4 shrink-0 text-muted-foreground" />
-                        <span className="font-medium text-foreground">
+                        <span className="min-w-0 flex-1 truncate font-medium text-foreground">
                           {dataset.form.metadata.name || 'Untitled dataset'}
                         </span>
                       </div>
                     </td>
-                    <td className="px-5 py-4 text-muted-foreground">
+                    <td className="truncate px-5 py-3 text-muted-foreground">
                       {dataset.form.metadata.sector
                         ? optionLabel(SECTOR_OPTIONS, dataset.form.metadata.sector)
                         : '—'}
                     </td>
-                    <td className="px-5 py-4 text-muted-foreground">
+                    <td className="truncate px-5 py-3 text-muted-foreground">
                       {dataset.form.metadata.geography
                         ? optionLabel(GEOGRAPHY_OPTIONS, dataset.form.metadata.geography)
                         : '—'}
                     </td>
-                    <td className="px-5 py-4 text-muted-foreground">
+                    <td className="truncate px-5 py-3 text-muted-foreground">
                       {dataset.form.files.length + (dataset.form.resources?.length ?? 0)}
                     </td>
-                    <td className="px-5 py-4">
-                      {dataset.status === 'published' ? (
-                        <Badge variant="success">Published</Badge>
-                      ) : (
-                        <Badge className="border-transparent bg-warning/20 text-warning-foreground">
-                          Draft
-                        </Badge>
-                      )}
+                    <td className="truncate px-5 py-3">
+                      <StatusBadge status={dataset.status} />
                     </td>
-                    <td className="px-5 py-4 text-muted-foreground">{dataset.updatedAt}</td>
-                    <td className="px-5 py-4">
-                      <div className="flex items-center justify-end gap-1">
+                    <td className="truncate px-5 py-3 text-muted-foreground">{dataset.updatedAt}</td>
+                    <td className="px-5 py-3">
+                      <div className="flex items-center justify-end gap-0.5">
                         <Button
                           type="button"
                           variant="ghost"
                           size="icon"
+                          className="size-8"
                           aria-label={`View ${dataset.form.metadata.name || 'dataset'}`}
                           onClick={() => onViewDataset(dataset.id)}
                         >
@@ -175,6 +186,7 @@ function DatasetListView({
                           type="button"
                           variant="ghost"
                           size="icon"
+                          className="size-8"
                           aria-label={`Edit ${dataset.form.metadata.name || 'dataset'}`}
                           onClick={() => onEditDataset(dataset.id)}
                         >
@@ -184,9 +196,9 @@ function DatasetListView({
                           type="button"
                           variant="ghost"
                           size="icon"
+                          className="size-8 text-destructive hover:bg-destructive/10 hover:text-destructive"
                           aria-label={`Delete ${dataset.form.metadata.name || 'dataset'}`}
                           onClick={() => onDeleteDataset(dataset.id)}
-                          className="text-destructive hover:bg-destructive/10 hover:text-destructive"
                         >
                           <Trash2 className="size-4" />
                         </Button>

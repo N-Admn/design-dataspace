@@ -23,24 +23,63 @@ export interface DatasetMetadata {
 
 export type DatasetResourceType = 'csv' | 'api' | 'link'
 
+export type ApiAuthMethod = 'none' | 'api-key' | 'bearer-token'
+export type ApiKeyLocation = 'header' | 'query'
+export type ApiResponseFormat = 'json' | 'csv'
+
+export interface KeyValuePair {
+  id: string
+  key: string
+  value: string
+}
+
+export interface DatasetResourceApiConfig {
+  url: string
+  method: 'GET'
+  authMethod: ApiAuthMethod
+  apiKey: string
+  apiKeyLocation: ApiKeyLocation
+  bearerToken: string
+  parameters: KeyValuePair[]
+  headers: KeyValuePair[]
+  responseFormat: ApiResponseFormat
+  /** Whether "Test connection" has succeeded for the config as currently entered. */
+  tested: boolean
+}
+
 export interface DatasetResource {
   id: string
   type: DatasetResourceType
   file?: DatasetFile
   url?: string
+  apiConfig?: DatasetResourceApiConfig
 }
+
+export const AUTH_METHOD_OPTIONS: { value: ApiAuthMethod; label: string }[] = [
+  { value: 'none', label: 'None' },
+  { value: 'api-key', label: 'API Key' },
+  { value: 'bearer-token', label: 'Bearer Token' },
+]
+
+export const API_KEY_LOCATION_OPTIONS: { value: ApiKeyLocation; label: string }[] = [
+  { value: 'header', label: 'Header' },
+  { value: 'query', label: 'Query parameter' },
+]
+
+export const API_RESPONSE_FORMAT_OPTIONS: { value: ApiResponseFormat; label: string }[] = [
+  { value: 'json', label: 'JSON' },
+  { value: 'csv', label: 'CSV' },
+]
 
 export interface DatasetFormState {
   metadata: DatasetMetadata
   files: DatasetFile[]
   enablePreview: boolean
-  /** Populated only for datasets created through the lightweight Event → Related
-   * Content mini-wizard, which supports CSV/API/Link resources instead of the
-   * multi-file uploader the full Dataset flow uses. */
-  resources?: DatasetResource[]
+  /** API and Link resources attached to the dataset (CSV files are tracked separately in `files`). */
+  resources: DatasetResource[]
 }
 
-export type DatasetStatus = 'published' | 'draft'
+export type DatasetStatus = 'published' | 'draft' | 'pending'
 
 export interface DatasetRecord {
   id: string
@@ -63,6 +102,7 @@ export const emptyDatasetForm: DatasetFormState = {
   },
   files: [],
   enablePreview: false,
+  resources: [],
 }
 
 export const SUPPORTED_FILE_EXTENSIONS = ['pdf', 'csv', 'xls', 'xlsx', 'txt']

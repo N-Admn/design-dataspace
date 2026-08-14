@@ -31,7 +31,7 @@ function Step1Metadata({ metadata, errors, onChange }: Step1MetadataProps) {
         <CardContent className="flex flex-col gap-5">
           <div>
             <Label htmlFor="dataset-name">
-              Dataset Name <span className="text-destructive">*</span>
+              Dataset name <span className="text-destructive">*</span>
             </Label>
             <Input
               id="dataset-name"
@@ -120,7 +120,7 @@ function Step1Metadata({ metadata, errors, onChange }: Step1MetadataProps) {
         </CardHeader>
         <CardContent className="flex flex-col gap-5 sm:flex-row">
           <div className="flex-1">
-            <Label htmlFor="source-website">Source Website</Label>
+            <Label htmlFor="source-website">Source website</Label>
             <Input
               id="source-website"
               className="mt-1.5"
@@ -130,7 +130,7 @@ function Step1Metadata({ metadata, errors, onChange }: Step1MetadataProps) {
             />
           </div>
           <div className="flex-1">
-            <Label htmlFor="create-date">Dataset Creation Date</Label>
+            <Label htmlFor="create-date">Dataset creation date</Label>
             <Input
               id="create-date"
               type="date"
@@ -150,7 +150,7 @@ function Step1Metadata({ metadata, errors, onChange }: Step1MetadataProps) {
         <CardContent className="flex flex-col gap-5">
           <div>
             <Label>
-              Access Type <span className="text-destructive">*</span>
+              Access type <span className="text-destructive">*</span>
             </Label>
             <RadioGroup
               className="mt-1.5 grid grid-cols-1 gap-3 sm:grid-cols-2"
