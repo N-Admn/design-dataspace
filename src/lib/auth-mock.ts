@@ -2,7 +2,7 @@ interface MockGoogleAccount {
   name: string
   email: string
   initials: string
-  kind: 'new' | 'existing-google' | 'existing-password'
+  kind: 'new' | 'existing-google' | 'existing-password' | 'auth-error' | 'new-fails'
 }
 
 const MOCK_EXISTING_USER = {
@@ -14,6 +14,8 @@ const GOOGLE_MOCK_ACCOUNTS: MockGoogleAccount[] = [
   { name: 'Jordan Rivera', email: 'jordan.rivera@gmail.com', initials: 'JR', kind: 'new' },
   { name: 'Amara Chen', email: 'amara.chen@gmail.com', initials: 'AC', kind: 'existing-google' },
   { name: 'Sam Patel', email: 'sam.patel@gmail.com', initials: 'SP', kind: 'existing-password' },
+  { name: 'Priya Nair', email: 'priya.nair@gmail.com', initials: 'PN', kind: 'new-fails' },
+  { name: 'Marcus Webb', email: 'marcus.webb@gmail.com', initials: 'MW', kind: 'auth-error' },
 ]
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/

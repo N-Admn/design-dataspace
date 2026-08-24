@@ -1,33 +1,54 @@
-export interface ChartRecord {
-  id: string
-  title: string
-  description: string
-  sector: string
+import type { ChartFormState, ChartRecord } from '@/types/chart'
+
+const chart1Form: ChartFormState = {
+  datasetId: 'ds-1',
+  fileId: 'ds1-file-1',
+  chartType: 'line',
+  config: {
+    categoryField: 'quarter',
+    valueField: 'gdp_billions',
+    aggregation: 'sum',
+    showLegend: true,
+    unit: '',
+    displayLabel: '',
+    xAxisLabel: '',
+    yAxisLabel: 'GDP (₹ Billions)',
+  },
+  uploadedImage: null,
+  name: 'GDP Trend by Quarter',
 }
 
-export const MOCK_CHARTS: ChartRecord[] = [
+const chart2Form: ChartFormState = {
+  datasetId: 'ds-2',
+  fileId: 'ds2-file-1',
+  chartType: 'map',
+  config: {
+    categoryField: 'district',
+    valueField: 'hospital_count',
+    aggregation: 'sum',
+    showLegend: true,
+    unit: '',
+    displayLabel: '',
+    xAxisLabel: '',
+    yAxisLabel: '',
+  },
+  uploadedImage: null,
+  name: 'Hospitals by District',
+}
+
+export const MOCK_CHART_RECORDS: ChartRecord[] = [
   {
     id: 'chart-1',
-    title: 'District Health Facility Density',
-    description: 'Bar chart comparing public health facilities per 10,000 residents across districts.',
-    sector: 'health',
+    status: 'published',
+    updatedAt: '06/08/2026 10:30:00',
+    form: chart1Form,
+    publishedForm: chart1Form,
   },
   {
     id: 'chart-2',
-    title: 'GDP Growth by Sector (2020–2026)',
-    description: 'Line chart tracking quarterly GDP growth contribution by economic sector.',
-    sector: 'finance',
-  },
-  {
-    id: 'chart-3',
-    title: 'Urban Water Coverage Trend',
-    description: 'Area chart showing urban household water supply coverage over time.',
-    sector: 'water-sanitation',
-  },
-  {
-    id: 'chart-4',
-    title: 'School Enrollment vs Infrastructure',
-    description: 'Scatter plot correlating school infrastructure scores with enrollment rates.',
-    sector: 'education',
+    status: 'published',
+    updatedAt: '19/07/2026 15:45:00',
+    form: chart2Form,
+    publishedForm: chart2Form,
   },
 ]

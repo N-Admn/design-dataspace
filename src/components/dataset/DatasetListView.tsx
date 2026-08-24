@@ -1,11 +1,9 @@
-import * as React from 'react'
-import { ChevronLeft, ChevronRight, Eye, FileText, Pencil, Plus, Trash2 } from 'lucide-react'
+import { Archive, FileText, Pencil, Trash2, Undo2 } from 'lucide-react'
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
+import { ManagementTable, type ManagementColumn, type ManagementFilterDef, type ManagementRowAction } from '@/components/shared/management-table/ManagementTable'
+import { TruncatedText } from '@/components/shared/TruncatedText'
 import { StatusBadge } from '@/components/shared/StatusBadge'
-import { cn } from '@/lib/utils'
-import { TABLE_ROW_HEIGHT_PX, WORKSPACE_HEIGHT_CLASS } from '@/lib/layout'
+import { formatShortDate, parseAppTimestamp } from '@/lib/format'
 import { GEOGRAPHY_OPTIONS, SECTOR_OPTIONS, type DatasetRecord, type DatasetStatus } from '@/types/dataset'
 
 interface DatasetListViewProps {
@@ -14,15 +12,117 @@ interface DatasetListViewProps {
   onViewDataset: (id: string) => void
   onEditDataset: (id: string) => void
   onDeleteDataset: (id: string) => void
+  onDiscardDataset: (id: string) => void
+  onUnpublishDataset: (id: string) => void
+  loading?: boolean
+  loadError?: boolean
+  onRetry?: () => void
 }
-
-const PAGE_SIZE = 8
-
-type StatusFilter = 'all' | DatasetStatus
 
 function optionLabel(options: { value: string; label: string }[], value: string): string {
   return options.find((o) => o.value === value)?.label ?? '—'
 }
+
+function fileCount(dataset: DatasetRecord): number {
+  return dataset.form.files.length + (dataset.form.resources?.length ?? 0)
+}
+
+function matchesSearch(dataset: DatasetRecord, query: string): boolean {
+  const q = query.trim().toLowerCase()
+  const { metadata } = dataset.form
+  const haystack = [
+    metadata.name,
+    metadata.tags.join(' '),
+    metadata.sector ? optionLabel(SECTOR_OPTIONS, metadata.sector) : '',
+    metadata.geography ? optionLabel(GEOGRAPHY_OPTIONS, metadata.geography) : '',
+  ]
+    .join(' ')
+    .toLowerCase()
+  return haystack.includes(q)
+}
+
+const TAB_EMPTY_MESSAGE: Record<DatasetStatus, string> = {
+  published: 'No published content yet.',
+  draft: 'No drafts yet.',
+  pending: 'No pending content.',
+}
+
+function buildColumns(onOpen: (dataset: DatasetRecord) => void): ManagementColumn<DatasetRecord>[] {
+  return [
+  {
+    key: 'name',
+    label: 'Dataset',
+    sortable: true,
+    compare: (a, b) => (a.form.metadata.name || '').localeCompare(b.form.metadata.name || ''),
+    render: (d) => (
+      <button
+        type="button"
+        onClick={() => onOpen(d)}
+        className="flex min-w-0 w-full items-center gap-2 text-left hover:text-primary"
+      >
+        <FileText className="size-4 shrink-0 text-muted-foreground" />
+        <TruncatedText className="min-w-0 flex-1 font-medium text-foreground">{d.form.metadata.name || 'Untitled dataset'}</TruncatedText>
+      </button>
+    ),
+  },
+  {
+    key: 'sector',
+    label: 'Sector',
+    widthRem: '8.125rem',
+    responsive: 'lg',
+    optional: true,
+    sortable: true,
+    compare: (a, b) => optionLabel(SECTOR_OPTIONS, a.form.metadata.sector).localeCompare(optionLabel(SECTOR_OPTIONS, b.form.metadata.sector)),
+    render: (d) => (d.form.metadata.sector ? <TruncatedText>{optionLabel(SECTOR_OPTIONS, d.form.metadata.sector)}</TruncatedText> : '—'),
+  },
+  {
+    key: 'geography',
+    label: 'Geography',
+    widthRem: '8.125rem',
+    responsive: 'lg',
+    optional: true,
+    render: (d) => (d.form.metadata.geography ? <TruncatedText>{optionLabel(GEOGRAPHY_OPTIONS, d.form.metadata.geography)}</TruncatedText> : '—'),
+  },
+  {
+    key: 'files',
+    label: 'Files',
+    widthRem: '5.625rem',
+    responsive: 'lg',
+    optional: true,
+    sortable: true,
+    compare: (a, b) => fileCount(a) - fileCount(b),
+    render: (d) => `${fileCount(d)} file${fileCount(d) === 1 ? '' : 's'}`,
+  },
+  {
+    key: 'status',
+    label: 'Status',
+    widthRem: '6.875rem',
+    optional: true,
+    render: (d) => <StatusBadge status={d.status} />,
+  },
+  {
+    key: 'updated',
+    label: 'Last Updated',
+    widthRem: '8.125rem',
+    responsive: 'md',
+    optional: true,
+    sortable: true,
+    compare: (a, b) => parseAppTimestamp(a.updatedAt).getTime() - parseAppTimestamp(b.updatedAt).getTime(),
+    render: (d) => formatShortDate(d.updatedAt),
+  },
+  ]
+}
+
+const FILTERS: ManagementFilterDef<DatasetRecord>[] = [
+  { key: 'sector', label: 'Sector', placeholder: 'Any sector', options: SECTOR_OPTIONS, matches: (d, v) => d.form.metadata.sector === v },
+  { key: 'geography', label: 'Geography', placeholder: 'Any geography', options: GEOGRAPHY_OPTIONS, matches: (d, v) => d.form.metadata.geography === v },
+]
+
+const STATUSES: { key: DatasetStatus; label: string }[] = [
+  { key: 'draft', label: 'Draft' },
+  { key: 'pending', label: 'Pending' },
+  { key: 'published', label: 'Published' },
+]
 
 function DatasetListView({
   datasets,
@@ -30,221 +130,59 @@ function DatasetListView({
   onViewDataset,
   onEditDataset,
   onDeleteDataset,
+  onDiscardDataset,
+  onUnpublishDataset,
+  loading,
+  loadError,
+  onRetry,
 }: DatasetListViewProps) {
-  const [filter, setFilter] = React.useState<StatusFilter>('all')
-  const [page, setPage] = React.useState(1)
+  const openDataset = (dataset: DatasetRecord) => (dataset.status === 'draft' ? onEditDataset(dataset.id) : onViewDataset(dataset.id))
+  const columns = buildColumns(openDataset)
 
-  const publishedCount = datasets.filter((d) => d.status === 'published').length
-  const draftCount = datasets.filter((d) => d.status === 'draft').length
-  const pendingCount = datasets.filter((d) => d.status === 'pending').length
-
-  const TABS: { key: StatusFilter; label: string; count: number }[] = [
-    { key: 'all', label: 'All', count: datasets.length },
-    { key: 'published', label: 'Published', count: publishedCount },
-    { key: 'draft', label: 'Draft', count: draftCount },
-    { key: 'pending', label: 'Pending', count: pendingCount },
-  ]
-
-  const filteredDatasets =
-    filter === 'all' ? datasets : datasets.filter((d) => d.status === filter)
-
-  const totalPages = Math.max(1, Math.ceil(filteredDatasets.length / PAGE_SIZE))
-  const currentPage = Math.min(page, totalPages)
-  const pageStart = (currentPage - 1) * PAGE_SIZE
-  const pageDatasets = filteredDatasets.slice(pageStart, pageStart + PAGE_SIZE)
-
-  React.useEffect(() => {
-    if (page > totalPages) setPage(totalPages)
-  }, [page, totalPages])
-
-  const handleFilterChange = (next: StatusFilter) => {
-    setFilter(next)
-    setPage(1)
+  const getActions = (dataset: DatasetRecord): ManagementRowAction<DatasetRecord>[] => {
+    const name = dataset.form.metadata.name || 'dataset'
+    if (dataset.status === 'draft') {
+      return [
+        { key: 'edit', icon: Pencil, label: () => `Continue editing ${name}`, onClick: () => onEditDataset(dataset.id) },
+        { key: 'delete', icon: Trash2, label: () => `Delete ${name}`, onClick: () => onDeleteDataset(dataset.id), destructive: true },
+      ]
+    }
+    if (dataset.status === 'pending') {
+      return [
+        { key: 'edit', icon: Pencil, label: () => `Edit ${name}`, onClick: () => onEditDataset(dataset.id) },
+        { key: 'discard', icon: Undo2, label: () => `Discard changes to ${name}`, onClick: () => onDiscardDataset(dataset.id), destructive: true },
+      ]
+    }
+    return [
+      { key: 'edit', icon: Pencil, label: () => `Edit ${name}`, onClick: () => onEditDataset(dataset.id) },
+      { key: 'unpublish', icon: Archive, label: () => `Unpublish ${name}`, onClick: () => onUnpublishDataset(dataset.id), destructive: true },
+    ]
   }
 
   return (
-    <Card className={cn('flex flex-col', WORKSPACE_HEIGHT_CLASS)}>
-      <CardHeader className="flex-row shrink-0 items-center justify-between">
-        <div>
-          <CardTitle>My Datasets</CardTitle>
-          <p className="mt-1 text-sm font-normal text-muted-foreground">
-            {datasets.length} dataset{datasets.length === 1 ? '' : 's'} · manage published
-            datasets and continue drafts
-          </p>
-        </div>
-        <Button type="button" onClick={onAddDataset}>
-          <Plus className="size-4" />
-          Add Dataset
-        </Button>
-      </CardHeader>
-      <div className="flex shrink-0 items-center gap-1 border-b border-border px-5" role="tablist">
-        {TABS.map((tab) => {
-          const isActive = tab.key === filter
-          return (
-            <button
-              key={tab.key}
-              type="button"
-              role="tab"
-              aria-selected={isActive}
-              onClick={() => handleFilterChange(tab.key)}
-              className={cn(
-                'flex items-center gap-1.5 border-b-2 px-3 py-3 text-sm font-medium transition-colors',
-                isActive
-                  ? 'border-primary text-primary'
-                  : 'border-transparent text-muted-foreground hover:text-foreground',
-              )}
-            >
-              {tab.label}
-              <span
-                className={cn(
-                  'rounded-full px-1.5 py-0.5 text-xs font-medium',
-                  isActive ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground',
-                )}
-              >
-                {tab.count}
-              </span>
-            </button>
-          )
-        })}
-      </div>
-      <CardContent className="min-h-0 flex-1 overflow-y-auto p-0">
-        {filteredDatasets.length === 0 ? (
-          <p className="px-5 py-10 text-center text-sm text-muted-foreground">
-            {datasets.length === 0 && 'No content yet. Click "Add Dataset" to create your first one.'}
-            {datasets.length > 0 && filter === 'published' && 'No published content yet.'}
-            {datasets.length > 0 && filter === 'draft' && 'No drafts yet.'}
-            {datasets.length > 0 && filter === 'pending' && 'No pending content.'}
-          </p>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[1040px] table-fixed border-collapse text-sm">
-              <colgroup>
-                <col className="w-[30%]" />
-                <col className="w-[12%]" />
-                <col className="w-[11%]" />
-                <col className="w-[8%]" />
-                <col className="w-[11%]" />
-                <col className="w-[16%]" />
-                <col className="w-[12%]" />
-              </colgroup>
-              <thead>
-                <tr className="border-b border-border bg-muted/40 text-left text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                  <th className="truncate px-5 py-3 font-medium">Dataset Name</th>
-                  <th className="truncate px-5 py-3 font-medium">Sector</th>
-                  <th className="truncate px-5 py-3 font-medium">Geography</th>
-                  <th className="truncate px-5 py-3 font-medium">Files</th>
-                  <th className="truncate px-5 py-3 font-medium">Status</th>
-                  <th className="truncate px-5 py-3 font-medium">Last Updated</th>
-                  <th className="truncate px-5 py-3 text-right font-medium">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {pageDatasets.map((dataset) => (
-                  <tr
-                    key={dataset.id}
-                    style={{ height: TABLE_ROW_HEIGHT_PX }}
-                    className="border-b border-border last:border-b-0 hover:bg-muted/30"
-                  >
-                    <td className="px-5 py-3">
-                      <div className="flex min-w-0 items-center gap-2">
-                        <FileText className="size-4 shrink-0 text-muted-foreground" />
-                        <span className="min-w-0 flex-1 truncate font-medium text-foreground">
-                          {dataset.form.metadata.name || 'Untitled dataset'}
-                        </span>
-                      </div>
-                    </td>
-                    <td className="truncate px-5 py-3 text-muted-foreground">
-                      {dataset.form.metadata.sector
-                        ? optionLabel(SECTOR_OPTIONS, dataset.form.metadata.sector)
-                        : '—'}
-                    </td>
-                    <td className="truncate px-5 py-3 text-muted-foreground">
-                      {dataset.form.metadata.geography
-                        ? optionLabel(GEOGRAPHY_OPTIONS, dataset.form.metadata.geography)
-                        : '—'}
-                    </td>
-                    <td className="truncate px-5 py-3 text-muted-foreground">
-                      {dataset.form.files.length + (dataset.form.resources?.length ?? 0)}
-                    </td>
-                    <td className="truncate px-5 py-3">
-                      <StatusBadge status={dataset.status} />
-                    </td>
-                    <td className="truncate px-5 py-3 text-muted-foreground">{dataset.updatedAt}</td>
-                    <td className="px-5 py-3">
-                      <div className="flex items-center justify-end gap-0.5">
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          className="size-8"
-                          aria-label={`View ${dataset.form.metadata.name || 'dataset'}`}
-                          onClick={() => onViewDataset(dataset.id)}
-                        >
-                          <Eye className="size-4" />
-                        </Button>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          className="size-8"
-                          aria-label={`Edit ${dataset.form.metadata.name || 'dataset'}`}
-                          onClick={() => onEditDataset(dataset.id)}
-                        >
-                          <Pencil className="size-4" />
-                        </Button>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          className="size-8 text-destructive hover:bg-destructive/10 hover:text-destructive"
-                          aria-label={`Delete ${dataset.form.metadata.name || 'dataset'}`}
-                          onClick={() => onDeleteDataset(dataset.id)}
-                        >
-                          <Trash2 className="size-4" />
-                        </Button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </CardContent>
-      {filteredDatasets.length > 0 && (
-        <div className="flex shrink-0 items-center justify-between border-t border-border px-5 py-3">
-          <p className="text-xs text-muted-foreground">
-            Showing {pageStart + 1}–{Math.min(pageStart + PAGE_SIZE, filteredDatasets.length)} of{' '}
-            {filteredDatasets.length}
-          </p>
-          <div className="flex items-center gap-3">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              disabled={currentPage === 1}
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
-            >
-              <ChevronLeft className="size-4" />
-              Previous
-            </Button>
-            <p className="text-xs font-medium text-muted-foreground">
-              Page {currentPage} of {totalPages}
-            </p>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              disabled={currentPage === totalPages}
-              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-            >
-              Next
-              <ChevronRight className="size-4" />
-            </Button>
-          </div>
-        </div>
-      )}
-    </Card>
+    <ManagementTable<DatasetRecord, DatasetStatus>
+      title="My Datasets"
+      subtitle={(count) => `${count} dataset${count === 1 ? '' : 's'} · manage published datasets and continue drafts`}
+      addLabel="Add Dataset"
+      onAdd={onAddDataset}
+      items={datasets}
+      getId={(d) => d.id}
+      columns={columns}
+      defaultSortKey="updated"
+      defaultSortDirection="desc"
+      filters={FILTERS}
+      statuses={STATUSES}
+      getStatus={(d) => d.status}
+      searchPlaceholder="Search datasets..."
+      searchMatch={matchesSearch}
+      getActions={getActions}
+      emptyTitle="No datasets yet"
+      emptyDescription="Create your first dataset to make civic data available."
+      tabEmptyMessage={(status) => TAB_EMPTY_MESSAGE[status]}
+      loading={loading}
+      loadError={loadError}
+      onRetry={onRetry}
+    />
   )
 }
 

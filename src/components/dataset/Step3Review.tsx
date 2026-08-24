@@ -1,12 +1,14 @@
 import type { ReactNode } from 'react'
-import { ArrowRight, CalendarDays, CheckCircle2, FolderKanban, Globe, Link2, Pencil, Send } from 'lucide-react'
+import { ArrowRight, BarChart3, CalendarDays, CheckCircle2, FolderKanban, Gauge, Globe, ImagePlus, LineChart, Link2, MapPin, Pencil, PieChart, Send } from 'lucide-react'
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { PublicVisibilityNotice } from '@/components/dataset/PublicVisibilityNotice'
 import { formatFileSize } from '@/lib/format'
 import { useAppData } from '@/context/AppDataContext'
+import { CHART_TYPE_OPTIONS, type ChartType } from '@/types/chart'
 import {
   GEOGRAPHY_OPTIONS,
   LICENSE_OPTIONS,
@@ -83,6 +85,47 @@ function UsedInSection({ datasetId }: { datasetId: string }) {
   )
 }
 
+const CHART_TYPE_ICONS: Record<ChartType, typeof BarChart3> = {
+  bar: BarChart3,
+  line: LineChart,
+  pie: PieChart,
+  map: MapPin,
+  'big-number': Gauge,
+  'upload-image': ImagePlus,
+}
+
+function ChartsSection({ datasetId }: { datasetId: string }) {
+  const { charts } = useAppData()
+  const datasetCharts = charts.filter((chart) => chart.status === 'published' && chart.form.datasetId === datasetId)
+
+  if (datasetCharts.length === 0) return null
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Charts</CardTitle>
+        <p className="mt-1 text-sm font-normal text-muted-foreground">Visualizations published for this dataset.</p>
+      </CardHeader>
+      <CardContent className="flex flex-col gap-1 p-0">
+        {datasetCharts.map((chart) => {
+          const Icon = chart.form.chartType ? CHART_TYPE_ICONS[chart.form.chartType] : BarChart3
+          const typeLabel = chart.form.chartType ? CHART_TYPE_OPTIONS.find((o) => o.value === chart.form.chartType)?.label : '—'
+          return (
+            <div key={chart.id} className="flex items-center gap-3 border-b border-border px-5 py-3 last:border-b-0">
+              <Icon className="size-4 shrink-0 text-muted-foreground" />
+              <span className="min-w-0 flex-1 truncate text-sm font-medium text-foreground">
+                {chart.form.name || 'Untitled chart'}
+              </span>
+              <Badge variant="secondary">{typeLabel}</Badge>
+              <ArrowRight className="size-4 shrink-0 text-muted-foreground" />
+            </div>
+          )
+        })}
+      </CardContent>
+    </Card>
+  )
+}
+
 function optionLabel(options: { value: string; label: string }[], value: string): string {
   return options.find((o) => o.value === value)?.label ?? '—'
 }
@@ -105,14 +148,14 @@ function Step3Review({ form, datasetId, canPublish, hasLiveVersion, onEditMetada
       <Card>
         <CardHeader className="flex-row items-center justify-between">
           <CardTitle>Metadata</CardTitle>
-          <button
-            type="button"
-            aria-label="Edit metadata"
-            onClick={onEditMetadata}
-            className="flex size-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-primary"
-          >
-            <Pencil className="size-4" />
-          </button>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button type="button" variant="ghost" size="icon" aria-label="Edit metadata" onClick={onEditMetadata}>
+                <Pencil className="size-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="top">Edit metadata</TooltipContent>
+          </Tooltip>
         </CardHeader>
         <CardContent className="grid grid-cols-1 gap-5 sm:grid-cols-2">
           <div className="sm:col-span-2">
@@ -152,14 +195,14 @@ function Step3Review({ form, datasetId, canPublish, hasLiveVersion, onEditMetada
       <Card>
         <CardHeader className="flex-row items-center justify-between">
           <CardTitle>Publishing Settings</CardTitle>
-          <button
-            type="button"
-            aria-label="Edit publishing settings"
-            onClick={onEditMetadata}
-            className="flex size-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-primary"
-          >
-            <Pencil className="size-4" />
-          </button>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button type="button" variant="ghost" size="icon" aria-label="Edit publishing settings" onClick={onEditMetadata}>
+                <Pencil className="size-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="top">Edit publishing settings</TooltipContent>
+          </Tooltip>
         </CardHeader>
         <CardContent className="grid grid-cols-1 gap-5 sm:grid-cols-2">
           <ReviewField
@@ -245,6 +288,8 @@ function Step3Review({ form, datasetId, canPublish, hasLiveVersion, onEditMetada
           </CardContent>
         </Card>
       )}
+
+      {datasetId && <ChartsSection datasetId={datasetId} />}
 
       {datasetId && <UsedInSection datasetId={datasetId} />}
 

@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { Building2, UploadCloud } from 'lucide-react'
+import { Building2 } from 'lucide-react'
 
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
@@ -8,8 +8,9 @@ import { Button } from '@/components/ui/button'
 import { SearchableSelect } from '@/components/ui/searchable-select'
 import { FieldError } from '@/components/ui/field-error'
 import { useConfirm } from '@/components/ui/confirm-dialog'
+import { FileUploadField } from '@/components/shared/FileUploadField'
 import { ORG_SECTOR_OPTIONS, MAX_IMAGE_BYTES, SUPPORTED_IMAGE_EXTENSIONS, type Organisation } from '@/types/event'
-import { validateAssetFile, buildUploadedAsset, type UploadedAsset } from '@/lib/generic-upload'
+import type { UploadedAsset } from '@/lib/generic-upload'
 
 interface AddOrganisationFormProps {
   open: boolean
@@ -24,7 +25,6 @@ function AddOrganisationForm({ open, onOpenChange, onCreate }: AddOrganisationFo
   const [sectorType, setSectorType] = React.useState('')
   const [logo, setLogo] = React.useState<UploadedAsset | null>(null)
   const [errors, setErrors] = React.useState<{ name?: string; sectorType?: string; logo?: string }>({})
-  const inputRef = React.useRef<HTMLInputElement>(null)
 
   React.useEffect(() => {
     if (open) {
@@ -35,16 +35,6 @@ function AddOrganisationForm({ open, onOpenChange, onCreate }: AddOrganisationFo
       setErrors({})
     }
   }, [open])
-
-  const handleLogoFile = async (file: File) => {
-    const error = validateAssetFile(file, { extensions: SUPPORTED_IMAGE_EXTENSIONS, maxBytes: MAX_IMAGE_BYTES })
-    if (error) {
-      setErrors((prev) => ({ ...prev, logo: error }))
-      return
-    }
-    setErrors((prev) => ({ ...prev, logo: undefined }))
-    setLogo(await buildUploadedAsset(file, true))
-  }
 
   const hasUnsavedChanges = name.trim() !== '' || url.trim() !== '' || sectorType !== '' || logo !== null
 
@@ -135,47 +125,21 @@ function AddOrganisationForm({ open, onOpenChange, onCreate }: AddOrganisationFo
               <FieldError message={errors.sectorType} />
             </div>
 
-            <div>
-              <Label>
-                Logo <span className="text-destructive">*</span>
-              </Label>
-              <div className="mt-1.5">
-                {logo ? (
-                  <div className="flex items-center gap-3 rounded-lg border border-border p-3">
-                    {logo.dataUrl ? (
-                      <img src={logo.dataUrl} alt="" className="size-10 shrink-0 rounded-md border border-border object-cover" />
-                    ) : (
-                      <Building2 className="size-10 shrink-0 text-muted-foreground" />
-                    )}
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-medium text-foreground">{logo.name}</p>
-                      <p className="text-xs text-muted-foreground">{logo.sizeLabel}</p>
-                    </div>
-                    <Button type="button" variant="outline" size="sm" onClick={() => inputRef.current?.click()}>
-                      Replace
-                    </Button>
-                  </div>
-                ) : (
-                  <Button type="button" variant="outline" size="sm" onClick={() => inputRef.current?.click()}>
-                    <UploadCloud className="size-4" />
-                    Upload Logo
-                  </Button>
-                )}
-                <input
-                  ref={inputRef}
-                  type="file"
-                  className="hidden"
-                  accept={SUPPORTED_IMAGE_EXTENSIONS.map((ext) => `.${ext}`).join(',')}
-                  onChange={(e) => {
-                    const file = e.target.files?.[0]
-                    if (file) handleLogoFile(file)
-                    e.target.value = ''
-                  }}
-                />
-              </div>
-              <FieldError message={errors.logo} />
-              <p className="mt-1.5 text-xs text-muted-foreground">JPG, PNG, or WEBP. Maximum 10MB.</p>
-            </div>
+            <FileUploadField
+              id="org-logo"
+              label="Logo"
+              required
+              value={logo}
+              onChange={(asset) => {
+                setLogo(asset)
+                setErrors((prev) => ({ ...prev, logo: undefined }))
+              }}
+              extensions={SUPPORTED_IMAGE_EXTENSIONS}
+              maxBytes={MAX_IMAGE_BYTES}
+              error={errors.logo}
+              fallbackIcon={Building2}
+              uploadLabel="Upload Logo"
+            />
           </div>
         </div>
 

@@ -4,15 +4,17 @@ import { BarChart3, CheckCircle2, Search } from 'lucide-react'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
-import { MOCK_CHARTS, type ChartRecord } from '@/lib/mock-charts'
+import { useAppData } from '@/context/AppDataContext'
+import { CHART_TYPE_OPTIONS } from '@/types/chart'
 
 interface ChartSelectDrawerProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  onSelect: (chart: ChartRecord) => void
+  onSelect: (chart: { id: string; title: string }) => void
 }
 
 function ChartSelectDrawer({ open, onOpenChange, onSelect }: ChartSelectDrawerProps) {
+  const { charts, datasets } = useAppData()
   const [query, setQuery] = React.useState('')
   const [selectedId, setSelectedId] = React.useState<string | null>(null)
   const [previewId, setPreviewId] = React.useState<string | null>(null)
@@ -25,13 +27,15 @@ function ChartSelectDrawer({ open, onOpenChange, onSelect }: ChartSelectDrawerPr
     }
   }, [open])
 
+  const publishedCharts = charts.filter((c) => c.status === 'published')
+
   const q = query.trim().toLowerCase()
-  const results = MOCK_CHARTS.filter((c) => !q || c.title.toLowerCase().includes(q))
-  const selected = MOCK_CHARTS.find((c) => c.id === selectedId)
+  const results = publishedCharts.filter((c) => !q || (c.form.name || '').toLowerCase().includes(q))
+  const selected = publishedCharts.find((c) => c.id === selectedId)
 
   const handleConnect = () => {
     if (!selected) return
-    onSelect(selected)
+    onSelect({ id: selected.id, title: selected.form.name || 'Untitled chart' })
   }
 
   return (
@@ -62,6 +66,14 @@ function ChartSelectDrawer({ open, onOpenChange, onSelect }: ChartSelectDrawerPr
               {results.map((chart) => {
                 const isSelected = selectedId === chart.id
                 const isPreviewing = previewId === chart.id
+                const title = chart.form.name || 'Untitled chart'
+                const datasetName = chart.form.datasetId
+                  ? datasets.find((d) => d.id === chart.form.datasetId)?.form.metadata.name
+                  : undefined
+                const typeLabel = chart.form.chartType
+                  ? CHART_TYPE_OPTIONS.find((o) => o.value === chart.form.chartType)?.label
+                  : undefined
+
                 return (
                   <div
                     key={chart.id}
@@ -79,7 +91,8 @@ function ChartSelectDrawer({ open, onOpenChange, onSelect }: ChartSelectDrawerPr
                         {isSelected ? <CheckCircle2 className="size-5 text-primary" /> : <BarChart3 className="size-4" />}
                       </div>
                       <div className="min-w-0 flex-1">
-                        <p className="truncate text-sm font-medium text-foreground">{chart.title}</p>
+                        <p className="truncate text-sm font-medium text-foreground">{title}</p>
+                        {datasetName && <p className="truncate text-xs text-muted-foreground">{datasetName}</p>}
                       </div>
                     </button>
                     <button
@@ -91,7 +104,8 @@ function ChartSelectDrawer({ open, onOpenChange, onSelect }: ChartSelectDrawerPr
                     </button>
                     {isPreviewing && (
                       <div className="mt-2 rounded-md bg-muted/50 p-3 text-xs text-muted-foreground">
-                        {chart.description}
+                        {typeLabel ? `${typeLabel} chart` : 'Chart'}
+                        {datasetName ? ` built from ${datasetName}.` : '.'}
                       </div>
                     )}
                   </div>

@@ -1,6 +1,9 @@
 import * as React from 'react'
 import { Check, Pencil, X } from 'lucide-react'
 
+import { Button } from '@/components/ui/button'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+
 interface WorkspaceHeaderProps {
   saved: boolean
   title?: string
@@ -64,14 +67,21 @@ function WorkspaceHeader({
           <div className="flex min-w-0 items-center gap-1.5">
             <h1 className="truncate text-lg font-semibold text-primary">{title}</h1>
             {onTitleChange && (
-              <button
-                type="button"
-                aria-label="Edit title"
-                onClick={() => setIsEditing(true)}
-                className="flex size-7 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-primary"
-              >
-                <Pencil className="size-3.5" />
-              </button>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    aria-label="Edit title"
+                    onClick={() => setIsEditing(true)}
+                    className="size-7 shrink-0"
+                  >
+                    <Pencil className="size-3.5" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="top">Edit title</TooltipContent>
+              </Tooltip>
             )}
           </div>
         )}

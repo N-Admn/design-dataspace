@@ -14,7 +14,7 @@ const ECOSYSTEM_ITEMS = NAV_GROUPS.find((g) => g.key === 'contribution')?.items 
 interface ResumeItem {
   id: string
   title: string
-  moduleLabel: 'Dataset' | 'Event' | 'Use Case'
+  moduleLabel: 'Dataset' | 'Event' | 'Use Case' | 'Collaborative'
   status: 'pending' | 'draft'
   sortKey: number
   onContinue: () => void
@@ -23,7 +23,7 @@ interface ResumeItem {
 function DashboardPage() {
   const navigate = useNavigate()
   const toast = useToast()
-  const { datasets, events, useCases } = useAppData()
+  const { datasets, events, useCases, collaboratives } = useAppData()
 
   const comingSoon = (label: string) =>
     toast({ title: `${label} coming soon`, description: 'This area isn’t available yet.' })
@@ -61,7 +61,18 @@ function DashboardPage() {
       onContinue: () => navigate('/dashboard/use-cases/new', { state: { useCaseId: u.id, initialStep: 1 } }),
     }))
 
-  const allResumeItems = [...resumeDatasets, ...resumeEvents, ...resumeUseCases]
+  const resumeCollaboratives: ResumeItem[] = collaboratives
+    .filter((c) => c.status === 'pending' || c.status === 'draft')
+    .map((c) => ({
+      id: `collaborative-${c.id}`,
+      title: c.form.metadata.name || 'Untitled Collaborative',
+      moduleLabel: 'Collaborative',
+      status: c.status as 'pending' | 'draft',
+      sortKey: parseAppTimestamp(c.updatedAt).getTime(),
+      onContinue: () => navigate('/dashboard/collaboratives/new', { state: { collaborativeId: c.id, initialStep: 1 } }),
+    }))
+
+  const allResumeItems = [...resumeDatasets, ...resumeEvents, ...resumeUseCases, ...resumeCollaboratives]
   const pendingItems = allResumeItems.filter((i) => i.status === 'pending').sort((a, b) => b.sortKey - a.sortKey)
   const draftItems = allResumeItems.filter((i) => i.status === 'draft').sort((a, b) => b.sortKey - a.sortKey)
   const resumeItems = [...pendingItems, ...draftItems].slice(0, 5)
@@ -74,7 +85,7 @@ function DashboardPage() {
           Welcome to CivicDataSpace
         </h1>
         <p className="mt-3 whitespace-nowrap text-sm text-muted-foreground">
-          Create, manage and share civic data, knowledge and tools through CivicDataSpace.
+          Create, manage and share data, knowledge and tools through CivicDataSpace.
         </p>
       </div>
 

@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { UploadCloud } from 'lucide-react'
+import { FileText } from 'lucide-react'
 
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
@@ -9,13 +9,14 @@ import { Button } from '@/components/ui/button'
 import { SearchableSelect } from '@/components/ui/searchable-select'
 import { FieldError } from '@/components/ui/field-error'
 import { useConfirm } from '@/components/ui/confirm-dialog'
+import { FileUploadField } from '@/components/shared/FileUploadField'
 import {
   MAX_PUBLICATION_BYTES,
   PUBLICATION_TYPE_OPTIONS,
   SUPPORTED_PUBLICATION_EXTENSIONS,
   type EventPublication,
 } from '@/types/event'
-import { validateAssetFile, buildUploadedAsset } from '@/lib/generic-upload'
+import type { UploadedAsset } from '@/lib/generic-upload'
 
 interface PublicationFormProps {
   open: boolean
@@ -31,42 +32,25 @@ function PublicationForm({ open, onOpenChange, onAdd, initial }: PublicationForm
   const [title, setTitle] = React.useState(initial?.title ?? '')
   const [description, setDescription] = React.useState(initial?.description ?? '')
   const [publicationType, setPublicationType] = React.useState(initial?.publicationType ?? '')
-  const [fileError, setFileError] = React.useState<string | undefined>(undefined)
   const [errors, setErrors] = React.useState<{ title?: string; publicationType?: string; file?: string }>({})
-  const [pendingFile, setPendingFile] = React.useState<File | null>(null)
-  const inputRef = React.useRef<HTMLInputElement>(null)
+  const [pendingAsset, setPendingAsset] = React.useState<UploadedAsset | null>(null)
 
   React.useEffect(() => {
     if (open) {
       setTitle(initial?.title ?? '')
       setDescription(initial?.description ?? '')
       setPublicationType(initial?.publicationType ?? '')
-      setPendingFile(null)
-      setFileError(undefined)
+      setPendingAsset(null)
       setErrors({})
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open])
 
-  const handleFile = (file: File) => {
-    const error = validateAssetFile(file, {
-      extensions: SUPPORTED_PUBLICATION_EXTENSIONS,
-      maxBytes: MAX_PUBLICATION_BYTES,
-    })
-    if (error) {
-      setFileError(error)
-      setPendingFile(null)
-      return
-    }
-    setFileError(undefined)
-    setPendingFile(file)
-  }
-
   const hasUnsavedChanges =
     title.trim() !== (initial?.title ?? '') ||
     description.trim() !== (initial?.description ?? '') ||
     publicationType !== (initial?.publicationType ?? '') ||
-    pendingFile !== null
+    pendingAsset !== null
 
   const requestClose = async () => {
     if (hasUnsavedChanges) {
@@ -82,16 +66,15 @@ function PublicationForm({ open, onOpenChange, onAdd, initial }: PublicationForm
     onOpenChange(false)
   }
 
-  const handleSubmit = async () => {
+  const handleSubmit = () => {
     const nextErrors: typeof errors = {}
     if (!title.trim()) nextErrors.title = 'Enter a publication title.'
     if (!publicationType) nextErrors.publicationType = 'Select a publication type.'
-    if (!pendingFile) nextErrors.file = 'Upload a file.'
+    if (!pendingAsset) nextErrors.file = 'Upload a file.'
     if (Object.keys(nextErrors).length > 0) {
       setErrors(nextErrors)
       return
     }
-    const asset = await buildUploadedAsset(pendingFile!)
     let id = initial?.id
     if (!id) {
       publicationIdCounter += 1
@@ -102,7 +85,7 @@ function PublicationForm({ open, onOpenChange, onAdd, initial }: PublicationForm
       title: title.trim(),
       description: description.trim(),
       publicationType,
-      file: asset,
+      file: pendingAsset!,
     })
   }
 
@@ -169,44 +152,20 @@ function PublicationForm({ open, onOpenChange, onAdd, initial }: PublicationForm
               <FieldError message={errors.publicationType} />
             </div>
 
-            <div>
-              <Label>
-                File Upload <span className="text-destructive">*</span>
-              </Label>
-              <div className="mt-1.5">
-                {pendingFile ? (
-                  <div className="flex items-center gap-3 rounded-lg border border-border p-3">
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-medium text-foreground">{pendingFile.name}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {(pendingFile.size / (1024 * 1024)).toFixed(1)}MB
-                      </p>
-                    </div>
-                    <Button type="button" variant="outline" size="sm" onClick={() => inputRef.current?.click()}>
-                      Replace
-                    </Button>
-                  </div>
-                ) : (
-                  <Button type="button" variant="outline" size="sm" onClick={() => inputRef.current?.click()}>
-                    <UploadCloud className="size-4" />
-                    Browse File
-                  </Button>
-                )}
-                <input
-                  ref={inputRef}
-                  type="file"
-                  className="hidden"
-                  accept={SUPPORTED_PUBLICATION_EXTENSIONS.map((ext) => `.${ext}`).join(',')}
-                  onChange={(e) => {
-                    const file = e.target.files?.[0]
-                    if (file) handleFile(file)
-                    e.target.value = ''
-                  }}
-                />
-              </div>
-              <FieldError message={errors.file ?? fileError} />
-              <p className="mt-1.5 text-xs text-muted-foreground">PDF, DOCX, PPTX, or XLSX. Maximum 10MB.</p>
-            </div>
+            <FileUploadField
+              id="publication-file"
+              label="File Upload"
+              required
+              value={pendingAsset}
+              onChange={(asset) => {
+                setPendingAsset(asset)
+                setErrors((prev) => ({ ...prev, file: undefined }))
+              }}
+              extensions={SUPPORTED_PUBLICATION_EXTENSIONS}
+              maxBytes={MAX_PUBLICATION_BYTES}
+              error={errors.file}
+              fallbackIcon={FileText}
+            />
           </div>
         </div>
 

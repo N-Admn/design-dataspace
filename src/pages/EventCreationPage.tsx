@@ -138,14 +138,24 @@ function EventCreationPage() {
       return
     }
     const ok = await confirm({
-      title: 'Publish event?',
-      description: `You're about to publish "${form.metadata.title}". Once published, this event will be visible to the public.`,
-      confirmLabel: 'Publish Event',
+      title: hasLiveVersion ? 'Submit changes?' : 'Publish event?',
+      description: hasLiveVersion
+        ? `Your changes to "${form.metadata.title}" will be submitted for review before going live.`
+        : `You're about to publish "${form.metadata.title}". Once published, this event will be visible to the public.`,
+      confirmLabel: hasLiveVersion ? 'Submit Changes' : 'Publish Event',
     })
     if (!ok) return
-    upsertEvent(editingId, 'published', form)
+    const nextStatus = hasLiveVersion ? 'pending' : 'published'
+    upsertEvent(editingId, nextStatus, form)
     setLastSavedForm(form)
-    toast({ title: 'Event published', description: 'Your event is now publicly available.', variant: 'success' })
+    toast({
+      title: nextStatus === 'pending' ? 'Changes submitted' : 'Event published',
+      description:
+        nextStatus === 'pending'
+          ? 'Your changes are pending review. The current published version remains live.'
+          : 'Your event is now publicly available.',
+      variant: 'success',
+    })
     navigate('/dashboard/events')
   }
 
@@ -172,6 +182,7 @@ function EventCreationPage() {
           <EventPublishReview
             form={form}
             canPublish={isEventInformationValid(form.metadata)}
+            hasLiveVersion={hasLiveVersion}
             onEditSection={(targetStep) => setStep(targetStep)}
             onPublish={handlePublish}
           />

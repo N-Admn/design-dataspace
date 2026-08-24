@@ -1,4 +1,18 @@
 import type { ReactNode } from 'react'
+import { Link } from 'react-router-dom'
+import { ArrowLeft } from 'lucide-react'
+
+function BackToHome() {
+  return (
+    <Link
+      to="/"
+      className="mx-auto flex w-full max-w-sm items-center gap-1.5 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
+    >
+      <ArrowLeft className="size-3.5" />
+      Back to Home
+    </Link>
+  )
+}
 
 function Logo({ large = false }: { large?: boolean }) {
   return (
@@ -42,7 +56,8 @@ function AuthLayout({ children }: { children: ReactNode }) {
       </div>
 
       <div className="flex flex-1 flex-col justify-center px-6 py-10 sm:px-10">
-        <div className="mx-auto w-full max-w-sm">{children}</div>
+        <BackToHome />
+        <div className="mx-auto mt-4 w-full max-w-sm">{children}</div>
         <AuthFooter className="mx-auto mt-12 w-full max-w-sm lg:hidden" />
       </div>
 

@@ -1,13 +1,16 @@
 import * as React from 'react'
-import { FileSpreadsheet, Globe, Link2, Trash2, UploadCloud } from 'lucide-react'
+import { FileSpreadsheet, Globe, Link2, Trash2 } from 'lucide-react'
 
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { FieldError } from '@/components/ui/field-error'
+import { FileUploadField } from '@/components/shared/FileUploadField'
 import { cn } from '@/lib/utils'
-import { validateAssetFile } from '@/lib/generic-upload'
+import type { UploadedAsset } from '@/lib/generic-upload'
 import type { DatasetResource, DatasetResourceType } from '@/types/dataset'
+
+const MAX_CSV_BYTES = 50 * 1024 * 1024
 
 interface DatasetResourceStepProps {
   resources: DatasetResource[]
@@ -26,46 +29,20 @@ const RESOURCE_TABS: { type: DatasetResourceType; label: string; icon: typeof Fi
 
 function DatasetResourceStep({ resources, onAddResource, onRemoveResource, error }: DatasetResourceStepProps) {
   const [type, setType] = React.useState<DatasetResourceType>('csv')
-  const [csvFile, setCsvFile] = React.useState<File | null>(null)
+  const [csvAsset, setCsvAsset] = React.useState<UploadedAsset | null>(null)
   const [csvError, setCsvError] = React.useState<string | undefined>(undefined)
   const [apiUrl, setApiUrl] = React.useState('')
   const [linkUrl, setLinkUrl] = React.useState('')
-  const inputRef = React.useRef<HTMLInputElement>(null)
-
-  const handleCsvFile = (file: File) => {
-    const err = validateAssetFile(file, { extensions: ['csv'], maxBytes: 50 * 1024 * 1024 })
-    if (err) {
-      setCsvError(err)
-      setCsvFile(null)
-      return
-    }
-    setCsvError(undefined)
-    setCsvFile(file)
-  }
 
   const handleAdd = () => {
     resourceIdCounter += 1
     if (type === 'csv') {
-      if (!csvFile) {
+      if (!csvAsset) {
         setCsvError('Upload a CSV file.')
         return
       }
-      onAddResource({
-        id: `mini-resource-${resourceIdCounter}`,
-        type: 'csv',
-        file: {
-          id: `mini-resource-file-${resourceIdCounter}`,
-          name: csvFile.name,
-          extension: 'CSV',
-          sizeLabel:
-            csvFile.size >= 1024 * 1024
-              ? `${(csvFile.size / (1024 * 1024)).toFixed(1)}MB`
-              : `${(csvFile.size / 1024).toFixed(1)}KB`,
-          sizeBytes: csvFile.size,
-          uploadedAt: new Date().toLocaleString(),
-        },
-      })
-      setCsvFile(null)
+      onAddResource({ id: `mini-resource-${resourceIdCounter}`, type: 'csv', file: csvAsset })
+      setCsvAsset(null)
     } else if (type === 'api') {
       if (!apiUrl.trim()) return
       onAddResource({ id: `mini-resource-${resourceIdCounter}`, type: 'api', url: apiUrl.trim() })
@@ -102,41 +79,19 @@ function DatasetResourceStep({ resources, onAddResource, onRemoveResource, error
 
       {type === 'csv' && (
         <div>
-          {csvFile ? (
-            <div className="flex items-center gap-3 rounded-lg border border-border p-3">
-              <FileSpreadsheet className="size-6 shrink-0 text-muted-foreground" />
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium text-foreground">{csvFile.name}</p>
-                <p className="text-xs text-muted-foreground">
-                  {(csvFile.size / 1024).toFixed(0)}KB · Ready to add
-                </p>
-              </div>
-              <Button type="button" variant="ghost" size="icon" onClick={() => setCsvFile(null)}>
-                <Trash2 className="size-4" />
-              </Button>
-            </div>
-          ) : (
-            <div className="flex flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-border bg-muted/40 px-6 py-8 text-center">
-              <UploadCloud className="size-7 text-muted-foreground" />
-              <p className="text-sm text-foreground">Drop file here or click to upload</p>
-              <input
-                ref={inputRef}
-                type="file"
-                accept=".csv"
-                className="hidden"
-                onChange={(e) => {
-                  const file = e.target.files?.[0]
-                  if (file) handleCsvFile(file)
-                  e.target.value = ''
-                }}
-              />
-              <Button type="button" variant="outline" size="sm" onClick={() => inputRef.current?.click()}>
-                Browse File
-              </Button>
-              <p className="text-xs text-muted-foreground">Supported: CSV</p>
-            </div>
-          )}
-          <FieldError message={csvError} />
+          <FileUploadField
+            id="mini-resource-csv"
+            label="CSV file"
+            value={csvAsset}
+            onChange={(asset) => {
+              setCsvAsset(asset)
+              setCsvError(undefined)
+            }}
+            extensions={['csv']}
+            maxBytes={MAX_CSV_BYTES}
+            error={csvError}
+            fallbackIcon={FileSpreadsheet}
+          />
           <Button type="button" variant="outline" size="sm" className="mt-3" onClick={handleAdd}>
             Add Resource
           </Button>

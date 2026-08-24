@@ -1,12 +1,12 @@
 import { AlertTriangle, CheckCircle2, ExternalLink } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
-import { validateUseCaseMetadata, validateUseCaseIntroduction, isUseCaseReadyToPublish } from '@/lib/usecase-validation'
+import { validateUseCaseStart, isUseCaseReadyToPublish } from '@/lib/usecase-validation'
 import type { UseCaseFormState } from '@/types/usecase'
 
 interface UseCaseStep4ReviewProps {
   form: UseCaseFormState
-  onEditStep: (step: 1 | 2) => void
+  onEditStep: (step: 1 | 2 | 3) => void
   onPreview: () => void
 }
 
@@ -34,20 +34,17 @@ function ReadinessRow({ label, ok, detail, onEdit }: { label: string; ok: boolea
 }
 
 function UseCaseStep4Review({ form, onEditStep, onPreview }: UseCaseStep4ReviewProps) {
-  const metadataErrors = validateUseCaseMetadata(form)
-  const introErrors = validateUseCaseIntroduction(form)
-  const metadataOk = Object.keys(metadataErrors).length === 0
-  const introOk = Object.keys(introErrors).length === 0
+  const startErrors = validateUseCaseStart(form)
+  const startOk = Object.keys(startErrors).length === 0
   const ready = isUseCaseReadyToPublish(form)
 
-  const metadataDetail = Object.values(metadataErrors).filter(Boolean).join(' ')
-  const introDetail = Object.values(introErrors).filter(Boolean).join(' ')
+  const startDetail = Object.values(startErrors).filter(Boolean).join(' ')
 
   return (
     <div className="flex flex-col gap-6">
       <div>
         <h2 className="text-lg font-semibold text-primary">Review</h2>
-        <p className="mt-1 text-sm text-muted-foreground">Check that your Use Case is ready, then preview it.</p>
+        <p className="mt-1 text-sm text-muted-foreground">Check that your Use Case is ready.</p>
       </div>
 
       <div className="rounded-xl border border-border bg-card p-5">
@@ -55,10 +52,9 @@ function UseCaseStep4Review({ form, onEditStep, onPreview }: UseCaseStep4ReviewP
           {ready ? 'Ready to publish' : 'Not ready to publish'}
         </p>
         <div className="mt-2 divide-y divide-border">
-          <ReadinessRow label="Metadata" ok={metadataOk} detail={metadataDetail} onEdit={() => onEditStep(1)} />
-          <ReadinessRow label="Introduction" ok={introOk} detail={introDetail} onEdit={() => onEditStep(2)} />
-          <ReadinessRow label="Content" ok />
-          <ReadinessRow label="Connections" ok />
+          <ReadinessRow label="Start" ok={startOk} detail={startDetail} onEdit={() => onEditStep(1)} />
+          <ReadinessRow label="Builder" ok />
+          <ReadinessRow label="Connect" ok />
         </div>
       </div>
 

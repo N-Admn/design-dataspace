@@ -10,7 +10,6 @@ import {
   Pencil,
   Plus,
   Trash2,
-  UploadCloud,
   X,
 } from 'lucide-react'
 
@@ -23,6 +22,7 @@ import { Input } from '@/components/ui/input'
 import { FieldError } from '@/components/ui/field-error'
 import { SearchableSelect } from '@/components/ui/searchable-select'
 import { FilePreviewModal } from '@/components/dataset/FilePreviewModal'
+import { DropzoneUploadField } from '@/components/shared/DropzoneUploadField'
 import { useToast } from '@/components/ui/toast'
 import { cn } from '@/lib/utils'
 import { validateIncomingFiles } from '@/lib/file-validation'
@@ -258,10 +258,8 @@ function Step2DataFiles({
   onUpdateResource,
   onRemoveResource,
 }: Step2DataFilesProps) {
-  const [isDragging, setIsDragging] = React.useState(false)
   const [uploadErrors, setUploadErrors] = React.useState<string[]>([])
   const [previewFile, setPreviewFile] = React.useState<DatasetFile | null>(null)
-  const inputRef = React.useRef<HTMLInputElement>(null)
   const toast = useToast()
 
   const [resourceType, setResourceType] = React.useState<DatasetResourceType>('csv')
@@ -437,55 +435,14 @@ function Step2DataFiles({
               <CardTitle>Upload Dataset File</CardTitle>
             </CardHeader>
             <CardContent className="flex flex-col gap-4">
-              <div
-                onDragOver={(e) => {
-                  e.preventDefault()
-                  setIsDragging(true)
-                }}
-                onDragLeave={() => setIsDragging(false)}
-                onDrop={(e) => {
-                  e.preventDefault()
-                  setIsDragging(false)
-                  if (e.dataTransfer.files.length > 0) handleIncoming(e.dataTransfer.files)
-                }}
-                className={cn(
-                  'flex flex-col items-center justify-center gap-3 rounded-lg border-2 border-dashed px-6 py-8 text-center transition-colors',
-                  isDragging ? 'border-primary bg-primary/5' : 'border-border bg-muted/40',
-                )}
-              >
-                <UploadCloud className="size-9 text-muted-foreground" />
-                <p className="text-sm text-foreground">
-                  Drag and drop multiple files here, or click to browse.
-                </p>
-
-                <div className="mt-1 text-xs text-muted-foreground">
-                  <p className="font-medium text-foreground">Supported file types:</p>
-                  <div className="mt-1.5 flex flex-wrap items-center justify-center gap-1.5">
-                    {SUPPORTED_FILE_EXTENSIONS.map((ext) => (
-                      <Badge key={ext} variant="muted">
-                        {ext.toUpperCase()}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-
-                <input
-                  ref={inputRef}
-                  type="file"
-                  multiple
-                  className="hidden"
-                  accept={SUPPORTED_FILE_EXTENSIONS.map((ext) => `.${ext}`).join(',')}
-                  onChange={(e) => {
-                    if (e.target.files && e.target.files.length > 0) handleIncoming(e.target.files)
-                    e.target.value = ''
-                  }}
-                />
-                <Button type="button" variant="outline" size="sm" onClick={() => inputRef.current?.click()}>
-                  Browse File
-                </Button>
-
-                <p className="text-xs text-muted-foreground">Maximum file size limit: 50MB</p>
-              </div>
+              <DropzoneUploadField
+                extensions={SUPPORTED_FILE_EXTENSIONS}
+                maxBytes={50 * 1024 * 1024}
+                multiple
+                onFiles={handleIncoming}
+                showExtensionBadges
+                formatHint="Maximum file size limit: 50MB"
+              />
 
               {uploadErrors.length > 0 && (
                 <div className="rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2">

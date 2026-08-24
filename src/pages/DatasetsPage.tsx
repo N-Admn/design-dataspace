@@ -14,7 +14,7 @@ interface DatasetNavState {
 }
 
 function DatasetsPage() {
-  const { datasets, deleteDataset, events } = useAppData()
+  const { datasets, deleteDataset, upsertDataset, events } = useAppData()
   const toast = useToast()
   const confirm = useConfirm()
   const location = useLocation()
@@ -65,6 +65,36 @@ function DatasetsPage() {
     toast({ title: 'Dataset deleted', variant: 'success' })
   }
 
+  const handleDiscardDataset = async (id: string) => {
+    const record = datasets.find((d) => d.id === id)
+    if (!record || !record.publishedForm) return
+    const name = record.form.metadata.name || 'this dataset'
+    const ok = await confirm({
+      title: 'Discard pending changes?',
+      description: `This will discard the pending changes to "${name}" and revert to the last published version. This cannot be undone.`,
+      confirmLabel: 'Discard Changes',
+      variant: 'destructive',
+    })
+    if (!ok) return
+    upsertDataset(id, 'published', record.publishedForm)
+    toast({ title: 'Changes discarded', description: 'Reverted to the last published version.', variant: 'success' })
+  }
+
+  const handleUnpublishDataset = async (id: string) => {
+    const record = datasets.find((d) => d.id === id)
+    if (!record) return
+    const name = record.form.metadata.name || 'this dataset'
+    const ok = await confirm({
+      title: 'Unpublish this dataset?',
+      description: `"${name}" will be removed from public view and moved back to Draft. You can continue editing and publish it again later.`,
+      confirmLabel: 'Unpublish',
+      variant: 'destructive',
+    })
+    if (!ok) return
+    upsertDataset(id, 'draft', record.form)
+    toast({ title: 'Dataset unpublished', description: 'Moved back to Draft.', variant: 'success' })
+  }
+
   if (view === 'list') {
     return (
       <DatasetListView
@@ -73,6 +103,8 @@ function DatasetsPage() {
         onViewDataset={handleViewDataset}
         onEditDataset={handleEditDataset}
         onDeleteDataset={handleDeleteDataset}
+        onDiscardDataset={handleDiscardDataset}
+        onUnpublishDataset={handleUnpublishDataset}
       />
     )
   }

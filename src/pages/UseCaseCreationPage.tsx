@@ -20,15 +20,19 @@ import { emptyUseCaseForm, type UseCaseFormState, type UseCaseMetadata } from '@
 type UseCaseStep = 1 | 2 | 3 | 4
 
 const USE_CASE_STEPS = [
-  { step: 1, label: 'Metadata', description: 'Classify and describe', icon: FileText },
+  { step: 1, label: 'Start', description: 'Name & classify', icon: FileText },
   { step: 2, label: 'Builder', description: 'Tell the story', icon: LayoutTemplate },
-  { step: 3, label: 'Connections', description: 'Datasets & people', icon: Share2 },
+  { step: 3, label: 'Connect', description: 'Datasets & people', icon: Share2 },
   { step: 4, label: 'Review', description: 'Check readiness', icon: ListChecks },
 ]
 
 interface UseCaseNavState {
   useCaseId?: string
   initialStep?: UseCaseStep
+  /** Set when this flow was launched from another module (e.g. Collaborative → Content →
+   * Create New Use Case) so completion can hand the user back to that originating context. */
+  returnTo?: string
+  returnState?: Record<string, unknown>
 }
 
 function UseCaseCreationPage() {
@@ -48,7 +52,7 @@ function UseCaseCreationPage() {
   const [saved, setSaved] = useState(true)
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(false)
 
-  const stepLabel = USE_CASE_STEPS.find((s) => s.step === step)?.label ?? 'Metadata'
+  const stepLabel = USE_CASE_STEPS.find((s) => s.step === step)?.label ?? 'Start'
   useEffect(() => {
     setContextLabel(`Use Cases → ${stepLabel}`)
   }, [stepLabel, setContextLabel])
@@ -70,12 +74,20 @@ function UseCaseCreationPage() {
     setForm((prev) => ({ ...prev, metadata: { ...prev.metadata, [field]: value } }))
   }
 
+  const returnToOrigin = () => {
+    if (navState?.returnTo) {
+      navigate(navState.returnTo, { state: { ...navState.returnState, createdUseCaseId: editingId ?? undefined } })
+      return
+    }
+    navigate('/dashboard/use-cases')
+  }
+
   const handleClose = () => {
     if (hasUnsavedChanges) {
       setShowLeaveConfirm(true)
       return
     }
-    navigate('/dashboard/use-cases')
+    returnToOrigin()
   }
 
   const goToStep = (next: UseCaseStep) => {
@@ -106,6 +118,9 @@ function UseCaseCreationPage() {
           : 'Your use case has been saved as a draft.',
       variant: 'success',
     })
+    if (navState?.returnTo) {
+      navigate(navState.returnTo, { state: { ...navState.returnState, createdUseCaseId: id } })
+    }
   }
 
   const handlePreview = () => {
@@ -137,12 +152,7 @@ function UseCaseCreationPage() {
         )}
         {step === 2 && (
           <UseCaseStep2Builder
-            metadataTitle={form.metadata.title}
-            onMetadataTitleChange={(title) => updateMetadata('title', title)}
-            introduction={form.introduction}
-            onIntroductionChange={(field, value) =>
-              setForm((prev) => ({ ...prev, introduction: { ...prev.introduction, [field]: value } }))
-            }
+            metadata={form.metadata}
             blocks={form.blocks}
             onBlocksChange={(blocks) => setForm((prev) => ({ ...prev, blocks }))}
           />
@@ -173,11 +183,10 @@ function UseCaseCreationPage() {
         onSaveDraftAndExit={() => {
           setShowLeaveConfirm(false)
           handleSaveDraft()
-          navigate('/dashboard/use-cases')
         }}
         onDiscardAndExit={() => {
           setShowLeaveConfirm(false)
-          navigate('/dashboard/use-cases')
+          returnToOrigin()
         }}
       />
     </Card>

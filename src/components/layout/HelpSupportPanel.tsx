@@ -7,7 +7,6 @@ import {
   ChevronRight,
   Loader2,
   Paperclip,
-  Plus,
 } from 'lucide-react'
 
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
@@ -20,7 +19,8 @@ import { SearchableSelect } from '@/components/ui/searchable-select'
 import { useConfirm } from '@/components/ui/confirm-dialog'
 import { useAppData } from '@/context/AppDataContext'
 import { useHelpContext } from '@/context/HelpContext'
-import { validateAssetFile, buildUploadedAsset, type UploadedAsset } from '@/lib/generic-upload'
+import { FileUploadField } from '@/components/shared/FileUploadField'
+import type { UploadedAsset } from '@/lib/generic-upload'
 import {
   SUPPORT_TOPIC_OPTIONS,
   SUPPORT_ATTACHMENT_EXTENSIONS,
@@ -100,10 +100,8 @@ function HelpSupportPanel({ open, onOpenChange }: { open: boolean; onOpenChange:
   const [subject, setSubject] = React.useState('')
   const [message, setMessage] = React.useState('')
   const [attachment, setAttachment] = React.useState<UploadedAsset | null>(null)
-  const [attachmentError, setAttachmentError] = React.useState<string | undefined>(undefined)
   const [touched, setTouched] = React.useState<{ topic?: boolean; subject?: boolean; message?: boolean }>({})
   const [status, setStatus] = React.useState<SubmitStatus>('idle')
-  const attachmentInputRef = React.useRef<HTMLInputElement>(null)
 
   React.useEffect(() => {
     if (!open) return
@@ -113,7 +111,6 @@ function HelpSupportPanel({ open, onOpenChange }: { open: boolean; onOpenChange:
     setSubject('')
     setMessage('')
     setAttachment(null)
-    setAttachmentError(undefined)
     setTouched({})
     setStatus('idle')
   }, [open])
@@ -138,19 +135,6 @@ function HelpSupportPanel({ open, onOpenChange }: { open: boolean; onOpenChange:
       if (!ok) return
     }
     onOpenChange(false)
-  }
-
-  const handleAttachmentFile = async (file: File) => {
-    const error = validateAssetFile(file, {
-      extensions: SUPPORT_ATTACHMENT_EXTENSIONS,
-      maxBytes: MAX_SUPPORT_ATTACHMENT_BYTES,
-    })
-    if (error) {
-      setAttachmentError(error)
-      return
-    }
-    setAttachmentError(undefined)
-    setAttachment(await buildUploadedAsset(file))
   }
 
   const handleSend = async () => {
@@ -385,45 +369,17 @@ function HelpSupportPanel({ open, onOpenChange }: { open: boolean; onOpenChange:
                   <FieldError message={errors.message} />
                 </div>
 
-                <div>
-                  <Label>Attachment</Label>
-                  <p className="mt-0.5 text-xs text-muted-foreground">
-                    Optional · Screenshots or files that help explain the issue.
-                  </p>
-                  <div className="mt-1.5">
-                    {attachment ? (
-                      <div className="flex items-center gap-3 rounded-lg border border-border p-3">
-                        <Paperclip className="size-4 shrink-0 text-muted-foreground" />
-                        <span className="min-w-0 flex-1 truncate text-sm text-foreground">{attachment.name}</span>
-                        <Button type="button" variant="ghost" size="sm" onClick={() => setAttachment(null)}>
-                          Remove
-                        </Button>
-                      </div>
-                    ) : (
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => attachmentInputRef.current?.click()}
-                      >
-                        <Plus className="size-4" />
-                        Add attachment
-                      </Button>
-                    )}
-                    <input
-                      ref={attachmentInputRef}
-                      type="file"
-                      className="hidden"
-                      accept={SUPPORT_ATTACHMENT_EXTENSIONS.map((ext) => `.${ext}`).join(',')}
-                      onChange={(e) => {
-                        const file = e.target.files?.[0]
-                        if (file) handleAttachmentFile(file)
-                        e.target.value = ''
-                      }}
-                    />
-                  </div>
-                  <FieldError message={attachmentError} />
-                </div>
+                <FileUploadField
+                  id="support-attachment"
+                  label="Attachment"
+                  helperText="Optional · Screenshots or files that help explain the issue."
+                  value={attachment}
+                  onChange={setAttachment}
+                  extensions={SUPPORT_ATTACHMENT_EXTENSIONS}
+                  maxBytes={MAX_SUPPORT_ATTACHMENT_BYTES}
+                  fallbackIcon={Paperclip}
+                  uploadLabel="Add attachment"
+                />
 
                 <div>
                   <Label>Context</Label>

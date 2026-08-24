@@ -1,36 +1,28 @@
-import { BarChart3, Building2, CalendarDays, Database, LayoutDashboard, Link2, User } from 'lucide-react'
+import { BarChart3, Building2, Database, ExternalLink, User } from 'lucide-react'
 
 import { Badge } from '@/components/ui/badge'
 import { GEOGRAPHY_OPTIONS, SECTOR_OPTIONS } from '@/types/dataset'
-import { RUNNING_STATUS_OPTIONS, SDG_GOAL_OPTIONS, type UseCaseFormState } from '@/types/usecase'
+import { SDG_GOAL_OPTIONS, type UseCaseFormState } from '@/types/usecase'
 
 function optionLabel(options: { value: string; label: string }[], value: string): string {
   return options.find((o) => o.value === value)?.label ?? value
 }
 
-function isoDateLabel(value: string): string {
-  if (!value) return ''
-  const date = new Date(value)
-  if (Number.isNaN(date.getTime())) return value
-  return date.toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' })
-}
-
 function UseCasePreview({ form }: { form: UseCaseFormState }) {
-  const { metadata, introduction, blocks, connections } = form
+  const { metadata, blocks, connections } = form
 
   return (
     <div className="overflow-hidden rounded-xl border border-border bg-card">
       {/* Hero / Introduction */}
       <div className="border-b border-border">
-        {introduction.thumbnail?.dataUrl && (
-          <img src={introduction.thumbnail.dataUrl} alt="" className="h-56 w-full object-cover" />
+        {metadata.thumbnail?.dataUrl && (
+          <img src={metadata.thumbnail.dataUrl} alt="" className="h-56 w-full object-cover" />
         )}
         <div className="px-6 py-6">
           <h1 className="text-2xl font-semibold text-primary">{metadata.title || 'Untitled Use Case'}</h1>
-          {introduction.subtitle && <p className="mt-2 text-base text-muted-foreground">{introduction.subtitle}</p>}
+          {metadata.subtitle && <p className="mt-2 text-base text-muted-foreground">{metadata.subtitle}</p>}
 
           <div className="mt-3 flex flex-wrap items-center gap-1.5">
-            {metadata.runningStatus && <Badge variant="accent">{optionLabel(RUNNING_STATUS_OPTIONS, metadata.runningStatus)}</Badge>}
             {metadata.sectors.map((s) => (
               <Badge key={s} variant="secondary">
                 {optionLabel(SECTOR_OPTIONS, s)}
@@ -42,21 +34,6 @@ function UseCasePreview({ form }: { form: UseCaseFormState }) {
               </Badge>
             ))}
           </div>
-
-          {(metadata.startedOn || metadata.completedOn) && (
-            <p className="mt-3 flex items-center gap-1.5 text-xs text-muted-foreground">
-              <CalendarDays className="size-3.5" />
-              {metadata.startedOn && isoDateLabel(metadata.startedOn)}
-              {metadata.completedOn ? ` – ${isoDateLabel(metadata.completedOn)}` : metadata.startedOn ? ' – ongoing' : ''}
-            </p>
-          )}
-
-          {introduction.descriptionHtml && (
-            <div
-              className="prose-sm mt-4 text-sm text-foreground [&_a]:text-primary [&_a]:underline [&_ol]:list-decimal [&_ol]:pl-5 [&_ul]:list-disc [&_ul]:pl-5"
-              dangerouslySetInnerHTML={{ __html: introduction.descriptionHtml }}
-            />
-          )}
         </div>
       </div>
 
@@ -72,12 +49,12 @@ function UseCasePreview({ form }: { form: UseCaseFormState }) {
                 </Tag>
               )
             }
-            if (block.type === 'paragraph') {
+            if (block.type === 'text') {
               return (
                 <div
                   key={block.id}
                   className="prose-sm text-sm text-foreground [&_a]:text-primary [&_a]:underline [&_ol]:list-decimal [&_ol]:pl-5 [&_ul]:list-disc [&_ul]:pl-5"
-                  dangerouslySetInnerHTML={{ __html: block.html || '<p class="text-muted-foreground">Empty paragraph</p>' }}
+                  dangerouslySetInnerHTML={{ __html: block.html || '<p class="text-muted-foreground">Empty text block</p>' }}
                 />
               )
             }
@@ -109,6 +86,23 @@ function UseCasePreview({ form }: { form: UseCaseFormState }) {
                 </figure>
               )
             }
+            if (block.type === 'link') {
+              return (
+                <a
+                  key={block.id}
+                  href={block.url || '#'}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex items-start gap-3 rounded-lg border border-border p-4 transition-colors hover:bg-muted/40"
+                >
+                  <ExternalLink className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-medium text-primary">{block.label || block.url || 'Untitled link'}</p>
+                    {block.description && <p className="mt-0.5 text-xs text-muted-foreground">{block.description}</p>}
+                  </div>
+                </a>
+              )
+            }
             return (
               <div key={block.id} className="rounded-lg border-l-4 border-primary bg-primary/5 px-4 py-3.5">
                 <p className="text-base font-semibold text-primary">{block.highlight || 'Key highlight'}</p>
@@ -135,30 +129,8 @@ function UseCasePreview({ form }: { form: UseCaseFormState }) {
         </div>
       )}
 
-      {/* Dashboards / Charts */}
-      {(connections.charts.length > 0 || connections.dashboards.length > 0) && (
-        <div className="border-t border-border px-6 py-5">
-          <p className="text-sm font-semibold text-foreground">Dashboards / Charts</p>
-          <div className="mt-2 flex flex-col gap-1">
-            {connections.charts.map((c) => (
-              <div key={c.id} className="flex items-center gap-2 text-sm text-foreground">
-                <BarChart3 className="size-3.5 shrink-0 text-muted-foreground" />
-                <span className="min-w-0 flex-1 truncate">{c.title}</span>
-              </div>
-            ))}
-            {connections.dashboards.map((d) => (
-              <div key={d.id} className="flex items-center gap-2 text-sm text-foreground">
-                <LayoutDashboard className="size-3.5 shrink-0 text-muted-foreground" />
-                <span className="min-w-0 flex-1 truncate">{d.title}</span>
-                <Link2 className="size-3 shrink-0 text-muted-foreground" />
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
       {/* People & orgs */}
-      {(connections.contributors.length > 0 || connections.supportedBy.length > 0 || connections.partneredBy.length > 0) && (
+      {(connections.contributors.length > 0 || connections.organizations.length > 0) && (
         <div className="flex flex-col gap-4 border-t border-border px-6 py-5">
           {connections.contributors.length > 0 && (
             <div>
@@ -174,24 +146,11 @@ function UseCasePreview({ form }: { form: UseCaseFormState }) {
               </div>
             </div>
           )}
-          {connections.supportedBy.length > 0 && (
+          {connections.organizations.length > 0 && (
             <div>
-              <p className="text-sm font-semibold text-foreground">Supported By</p>
+              <p className="text-sm font-semibold text-foreground">Organizations</p>
               <div className="mt-2 flex flex-wrap gap-2">
-                {connections.supportedBy.map((o) => (
-                  <span key={o.id} className="inline-flex items-center gap-1.5 rounded-full bg-muted px-2.5 py-1 text-xs font-medium text-foreground">
-                    <Building2 className="size-3" />
-                    {o.name}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
-          {connections.partneredBy.length > 0 && (
-            <div>
-              <p className="text-sm font-semibold text-foreground">Partnered By</p>
-              <div className="mt-2 flex flex-wrap gap-2">
-                {connections.partneredBy.map((o) => (
+                {connections.organizations.map((o) => (
                   <span key={o.id} className="inline-flex items-center gap-1.5 rounded-full bg-muted px-2.5 py-1 text-xs font-medium text-foreground">
                     <Building2 className="size-3" />
                     {o.name}

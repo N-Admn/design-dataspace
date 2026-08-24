@@ -7,7 +7,7 @@ import { useAppData } from '@/context/AppDataContext'
 
 function UseCasesPage() {
   const navigate = useNavigate()
-  const { useCases, deleteUseCase } = useAppData()
+  const { useCases, deleteUseCase, upsertUseCase } = useAppData()
   const toast = useToast()
   const confirm = useConfirm()
 
@@ -30,6 +30,36 @@ function UseCasesPage() {
     toast({ title: 'Use case deleted', variant: 'success' })
   }
 
+  const handleDiscardUseCase = async (id: string) => {
+    const record = useCases.find((u) => u.id === id)
+    if (!record || !record.publishedForm) return
+    const name = record.form.metadata.title || 'this use case'
+    const ok = await confirm({
+      title: 'Discard pending changes?',
+      description: `This will discard the pending changes to "${name}" and revert to the last published version. This cannot be undone.`,
+      confirmLabel: 'Discard Changes',
+      variant: 'destructive',
+    })
+    if (!ok) return
+    upsertUseCase(id, 'published', record.publishedForm)
+    toast({ title: 'Changes discarded', description: 'Reverted to the last published version.', variant: 'success' })
+  }
+
+  const handleUnpublishUseCase = async (id: string) => {
+    const record = useCases.find((u) => u.id === id)
+    if (!record) return
+    const name = record.form.metadata.title || 'this use case'
+    const ok = await confirm({
+      title: 'Unpublish this use case?',
+      description: `"${name}" will be removed from public view and moved back to Draft. You can continue editing and publish it again later.`,
+      confirmLabel: 'Unpublish',
+      variant: 'destructive',
+    })
+    if (!ok) return
+    upsertUseCase(id, 'draft', record.form)
+    toast({ title: 'Use case unpublished', description: 'Moved back to Draft.', variant: 'success' })
+  }
+
   return (
     <UseCaseListView
       useCases={useCases}
@@ -37,6 +67,8 @@ function UseCasesPage() {
       onViewUseCase={(id) => openUseCase(id, 4)}
       onEditUseCase={(id) => openUseCase(id, 1)}
       onDeleteUseCase={handleDeleteUseCase}
+      onDiscardUseCase={handleDiscardUseCase}
+      onUnpublishUseCase={handleUnpublishUseCase}
     />
   )
 }

@@ -1,4 +1,5 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
+import { Button } from '@/components/ui/button'
 import { GOOGLE_MOCK_ACCOUNTS, type MockGoogleAccount } from '@/lib/auth-mock'
 
 function GoogleAccountChooserDialog({
@@ -34,6 +35,11 @@ function GoogleAccountChooserDialog({
               </div>
             </button>
           ))}
+        </div>
+        <div className="border-t border-border px-6 py-4">
+          <Button type="button" variant="ghost" className="w-full" onClick={() => onOpenChange(false)}>
+            Cancel
+          </Button>
         </div>
       </DialogContent>
     </Dialog>

@@ -78,6 +78,9 @@ export interface EventRecord {
   createdAt: string
   updatedAt: string
   form: EventFormState
+  /** Snapshot of `form` from the moment this record was last published — untouched
+   * while edits are Pending, so Discard has the live version to revert to. */
+  publishedForm: EventFormState | null
 }
 
 export const emptyEventMetadata: EventMetadata = {

@@ -1,3 +1,5 @@
+import { formatFileSize, formatTimestamp } from '@/lib/format'
+
 export interface UploadedAsset {
   id: string
   name: string
@@ -15,15 +17,11 @@ function getExtension(fileName: string): string {
   return parts.length > 1 ? parts[parts.length - 1].toLowerCase() : ''
 }
 
-function formatBytes(bytes: number): string {
-  if (bytes >= 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)}MB`
-  if (bytes >= 1024) return `${(bytes / 1024).toFixed(1)}KB`
-  return `${bytes}B`
-}
-
-function formatTimestamp(date: Date): string {
-  const pad = (n: number) => String(n).padStart(2, '0')
-  return `${pad(date.getDate())}/${pad(date.getMonth() + 1)}/${date.getFullYear()} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`
+/** "jpg" and "jpeg" are the same format to a user — collapse them into one "JPG" entry
+ * rather than listing both, and de-duplicate so extension lists read consistently everywhere. */
+function formatExtensionList(extensions: string[]): string[] {
+  const labels = extensions.map((ext) => (ext.toLowerCase() === 'jpeg' ? 'jpg' : ext.toLowerCase()))
+  return Array.from(new Set(labels)).map((ext) => ext.toUpperCase())
 }
 
 export function validateAssetFile(
@@ -32,10 +30,10 @@ export function validateAssetFile(
 ): string | null {
   const extension = getExtension(file.name)
   if (!opts.extensions.includes(extension)) {
-    return `This file type isn't supported. Upload ${opts.extensions.map((e) => e.toUpperCase()).join(', ')}.`
+    return `This file type isn't supported. Upload ${formatExtensionList(opts.extensions).join(', ')}.`
   }
   if (file.size > opts.maxBytes) {
-    return `File exceeds the ${formatBytes(opts.maxBytes)} size limit.`
+    return `File exceeds the ${formatFileSize(opts.maxBytes)} size limit.`
   }
   return null
 }
@@ -55,7 +53,7 @@ export async function buildUploadedAsset(file: File, withPreview = false): Promi
     id: `asset-${assetIdCounter}-${file.name}`,
     name: file.name,
     extension: getExtension(file.name).toUpperCase(),
-    sizeLabel: formatBytes(file.size),
+    sizeLabel: formatFileSize(file.size),
     sizeBytes: file.size,
     uploadedAt: formatTimestamp(new Date()),
   }
@@ -63,4 +61,16 @@ export async function buildUploadedAsset(file: File, withPreview = false): Promi
     asset.dataUrl = await readFileAsDataUrl(file)
   }
   return asset
+}
+
+/** Derives the standard "JPG, PNG or WEBP. Max 10MB." helper copy from the same
+ * extensions/maxBytes an upload field already validates against, so the two can
+ * never drift out of sync the way hand-typed captions did across the app. */
+export function formatUploadHint(extensions: string[], maxBytes: number): string {
+  const list = formatExtensionList(extensions)
+  const joined =
+    list.length <= 1 ? (list[0] ?? '') : `${list.slice(0, -1).join(', ')} or ${list[list.length - 1]}`
+  const mb = maxBytes / (1024 * 1024)
+  const mbLabel = Number.isInteger(mb) ? `${mb}MB` : `${mb.toFixed(1)}MB`
+  return `${joined}. Max ${mbLabel}.`
 }

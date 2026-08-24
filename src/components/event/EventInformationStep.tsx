@@ -1,6 +1,3 @@
-import * as React from 'react'
-import { ImagePlus, Trash2, UploadCloud } from 'lucide-react'
-
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -8,7 +5,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { SearchableSelect } from '@/components/ui/searchable-select'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { FieldError } from '@/components/ui/field-error'
-import { Button } from '@/components/ui/button'
+import { FileUploadField } from '@/components/shared/FileUploadField'
 import { cn } from '@/lib/utils'
 import { SECTOR_OPTIONS } from '@/types/dataset'
 import {
@@ -18,7 +15,6 @@ import {
   type EventAccessType,
   type EventMetadata,
 } from '@/types/event'
-import { validateAssetFile, buildUploadedAsset } from '@/lib/generic-upload'
 import type { EventInformationErrors } from '@/lib/event-validation'
 
 interface EventInformationStepProps {
@@ -61,23 +57,6 @@ function RadioCard({
 }
 
 function EventInformationStep({ metadata, errors, onChange }: EventInformationStepProps) {
-  const [imageError, setImageError] = React.useState<string | null>(null)
-  const inputRef = React.useRef<HTMLInputElement>(null)
-
-  const handleCoverImage = async (file: File) => {
-    const error = validateAssetFile(file, {
-      extensions: SUPPORTED_IMAGE_EXTENSIONS,
-      maxBytes: MAX_IMAGE_BYTES,
-    })
-    if (error) {
-      setImageError(error)
-      return
-    }
-    setImageError(null)
-    const asset = await buildUploadedAsset(file, true)
-    onChange('coverImage', asset)
-  }
-
   return (
     <div className="flex flex-col gap-6">
       <Card>
@@ -417,54 +396,15 @@ function EventInformationStep({ metadata, errors, onChange }: EventInformationSt
         <CardHeader>
           <CardTitle>Cover Image</CardTitle>
         </CardHeader>
-        <CardContent className="flex flex-col gap-4">
-          {metadata.coverImage ? (
-            <div className="flex items-center gap-4 rounded-lg border border-border p-4">
-              {metadata.coverImage.dataUrl && (
-                <img
-                  src={metadata.coverImage.dataUrl}
-                  alt="Cover"
-                  className="size-20 shrink-0 rounded-md border border-border object-cover"
-                />
-              )}
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium text-foreground">{metadata.coverImage.name}</p>
-                <p className="text-xs text-muted-foreground">{metadata.coverImage.sizeLabel}</p>
-              </div>
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                aria-label="Remove cover image"
-                onClick={() => onChange('coverImage', null)}
-                className="text-destructive hover:bg-destructive/10 hover:text-destructive"
-              >
-                <Trash2 className="size-4" />
-              </Button>
-            </div>
-          ) : (
-            <div className="flex flex-col items-center justify-center gap-3 rounded-lg border-2 border-dashed border-border bg-muted/40 px-6 py-10 text-center">
-              <ImagePlus className="size-9 text-muted-foreground" />
-              <p className="text-sm text-foreground">Drag and drop an image here, or click to browse.</p>
-              <input
-                ref={inputRef}
-                type="file"
-                className="hidden"
-                accept={SUPPORTED_IMAGE_EXTENSIONS.map((ext) => `.${ext}`).join(',')}
-                onChange={(e) => {
-                  const file = e.target.files?.[0]
-                  if (file) handleCoverImage(file)
-                  e.target.value = ''
-                }}
-              />
-              <Button type="button" variant="outline" size="sm" onClick={() => inputRef.current?.click()}>
-                <UploadCloud className="size-4" />
-                Browse File
-              </Button>
-              <p className="text-xs text-muted-foreground">JPG, PNG, or WEBP. Maximum 10MB.</p>
-            </div>
-          )}
-          {imageError && <FieldError message={imageError} />}
+        <CardContent className="flex flex-col gap-3">
+          <FileUploadField
+            id="event-cover-image"
+            value={metadata.coverImage}
+            onChange={(asset) => onChange('coverImage', asset)}
+            extensions={SUPPORTED_IMAGE_EXTENSIONS}
+            maxBytes={MAX_IMAGE_BYTES}
+            variant="dropzone"
+          />
           <p className="text-xs text-muted-foreground">
             Thumbnail for listing cards is generated automatically from this image.
           </p>

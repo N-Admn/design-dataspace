@@ -9,7 +9,7 @@ function StatusBadge({ status }: { status: ContentStatus }) {
   if (status === 'pending') {
     return <Badge className="border-transparent bg-primary/10 text-primary">Pending</Badge>
   }
-  return <Badge className="border-transparent bg-warning/20 text-warning-foreground">Draft</Badge>
+  return <Badge variant="warning">Draft</Badge>
 }
 
 export { StatusBadge }

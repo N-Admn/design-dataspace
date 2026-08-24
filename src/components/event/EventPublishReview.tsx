@@ -5,6 +5,7 @@ import { ChevronDown, Database, Layers, Pencil, Send, Sparkles, Users2 } from 'l
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
 import { SECTOR_OPTIONS } from '@/types/dataset'
 import { formatEventDateRange, getRegistrationStatus } from '@/lib/event-status'
@@ -18,6 +19,7 @@ import {
 interface EventPublishReviewProps {
   form: EventFormState
   canPublish: boolean
+  hasLiveVersion: boolean
   onEditSection: (step: 1 | 2 | 3) => void
   onPublish: () => void
 }
@@ -60,21 +62,21 @@ function ReviewSection({
           <ChevronDown className={cn('size-4 text-muted-foreground transition-transform', !open && '-rotate-90')} />
           <CardTitle>{title}</CardTitle>
         </button>
-        <button
-          type="button"
-          aria-label={`Edit ${title}`}
-          onClick={() => onEditSection(editStep)}
-          className="flex size-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-primary"
-        >
-          <Pencil className="size-4" />
-        </button>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button type="button" variant="ghost" size="icon" aria-label={`Edit ${title}`} onClick={() => onEditSection(editStep)}>
+              <Pencil className="size-4" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent side="top">Edit {title}</TooltipContent>
+        </Tooltip>
       </CardHeader>
       {open && <CardContent className="flex flex-col gap-5">{children}</CardContent>}
     </Card>
   )
 }
 
-function EventPublishReview({ form, canPublish, onEditSection, onPublish }: EventPublishReviewProps) {
+function EventPublishReview({ form, canPublish, hasLiveVersion, onEditSection, onPublish }: EventPublishReviewProps) {
   const { metadata } = form
   const registration = getRegistrationStatus(metadata)
 
@@ -181,10 +183,12 @@ function EventPublishReview({ form, canPublish, onEditSection, onPublish }: Even
 
       <div className="flex flex-col items-center gap-3 rounded-xl border border-border bg-card px-6 py-8 text-center">
         <p className="text-sm text-muted-foreground">
-          The event will be publicly available immediately after publishing.
+          {hasLiveVersion
+            ? 'Submitting will send your changes for review before they go live. The current published version remains live until then.'
+            : 'The event will be publicly available immediately after publishing.'}
         </p>
         <Button type="button" size="lg" className="w-full max-w-md" disabled={!canPublish} onClick={onPublish}>
-          Publish Event
+          {hasLiveVersion ? 'Submit Changes' : 'Publish Event'}
           <Send className="size-4" />
         </Button>
         {!canPublish && (

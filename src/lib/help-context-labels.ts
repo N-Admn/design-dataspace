@@ -8,10 +8,13 @@ const ROUTE_LABELS: RoutePattern[] = [
   { test: /^\/dashboard\/datasets$/, label: 'Datasets' },
   { test: /^\/dashboard\/datasets\/[^/]+\/preview$/, label: 'Datasets → Preview' },
   { test: /^\/dashboard\/use-cases$/, label: 'Use Cases' },
-  { test: /^\/dashboard\/use-cases\/new/, label: 'Use Cases → Metadata' },
+  { test: /^\/dashboard\/use-cases\/new/, label: 'Use Cases → Start' },
   { test: /^\/dashboard\/use-cases\/[^/]+\/preview$/, label: 'Use Cases → Preview' },
   { test: /^\/dashboard\/events$/, label: 'Events' },
   { test: /^\/dashboard\/events\/new/, label: 'Events → Create Event' },
+  { test: /^\/dashboard\/collaboratives$/, label: 'Collaboratives' },
+  { test: /^\/dashboard\/collaboratives\/new/, label: 'Collaboratives → About' },
+  { test: /^\/dashboard\/collaboratives\/[^/]+\/preview$/, label: 'Collaboratives → Preview' },
   { test: /^\/dashboard\/profile$/, label: 'Profile' },
 ]
 

@@ -1,10 +1,14 @@
 import * as React from 'react'
 import {
   BarChart3,
+  Check,
   ChevronDown,
   ChevronUp,
+  Copy,
+  ExternalLink,
   Heading as HeadingIcon,
   ImageIcon,
+  Link2,
   MessageSquareQuote,
   Pencil,
   Pilcrow,
@@ -15,33 +19,25 @@ import {
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Label } from '@/components/ui/label'
-import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import { FieldError } from '@/components/ui/field-error'
 import { RichTextEditor } from '@/components/ui/rich-text-editor'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { SearchableSelect } from '@/components/ui/searchable-select'
 import { ChartSelectDrawer } from '@/components/usecase/ChartSelectDrawer'
 import { cn } from '@/lib/utils'
 import { validateAssetFile, buildUploadedAsset } from '@/lib/generic-upload'
 import { SUPPORTED_IMAGE_EXTENSIONS, MAX_IMAGE_BYTES } from '@/types/event'
-import type { UseCaseIntroductionErrors } from '@/lib/usecase-validation'
-import type {
-  UseCaseBlock,
-  UseCaseBlockType,
-  UseCaseHeadingLevel,
-  UseCaseIntroduction,
-} from '@/types/usecase'
+import type { UploadedAsset } from '@/lib/generic-upload'
+import type { UseCaseBlock, UseCaseBlockType, UseCaseHeadingLevel, UseCaseMetadata } from '@/types/usecase'
 
 let blockIdCounter = 0
 
 const BLOCK_MENU: { type: UseCaseBlockType; label: string; icon: typeof HeadingIcon }[] = [
   { type: 'heading', label: 'Heading', icon: HeadingIcon },
-  { type: 'paragraph', label: 'Paragraph', icon: Pilcrow },
+  { type: 'text', label: 'Text', icon: Pilcrow },
   { type: 'image', label: 'Image', icon: ImageIcon },
   { type: 'chart', label: 'Chart', icon: BarChart3 },
-  { type: 'callout', label: 'Callout', icon: MessageSquareQuote },
+  { type: 'highlight', label: 'Highlight', icon: MessageSquareQuote },
+  { type: 'link', label: 'Link / Embed', icon: Link2 },
 ]
 
 function createBlock(type: UseCaseBlockType): UseCaseBlock {
@@ -50,124 +46,113 @@ function createBlock(type: UseCaseBlockType): UseCaseBlock {
   switch (type) {
     case 'heading':
       return { id, type: 'heading', text: '', level: 2 }
-    case 'paragraph':
-      return { id, type: 'paragraph', html: '' }
+    case 'text':
+      return { id, type: 'text', html: '' }
     case 'image':
       return { id, type: 'image', asset: null, caption: '' }
     case 'chart':
       return { id, type: 'chart', chartId: null, chartTitle: '', caption: '' }
-    case 'callout':
-      return { id, type: 'callout', highlight: '', supportingText: '' }
+    case 'highlight':
+      return { id, type: 'highlight', highlight: '', supportingText: '' }
+    case 'link':
+      return { id, type: 'link', url: '', label: '', description: '' }
   }
 }
 
-interface BlockShellProps {
-  label: string
-  icon: typeof HeadingIcon
-  summary: string
-  expanded: boolean
-  onToggleExpand: () => void
+function duplicateBlock(block: UseCaseBlock): UseCaseBlock {
+  blockIdCounter += 1
+  return { ...block, id: `block-${blockIdCounter}` }
+}
+
+/** Shared "blends into the page" styling for text fields that render as the actual published content. */
+const ghostField =
+  'w-full rounded-sm border border-transparent bg-transparent p-0 outline-none transition-colors placeholder:text-muted-foreground/50 hover:bg-muted/30 focus-visible:bg-muted/40 focus-visible:ring-0'
+
+interface BlockWrapperProps {
+  active: boolean
   isFirst: boolean
   isLast: boolean
+  onToggleActive: () => void
   onMoveUp: () => void
   onMoveDown: () => void
+  onDuplicate: () => void
   onDelete: () => void
   children: React.ReactNode
 }
 
-function BlockShell({
-  label,
-  icon: Icon,
-  summary,
-  expanded,
-  onToggleExpand,
+function BlockWrapper({
+  active,
   isFirst,
   isLast,
+  onToggleActive,
   onMoveUp,
   onMoveDown,
+  onDuplicate,
   onDelete,
   children,
-}: BlockShellProps) {
+}: BlockWrapperProps) {
   return (
-    <div className="rounded-lg border border-border">
+    <div
+      className={cn(
+        'group/block relative -mx-3 rounded-lg border px-3 py-2 transition-colors',
+        active ? 'border-primary/40 bg-primary/[0.03]' : 'border-transparent hover:border-border',
+      )}
+    >
       <div
-        role="button"
-        tabIndex={0}
-        onClick={onToggleExpand}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault()
-            onToggleExpand()
-          }
-        }}
         className={cn(
-          'flex w-full cursor-pointer items-center justify-between gap-3 px-4 py-2.5 text-left outline-none focus-visible:ring-2 focus-visible:ring-ring',
-          expanded && 'border-b border-border',
+          'pointer-events-none absolute -top-4 right-2 z-10 flex items-center gap-0.5 rounded-md border border-border bg-card p-0.5 opacity-0 shadow-sm transition-opacity',
+          'group-hover/block:pointer-events-auto group-hover/block:opacity-100',
+          active && 'pointer-events-auto opacity-100',
         )}
       >
-        <div className="flex min-w-0 items-center gap-2 text-sm font-medium text-foreground">
-          <Icon className="size-4 shrink-0 text-muted-foreground" />
-          {label}
-          {!expanded && <span className="min-w-0 truncate font-normal text-muted-foreground">— {summary}</span>}
-        </div>
-        <div className="flex shrink-0 items-center gap-0.5">
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            className="size-7"
-            disabled={isFirst}
-            aria-label="Move up"
-            onClick={(e) => {
-              e.stopPropagation()
-              onMoveUp()
-            }}
-          >
-            <ChevronUp className="size-4" />
-          </Button>
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            className="size-7"
-            disabled={isLast}
-            aria-label="Move down"
-            onClick={(e) => {
-              e.stopPropagation()
-              onMoveDown()
-            }}
-          >
-            <ChevronDown className="size-4" />
-          </Button>
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            className="size-7"
-            aria-label={expanded ? 'Collapse block' : 'Edit block'}
-            onClick={(e) => {
-              e.stopPropagation()
-              onToggleExpand()
-            }}
-          >
-            <Pencil className="size-4" />
-          </Button>
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            className="size-7 text-destructive hover:bg-destructive/10 hover:text-destructive"
-            aria-label="Delete block"
-            onClick={(e) => {
-              e.stopPropagation()
-              onDelete()
-            }}
-          >
-            <Trash2 className="size-4" />
-          </Button>
-        </div>
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          className={cn('size-6', active && 'text-primary')}
+          aria-label={active ? 'Done editing' : 'Edit block'}
+          onClick={onToggleActive}
+        >
+          {active ? <Check className="size-3.5" /> : <Pencil className="size-3.5" />}
+        </Button>
+        <Button type="button" variant="ghost" size="icon" className="size-6" disabled={isFirst} aria-label="Move up" onClick={onMoveUp}>
+          <ChevronUp className="size-3.5" />
+        </Button>
+        <Button type="button" variant="ghost" size="icon" className="size-6" disabled={isLast} aria-label="Move down" onClick={onMoveDown}>
+          <ChevronDown className="size-3.5" />
+        </Button>
+        <Button type="button" variant="ghost" size="icon" className="size-6" aria-label="Duplicate block" onClick={onDuplicate}>
+          <Copy className="size-3.5" />
+        </Button>
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          className="size-6 text-destructive hover:bg-destructive/10 hover:text-destructive"
+          aria-label="Delete block"
+          onClick={onDelete}
+        >
+          <Trash2 className="size-3.5" />
+        </Button>
       </div>
-      {expanded && <div className="p-4">{children}</div>}
+      {children}
+    </div>
+  )
+}
+
+function HeadingLevelToggle({ level, onChange }: { level: UseCaseHeadingLevel; onChange: (level: UseCaseHeadingLevel) => void }) {
+  return (
+    <div className="inline-flex shrink-0 items-center rounded-md border border-border p-0.5 text-xs font-medium text-muted-foreground">
+      {([2, 3] as UseCaseHeadingLevel[]).map((l) => (
+        <button
+          key={l}
+          type="button"
+          onClick={() => onChange(l)}
+          className={cn('rounded px-1.5 py-0.5', l === level ? 'bg-primary text-primary-foreground' : 'hover:bg-muted')}
+        >
+          H{l}
+        </button>
+      ))}
     </div>
   )
 }
@@ -176,56 +161,25 @@ function stripHtml(html: string): string {
   return html.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim()
 }
 
-function blockSummary(block: UseCaseBlock): string {
-  switch (block.type) {
-    case 'heading':
-      return block.text || 'Untitled heading'
-    case 'paragraph':
-      return stripHtml(block.html) || 'Empty paragraph'
-    case 'image':
-      return block.caption || block.asset?.name || 'No image uploaded'
-    case 'chart':
-      return block.chartTitle || 'No chart selected'
-    case 'callout':
-      return block.highlight || 'Empty callout'
-  }
-}
-
 interface UseCaseStep2BuilderProps {
-  metadataTitle: string
-  onMetadataTitleChange: (title: string) => void
-  introduction: UseCaseIntroduction
-  onIntroductionChange: <K extends keyof UseCaseIntroduction>(field: K, value: UseCaseIntroduction[K]) => void
+  metadata: UseCaseMetadata
   blocks: UseCaseBlock[]
   onBlocksChange: (blocks: UseCaseBlock[]) => void
-  introErrors?: UseCaseIntroductionErrors
 }
 
-function UseCaseStep2Builder({
-  metadataTitle,
-  onMetadataTitleChange,
-  introduction,
-  onIntroductionChange,
-  blocks,
-  onBlocksChange,
-  introErrors,
-}: UseCaseStep2BuilderProps) {
-  const thumbnailInputRef = React.useRef<HTMLInputElement>(null)
+function UseCaseStep2Builder({ metadata, blocks, onBlocksChange }: UseCaseStep2BuilderProps) {
   const [addMenuOpen, setAddMenuOpen] = React.useState(false)
   const [chartDrawerBlockId, setChartDrawerBlockId] = React.useState<string | null>(null)
-  const [openBlockId, setOpenBlockId] = React.useState<string | null>(null)
-
-  const handleThumbnailFile = async (file: File) => {
-    const error = validateAssetFile(file, { extensions: SUPPORTED_IMAGE_EXTENSIONS, maxBytes: MAX_IMAGE_BYTES })
-    if (error) return
-    onIntroductionChange('thumbnail', await buildUploadedAsset(file, true))
-  }
+  const [activeBlockId, setActiveBlockId] = React.useState<string | null>(null)
 
   const updateBlock = (id: string, patch: Partial<UseCaseBlock>) => {
     onBlocksChange(blocks.map((b) => (b.id === id ? ({ ...b, ...patch } as UseCaseBlock) : b)))
   }
 
-  const removeBlock = (id: string) => onBlocksChange(blocks.filter((b) => b.id !== id))
+  const removeBlock = (id: string) => {
+    onBlocksChange(blocks.filter((b) => b.id !== id))
+    if (activeBlockId === id) setActiveBlockId(null)
+  }
 
   const moveBlock = (index: number, direction: -1 | 1) => {
     const next = [...blocks]
@@ -238,290 +192,285 @@ function UseCaseStep2Builder({
   const addBlock = (type: UseCaseBlockType) => {
     const block = createBlock(type)
     onBlocksChange([...blocks, block])
-    setOpenBlockId(block.id)
+    setActiveBlockId(block.id)
     setAddMenuOpen(false)
   }
+
+  const cloneBlock = (index: number) => {
+    const clone = duplicateBlock(blocks[index])
+    const next = [...blocks]
+    next.splice(index + 1, 0, clone)
+    onBlocksChange(next)
+  }
+
+  const addContentTrigger = (
+    <Popover open={addMenuOpen} onOpenChange={setAddMenuOpen}>
+      <PopoverTrigger asChild>
+        <Button type="button" variant="outline" size="sm">
+          <Plus className="size-4" />
+          Add Content
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent align="end" className="p-1">
+        {BLOCK_MENU.map((item) => {
+          const Icon = item.icon
+          return (
+            <button
+              key={item.type}
+              type="button"
+              onClick={() => addBlock(item.type)}
+              className="flex w-full items-center gap-2.5 rounded-sm px-2 py-2 text-left text-sm hover:bg-muted"
+            >
+              <Icon className="size-4 shrink-0 text-muted-foreground" />
+              {item.label}
+            </button>
+          )
+        })}
+      </PopoverContent>
+    </Popover>
+  )
 
   return (
     <div className="flex flex-col gap-6">
       <div>
         <h2 className="text-lg font-semibold text-primary">Builder</h2>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Build your Use Case and tell its story using flexible content blocks.
-        </p>
+        <p className="mt-1 text-sm text-muted-foreground">Tell the story using flexible content blocks.</p>
       </div>
 
       <Card>
         <CardHeader>
           <CardTitle>Introduction</CardTitle>
           <p className="mt-1 text-sm font-normal text-muted-foreground">
-            This section always appears first and cannot be removed.
+            Sourced from Start. Edit the thumbnail, title or subtitle from the Start step.
           </p>
         </CardHeader>
-        <CardContent className="flex flex-col gap-5">
-          <div>
-            <Label>Thumbnail</Label>
-            <p className="mt-0.5 text-xs text-muted-foreground">Add an image that represents this Use Case.</p>
-            <div className="mt-1.5">
-              {introduction.thumbnail ? (
-                <div className="flex items-center gap-3 rounded-lg border border-border p-3">
-                  {introduction.thumbnail.dataUrl && (
-                    <img
-                      src={introduction.thumbnail.dataUrl}
-                      alt=""
-                      className="size-14 shrink-0 rounded-md border border-border object-cover"
-                    />
-                  )}
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium text-foreground">{introduction.thumbnail.name}</p>
-                    <p className="text-xs text-muted-foreground">{introduction.thumbnail.sizeLabel}</p>
-                  </div>
-                  <Button type="button" variant="outline" size="sm" onClick={() => thumbnailInputRef.current?.click()}>
-                    Change
-                  </Button>
-                  <Button type="button" variant="ghost" size="sm" onClick={() => onIntroductionChange('thumbnail', null)}>
-                    Remove
-                  </Button>
-                </div>
-              ) : (
-                <Button type="button" variant="outline" size="sm" onClick={() => thumbnailInputRef.current?.click()}>
-                  <UploadCloud className="size-4" />
-                  Upload
-                </Button>
-              )}
-              <input
-                ref={thumbnailInputRef}
-                type="file"
-                className="hidden"
-                accept={SUPPORTED_IMAGE_EXTENSIONS.map((ext) => `.${ext}`).join(',')}
-                onChange={(e) => {
-                  const file = e.target.files?.[0]
-                  if (file) handleThumbnailFile(file)
-                  e.target.value = ''
-                }}
-              />
+        <CardContent>
+          <div className="overflow-hidden rounded-lg border border-border">
+            {metadata.thumbnail?.dataUrl && (
+              <img src={metadata.thumbnail.dataUrl} alt="" className="h-40 w-full object-cover" />
+            )}
+            <div className="px-4 py-4">
+              <p className="text-base font-semibold text-primary">{metadata.title || 'Untitled Use Case'}</p>
+              {metadata.subtitle && <p className="mt-1 text-sm text-muted-foreground">{metadata.subtitle}</p>}
             </div>
-            <FieldError message={introErrors?.thumbnail} />
-          </div>
-
-          <div>
-            <Label htmlFor="usecase-builder-title">
-              Title <span className="text-destructive">*</span>
-            </Label>
-            <Input
-              id="usecase-builder-title"
-              className="mt-1.5"
-              placeholder="Untitled Use Case"
-              value={metadataTitle}
-              onChange={(e) => onMetadataTitleChange(e.target.value)}
-            />
-          </div>
-
-          <div>
-            <Label htmlFor="usecase-builder-subtitle">Subtitle</Label>
-            <p className="mt-0.5 text-xs text-muted-foreground">Add a short statement that summarizes the Use Case.</p>
-            <Input
-              id="usecase-builder-subtitle"
-              className="mt-1.5"
-              placeholder="Keep it concise..."
-              value={introduction.subtitle}
-              onChange={(e) => onIntroductionChange('subtitle', e.target.value)}
-            />
-          </div>
-
-          <div>
-            <Label htmlFor="usecase-builder-description">
-              Description <span className="text-destructive">*</span>
-            </Label>
-            <div className="mt-1.5">
-              <RichTextEditor
-                id="usecase-builder-description"
-                value={introduction.descriptionHtml}
-                onChange={(html) => onIntroductionChange('descriptionHtml', html)}
-                placeholder="Introduce this Use Case..."
-              />
-            </div>
-            <FieldError message={introErrors?.description} />
           </div>
         </CardContent>
       </Card>
 
-      <div className="flex flex-col gap-4">
-        <div className="flex items-center justify-between">
-          <p className="text-sm font-semibold text-foreground">Build your content</p>
-          <Popover open={addMenuOpen} onOpenChange={setAddMenuOpen}>
-            <PopoverTrigger asChild>
-              <Button type="button" variant="outline" size="sm">
-                <Plus className="size-4" />
-                Add Content
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent align="end" className="p-1">
-              {BLOCK_MENU.map((item) => {
-                const Icon = item.icon
-                return (
-                  <button
-                    key={item.type}
-                    type="button"
-                    onClick={() => addBlock(item.type)}
-                    className="flex w-full items-center gap-2.5 rounded-sm px-2 py-2 text-left text-sm hover:bg-muted"
-                  >
-                    <Icon className="size-4 shrink-0 text-muted-foreground" />
-                    {item.label}
-                  </button>
-                )
-              })}
-            </PopoverContent>
-          </Popover>
-        </div>
+      <div className="flex flex-col gap-3">
+        <p className="text-sm font-semibold text-foreground">Build your content</p>
 
-        {blocks.length === 0 ? (
-          <div className="flex flex-col items-center gap-3 rounded-lg border-2 border-dashed border-border bg-muted/40 px-6 py-10 text-center">
-            <p className="text-sm text-muted-foreground">Your Use Case is ready to be built.</p>
-            <Button type="button" variant="outline" size="sm" onClick={() => setAddMenuOpen(true)}>
-              <Plus className="size-4" />
-              Add Content
-            </Button>
-          </div>
-        ) : (
-          <div className="flex flex-col gap-3">
-            {blocks.map((block, index) => {
-              const shellProps = {
-                isFirst: index === 0,
-                isLast: index === blocks.length - 1,
-                onMoveUp: () => moveBlock(index, -1),
-                onMoveDown: () => moveBlock(index, 1),
-                onDelete: () => removeBlock(block.id),
-                summary: blockSummary(block),
-                expanded: openBlockId === block.id,
-                onToggleExpand: () => setOpenBlockId((prev) => (prev === block.id ? null : block.id)),
-              }
+        {/* Live canvas — every block renders in its actual published appearance. Click Edit to make a block editable. */}
+        <div className="overflow-hidden rounded-xl border border-border bg-card">
+          {blocks.length === 0 ? (
+            <div className="flex flex-col items-center gap-3 px-6 py-14 text-center">
+              <p className="text-sm text-muted-foreground">Your Use Case is ready to be built.</p>
+              {addContentTrigger}
+            </div>
+          ) : (
+            <>
+              <div className="flex flex-col gap-5 px-6 py-6">
+                {blocks.map((block, index) => {
+                  const active = activeBlockId === block.id
+                  const shellProps = {
+                    active,
+                    isFirst: index === 0,
+                    isLast: index === blocks.length - 1,
+                    onToggleActive: () => setActiveBlockId((prev) => (prev === block.id ? null : block.id)),
+                    onMoveUp: () => moveBlock(index, -1),
+                    onMoveDown: () => moveBlock(index, 1),
+                    onDuplicate: () => cloneBlock(index),
+                    onDelete: () => removeBlock(block.id),
+                  }
 
-              if (block.type === 'heading') {
-                return (
-                  <BlockShell key={block.id} label="Heading" icon={HeadingIcon} {...shellProps}>
-                    <div className="flex flex-col gap-3 sm:flex-row">
-                      <Input
-                        placeholder="Heading text"
-                        className="flex-1"
-                        value={block.text}
-                        onChange={(e) => updateBlock(block.id, { text: e.target.value })}
-                      />
-                      <div className="sm:w-40">
-                        <SearchableSelect
-                          options={[
-                            { value: '2', label: 'Heading (large)' },
-                            { value: '3', label: 'Subheading' },
-                          ]}
-                          value={String(block.level)}
-                          onChange={(value) => updateBlock(block.id, { level: Number(value) as UseCaseHeadingLevel })}
-                          placeholder="Level..."
-                        />
-                      </div>
-                    </div>
-                  </BlockShell>
-                )
-              }
-
-              if (block.type === 'paragraph') {
-                return (
-                  <BlockShell key={block.id} label="Paragraph" icon={Pilcrow} {...shellProps}>
-                    <RichTextEditor
-                      value={block.html}
-                      onChange={(html) => updateBlock(block.id, { html })}
-                      placeholder="Write a paragraph..."
-                    />
-                  </BlockShell>
-                )
-              }
-
-              if (block.type === 'image') {
-                return (
-                  <BlockShell key={block.id} label="Image" icon={ImageIcon} {...shellProps}>
-                    <ImageBlockEditor
-                      asset={block.asset}
-                      caption={block.caption}
-                      onAssetChange={(asset) => updateBlock(block.id, { asset })}
-                      onCaptionChange={(caption) => updateBlock(block.id, { caption })}
-                    />
-                  </BlockShell>
-                )
-              }
-
-              if (block.type === 'chart') {
-                return (
-                  <BlockShell key={block.id} label="Chart" icon={BarChart3} {...shellProps}>
-                    <div className="flex flex-col gap-3">
-                      {block.chartId ? (
-                        <div className="rounded-lg border border-border p-3">
-                          <p className="text-sm font-medium text-foreground">{block.chartTitle}</p>
-                          <p className="mt-1 text-xs text-muted-foreground">
-                            Interactive chart — remains dynamic on the published page.
-                          </p>
-                          <div className="mt-2 flex gap-2">
-                            <Button type="button" variant="outline" size="sm" onClick={() => setChartDrawerBlockId(block.id)}>
-                              Replace
-                            </Button>
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => updateBlock(block.id, { chartId: null, chartTitle: '' })}
-                            >
-                              Remove
-                            </Button>
+                  if (block.type === 'heading') {
+                    const Tag = block.level === 2 ? 'h2' : 'h3'
+                    return (
+                      <BlockWrapper key={block.id} {...shellProps}>
+                        {active ? (
+                          <div className="flex items-center gap-3">
+                            <input
+                              autoFocus
+                              value={block.text}
+                              onChange={(e) => updateBlock(block.id, { text: e.target.value })}
+                              placeholder="Untitled heading"
+                              className={cn(
+                                ghostField,
+                                block.level === 2 ? 'text-xl font-semibold text-primary' : 'text-lg font-semibold text-foreground',
+                              )}
+                            />
+                            <HeadingLevelToggle level={block.level} onChange={(level) => updateBlock(block.id, { level })} />
                           </div>
-                        </div>
-                      ) : (
-                        <Button type="button" variant="outline" size="sm" className="self-start" onClick={() => setChartDrawerBlockId(block.id)}>
-                          Select Chart
-                        </Button>
-                      )}
-                      <div>
-                        <Label htmlFor={`chart-caption-${block.id}`}>Caption</Label>
-                        <Input
-                          id={`chart-caption-${block.id}`}
-                          className="mt-1.5"
-                          placeholder="Optional caption"
-                          value={block.caption}
-                          onChange={(e) => updateBlock(block.id, { caption: e.target.value })}
-                        />
-                      </div>
-                    </div>
-                  </BlockShell>
-                )
-              }
+                        ) : (
+                          <Tag className={block.level === 2 ? 'text-xl font-semibold text-primary' : 'text-lg font-semibold text-foreground'}>
+                            {block.text || 'Untitled heading'}
+                          </Tag>
+                        )}
+                      </BlockWrapper>
+                    )
+                  }
 
-              return (
-                <BlockShell key={block.id} label="Callout" icon={MessageSquareQuote} {...shellProps}>
-                  <div className="flex flex-col gap-3">
-                    <div>
-                      <Label htmlFor={`callout-highlight-${block.id}`}>Key fact / highlight</Label>
-                      <Input
-                        id={`callout-highlight-${block.id}`}
-                        className="mt-1.5"
-                        placeholder="e.g. 32% reduction in maternal mortality"
-                        value={block.highlight}
-                        onChange={(e) => updateBlock(block.id, { highlight: e.target.value })}
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor={`callout-support-${block.id}`}>Supporting text</Label>
-                      <Textarea
-                        id={`callout-support-${block.id}`}
-                        className="mt-1.5"
-                        rows={2}
-                        placeholder="Optional supporting text"
-                        value={block.supportingText}
-                        onChange={(e) => updateBlock(block.id, { supportingText: e.target.value })}
-                      />
-                    </div>
-                  </div>
-                </BlockShell>
-              )
-            })}
-          </div>
-        )}
+                  if (block.type === 'text') {
+                    return (
+                      <BlockWrapper key={block.id} {...shellProps}>
+                        {active ? (
+                          <RichTextEditor
+                            value={block.html}
+                            onChange={(html) => updateBlock(block.id, { html })}
+                            placeholder="Write some text..."
+                          />
+                        ) : (
+                          <div
+                            className="prose-sm text-sm text-foreground [&_a]:text-primary [&_a]:underline [&_ol]:list-decimal [&_ol]:pl-5 [&_ul]:list-disc [&_ul]:pl-5"
+                            dangerouslySetInnerHTML={{
+                              __html: stripHtml(block.html) ? block.html : '<p class="text-muted-foreground">Empty text block</p>',
+                            }}
+                          />
+                        )}
+                      </BlockWrapper>
+                    )
+                  }
+
+                  if (block.type === 'image') {
+                    return (
+                      <BlockWrapper key={block.id} {...shellProps}>
+                        {active ? (
+                          <ImageBlockCanvas
+                            asset={block.asset}
+                            caption={block.caption}
+                            onAssetChange={(asset) => updateBlock(block.id, { asset })}
+                            onCaptionChange={(caption) => updateBlock(block.id, { caption })}
+                          />
+                        ) : (
+                          <figure>
+                            {block.asset?.dataUrl ? (
+                              <img src={block.asset.dataUrl} alt={block.caption} className="w-full rounded-lg border border-border object-cover" />
+                            ) : (
+                              <div className="flex h-40 items-center justify-center rounded-lg border border-dashed border-border bg-muted/40 text-sm text-muted-foreground">
+                                No image uploaded
+                              </div>
+                            )}
+                            {block.caption && <figcaption className="mt-1.5 text-xs text-muted-foreground">{block.caption}</figcaption>}
+                          </figure>
+                        )}
+                      </BlockWrapper>
+                    )
+                  }
+
+                  if (block.type === 'chart') {
+                    return (
+                      <BlockWrapper key={block.id} {...shellProps}>
+                        <figure className="rounded-lg border border-border p-4">
+                          <div className="flex items-center gap-2 text-sm font-medium text-foreground">
+                            <BarChart3 className="size-4 shrink-0 text-muted-foreground" />
+                            {active ? (
+                              <button
+                                type="button"
+                                autoFocus
+                                onClick={() => setChartDrawerBlockId(block.id)}
+                                className={cn('rounded-sm text-left hover:underline', !block.chartId && 'text-muted-foreground')}
+                              >
+                                {block.chartId ? block.chartTitle : 'Select a chart...'}
+                              </button>
+                            ) : (
+                              <span>{block.chartId ? block.chartTitle : 'No chart selected'}</span>
+                            )}
+                          </div>
+                          <div className="mt-3 flex h-32 items-center justify-center rounded-md bg-muted/40 text-xs text-muted-foreground">
+                            {block.chartId ? 'Interactive chart — remains dynamic on the published page.' : 'No chart selected yet.'}
+                          </div>
+                          {active ? (
+                            <input
+                              value={block.caption}
+                              onChange={(e) => updateBlock(block.id, { caption: e.target.value })}
+                              placeholder="Add a caption..."
+                              className={cn(ghostField, 'mt-1.5 text-xs text-muted-foreground')}
+                            />
+                          ) : (
+                            block.caption && <figcaption className="mt-1.5 text-xs text-muted-foreground">{block.caption}</figcaption>
+                          )}
+                        </figure>
+                      </BlockWrapper>
+                    )
+                  }
+
+                  if (block.type === 'highlight') {
+                    return (
+                      <BlockWrapper key={block.id} {...shellProps}>
+                        <div className="rounded-lg border-l-4 border-primary bg-primary/5 px-4 py-3.5">
+                          {active ? (
+                            <>
+                              <input
+                                autoFocus
+                                value={block.highlight}
+                                onChange={(e) => updateBlock(block.id, { highlight: e.target.value })}
+                                placeholder="Key highlight, e.g. 32% reduction in maternal mortality"
+                                className={cn(ghostField, 'text-base font-semibold text-primary')}
+                              />
+                              <Textarea
+                                value={block.supportingText}
+                                onChange={(e) => updateBlock(block.id, { supportingText: e.target.value })}
+                                placeholder="Optional supporting text"
+                                rows={1}
+                                className={cn(ghostField, 'mt-1 min-h-0 resize-none text-sm text-muted-foreground')}
+                              />
+                            </>
+                          ) : (
+                            <>
+                              <p className="text-base font-semibold text-primary">{block.highlight || 'Key highlight'}</p>
+                              {block.supportingText && <p className="mt-1 text-sm text-muted-foreground">{block.supportingText}</p>}
+                            </>
+                          )}
+                        </div>
+                      </BlockWrapper>
+                    )
+                  }
+
+                  return (
+                    <BlockWrapper key={block.id} {...shellProps}>
+                      <div className="flex items-start gap-3 rounded-lg border border-border p-4">
+                        <ExternalLink className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
+                        <div className="min-w-0 flex-1">
+                          {active ? (
+                            <>
+                              <input
+                                autoFocus
+                                value={block.label}
+                                onChange={(e) => updateBlock(block.id, { label: e.target.value })}
+                                placeholder="Link label, e.g. Read the full report"
+                                className={cn(ghostField, 'text-sm font-medium text-primary')}
+                              />
+                              <input
+                                value={block.url}
+                                onChange={(e) => updateBlock(block.id, { url: e.target.value })}
+                                placeholder="https://example.org/resource"
+                                className={cn(ghostField, 'mt-0.5 font-mono text-xs text-muted-foreground')}
+                              />
+                              <Textarea
+                                value={block.description}
+                                onChange={(e) => updateBlock(block.id, { description: e.target.value })}
+                                placeholder="Optional description"
+                                rows={1}
+                                className={cn(ghostField, 'mt-1 min-h-0 resize-none text-xs text-muted-foreground')}
+                              />
+                            </>
+                          ) : (
+                            <>
+                              <p className="truncate text-sm font-medium text-primary">{block.label || block.url || 'Untitled link'}</p>
+                              {block.description && <p className="mt-0.5 text-xs text-muted-foreground">{block.description}</p>}
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    </BlockWrapper>
+                  )
+                })}
+              </div>
+
+              <div className="border-t border-border px-6 py-4">{addContentTrigger}</div>
+            </>
+          )}
+        </div>
       </div>
 
       <ChartSelectDrawer
@@ -537,15 +486,15 @@ function UseCaseStep2Builder({
   )
 }
 
-function ImageBlockEditor({
+function ImageBlockCanvas({
   asset,
   caption,
   onAssetChange,
   onCaptionChange,
 }: {
-  asset: UseCaseIntroduction['thumbnail']
+  asset: UploadedAsset | null
   caption: string
-  onAssetChange: (asset: UseCaseIntroduction['thumbnail']) => void
+  onAssetChange: (asset: UploadedAsset | null) => void
   onCaptionChange: (caption: string) => void
 }) {
   const inputRef = React.useRef<HTMLInputElement>(null)
@@ -557,24 +506,28 @@ function ImageBlockEditor({
   }
 
   return (
-    <div className="flex flex-col gap-3">
-      {asset ? (
-        <div className="flex flex-col gap-2">
-          {asset.dataUrl && <img src={asset.dataUrl} alt="" className="max-h-56 w-full rounded-lg border border-border object-cover" />}
-          <div className="flex gap-2">
-            <Button type="button" variant="outline" size="sm" onClick={() => inputRef.current?.click()}>
+    <figure>
+      {asset?.dataUrl ? (
+        <div className="group/img relative">
+          <img src={asset.dataUrl} alt="" className="w-full rounded-lg border border-border object-cover" />
+          <div className="absolute right-2 top-2 flex gap-1 opacity-0 transition-opacity group-hover/img:opacity-100">
+            <Button type="button" variant="outline" size="sm" className="bg-card" onClick={() => inputRef.current?.click()}>
               Replace
             </Button>
-            <Button type="button" variant="ghost" size="sm" onClick={() => onAssetChange(null)}>
+            <Button type="button" variant="outline" size="sm" className="bg-card" onClick={() => onAssetChange(null)}>
               Remove
             </Button>
           </div>
         </div>
       ) : (
-        <Button type="button" variant="outline" size="sm" className="self-start" onClick={() => inputRef.current?.click()}>
-          <UploadCloud className="size-4" />
+        <button
+          type="button"
+          onClick={() => inputRef.current?.click()}
+          className="flex h-40 w-full flex-col items-center justify-center gap-1.5 rounded-lg border border-dashed border-border bg-muted/40 text-sm text-muted-foreground transition-colors hover:bg-muted/60"
+        >
+          <UploadCloud className="size-5" />
           Upload image
-        </Button>
+        </button>
       )}
       <input
         ref={inputRef}
@@ -587,17 +540,13 @@ function ImageBlockEditor({
           e.target.value = ''
         }}
       />
-      <div>
-        <Label htmlFor="image-caption">Caption</Label>
-        <Input
-          id="image-caption"
-          className="mt-1.5"
-          placeholder="Optional caption"
-          value={caption}
-          onChange={(e) => onCaptionChange(e.target.value)}
-        />
-      </div>
-    </div>
+      <input
+        value={caption}
+        onChange={(e) => onCaptionChange(e.target.value)}
+        placeholder="Add a caption..."
+        className={cn(ghostField, 'mt-1.5 text-xs text-muted-foreground')}
+      />
+    </figure>
   )
 }
 

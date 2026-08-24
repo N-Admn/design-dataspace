@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { KeyRound, ShieldCheck, UploadCloud } from 'lucide-react'
+import { KeyRound, ShieldCheck, User } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -11,9 +11,19 @@ import { FieldError } from '@/components/ui/field-error'
 import { useConfirm } from '@/components/ui/confirm-dialog'
 import { useToast } from '@/components/ui/toast'
 import { useAppData } from '@/context/AppDataContext'
+import { FileUploadField } from '@/components/shared/FileUploadField'
+import type { UploadedAsset } from '@/lib/generic-upload'
 import { SECTOR_OPTIONS } from '@/types/dataset'
 import { BIO_MAX_LENGTH, type ContributorProfile, type ProfileSocialLinks } from '@/types/profile'
 import { DeleteAccountDialog } from '@/components/profile/DeleteAccountDialog'
+
+const AVATAR_EXTENSIONS = ['jpg', 'jpeg', 'png']
+const MAX_AVATAR_BYTES = 5 * 1024 * 1024
+
+function wrapAvatarAsset(dataUrl: string | null): UploadedAsset | null {
+  if (!dataUrl) return null
+  return { id: 'avatar', name: 'Profile picture', extension: '', sizeLabel: '', sizeBytes: 0, uploadedAt: '', dataUrl }
+}
 
 interface ProfileEditFormProps {
   profile: ContributorProfile
@@ -36,11 +46,10 @@ function ProfileEditForm({ profile, onSave }: ProfileEditFormProps) {
   const [lastName, setLastName] = React.useState(profile.lastName)
   const [location, setLocation] = React.useState(profile.location)
   const [bio, setBio] = React.useState(profile.bio)
-  const [avatarDataUrl, setAvatarDataUrl] = React.useState(profile.avatarDataUrl)
+  const [avatarAsset, setAvatarAsset] = React.useState<UploadedAsset | null>(() => wrapAvatarAsset(profile.avatarDataUrl))
   const [social, setSocial] = React.useState<ProfileSocialLinks>(profile.social)
   const [errors, setErrors] = React.useState<FormErrors>({})
   const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false)
-  const fileInputRef = React.useRef<HTMLInputElement>(null)
 
   const initials = (firstName[0] ?? '').toUpperCase() + (lastName[0] ?? '').toUpperCase() || 'U'
 
@@ -59,7 +68,7 @@ function ProfileEditForm({ profile, onSave }: ProfileEditFormProps) {
     lastName.trim() !== profile.lastName ||
     location.trim() !== profile.location ||
     bio.trim() !== profile.bio ||
-    avatarDataUrl !== profile.avatarDataUrl ||
+    (avatarAsset?.dataUrl ?? null) !== profile.avatarDataUrl ||
     social.github.trim() !== profile.social.github ||
     social.linkedin.trim() !== profile.social.linkedin ||
     social.x.trim() !== profile.social.x
@@ -69,7 +78,7 @@ function ProfileEditForm({ profile, onSave }: ProfileEditFormProps) {
     setLastName(profile.lastName)
     setLocation(profile.location)
     setBio(profile.bio)
-    setAvatarDataUrl(profile.avatarDataUrl)
+    setAvatarAsset(wrapAvatarAsset(profile.avatarDataUrl))
     setSocial(profile.social)
     setErrors({})
   }
@@ -86,12 +95,6 @@ function ProfileEditForm({ profile, onSave }: ProfileEditFormProps) {
       if (!ok) return
     }
     resetForm()
-  }
-
-  const handleAvatarFile = (file: File) => {
-    const reader = new FileReader()
-    reader.onload = () => setAvatarDataUrl(typeof reader.result === 'string' ? reader.result : null)
-    reader.readAsDataURL(file)
   }
 
   const updateSocial = <K extends keyof ProfileSocialLinks>(field: K, value: string) => {
@@ -121,7 +124,7 @@ function ProfileEditForm({ profile, onSave }: ProfileEditFormProps) {
       lastName: lastName.trim(),
       location: location.trim(),
       bio: bio.trim(),
-      avatarDataUrl,
+      avatarDataUrl: avatarAsset?.dataUrl ?? null,
       social: {
         github: social.github.trim(),
         linkedin: social.linkedin.trim(),
@@ -228,45 +231,22 @@ function ProfileEditForm({ profile, onSave }: ProfileEditFormProps) {
                 </p>
               </div>
 
-              <div>
-                <Label>Profile picture</Label>
-                <div className="mt-1.5 flex items-center gap-3">
-                  {avatarDataUrl ? (
-                    <img
-                      src={avatarDataUrl}
-                      alt=""
-                      className="size-12 shrink-0 rounded-full border border-border object-cover"
-                    />
-                  ) : (
-                    <div className="flex size-12 shrink-0 items-center justify-center rounded-full bg-muted text-sm font-semibold text-muted-foreground">
-                      {initials}
-                    </div>
-                  )}
-                  <div className="flex items-center gap-2">
-                    <Button type="button" variant="outline" size="sm" onClick={() => fileInputRef.current?.click()}>
-                      <UploadCloud className="size-4" />
-                      {avatarDataUrl ? 'Change' : 'Upload picture'}
-                    </Button>
-                    {avatarDataUrl && (
-                      <Button type="button" variant="ghost" size="sm" onClick={() => setAvatarDataUrl(null)}>
-                        Remove
-                      </Button>
-                    )}
+              <FileUploadField
+                id="profile-avatar"
+                label="Profile picture"
+                value={avatarAsset}
+                onChange={setAvatarAsset}
+                extensions={AVATAR_EXTENSIONS}
+                maxBytes={MAX_AVATAR_BYTES}
+                roundedFull
+                uploadLabel="Upload picture"
+                fallbackIcon={User}
+                emptyPreview={
+                  <div className="flex size-12 shrink-0 items-center justify-center rounded-full bg-muted text-sm font-semibold text-muted-foreground">
+                    {initials}
                   </div>
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    className="hidden"
-                    accept=".jpg,.jpeg,.png"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0]
-                      if (file) handleAvatarFile(file)
-                      e.target.value = ''
-                    }}
-                  />
-                </div>
-                <p className="mt-1.5 text-xs text-muted-foreground">JPG or PNG · Max 5 MB</p>
-              </div>
+                }
+              />
             </CardContent>
           </Card>
 

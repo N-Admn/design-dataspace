@@ -3,20 +3,11 @@ import { CheckCircle2, Database, Search } from 'lucide-react'
 
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
-import { StatusBadge } from '@/components/shared/StatusBadge'
 import { SearchableSelect } from '@/components/ui/searchable-select'
 import { useAppData } from '@/context/AppDataContext'
+import { formatShortDate } from '@/lib/format'
 import { cn } from '@/lib/utils'
 import { GEOGRAPHY_OPTIONS, SECTOR_OPTIONS } from '@/types/dataset'
-
-type StatusFilter = 'published' | 'draft' | 'pending' | 'all'
-
-const STATUS_FILTERS: { key: StatusFilter; label: string }[] = [
-  { key: 'published', label: 'Published' },
-  { key: 'draft', label: 'Draft' },
-  { key: 'pending', label: 'Pending' },
-  { key: 'all', label: 'All' },
-]
 
 interface ConnectDatasetDrawerProps {
   open: boolean
@@ -35,7 +26,6 @@ function optionLabel(options: { value: string; label: string }[], value: string)
 function ConnectDatasetDrawer({ open, onOpenChange, connectedIds, parentLabel, onConnect }: ConnectDatasetDrawerProps) {
   const { datasets } = useAppData()
   const [query, setQuery] = React.useState('')
-  const [statusFilter, setStatusFilter] = React.useState<StatusFilter>('published')
   const [sector, setSector] = React.useState('')
   const [geography, setGeography] = React.useState('')
   const [selectedId, setSelectedId] = React.useState<string | null>(null)
@@ -44,7 +34,6 @@ function ConnectDatasetDrawer({ open, onOpenChange, connectedIds, parentLabel, o
   React.useEffect(() => {
     if (open) {
       setQuery('')
-      setStatusFilter('published')
       setSector('')
       setGeography('')
       setSelectedId(null)
@@ -54,8 +43,9 @@ function ConnectDatasetDrawer({ open, onOpenChange, connectedIds, parentLabel, o
 
   const q = query.trim().toLowerCase()
 
+  // Only published datasets are eligible to connect — drafts and pending content aren't public yet.
   const results = datasets.filter((d) => {
-    if (statusFilter !== 'all' && d.status !== statusFilter) return false
+    if (d.status !== 'published') return false
     if (sector && d.form.metadata.sector !== sector) return false
     if (geography && d.form.metadata.geography !== geography) return false
     if (q && !(d.form.metadata.name || '').toLowerCase().includes(q)) return false
@@ -64,12 +54,11 @@ function ConnectDatasetDrawer({ open, onOpenChange, connectedIds, parentLabel, o
 
   const clearFilters = () => {
     setQuery('')
-    setStatusFilter('published')
     setSector('')
     setGeography('')
   }
 
-  const hasActiveFilters = query.trim() !== '' || statusFilter !== 'published' || sector !== '' || geography !== ''
+  const hasActiveFilters = query.trim() !== '' || sector !== '' || geography !== ''
 
   const selectedDataset = datasets.find((d) => d.id === selectedId)
 
@@ -84,7 +73,7 @@ function ConnectDatasetDrawer({ open, onOpenChange, connectedIds, parentLabel, o
       <DialogContent variant="right-drawer" className="gap-0 p-0">
         <DialogHeader className="shrink-0">
           <DialogTitle>Connect Dataset</DialogTitle>
-          <DialogDescription>Select an existing dataset to connect to {parentLabel}.</DialogDescription>
+          <DialogDescription>Select a published dataset to connect to {parentLabel}.</DialogDescription>
         </DialogHeader>
 
         <div className="flex shrink-0 flex-col gap-3 border-b border-border px-6 py-4">
@@ -96,20 +85,6 @@ function ConnectDatasetDrawer({ open, onOpenChange, connectedIds, parentLabel, o
               placeholder="Search by name or keyword"
               className="h-6 w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
             />
-          </div>
-
-          <div className="flex flex-wrap items-center gap-1.5">
-            {STATUS_FILTERS.map((s) => (
-              <Button
-                key={s.key}
-                type="button"
-                size="sm"
-                variant={statusFilter === s.key ? 'default' : 'outline'}
-                onClick={() => setStatusFilter(s.key)}
-              >
-                {s.label}
-              </Button>
-            ))}
           </div>
 
           <div className="grid grid-cols-2 gap-2">
@@ -170,16 +145,13 @@ function ConnectDatasetDrawer({ open, onOpenChange, connectedIds, parentLabel, o
                       </div>
                       <div className="min-w-0 flex-1">
                         <p className="truncate text-sm font-medium text-foreground">{name}</p>
-                        <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1">
-                          <StatusBadge status={dataset.status} />
-                          <span className="text-xs text-muted-foreground">
-                            {dataset.form.metadata.sector ? optionLabel(SECTOR_OPTIONS, dataset.form.metadata.sector) : '—'}
-                            {' · '}
-                            {dataset.form.metadata.geography
-                              ? optionLabel(GEOGRAPHY_OPTIONS, dataset.form.metadata.geography)
-                              : '—'}
-                          </span>
-                        </div>
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          {dataset.form.metadata.sector ? optionLabel(SECTOR_OPTIONS, dataset.form.metadata.sector) : '—'}
+                          {' · '}
+                          {dataset.form.metadata.geography
+                            ? optionLabel(GEOGRAPHY_OPTIONS, dataset.form.metadata.geography)
+                            : '—'}
+                        </p>
                       </div>
                       {isConnected && (
                         <span className="shrink-0 rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium text-muted-foreground">
@@ -201,7 +173,7 @@ function ConnectDatasetDrawer({ open, onOpenChange, connectedIds, parentLabel, o
                         <p>{dataset.form.metadata.description || 'No description provided.'}</p>
                         <p className="mt-1.5">
                           {dataset.form.files.length + (dataset.form.resources?.length ?? 0)} file(s) · Updated{' '}
-                          {dataset.updatedAt}
+                          {formatShortDate(dataset.updatedAt)}
                         </p>
                       </div>
                     )}

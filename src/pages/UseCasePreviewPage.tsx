@@ -34,6 +34,13 @@ function UseCasePreviewPage() {
     }, 50)
   }
 
+  const handleContinueToManage = () => {
+    window.close()
+    window.setTimeout(() => {
+      navigate('/dashboard/use-cases')
+    }, 50)
+  }
+
   if (!id || !form) {
     return (
       <div className="mx-auto flex max-w-lg flex-col items-center gap-3 py-24 text-center">
@@ -68,10 +75,10 @@ function UseCasePreviewPage() {
       setIsSubmitting(false)
       setJustPublished(true)
       toast({
-        title: hasLiveVersion ? 'Changes submitted' : 'Use case published',
+        title: hasLiveVersion ? 'Changes submitted' : 'Use Case published',
         description: hasLiveVersion
           ? 'Your changes are pending review. The current published version remains live.'
-          : 'Your use case is now publicly available.',
+          : 'Your Use Case is now available on CivicDataSpace.',
         variant: 'success',
       })
     }, 500)
@@ -81,33 +88,50 @@ function UseCasePreviewPage() {
     <div className="mx-auto flex max-w-4xl flex-col gap-6 py-6">
       <div className="sticky top-4 z-10 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-card px-5 py-4 shadow-sm">
         <div>
-          <p className="text-sm font-semibold text-foreground">Use Case Preview</p>
+          <p className="text-sm font-semibold text-foreground">
+            {justPublished ? (hasLiveVersion ? 'Changes submitted' : 'Use Case published') : 'Use Case Preview'}
+          </p>
           <p className="text-xs text-muted-foreground">
             {justPublished
               ? hasLiveVersion
-                ? 'Changes submitted for review.'
-                : 'Published — now publicly available.'
+                ? 'Your changes are pending review. The current published version remains live.'
+                : 'Your Use Case is now available on CivicDataSpace.'
               : 'This is what your Use Case will look like when published.'}
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Button type="button" variant="outline" onClick={handleEditInWorkspace}>
-            Edit in Workspace
-          </Button>
-          {!justPublished && (
-            <Button type="button" onClick={handlePublish} disabled={!ready || isSubmitting}>
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="size-4 animate-spin" />
-                  {hasLiveVersion ? 'Submitting...' : 'Publishing...'}
-                </>
-              ) : (
-                <>
-                  {hasLiveVersion ? 'Submit Changes' : 'Publish'}
-                  <Send className="size-4" />
-                </>
-              )}
-            </Button>
+          {justPublished ? (
+            <>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+              >
+                View Use Case
+              </Button>
+              <Button type="button" onClick={handleContinueToManage}>
+                Continue to Manage
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button type="button" variant="outline" onClick={handleEditInWorkspace}>
+                Edit in Workspace
+              </Button>
+              <Button type="button" onClick={handlePublish} disabled={!ready || isSubmitting}>
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="size-4 animate-spin" />
+                    {hasLiveVersion ? 'Submitting...' : 'Publishing...'}
+                  </>
+                ) : (
+                  <>
+                    {hasLiveVersion ? 'Submit Changes' : 'Publish Use Case'}
+                    <Send className="size-4" />
+                  </>
+                )}
+              </Button>
+            </>
           )}
         </div>
       </div>

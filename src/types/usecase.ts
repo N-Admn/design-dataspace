@@ -3,14 +3,6 @@ import type { Organisation } from '@/types/event'
 
 export type UseCaseStatus = 'draft' | 'pending' | 'published'
 
-export type UseCaseRunningStatus = 'planned' | 'ongoing' | 'completed'
-
-export const RUNNING_STATUS_OPTIONS: { value: UseCaseRunningStatus; label: string }[] = [
-  { value: 'planned', label: 'Planned' },
-  { value: 'ongoing', label: 'Ongoing' },
-  { value: 'completed', label: 'Completed' },
-]
-
 export const SDG_GOAL_OPTIONS = [
   { value: 'sdg-1', label: '1. No Poverty' },
   { value: 'sdg-2', label: '2. Zero Hunger' },
@@ -32,25 +24,15 @@ export const SDG_GOAL_OPTIONS = [
 ]
 
 export interface UseCaseMetadata {
-  title: string
-  platformUrl: string
-  runningStatus: UseCaseRunningStatus | ''
-  startedOn: string
-  completedOn: string
-  sectors: string[]
-  sdgGoals: string[]
-  geographies: string[]
-  tags: string[]
-  logo: UploadedAsset | null
-}
-
-export interface UseCaseIntroduction {
   thumbnail: UploadedAsset | null
+  title: string
   subtitle: string
-  descriptionHtml: string
+  tags: string[]
+  sdgGoals: string[]
+  sectors: string[]
+  geographies: string[]
 }
 
-export type UseCaseBlockType = 'heading' | 'paragraph' | 'image' | 'chart' | 'callout'
 export type UseCaseHeadingLevel = 2 | 3
 
 export interface UseCaseHeadingBlock {
@@ -60,9 +42,9 @@ export interface UseCaseHeadingBlock {
   level: UseCaseHeadingLevel
 }
 
-export interface UseCaseParagraphBlock {
+export interface UseCaseTextBlock {
   id: string
-  type: 'paragraph'
+  type: 'text'
   html: string
 }
 
@@ -81,35 +63,34 @@ export interface UseCaseChartBlock {
   caption: string
 }
 
-export interface UseCaseCalloutBlock {
+export interface UseCaseHighlightBlock {
   id: string
-  type: 'callout'
+  type: 'highlight'
   highlight: string
   supportingText: string
 }
 
+export interface UseCaseLinkBlock {
+  id: string
+  type: 'link'
+  url: string
+  label: string
+  description: string
+}
+
+export type UseCaseBlockType = 'heading' | 'text' | 'image' | 'chart' | 'highlight' | 'link'
+
 export type UseCaseBlock =
   | UseCaseHeadingBlock
-  | UseCaseParagraphBlock
+  | UseCaseTextBlock
   | UseCaseImageBlock
   | UseCaseChartBlock
-  | UseCaseCalloutBlock
+  | UseCaseHighlightBlock
+  | UseCaseLinkBlock
 
 export interface UseCaseConnectedDataset {
   id: string
   title: string
-}
-
-export interface UseCaseConnectedChart {
-  id: string
-  chartId: string
-  title: string
-}
-
-export interface UseCaseDashboardLink {
-  id: string
-  title: string
-  url: string
 }
 
 export interface UseCaseContributor {
@@ -120,16 +101,12 @@ export interface UseCaseContributor {
 
 export interface UseCaseConnections {
   datasets: UseCaseConnectedDataset[]
-  charts: UseCaseConnectedChart[]
-  dashboards: UseCaseDashboardLink[]
   contributors: UseCaseContributor[]
-  supportedBy: Organisation[]
-  partneredBy: Organisation[]
+  organizations: Organisation[]
 }
 
 export interface UseCaseFormState {
   metadata: UseCaseMetadata
-  introduction: UseCaseIntroduction
   blocks: UseCaseBlock[]
   connections: UseCaseConnections
 }
@@ -139,35 +116,27 @@ export interface UseCaseRecord {
   status: UseCaseStatus
   updatedAt: string
   form: UseCaseFormState
+  /** Snapshot of `form` from the moment this record was last published — untouched
+   * while edits are Pending, so Discard has the live version to revert to. */
+  publishedForm: UseCaseFormState | null
 }
 
 export const emptyUseCaseMetadata: UseCaseMetadata = {
+  thumbnail: null,
   title: '',
-  platformUrl: '',
-  runningStatus: '',
-  startedOn: '',
-  completedOn: '',
-  sectors: [],
-  sdgGoals: [],
-  geographies: [],
+  subtitle: '',
   tags: [],
-  logo: null,
+  sdgGoals: [],
+  sectors: [],
+  geographies: [],
 }
 
 export const emptyUseCaseForm: UseCaseFormState = {
   metadata: emptyUseCaseMetadata,
-  introduction: {
-    thumbnail: null,
-    subtitle: '',
-    descriptionHtml: '',
-  },
   blocks: [],
   connections: {
     datasets: [],
-    charts: [],
-    dashboards: [],
     contributors: [],
-    supportedBy: [],
-    partneredBy: [],
+    organizations: [],
   },
 }

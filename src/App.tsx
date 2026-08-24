@@ -17,6 +17,14 @@ import { EventCreationPage } from '@/pages/EventCreationPage'
 import { UseCasesPage } from '@/pages/UseCasesPage'
 import { UseCaseCreationPage } from '@/pages/UseCaseCreationPage'
 import { UseCasePreviewPage } from '@/pages/UseCasePreviewPage'
+import { CollaborativesPage } from '@/pages/CollaborativesPage'
+import { CollaborativeCreationPage } from '@/pages/CollaborativeCreationPage'
+import { CollaborativePreviewPage } from '@/pages/CollaborativePreviewPage'
+import { AIModelsPage } from '@/pages/AIModelsPage'
+import { AIModelCreationPage } from '@/pages/AIModelCreationPage'
+import { AIModelPreviewPage } from '@/pages/AIModelPreviewPage'
+import { ChartsPage } from '@/pages/ChartsPage'
+import { ChartCreationPage } from '@/pages/ChartCreationPage'
 import { ProfilePage } from '@/pages/ProfilePage'
 import { SignInPage } from '@/pages/auth/SignInPage'
 import { RegisterPage } from '@/pages/auth/RegisterPage'
@@ -26,7 +34,9 @@ function AppLayout() {
   const location = useLocation()
   const isDashboard = location.pathname === '/'
   const isUseCasePreview = /^\/dashboard\/use-cases\/[^/]+\/preview$/.test(location.pathname)
-  const hideSidebar = isDashboard || isUseCasePreview
+  const isCollaborativePreview = /^\/dashboard\/collaboratives\/[^/]+\/preview$/.test(location.pathname)
+  const isAIModelPreview = /^\/dashboard\/ai-models\/[^/]+\/preview$/.test(location.pathname)
+  const hideSidebar = isDashboard || isUseCasePreview || isCollaborativePreview || isAIModelPreview
   const isAuthRoute = location.pathname.startsWith('/auth/')
 
   if (isAuthRoute) {
@@ -40,13 +50,13 @@ function AppLayout() {
   }
 
   return (
-    <div className="min-h-screen">
+    <div className="flex min-h-screen flex-col">
       <TopNav />
-      {!isUseCasePreview && <BreadcrumbBar />}
+      {!isUseCasePreview && !isCollaborativePreview && !isAIModelPreview && <BreadcrumbBar />}
 
       <main
         className={cn(
-          'mx-auto flex max-w-[1760px] flex-col gap-6 px-10 py-8',
+          'mx-auto flex w-full max-w-[1760px] flex-1 flex-col gap-6 px-10 py-8',
           !hideSidebar && 'md:flex-row',
         )}
       >
@@ -61,6 +71,14 @@ function AppLayout() {
             <Route path="/dashboard/use-cases" element={<UseCasesPage />} />
             <Route path="/dashboard/use-cases/new" element={<UseCaseCreationPage />} />
             <Route path="/dashboard/use-cases/:id/preview" element={<UseCasePreviewPage />} />
+            <Route path="/dashboard/collaboratives" element={<CollaborativesPage />} />
+            <Route path="/dashboard/collaboratives/new" element={<CollaborativeCreationPage />} />
+            <Route path="/dashboard/collaboratives/:id/preview" element={<CollaborativePreviewPage />} />
+            <Route path="/dashboard/ai-models" element={<AIModelsPage />} />
+            <Route path="/dashboard/ai-models/new" element={<AIModelCreationPage />} />
+            <Route path="/dashboard/ai-models/:id/preview" element={<AIModelPreviewPage />} />
+            <Route path="/dashboard/charts" element={<ChartsPage />} />
+            <Route path="/dashboard/charts/new" element={<ChartCreationPage />} />
             <Route path="/dashboard/profile" element={<ProfilePage />} />
             <Route path="*" element={<Navigate to="/dashboard/datasets" replace />} />
           </Routes>

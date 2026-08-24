@@ -6,20 +6,13 @@ import { AuthLayout } from '@/components/auth/AuthLayout'
 import { GoogleButton } from '@/components/auth/GoogleButton'
 import { PasswordInput } from '@/components/auth/PasswordInput'
 import { PasswordRequirements } from '@/components/auth/PasswordRequirements'
-import { GoogleAccountChooserDialog } from '@/components/auth/GoogleAccountChooserDialog'
 import { LegalDialog } from '@/components/auth/LegalDialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
 import { FieldError } from '@/components/ui/field-error'
-import { useToast } from '@/components/ui/toast'
-import {
-  isValidEmail,
-  isExistingEmail,
-  isPasswordValid,
-  type MockGoogleAccount,
-} from '@/lib/auth-mock'
+import { isValidEmail, isExistingEmail, isPasswordValid } from '@/lib/auth-mock'
 
 interface FormErrors {
   email?: string
@@ -30,10 +23,8 @@ interface FormErrors {
 
 function RegisterPage() {
   const navigate = useNavigate()
-  const toast = useToast()
 
-  const [view, setView] = React.useState<'register' | 'account-created' | 'account-exists'>('register')
-  const [linkedAccount, setLinkedAccount] = React.useState<MockGoogleAccount | null>(null)
+  const [view, setView] = React.useState<'register' | 'account-created'>('register')
 
   const [email, setEmail] = React.useState('')
   const [password, setPassword] = React.useState('')
@@ -42,7 +33,6 @@ function RegisterPage() {
   const [agree, setAgree] = React.useState(false)
   const [errors, setErrors] = React.useState<FormErrors>({})
   const [submitting, setSubmitting] = React.useState(false)
-  const [googleChooserOpen, setGoogleChooserOpen] = React.useState(false)
   const [legalDialog, setLegalDialog] = React.useState<'terms' | 'privacy' | null>(null)
 
   const validate = (): FormErrors => {
@@ -91,55 +81,7 @@ function RegisterPage() {
   }
 
   const handleGoogleClick = () => {
-    if (!agree) {
-      setErrors((prev) => ({ ...prev, terms: 'Please accept the Terms & Conditions and Privacy Policy to continue.' }))
-      return
-    }
-    setGoogleChooserOpen(true)
-  }
-
-  const handleGoogleSelect = (account: MockGoogleAccount) => {
-    setGoogleChooserOpen(false)
-
-    if (account.kind === 'existing-password') {
-      setLinkedAccount(account)
-      setView('account-exists')
-      return
-    }
-
-    if (account.kind === 'existing-google') {
-      toast({ title: 'Welcome back', description: 'You already have an account — signed in with Google.' })
-      navigate('/')
-      return
-    }
-
-    setView('account-created')
-  }
-
-  if (view === 'account-exists' && linkedAccount) {
-    return (
-      <AuthLayout>
-        <h1 className="text-2xl font-semibold text-primary">An account already exists with this email.</h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          {linkedAccount.email} is already registered with CivicDataSpace. You can sign in using your existing
-          password or continue with Google to connect your accounts.
-        </p>
-
-        <div className="mt-6 flex flex-col gap-3">
-          <Button type="button" size="lg" onClick={() => navigate('/auth/sign-in', { state: { email: linkedAccount.email } })}>
-            Sign In
-          </Button>
-          <GoogleButton
-            onClick={() => {
-              toast({ title: 'Accounts linked', description: 'Welcome back.' })
-              navigate('/')
-            }}
-          >
-            Continue with Google
-          </GoogleButton>
-        </div>
-      </AuthLayout>
-    )
+    navigate('/auth/sign-in', { state: { openGoogle: true } })
   }
 
   if (view === 'account-created') {
@@ -286,11 +228,6 @@ function RegisterPage() {
         </Link>
       </p>
 
-      <GoogleAccountChooserDialog
-        open={googleChooserOpen}
-        onOpenChange={setGoogleChooserOpen}
-        onSelect={handleGoogleSelect}
-      />
       <LegalDialog open={legalDialog !== null} type={legalDialog} onOpenChange={(open) => !open && setLegalDialog(null)} />
     </AuthLayout>
   )

@@ -86,6 +86,9 @@ export interface DatasetRecord {
   status: DatasetStatus
   updatedAt: string
   form: DatasetFormState
+  /** Snapshot of `form` from the moment this record was last published — untouched
+   * while edits are Pending, so Discard has the live version to revert to. */
+  publishedForm: DatasetFormState | null
 }
 
 export const emptyDatasetForm: DatasetFormState = {
