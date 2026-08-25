@@ -13,12 +13,12 @@ function GoogleAccountChooserDialog({
 }) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent variant="center" className="max-w-sm">
-        <DialogHeader>
+      <DialogContent variant="center" className="flex max-w-sm flex-col">
+        <DialogHeader className="shrink-0">
           <DialogTitle>Choose an account</DialogTitle>
           <DialogDescription>to continue to CivicDataSpace</DialogDescription>
         </DialogHeader>
-        <div className="flex flex-col gap-1 p-3">
+        <div className="min-h-0 flex-1 overflow-y-auto p-3">
           {GOOGLE_MOCK_ACCOUNTS.map((account) => (
             <button
               key={account.email}
@@ -36,7 +36,7 @@ function GoogleAccountChooserDialog({
             </button>
           ))}
         </div>
-        <div className="border-t border-border px-6 py-4">
+        <div className="shrink-0 border-t border-border px-6 py-4">
           <Button type="button" variant="ghost" className="w-full" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>

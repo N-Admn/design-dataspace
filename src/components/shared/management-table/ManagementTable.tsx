@@ -9,7 +9,7 @@ import { SearchableSelect } from '@/components/ui/searchable-select'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
-import { WORKSPACE_HEIGHT_CLASS } from '@/lib/layout'
+import { WORKSPACE_MAX_HEIGHT_CLASS } from '@/lib/layout'
 import { useMediaQuery } from '@/hooks/use-media-query'
 
 // ---------- Shared row-geometry tokens (the validated Datasets reference values) ----------
@@ -244,7 +244,7 @@ function ManagementTable<T, S extends string>({
   if (loading) {
     body = (
       <div role="table" className="flex h-full flex-col text-sm">
-        <div role="rowgroup" className="min-h-0 flex-1" style={{ display: 'grid', gridTemplateRows: `repeat(${PAGE_SIZE}, minmax(${ROW_MIN_HEIGHT_REM}, ${ROW_MAX_HEIGHT_REM}))` }}>
+        <div role="rowgroup" className="min-h-0 flex-1 overflow-y-auto" style={{ display: 'grid', gridTemplateRows: `repeat(${PAGE_SIZE}, minmax(${ROW_MIN_HEIGHT_REM}, ${ROW_MAX_HEIGHT_REM}))` }}>
           {Array.from({ length: PAGE_SIZE }).map((_, i) => (
             <div role="row" key={i} className="grid items-center border-b border-border last:border-b-0" style={{ gridTemplateColumns: columnTemplate }}>
               <div className="px-4">
@@ -351,7 +351,7 @@ function ManagementTable<T, S extends string>({
           </div>
         </div>
 
-        <div role="rowgroup" className="min-h-0 flex-1" style={{ display: 'grid', gridTemplateRows: `repeat(${pageItems.length}, minmax(${ROW_MIN_HEIGHT_REM}, ${ROW_MAX_HEIGHT_REM}))` }}>
+        <div role="rowgroup" className="min-h-0 flex-1 overflow-y-auto" style={{ display: 'grid', gridTemplateRows: `repeat(${pageItems.length}, minmax(${ROW_MIN_HEIGHT_REM}, ${ROW_MAX_HEIGHT_REM}))` }}>
           {pageItems.map((row) => {
             const rowActions = getActions(row)
             return (
@@ -496,8 +496,8 @@ function ManagementTable<T, S extends string>({
   )
 
   return (
-    <Card className={cn('flex flex-col', WORKSPACE_HEIGHT_CLASS)}>
-      <CardHeader className="flex-row shrink-0 items-center justify-between">
+    <Card className={cn('flex flex-col', WORKSPACE_MAX_HEIGHT_CLASS)}>
+      <CardHeader className="flex-row shrink-0 flex-wrap items-center justify-between gap-3">
         <div>
           <CardTitle>{title}</CardTitle>
           <p className="mt-1 text-sm font-normal text-muted-foreground">{subtitle(items.length)}</p>

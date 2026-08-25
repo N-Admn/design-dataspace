@@ -36,8 +36,8 @@ function FilePreviewModal({ file, onOpenChange }: FilePreviewModalProps) {
 
   return (
     <Dialog open={file !== null} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl gap-0 p-0">
-        <DialogHeader className="flex-row items-center gap-3 space-y-0">
+      <DialogContent className="flex max-w-4xl flex-col gap-0 p-0">
+        <DialogHeader className="shrink-0 flex-row items-center gap-3 space-y-0">
           <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
             {isTabular ? <Table2 className="size-5" /> : <FileText className="size-5" />}
           </div>
@@ -49,7 +49,7 @@ function FilePreviewModal({ file, onOpenChange }: FilePreviewModalProps) {
           </div>
         </DialogHeader>
 
-        <div className="px-6 py-5">
+        <div className="min-h-0 flex-1 overflow-y-auto px-6 py-5">
           {isTabular ? (
             <>
               <div className="mb-3 flex items-center justify-between">
@@ -95,7 +95,7 @@ function FilePreviewModal({ file, onOpenChange }: FilePreviewModalProps) {
           )}
         </div>
 
-        <div className="flex items-center justify-end border-t border-border px-6 py-4">
+        <div className="flex shrink-0 items-center justify-end border-t border-border px-6 py-4">
           <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
             Close Preview
           </Button>

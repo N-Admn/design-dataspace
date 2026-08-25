@@ -18,14 +18,14 @@ function LeaveCreationDialog({
 }: LeaveCreationDialogProps) {
   return (
     <Dialog open={open} onOpenChange={(next) => !next && onContinueEditing()}>
-      <DialogContent variant="center" className="max-w-md gap-0 p-0" showClose={false}>
-        <div className="px-6 pb-2 pt-6">
+      <DialogContent variant="center" className="flex max-w-md flex-col gap-0 p-0" showClose={false}>
+        <div className="min-h-0 flex-1 overflow-y-auto px-6 pb-2 pt-6">
           <h2 className="text-base font-semibold text-primary">Leave {itemLabel} creation?</h2>
           <p className="mt-2 text-sm text-muted-foreground">
             Your changes have not been saved. What would you like to do?
           </p>
         </div>
-        <div className="mt-4 flex flex-col gap-2 border-t border-border px-6 py-4">
+        <div className="flex shrink-0 flex-col gap-2 border-t border-border px-6 py-4">
           <Button type="button" onClick={onSaveDraftAndExit}>
             Save as draft &amp; exit
           </Button>

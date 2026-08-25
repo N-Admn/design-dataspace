@@ -14,8 +14,8 @@ interface ChartPublishSuccessModalProps {
 function ChartPublishSuccessModal({ open, chartName, hasLiveVersion, onViewOnDataset, onBackToCharts }: ChartPublishSuccessModalProps) {
   return (
     <Dialog open={open} onOpenChange={(next) => !next && onBackToCharts()}>
-      <DialogContent className="max-w-md gap-0 p-0" showClose={false}>
-        <div className="flex flex-col items-center gap-2 px-6 py-8 text-center">
+      <DialogContent className="flex max-w-md flex-col gap-0 p-0" showClose={false}>
+        <div className="min-h-0 flex-1 overflow-y-auto flex flex-col items-center gap-2 px-6 py-8 text-center">
           <div className="flex size-12 items-center justify-center rounded-full bg-success/10 text-success">
             <CheckCircle2 className="size-6" />
           </div>
@@ -34,7 +34,7 @@ function ChartPublishSuccessModal({ open, chartName, hasLiveVersion, onViewOnDat
           </p>
         </div>
 
-        <div className="flex flex-col gap-2 border-t border-border px-6 py-4 sm:flex-row-reverse">
+        <div className="flex shrink-0 flex-col gap-2 border-t border-border px-6 py-4 sm:flex-row-reverse">
           <Button type="button" className="sm:flex-1" onClick={onViewOnDataset}>
             View on Dataset
           </Button>
