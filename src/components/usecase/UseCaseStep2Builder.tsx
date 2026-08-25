@@ -2,6 +2,7 @@ import * as React from 'react'
 import {
   BarChart3,
   Check,
+  CheckCircle2,
   ChevronDown,
   ChevronUp,
   Copy,
@@ -13,6 +14,7 @@ import {
   Pencil,
   Pilcrow,
   Plus,
+  Search,
   Trash2,
   UploadCloud,
 } from 'lucide-react'
@@ -22,7 +24,7 @@ import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { RichTextEditor } from '@/components/ui/rich-text-editor'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { ChartSelectDrawer } from '@/components/usecase/ChartSelectDrawer'
+import { useAppData } from '@/context/AppDataContext'
 import { cn } from '@/lib/utils'
 import { validateAssetFile, buildUploadedAsset } from '@/lib/generic-upload'
 import { SUPPORTED_IMAGE_EXTENSIONS, MAX_IMAGE_BYTES } from '@/types/event'
@@ -168,9 +170,23 @@ interface UseCaseStep2BuilderProps {
 }
 
 function UseCaseStep2Builder({ metadata, blocks, onBlocksChange }: UseCaseStep2BuilderProps) {
+  const { charts, datasets } = useAppData()
   const [addMenuOpen, setAddMenuOpen] = React.useState(false)
-  const [chartDrawerBlockId, setChartDrawerBlockId] = React.useState<string | null>(null)
+  const [chartSearchBlockId, setChartSearchBlockId] = React.useState<string | null>(null)
+  const [chartQuery, setChartQuery] = React.useState('')
   const [activeBlockId, setActiveBlockId] = React.useState<string | null>(null)
+
+  const openChartSearch = (blockId: string) => {
+    setChartQuery('')
+    setChartSearchBlockId(blockId)
+  }
+
+  const chartSearchResults = React.useMemo(() => {
+    const q = chartQuery.trim().toLowerCase()
+    return charts
+      .filter((c) => c.status === 'published')
+      .filter((c) => !q || (c.form.name || '').toLowerCase().includes(q))
+  }, [charts, chartQuery])
 
   const updateBlock = (id: string, patch: Partial<UseCaseBlock>) => {
     onBlocksChange(blocks.map((b) => (b.id === id ? ({ ...b, ...patch } as UseCaseBlock) : b)))
@@ -358,6 +374,7 @@ function UseCaseStep2Builder({ metadata, blocks, onBlocksChange }: UseCaseStep2B
                   }
 
                   if (block.type === 'chart') {
+                    const isSearching = chartSearchBlockId === block.id
                     return (
                       <BlockWrapper key={block.id} {...shellProps}>
                         <figure className="rounded-lg border border-border p-4">
@@ -367,7 +384,7 @@ function UseCaseStep2Builder({ metadata, blocks, onBlocksChange }: UseCaseStep2B
                               <button
                                 type="button"
                                 autoFocus
-                                onClick={() => setChartDrawerBlockId(block.id)}
+                                onClick={() => (isSearching ? setChartSearchBlockId(null) : openChartSearch(block.id))}
                                 className={cn('rounded-sm text-left hover:underline', !block.chartId && 'text-muted-foreground')}
                               >
                                 {block.chartId ? block.chartTitle : 'Select a chart...'}
@@ -376,9 +393,71 @@ function UseCaseStep2Builder({ metadata, blocks, onBlocksChange }: UseCaseStep2B
                               <span>{block.chartId ? block.chartTitle : 'No chart selected'}</span>
                             )}
                           </div>
-                          <div className="mt-3 flex h-32 items-center justify-center rounded-md bg-muted/40 text-xs text-muted-foreground">
-                            {block.chartId ? 'Interactive chart — remains dynamic on the published page.' : 'No chart selected yet.'}
-                          </div>
+
+                          {isSearching ? (
+                            <div className="mt-3 flex flex-col gap-2 rounded-md border border-border bg-muted/30 p-3">
+                              <div className="flex items-center gap-2 rounded-md border border-input bg-background px-3 py-2">
+                                <Search className="size-4 shrink-0 text-muted-foreground" />
+                                <input
+                                  autoFocus
+                                  value={chartQuery}
+                                  onChange={(e) => setChartQuery(e.target.value)}
+                                  placeholder="Search charts by name"
+                                  className="h-6 w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+                                />
+                              </div>
+                              {chartSearchResults.length === 0 ? (
+                                <p className="py-4 text-center text-xs text-muted-foreground">No charts found.</p>
+                              ) : (
+                                <div className="flex max-h-48 flex-col gap-1.5 overflow-y-auto">
+                                  {chartSearchResults.map((chart) => {
+                                    const title = chart.form.name || 'Untitled chart'
+                                    const datasetName = chart.form.datasetId
+                                      ? datasets.find((d) => d.id === chart.form.datasetId)?.form.metadata.name
+                                      : undefined
+                                    const isCurrent = block.chartId === chart.id
+                                    return (
+                                      <button
+                                        key={chart.id}
+                                        type="button"
+                                        onClick={() => {
+                                          updateBlock(block.id, { chartId: chart.id, chartTitle: title })
+                                          setChartSearchBlockId(null)
+                                        }}
+                                        className={cn(
+                                          'flex items-center gap-2 rounded-md border border-border bg-card px-3 py-2 text-left transition-colors hover:border-primary/40',
+                                          isCurrent && 'border-primary bg-primary/5',
+                                        )}
+                                      >
+                                        {isCurrent ? (
+                                          <CheckCircle2 className="size-4 shrink-0 text-primary" />
+                                        ) : (
+                                          <BarChart3 className="size-4 shrink-0 text-muted-foreground" />
+                                        )}
+                                        <span className="min-w-0 flex-1 truncate text-xs font-medium text-foreground">{title}</span>
+                                        {datasetName && (
+                                          <span className="shrink-0 truncate text-xs text-muted-foreground">{datasetName}</span>
+                                        )}
+                                      </button>
+                                    )
+                                  })}
+                                </div>
+                              )}
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                className="self-start"
+                                onClick={() => setChartSearchBlockId(null)}
+                              >
+                                Cancel
+                              </Button>
+                            </div>
+                          ) : (
+                            <div className="mt-3 flex h-32 items-center justify-center rounded-md bg-muted/40 text-xs text-muted-foreground">
+                              {block.chartId ? 'Interactive chart — remains dynamic on the published page.' : 'No chart selected yet.'}
+                            </div>
+                          )}
                           {active ? (
                             <input
                               value={block.caption}
@@ -472,16 +551,6 @@ function UseCaseStep2Builder({ metadata, blocks, onBlocksChange }: UseCaseStep2B
           )}
         </div>
       </div>
-
-      <ChartSelectDrawer
-        open={chartDrawerBlockId !== null}
-        onOpenChange={(open) => !open && setChartDrawerBlockId(null)}
-        onSelect={(chart) => {
-          if (!chartDrawerBlockId) return
-          updateBlock(chartDrawerBlockId, { chartId: chart.id, chartTitle: chart.title })
-          setChartDrawerBlockId(null)
-        }}
-      />
     </div>
   )
 }

@@ -11,6 +11,22 @@ function getExtension(fileName: string): string {
   return parts.length > 1 ? parts[parts.length - 1].toLowerCase() : ''
 }
 
+/** Derives a human-readable default title from a filename: strips the extension,
+ *  turns underscores/hyphens into spaces, and capitalizes lowercase words only —
+ *  acronyms, mixed case and alphanumeric tokens (e.g. "GDP", "v3") are left as-is. */
+export function deriveDefaultResourceTitle(fileName: string): string {
+  const withoutExtension = fileName.replace(/\.[^./]+$/, '')
+  const words = withoutExtension.split(/[\s_-]+/).filter(Boolean)
+  const cased = words.map((word) => (/^[a-z]+$/.test(word) ? word[0].toUpperCase() + word.slice(1) : word))
+  return cased.join(' ').trim()
+}
+
+/** The title shown to contributors for a resource: their edit if present,
+ *  otherwise derived fresh from the original filename. */
+export function getResourceTitle(file: DatasetFile): string {
+  return file.title?.trim() || deriveDefaultResourceTitle(file.name)
+}
+
 let fileIdCounter = 0
 
 export function validateIncomingFiles(
@@ -46,6 +62,7 @@ export function validateIncomingFiles(
     accepted.push({
       id: `file-${fileIdCounter}-${file.name}`,
       name: file.name,
+      title: deriveDefaultResourceTitle(file.name),
       extension: extension.toUpperCase(),
       sizeLabel: formatFileSize(file.size),
       sizeBytes: file.size,

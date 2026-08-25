@@ -3,6 +3,7 @@ import { AlertTriangle, CheckCircle2, ExternalLink } from 'lucide-react'
 
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { ReviewSection } from '@/components/shared/ReviewSection'
 import { LICENSE_OPTIONS, SECTOR_OPTIONS, GEOGRAPHY_OPTIONS } from '@/types/dataset'
 import {
   DOMAIN_OPTIONS,
@@ -81,14 +82,8 @@ function AIModelStep3Review({ form, otherNames, onEditStep, onPreview }: AIModel
         )}
       </div>
 
-      <div className="rounded-xl border border-border bg-card p-5">
-        <div className="flex items-center justify-between">
-          <p className="text-sm font-semibold text-foreground">Model Information</p>
-          <Button type="button" variant="outline" size="sm" onClick={() => onEditStep(1)}>
-            Edit →
-          </Button>
-        </div>
-        <div className="mt-1 divide-y divide-border">
+      <ReviewSection title="Model Information" defaultOpen onEdit={() => onEditStep(2)}>
+        <div className="divide-y divide-border">
           <SummaryRow label="Model Name" value={metadata.name || '—'} />
           <SummaryRow label="Model Type" value={metadata.modelType ? optionLabel(MODEL_TYPE_OPTIONS, metadata.modelType) : '—'} />
           <SummaryRow label="Description" value={metadata.description || '—'} />
@@ -188,17 +183,11 @@ function AIModelStep3Review({ form, otherNames, onEditStep, onPreview }: AIModel
           />
           <SummaryRow label="Usage License" value={metadata.license ? optionLabel(LICENSE_OPTIONS, metadata.license) : '—'} />
         </div>
-      </div>
+      </ReviewSection>
 
-      <div className="rounded-xl border border-border bg-card p-5">
-        <div className="flex items-center justify-between">
-          <p className="text-sm font-semibold text-foreground">Versions</p>
-          <Button type="button" variant="outline" size="sm" onClick={() => onEditStep(2)}>
-            Edit →
-          </Button>
-        </div>
+      <ReviewSection title="Versions" defaultOpen={false} onEdit={() => onEditStep(1)}>
         {primaryVersion ? (
-          <div className="mt-1 divide-y divide-border">
+          <div className="divide-y divide-border">
             <SummaryRow label="Versions Configured" value={`${versions.length} version${versions.length === 1 ? '' : 's'}`} />
             <SummaryRow
               label="Primary Version"
@@ -212,19 +201,13 @@ function AIModelStep3Review({ form, otherNames, onEditStep, onPreview }: AIModel
             <SummaryRow label="Lifecycle Stage" value={optionLabel(LIFECYCLE_OPTIONS, primaryVersion.lifecycleStage)} />
           </div>
         ) : (
-          <p className="mt-2 text-sm text-muted-foreground">No versions yet.</p>
+          <p className="text-sm text-muted-foreground">No versions yet.</p>
         )}
-      </div>
+      </ReviewSection>
 
-      <div className="rounded-xl border border-border bg-card p-5">
-        <div className="flex items-center justify-between">
-          <p className="text-sm font-semibold text-foreground">Access</p>
-          <Button type="button" variant="outline" size="sm" onClick={() => onEditStep(2, primaryVersion?.id)}>
-            Edit →
-          </Button>
-        </div>
+      <ReviewSection title="Access" defaultOpen={false} onEdit={() => onEditStep(1, primaryVersion?.id)}>
         {primaryVersion && primaryVersion.accessMethods.length > 0 && primaryAccess ? (
-          <div className="mt-1 divide-y divide-border">
+          <div className="divide-y divide-border">
             <SummaryRow
               label="Access Methods"
               value={`${primaryVersion.accessMethods.length} configured on Version ${primaryVersion.name}`}
@@ -250,9 +233,9 @@ function AIModelStep3Review({ form, otherNames, onEditStep, onPreview }: AIModel
             />
           </div>
         ) : (
-          <p className="mt-2 text-sm text-muted-foreground">No access methods configured on the Primary version yet.</p>
+          <p className="text-sm text-muted-foreground">No access methods configured on the Primary version yet.</p>
         )}
-      </div>
+      </ReviewSection>
 
       <div className="flex flex-col items-center gap-2.5 rounded-xl border border-border bg-card px-5 py-8 text-center">
         <p className="text-sm text-muted-foreground">

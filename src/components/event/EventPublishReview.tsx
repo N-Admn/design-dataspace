@@ -1,12 +1,9 @@
-import * as React from 'react'
 import type { ReactNode } from 'react'
-import { ChevronDown, Database, Layers, Pencil, Send, Sparkles, Users2 } from 'lucide-react'
+import { Database, ExternalLink, Layers, Sparkles, Users2 } from 'lucide-react'
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
-import { cn } from '@/lib/utils'
+import { ReviewSection } from '@/components/shared/ReviewSection'
 import { SECTOR_OPTIONS } from '@/types/dataset'
 import { formatEventDateRange, getRegistrationStatus } from '@/lib/event-status'
 import {
@@ -18,10 +15,9 @@ import {
 
 interface EventPublishReviewProps {
   form: EventFormState
-  canPublish: boolean
   hasLiveVersion: boolean
   onEditSection: (step: 1 | 2 | 3) => void
-  onPublish: () => void
+  onPreview: () => void
 }
 
 function optionLabel(options: { value: string; label: string }[], value: string): string {
@@ -37,52 +33,13 @@ function ReviewField({ label, value }: { label: string; value: ReactNode }) {
   )
 }
 
-function ReviewSection({
-  title,
-  editStep,
-  onEditSection,
-  defaultOpen,
-  children,
-}: {
-  title: string
-  editStep: 1 | 2 | 3
-  onEditSection: (step: 1 | 2 | 3) => void
-  defaultOpen: boolean
-  children: ReactNode
-}) {
-  const [open, setOpen] = React.useState(defaultOpen)
-  return (
-    <Card>
-      <CardHeader className="flex-row items-center justify-between">
-        <button
-          type="button"
-          onClick={() => setOpen((o) => !o)}
-          className="flex items-center gap-2 text-left"
-        >
-          <ChevronDown className={cn('size-4 text-muted-foreground transition-transform', !open && '-rotate-90')} />
-          <CardTitle>{title}</CardTitle>
-        </button>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button type="button" variant="ghost" size="icon" aria-label={`Edit ${title}`} onClick={() => onEditSection(editStep)}>
-              <Pencil className="size-4" />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent side="top">Edit {title}</TooltipContent>
-        </Tooltip>
-      </CardHeader>
-      {open && <CardContent className="flex flex-col gap-5">{children}</CardContent>}
-    </Card>
-  )
-}
-
-function EventPublishReview({ form, canPublish, hasLiveVersion, onEditSection, onPublish }: EventPublishReviewProps) {
+function EventPublishReview({ form, hasLiveVersion, onEditSection, onPreview }: EventPublishReviewProps) {
   const { metadata } = form
   const registration = getRegistrationStatus(metadata)
 
   return (
     <div className="flex flex-col gap-6">
-      <ReviewSection title="Information" editStep={1} onEditSection={onEditSection} defaultOpen>
+      <ReviewSection title="Information" defaultOpen onEdit={() => onEditSection(1)}>
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
           <div className="sm:col-span-2">
             <ReviewField label="Event Title" value={metadata.title || '—'} />
@@ -138,7 +95,7 @@ function EventPublishReview({ form, canPublish, hasLiveVersion, onEditSection, o
         </div>
       </ReviewSection>
 
-      <ReviewSection title="Connections" editStep={2} onEditSection={onEditSection} defaultOpen={false}>
+      <ReviewSection title="Connections" defaultOpen={false} onEdit={() => onEditSection(2)}>
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
           <ReviewField
             label="Organiser"
@@ -152,7 +109,7 @@ function EventPublishReview({ form, canPublish, hasLiveVersion, onEditSection, o
         </div>
       </ReviewSection>
 
-      <ReviewSection title="Publications" editStep={3} onEditSection={onEditSection} defaultOpen={false}>
+      <ReviewSection title="Publications" defaultOpen={false} onEdit={() => onEditSection(3)}>
         {form.publications.length === 0 ? (
           <p className="text-sm text-muted-foreground">No publications added.</p>
         ) : (
@@ -170,7 +127,7 @@ function EventPublishReview({ form, canPublish, hasLiveVersion, onEditSection, o
         )}
       </ReviewSection>
 
-      <ReviewSection title="Related Content" editStep={3} onEditSection={onEditSection} defaultOpen={false}>
+      <ReviewSection title="Related Content" defaultOpen={false} onEdit={() => onEditSection(3)}>
         <RelatedGroup icon={Database} label="Datasets" items={form.relatedContent.datasets.map((i) => i.title)} />
         <RelatedGroup icon={Layers} label="Use Cases" items={form.relatedContent.useCases.map((i) => i.title)} />
         <RelatedGroup
@@ -181,21 +138,17 @@ function EventPublishReview({ form, canPublish, hasLiveVersion, onEditSection, o
         <RelatedGroup icon={Sparkles} label="AI Models" items={form.relatedContent.aiModels.map((i) => i.title)} />
       </ReviewSection>
 
-      <div className="flex flex-col items-center gap-3 rounded-xl border border-border bg-card px-6 py-8 text-center">
+      <div className="flex flex-col items-center gap-2.5 rounded-xl border border-border bg-card px-5 py-8 text-center">
         <p className="text-sm text-muted-foreground">
-          {hasLiveVersion
-            ? 'Submitting will send your changes for review before they go live. The current published version remains live until then.'
-            : 'The event will be publicly available immediately after publishing.'}
+          Open a full preview of this event in a new tab, exactly as it will appear once published.
         </p>
-        <Button type="button" size="lg" className="w-full max-w-md" disabled={!canPublish} onClick={onPublish}>
-          {hasLiveVersion ? 'Submit Changes' : 'Publish Event'}
-          <Send className="size-4" />
+        <Button type="button" size="lg" className="w-full max-w-md" onClick={onPreview}>
+          Preview Event
+          <ExternalLink className="size-4" />
         </Button>
-        {!canPublish && (
-          <p className="text-xs font-medium text-destructive">
-            Complete the required fields in Information before publishing.
-          </p>
-        )}
+        <p className="text-xs text-muted-foreground">
+          {hasLiveVersion ? 'Submitting happens from inside the preview.' : 'Publishing happens from inside the preview.'}
+        </p>
       </div>
     </div>
   )

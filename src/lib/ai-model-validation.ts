@@ -211,29 +211,29 @@ export function getAIModelReadinessIssues(form: AIModelFormState, otherModelName
   const issues: AIModelReadinessIssue[] = []
 
   Object.values(validateAIModelDetails(form, otherModelNames)).forEach((message) => {
-    if (message) issues.push({ section: 'Model Information', message, step: 1 })
+    if (message) issues.push({ section: 'Model Information', message, step: 2 })
   })
 
   if (form.versions.length === 0) {
-    issues.push({ section: 'Versions', message: 'Create at least one version.', step: 2 })
+    issues.push({ section: 'Versions', message: 'Create at least one version.', step: 1 })
     return issues
   }
 
   const primaryVersions = form.versions.filter((v) => v.isPrimary)
   if (primaryVersions.length !== 1) {
-    issues.push({ section: 'Versions', message: 'Mark exactly one version as Primary.', step: 2 })
+    issues.push({ section: 'Versions', message: 'Mark exactly one version as Primary.', step: 1 })
   }
   const primaryVersion = primaryVersions[0] ?? form.versions[0]
   const otherVersionNames = form.versions.filter((v) => v.id !== primaryVersion.id).map((v) => v.name)
   Object.values(validateAIModelVersion(primaryVersion, otherVersionNames)).forEach((message) => {
-    if (message) issues.push({ section: 'Versions', message, step: 2, versionId: primaryVersion.id })
+    if (message) issues.push({ section: 'Versions', message, step: 1, versionId: primaryVersion.id })
   })
 
   if (primaryVersion.accessMethods.length === 0) {
     issues.push({
       section: 'Access Methods',
       message: 'Add at least one access method to the Primary version.',
-      step: 2,
+      step: 1,
       versionId: primaryVersion.id,
     })
   } else {
@@ -242,14 +242,14 @@ export function getAIModelReadinessIssues(form: AIModelFormState, otherModelName
       issues.push({
         section: 'Access Methods',
         message: 'Select a Primary Access Method for this version.',
-        step: 2,
+        step: 1,
         versionId: primaryVersion.id,
       })
     }
     const primaryAccess = primaryAccessMethods[0] ?? primaryVersion.accessMethods[0]
     const otherAccessNames = primaryVersion.accessMethods.filter((a) => a.id !== primaryAccess.id).map((a) => a.name)
     Object.values(validateAIModelAccessMethod(primaryAccess, otherAccessNames)).forEach((message) => {
-      if (message) issues.push({ section: 'Access Methods', message, step: 2, versionId: primaryVersion.id })
+      if (message) issues.push({ section: 'Access Methods', message, step: 1, versionId: primaryVersion.id })
     })
   }
 

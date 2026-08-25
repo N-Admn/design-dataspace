@@ -1,12 +1,13 @@
 import type { ReactNode } from 'react'
-import { ArrowRight, BarChart3, CalendarDays, CheckCircle2, FolderKanban, Gauge, Globe, ImagePlus, LineChart, Link2, MapPin, Pencil, PieChart, Send } from 'lucide-react'
+import { ArrowRight, BarChart3, CalendarDays, CheckCircle2, FolderKanban, Gauge, Globe, ImagePlus, LineChart, Link2, MapPin, PieChart, Send } from 'lucide-react'
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { ReviewSection } from '@/components/shared/ReviewSection'
 import { PublicVisibilityNotice } from '@/components/dataset/PublicVisibilityNotice'
 import { formatFileSize } from '@/lib/format'
+import { getResourceTitle } from '@/lib/file-validation'
 import { useAppData } from '@/context/AppDataContext'
 import { CHART_TYPE_OPTIONS, type ChartType } from '@/types/chart'
 import {
@@ -25,7 +26,8 @@ interface Step3ReviewProps {
   canPublish: boolean
   /** True when this dataset already has a published/pending version — the primary action submits for review instead of publishing directly. */
   hasLiveVersion?: boolean
-  onEditMetadata: () => void
+  /** 1 = Data Files, 2 = Metadata. */
+  onEditStep: (step: 1 | 2) => void
   onPublish: () => void
 }
 
@@ -139,25 +141,14 @@ function ReviewField({ label, value }: { label: string; value: ReactNode }) {
   )
 }
 
-function Step3Review({ form, datasetId, canPublish, hasLiveVersion, onEditMetadata, onPublish }: Step3ReviewProps) {
+function Step3Review({ form, datasetId, canPublish, hasLiveVersion, onEditStep, onPublish }: Step3ReviewProps) {
   const { metadata, files, resources } = form
   const totalBytes = files.reduce((sum, f) => sum + f.sizeBytes, 0)
 
   return (
     <div className="flex flex-col gap-6">
-      <Card>
-        <CardHeader className="flex-row items-center justify-between">
-          <CardTitle>Metadata</CardTitle>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button type="button" variant="ghost" size="icon" aria-label="Edit metadata" onClick={onEditMetadata}>
-                <Pencil className="size-4" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent side="top">Edit metadata</TooltipContent>
-          </Tooltip>
-        </CardHeader>
-        <CardContent className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+      <ReviewSection title="Metadata" defaultOpen onEdit={() => onEditStep(2)}>
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
           <div className="sm:col-span-2">
             <ReviewField label="Dataset Name" value={metadata.name || '—'} />
           </div>
@@ -189,22 +180,11 @@ function Step3Review({ form, datasetId, canPublish, hasLiveVersion, onEditMetada
           </div>
           <ReviewField label="Source Website" value={metadata.sourceWebsite || '—'} />
           <ReviewField label="Create Date" value={metadata.createDate || '—'} />
-        </CardContent>
-      </Card>
+        </div>
+      </ReviewSection>
 
-      <Card>
-        <CardHeader className="flex-row items-center justify-between">
-          <CardTitle>Publishing Settings</CardTitle>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button type="button" variant="ghost" size="icon" aria-label="Edit publishing settings" onClick={onEditMetadata}>
-                <Pencil className="size-4" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent side="top">Edit publishing settings</TooltipContent>
-          </Tooltip>
-        </CardHeader>
-        <CardContent className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+      <ReviewSection title="Publishing Settings" defaultOpen={false} onEdit={() => onEditStep(2)}>
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
           <ReviewField
             label="Access Type"
             value={
@@ -219,14 +199,11 @@ function Step3Review({ form, datasetId, canPublish, hasLiveVersion, onEditMetada
             label="License"
             value={metadata.license ? optionLabel(LICENSE_OPTIONS, metadata.license) : '—'}
           />
-        </CardContent>
-      </Card>
+        </div>
+      </ReviewSection>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Uploaded Files</CardTitle>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-3">
+      <ReviewSection title="Uploaded Files" defaultOpen={false} onEdit={() => onEditStep(1)}>
+        <div className="flex flex-col gap-3">
           {files.length === 0 && (
             <p className="text-sm text-muted-foreground">No files uploaded.</p>
           )}
@@ -236,10 +213,11 @@ function Step3Review({ form, datasetId, canPublish, hasLiveVersion, onEditMetada
               className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg border border-border px-4 py-3"
             >
               <CheckCircle2 className="size-5 shrink-0 text-success" />
-              <span className="text-sm font-medium text-foreground">{file.name}</span>
+              <span className="text-sm font-medium text-foreground">{getResourceTitle(file)}</span>
               <Badge variant="secondary">{file.extension}</Badge>
               <span className="text-xs text-muted-foreground">{file.sizeLabel}</span>
               <span className="text-xs text-muted-foreground">{file.uploadedAt}</span>
+              <span className="text-xs text-muted-foreground">Original: {file.name}</span>
             </div>
           ))}
           {files.length > 0 && (
@@ -247,15 +225,12 @@ function Step3Review({ form, datasetId, canPublish, hasLiveVersion, onEditMetada
               Total file size: {formatFileSize(totalBytes)}
             </p>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </ReviewSection>
 
       {resources.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Resources</CardTitle>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-3">
+        <ReviewSection title="Resources" defaultOpen={false} onEdit={() => onEditStep(1)}>
+          <div className="flex flex-col gap-3">
             {resources.map((resource) => (
               <div
                 key={resource.id}
@@ -285,8 +260,8 @@ function Step3Review({ form, datasetId, canPublish, hasLiveVersion, onEditMetada
                 </div>
               </div>
             ))}
-          </CardContent>
-        </Card>
+          </div>
+        </ReviewSection>
       )}
 
       {datasetId && <ChartsSection datasetId={datasetId} />}

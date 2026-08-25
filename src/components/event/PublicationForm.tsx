@@ -10,6 +10,7 @@ import { SearchableSelect } from '@/components/ui/searchable-select'
 import { FieldError } from '@/components/ui/field-error'
 import { useConfirm } from '@/components/ui/confirm-dialog'
 import { FileUploadField } from '@/components/shared/FileUploadField'
+import { deriveDefaultResourceTitle } from '@/lib/file-validation'
 import {
   MAX_PUBLICATION_BYTES,
   PUBLICATION_TYPE_OPTIONS,
@@ -34,6 +35,8 @@ function PublicationForm({ open, onOpenChange, onAdd, initial }: PublicationForm
   const [publicationType, setPublicationType] = React.useState(initial?.publicationType ?? '')
   const [errors, setErrors] = React.useState<{ title?: string; publicationType?: string; file?: string }>({})
   const [pendingAsset, setPendingAsset] = React.useState<UploadedAsset | null>(null)
+  const titleTouched = React.useRef(Boolean(initial?.title))
+  const typeTouched = React.useRef(Boolean(initial?.publicationType))
 
   React.useEffect(() => {
     if (open) {
@@ -42,9 +45,21 @@ function PublicationForm({ open, onOpenChange, onAdd, initial }: PublicationForm
       setPublicationType(initial?.publicationType ?? '')
       setPendingAsset(null)
       setErrors({})
+      titleTouched.current = Boolean(initial?.title)
+      typeTouched.current = Boolean(initial?.publicationType)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open])
+
+  const handleFileChange = (asset: UploadedAsset | null) => {
+    setPendingAsset(asset)
+    setErrors((prev) => ({ ...prev, file: undefined }))
+    if (!asset) return
+    if (!titleTouched.current) setTitle(deriveDefaultResourceTitle(asset.name))
+    if (!typeTouched.current && asset.extension.toLowerCase() === 'pptx') {
+      setPublicationType('presentation')
+    }
+  }
 
   const hasUnsavedChanges =
     title.trim() !== (initial?.title ?? '') ||
@@ -110,6 +125,21 @@ function PublicationForm({ open, onOpenChange, onAdd, initial }: PublicationForm
 
         <div className="min-h-0 flex-1 overflow-y-auto px-6 py-5">
           <div className="flex flex-col gap-5">
+            <FileUploadField
+              id="publication-file"
+              label="File Upload"
+              required
+              helperText="Upload the file first — the title below is prefilled from it."
+              value={pendingAsset}
+              onChange={handleFileChange}
+              extensions={SUPPORTED_PUBLICATION_EXTENSIONS}
+              maxBytes={MAX_PUBLICATION_BYTES}
+              error={errors.file}
+              fallbackIcon={FileText}
+              variant="dropzone"
+              dropzoneTitle="Drag and drop a file here, or click to browse."
+            />
+
             <div>
               <Label htmlFor="publication-title">
                 Publication Title <span className="text-destructive">*</span>
@@ -119,7 +149,10 @@ function PublicationForm({ open, onOpenChange, onAdd, initial }: PublicationForm
                 className="mt-1.5"
                 value={title}
                 aria-invalid={Boolean(errors.title)}
-                onChange={(e) => setTitle(e.target.value)}
+                onChange={(e) => {
+                  titleTouched.current = true
+                  setTitle(e.target.value)
+                }}
               />
               <FieldError message={errors.title} />
             </div>
@@ -144,28 +177,16 @@ function PublicationForm({ open, onOpenChange, onAdd, initial }: PublicationForm
                   id="publication-type"
                   options={PUBLICATION_TYPE_OPTIONS}
                   value={publicationType}
-                  onChange={setPublicationType}
+                  onChange={(value) => {
+                    typeTouched.current = true
+                    setPublicationType(value)
+                  }}
                   placeholder="Select publication type..."
                   invalid={Boolean(errors.publicationType)}
                 />
               </div>
               <FieldError message={errors.publicationType} />
             </div>
-
-            <FileUploadField
-              id="publication-file"
-              label="File Upload"
-              required
-              value={pendingAsset}
-              onChange={(asset) => {
-                setPendingAsset(asset)
-                setErrors((prev) => ({ ...prev, file: undefined }))
-              }}
-              extensions={SUPPORTED_PUBLICATION_EXTENSIONS}
-              maxBytes={MAX_PUBLICATION_BYTES}
-              error={errors.file}
-              fallbackIcon={FileText}
-            />
           </div>
         </div>
 

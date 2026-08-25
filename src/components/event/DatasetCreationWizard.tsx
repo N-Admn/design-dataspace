@@ -9,6 +9,7 @@ import { DatasetResourceStep } from '@/components/event/DatasetResource'
 import { DatasetLicenseAccess } from '@/components/event/DatasetLicenseAccess'
 import { useConfirm } from '@/components/ui/confirm-dialog'
 import { useAppData } from '@/context/AppDataContext'
+import { getResourceTitle } from '@/lib/file-validation'
 import {
   validateMiniDatasetBasics,
   isMiniDatasetBasicsValid,
@@ -43,6 +44,14 @@ function DatasetCreationWizard({ open, onOpenChange, onCreated }: DatasetCreatio
 
   const updateMetadata = <K extends keyof DatasetMetadata>(field: K, value: DatasetMetadata[K]) => {
     setMetadata((prev) => ({ ...prev, [field]: value }))
+  }
+
+  const handleAddResource = (resource: DatasetResource) => {
+    setResources((prev) => {
+      const suggestName = prev.length === 0 && !metadata.name.trim() && resource.type === 'csv' && resource.file
+      if (suggestName) setMetadata((m) => ({ ...m, name: getResourceTitle(resource.file!) }))
+      return [...prev, resource]
+    })
   }
 
   const basicErrors = validateMiniDatasetBasics(metadata)
@@ -117,19 +126,6 @@ function DatasetCreationWizard({ open, onOpenChange, onCreated }: DatasetCreatio
           <div className="flex flex-col gap-5">
             <Card>
               <CardHeader>
-                <CardTitle>Dataset Details</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <DatasetBasicDetails
-                  metadata={metadata}
-                  errors={showErrors ? basicErrors : {}}
-                  onChange={updateMetadata}
-                />
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
                 <CardTitle>Resource</CardTitle>
                 <p className="mt-1 text-sm font-normal text-muted-foreground">
                   Add at least one resource for this dataset.
@@ -138,9 +134,22 @@ function DatasetCreationWizard({ open, onOpenChange, onCreated }: DatasetCreatio
               <CardContent>
                 <DatasetResourceStep
                   resources={resources}
-                  onAddResource={(resource) => setResources((prev) => [...prev, resource])}
+                  onAddResource={handleAddResource}
                   onRemoveResource={(id) => setResources((prev) => prev.filter((r) => r.id !== id))}
                   error={showErrors ? resourceError : undefined}
+                />
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Dataset Details</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <DatasetBasicDetails
+                  metadata={metadata}
+                  errors={showErrors ? basicErrors : {}}
+                  onChange={updateMetadata}
                 />
               </CardContent>
             </Card>

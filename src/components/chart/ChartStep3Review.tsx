@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { FieldError } from '@/components/ui/field-error'
+import { ReviewSection } from '@/components/shared/ReviewSection'
 import { ChartPreviewCanvas } from '@/components/chart/ChartPreviewCanvas'
 import { categoryFieldLabel, valueFieldLabel } from '@/components/chart/ChartStep2Create'
 import { useAppData } from '@/context/AppDataContext'
@@ -44,14 +45,8 @@ function ChartStep3Review({ form, otherCharts, onNameChange, onEditStep, onPubli
         <p className="mt-1 text-sm text-muted-foreground">Check your chart before publishing.</p>
       </div>
 
-      <Card>
-        <CardHeader className="flex-row items-center justify-between">
-          <CardTitle>Dataset &amp; Source</CardTitle>
-          <Button type="button" variant="outline" size="sm" onClick={() => onEditStep(1)}>
-            Edit →
-          </Button>
-        </CardHeader>
-        <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+      <ReviewSection title="Dataset & Source" defaultOpen onEdit={() => onEditStep(1)}>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
             <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Dataset</p>
             <p className="mt-1 text-sm text-foreground">{dataset?.form.metadata.name || '—'}</p>
@@ -60,35 +55,21 @@ function ChartStep3Review({ form, otherCharts, onNameChange, onEditStep, onPubli
             <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">File / Resource</p>
             <p className="mt-1 text-sm text-foreground">{file?.name || '—'}</p>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </ReviewSection>
 
       {form.chartType === 'upload-image' && (
-        <Card>
-          <CardHeader className="flex-row items-center justify-between">
-            <CardTitle>Chart Image</CardTitle>
-            <Button type="button" variant="outline" size="sm" onClick={() => onEditStep(2)}>
-              Edit →
-            </Button>
-          </CardHeader>
-          <CardContent>
-            <div>
-              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Image</p>
-              <p className="mt-1 text-sm text-foreground">{form.uploadedImage?.name || '—'}</p>
-            </div>
-          </CardContent>
-        </Card>
+        <ReviewSection title="Chart Image" defaultOpen={false} onEdit={() => onEditStep(2)}>
+          <div>
+            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Image</p>
+            <p className="mt-1 text-sm text-foreground">{form.uploadedImage?.name || '—'}</p>
+          </div>
+        </ReviewSection>
       )}
 
       {form.chartType && form.chartType !== 'upload-image' && (
-        <Card>
-          <CardHeader className="flex-row items-center justify-between">
-            <CardTitle>Chart Type &amp; Configuration</CardTitle>
-            <Button type="button" variant="outline" size="sm" onClick={() => onEditStep(2)}>
-              Edit →
-            </Button>
-          </CardHeader>
-          <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <ReviewSection title="Chart Type & Configuration" defaultOpen={false} onEdit={() => onEditStep(2)}>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
               <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Chart Type</p>
               <p className="mt-1 text-sm text-foreground">
@@ -109,8 +90,8 @@ function ChartStep3Review({ form, otherCharts, onNameChange, onEditStep, onPubli
               <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{valueFieldLabel(form.chartType)}</p>
               <p className="mt-1 text-sm text-foreground">{columns.find((c) => c.name === form.config.valueField)?.label || '—'}</p>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </ReviewSection>
       )}
 
       <Card>

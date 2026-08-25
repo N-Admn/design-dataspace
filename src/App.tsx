@@ -14,6 +14,7 @@ import { DashboardPage } from '@/pages/DashboardPage'
 import { DatasetsPage } from '@/pages/DatasetsPage'
 import { EventsPage } from '@/pages/EventsPage'
 import { EventCreationPage } from '@/pages/EventCreationPage'
+import { EventPreviewPage } from '@/pages/EventPreviewPage'
 import { UseCasesPage } from '@/pages/UseCasesPage'
 import { UseCaseCreationPage } from '@/pages/UseCaseCreationPage'
 import { UseCasePreviewPage } from '@/pages/UseCasePreviewPage'
@@ -36,7 +37,8 @@ function AppLayout() {
   const isUseCasePreview = /^\/dashboard\/use-cases\/[^/]+\/preview$/.test(location.pathname)
   const isCollaborativePreview = /^\/dashboard\/collaboratives\/[^/]+\/preview$/.test(location.pathname)
   const isAIModelPreview = /^\/dashboard\/ai-models\/[^/]+\/preview$/.test(location.pathname)
-  const hideSidebar = isDashboard || isUseCasePreview || isCollaborativePreview || isAIModelPreview
+  const isEventPreview = /^\/dashboard\/events\/[^/]+\/preview$/.test(location.pathname)
+  const hideSidebar = isDashboard || isUseCasePreview || isCollaborativePreview || isAIModelPreview || isEventPreview
   const isAuthRoute = location.pathname.startsWith('/auth/')
 
   if (isAuthRoute) {
@@ -52,7 +54,7 @@ function AppLayout() {
   return (
     <div className="flex min-h-screen flex-col">
       <TopNav />
-      {!isUseCasePreview && !isCollaborativePreview && !isAIModelPreview && <BreadcrumbBar />}
+      {!isUseCasePreview && !isCollaborativePreview && !isAIModelPreview && !isEventPreview && <BreadcrumbBar />}
 
       <main
         className={cn(
@@ -68,6 +70,7 @@ function AppLayout() {
             <Route path="/dashboard/datasets" element={<DatasetsPage />} />
             <Route path="/dashboard/events" element={<EventsPage />} />
             <Route path="/dashboard/events/new" element={<EventCreationPage />} />
+            <Route path="/dashboard/events/:id/preview" element={<EventPreviewPage />} />
             <Route path="/dashboard/use-cases" element={<UseCasesPage />} />
             <Route path="/dashboard/use-cases/new" element={<UseCaseCreationPage />} />
             <Route path="/dashboard/use-cases/:id/preview" element={<UseCasePreviewPage />} />

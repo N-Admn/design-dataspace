@@ -29,6 +29,7 @@ import { FieldError } from '@/components/ui/field-error'
 import { SearchableSelect } from '@/components/ui/searchable-select'
 import { Checkbox } from '@/components/ui/checkbox'
 import { useConfirm } from '@/components/ui/confirm-dialog'
+import { useToast } from '@/components/ui/toast'
 import {
   API_KEY_LOCATION_OPTIONS,
   CUSTOM_API_AUTH_OPTIONS,
@@ -540,6 +541,7 @@ function AccessMethodForm({ draft, onDraftChange, otherNames, soleAccessMethod, 
 
 function AIModelVersionsStep({ versions, onChange, openVersionId, onOpenVersionConsumed }: AIModelVersionsStepProps) {
   const confirm = useConfirm()
+  const toast = useToast()
   const [open, setOpen] = React.useState(false)
   const [editingId, setEditingId] = React.useState<string | null>(null)
   const [draft, setDraft] = React.useState<AIModelVersion>(() => draftFrom(versions))
@@ -635,10 +637,12 @@ function AIModelVersionsStep({ versions, onChange, openVersionId, onOpenVersionC
           v.id === editingId ? { ...draft, id: editingId, isPrimary: makePrimary, updatedAt: todayIso() } : makePrimary ? { ...v, isPrimary: false } : v,
         ),
       )
+      toast({ title: 'Version updated', description: `"${draft.name}" saved.`, variant: 'success' })
     } else {
       const newVersion: AIModelVersion = { ...draft, id: createAIModelVersion().id, isPrimary: makePrimary, updatedAt: todayIso() }
       const next = makePrimary ? versions.map((v) => ({ ...v, isPrimary: false })) : versions
       onChange([...next, newVersion])
+      toast({ title: 'Version added', description: `"${draft.name}" added and connected.`, variant: 'success' })
     }
     setOpen(false)
     setTouched({})

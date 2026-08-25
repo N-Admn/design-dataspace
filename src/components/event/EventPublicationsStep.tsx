@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { PublicationForm } from '@/components/event/PublicationForm'
 import { EventDatasetsSection } from '@/components/event/EventDatasetsSection'
 import { RelatedContentPanel } from '@/components/event/RelatedContentPanel'
+import { useToast } from '@/components/ui/toast'
 import { PUBLICATION_TYPE_OPTIONS, type EventFormState, type EventPublication } from '@/types/event'
 
 interface EventPublicationsStepProps {
@@ -21,6 +22,7 @@ function publicationTypeLabel(value: string): string {
 function EventPublicationsStep({ form, onChange }: EventPublicationsStepProps) {
   const [formOpen, setFormOpen] = React.useState(false)
   const [editingId, setEditingId] = React.useState<string | null>(null)
+  const toast = useToast()
 
   const editingPublication = form.publications.find((p) => p.id === editingId)
 
@@ -40,8 +42,10 @@ function EventPublicationsStep({ form, onChange }: EventPublicationsStepProps) {
   }
 
   const upsertPublication = (publication: EventPublication) => {
+    let wasNew = false
     onChange((prev) => {
       const exists = prev.publications.some((p) => p.id === publication.id)
+      wasNew = !exists
       return {
         ...prev,
         publications: exists
@@ -50,6 +54,11 @@ function EventPublicationsStep({ form, onChange }: EventPublicationsStepProps) {
       }
     })
     closeForm()
+    toast({
+      title: wasNew ? 'Publication added' : 'Publication updated',
+      description: wasNew ? `"${publication.title}" added and connected.` : `"${publication.title}" updated.`,
+      variant: 'success',
+    })
   }
 
   const removePublication = (id: string) => {
@@ -59,11 +68,17 @@ function EventPublicationsStep({ form, onChange }: EventPublicationsStepProps) {
   return (
     <div className="flex flex-col gap-6">
       <Card>
-        <CardHeader>
-          <CardTitle>Publications</CardTitle>
-          <p className="mt-1 text-sm font-normal text-muted-foreground">
-            Add reports, presentations, reading material or other supporting content.
-          </p>
+        <CardHeader className="flex-row items-center justify-between">
+          <div>
+            <CardTitle>Publications</CardTitle>
+            <p className="mt-1 text-sm font-normal text-muted-foreground">
+              Add reports, presentations, reading material or other supporting content.
+            </p>
+          </div>
+          <Button type="button" variant="outline" size="sm" onClick={openAddForm}>
+            <Plus className="size-4" />
+            Add Publication
+          </Button>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
           {form.publications.length === 0 && (
@@ -105,11 +120,6 @@ function EventPublicationsStep({ form, onChange }: EventPublicationsStepProps) {
               </div>
             </div>
           ))}
-
-          <Button type="button" variant="outline" size="sm" className="self-start" onClick={openAddForm}>
-            <Plus className="size-4" />
-            Add Publication
-          </Button>
         </CardContent>
       </Card>
 

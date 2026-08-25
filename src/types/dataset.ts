@@ -2,7 +2,11 @@ export type AccessType = 'open' | 'restricted'
 
 export interface DatasetFile {
   id: string
+  /** The physical uploaded file's name — never edited by the contributor. */
   name: string
+  /** Human-readable, contributor-editable label for this resource. Falls back to a
+   *  filename-derived title (see getResourceTitle) when absent, e.g. for older records. */
+  title?: string
   extension: string
   sizeLabel: string
   sizeBytes: number

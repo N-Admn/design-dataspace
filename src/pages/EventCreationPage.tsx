@@ -12,10 +12,9 @@ import { EventPublicationsStep } from '@/components/event/EventPublicationsStep'
 import { EventPublishReview } from '@/components/event/EventPublishReview'
 import { LeaveCreationDialog } from '@/components/shared/LeaveCreationDialog'
 import { useToast } from '@/components/ui/toast'
-import { useConfirm } from '@/components/ui/confirm-dialog'
-import { validateEventInformation, isEventInformationValid } from '@/lib/event-validation'
 import { useAppData } from '@/context/AppDataContext'
 import { useHelpContext } from '@/context/HelpContext'
+import { saveEventDraftSnapshot } from '@/lib/event-draft-storage'
 import { emptyEventForm, type EventFormState, type EventMetadata } from '@/types/event'
 
 type EventStep = 1 | 2 | 3 | 4
@@ -46,7 +45,6 @@ function EventCreationPage() {
   const { events, upsertEvent } = useAppData()
   const { setContextLabel } = useHelpContext()
   const toast = useToast()
-  const confirm = useConfirm()
 
   const navState = (location.state as EventNavState | null) ?? null
 
@@ -54,7 +52,6 @@ function EventCreationPage() {
   const [step, setStep] = useState<EventStep>(navState?.initialStep ?? 1)
   const [form, setForm] = useState<EventFormState>(() => resolveInitialForm(events, navState))
   const [lastSavedForm, setLastSavedForm] = useState<EventFormState>(() => resolveInitialForm(events, navState))
-  const [showInfoErrors, setShowInfoErrors] = useState(false)
   const [saved, setSaved] = useState(true)
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(false)
 
@@ -75,9 +72,6 @@ function EventCreationPage() {
     const timeout = setTimeout(() => setSaved(true), 700)
     return () => clearTimeout(timeout)
   }, [form])
-
-  const infoErrors = validateEventInformation(form.metadata)
-  const visibleInfoErrors = showInfoErrors ? infoErrors : {}
 
   const updateMetadata = <K extends keyof EventMetadata>(field: K, value: EventMetadata[K]) => {
     setForm((prev) => ({ ...prev, metadata: { ...prev.metadata, [field]: value } }))
@@ -131,32 +125,15 @@ function EventCreationPage() {
     })
   }
 
-  const handlePublish = async () => {
-    if (!isEventInformationValid(form.metadata)) {
-      setShowInfoErrors(true)
-      setStep(1)
-      return
+  const handlePreview = () => {
+    let id = editingId
+    if (!id) {
+      id = upsertEvent(null, 'draft', form)
+      setEditingId(id)
+      setLastSavedForm(form)
     }
-    const ok = await confirm({
-      title: hasLiveVersion ? 'Submit changes?' : 'Publish event?',
-      description: hasLiveVersion
-        ? `Your changes to "${form.metadata.title}" will be submitted for review before going live.`
-        : `You're about to publish "${form.metadata.title}". Once published, this event will be visible to the public.`,
-      confirmLabel: hasLiveVersion ? 'Submit Changes' : 'Publish Event',
-    })
-    if (!ok) return
-    const nextStatus = hasLiveVersion ? 'pending' : 'published'
-    upsertEvent(editingId, nextStatus, form)
-    setLastSavedForm(form)
-    toast({
-      title: nextStatus === 'pending' ? 'Changes submitted' : 'Event published',
-      description:
-        nextStatus === 'pending'
-          ? 'Your changes are pending review. The current published version remains live.'
-          : 'Your event is now publicly available.',
-      variant: 'success',
-    })
-    navigate('/dashboard/events')
+    saveEventDraftSnapshot({ id, status: editingRecord?.status ?? 'draft', form })
+    window.open(`/dashboard/events/${id}/preview`, '_blank')
   }
 
   const handleContinue =
@@ -174,17 +151,16 @@ function EventCreationPage() {
       </div>
       <div className="border-t border-border px-6 py-6">
         {step === 1 && (
-          <EventInformationStep metadata={form.metadata} errors={visibleInfoErrors} onChange={updateMetadata} />
+          <EventInformationStep metadata={form.metadata} errors={{}} onChange={updateMetadata} />
         )}
         {step === 2 && <EventConnectionsStep form={form} onChange={setForm} />}
         {step === 3 && <EventPublicationsStep form={form} onChange={setForm} />}
         {step === 4 && (
           <EventPublishReview
             form={form}
-            canPublish={isEventInformationValid(form.metadata)}
             hasLiveVersion={hasLiveVersion}
             onEditSection={(targetStep) => setStep(targetStep)}
-            onPublish={handlePublish}
+            onPreview={handlePreview}
           />
         )}
       </div>

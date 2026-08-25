@@ -19,14 +19,15 @@ import { useConfirm } from '@/components/ui/confirm-dialog'
 import { useAppData } from '@/context/AppDataContext'
 import { useHelpContext } from '@/context/HelpContext'
 import { validateMetadata, isMetadataValid } from '@/lib/validation'
+import { getResourceTitle } from '@/lib/file-validation'
 import { datasetLifecycleMessage } from '@/lib/dataset-lifecycle-messages'
 import { emptyDatasetForm, type DatasetFormState, type DatasetMetadata, type DatasetStatus } from '@/types/dataset'
 
 type WizardStep = 1 | 2 | 3
 
 const DATASET_STEPS = [
-  { step: 1, label: 'Metadata', description: 'Name, description & settings', icon: FileText },
-  { step: 2, label: 'Data Files', description: 'Upload dataset files', icon: UploadCloud },
+  { step: 1, label: 'Data Files', description: 'Upload dataset files', icon: UploadCloud },
+  { step: 2, label: 'Metadata', description: 'Name, description & settings', icon: FileText },
   { step: 3, label: 'Review & Publish', description: 'Final review & publish', icon: ListChecks },
 ]
 
@@ -144,7 +145,7 @@ function DatasetCreationFlow({
 
   // Report the active step to Help & Support. Only the page variant owns the route's context —
   // the drawer variant is layered over another module that already sets its own label.
-  const stepLabel = step === 1 ? 'Metadata' : step === 2 ? 'Resources' : 'Review'
+  const stepLabel = step === 1 ? 'Resources' : step === 2 ? 'Metadata' : 'Review'
   React.useEffect(() => {
     if (variant !== 'page') return
     setContextLabel(`Datasets → ${editingId ? 'Edit Dataset' : 'Create Dataset'} → ${stepLabel}`)
@@ -207,7 +208,7 @@ function DatasetCreationFlow({
   const handlePublish = async () => {
     if (!isMetadataValid(form.metadata)) {
       setShowMetadataErrors(true)
-      setStep(1)
+      setStep(2)
       return
     }
     const ok = await confirm({
@@ -253,13 +254,27 @@ function DatasetCreationFlow({
   const stepContent = (
     <>
       {step === 1 && (
-        <Step1Metadata metadata={form.metadata} errors={visibleMetadataErrors} onChange={updateMetadata} />
-      )}
-      {step === 2 && (
         <Step2DataFiles
           files={form.files}
-          onFilesAdd={(newFiles) => setForm((prev) => ({ ...prev, files: [...prev.files, ...newFiles] }))}
+          onFilesAdd={(newFiles) =>
+            setForm((prev) => {
+              const suggestName = prev.files.length === 0 && !prev.metadata.name.trim() && newFiles[0]
+              return {
+                ...prev,
+                files: [...prev.files, ...newFiles],
+                metadata: suggestName
+                  ? { ...prev.metadata, name: getResourceTitle(newFiles[0]) }
+                  : prev.metadata,
+              }
+            })
+          }
           onFileRemove={(id) => setForm((prev) => ({ ...prev, files: prev.files.filter((f) => f.id !== id) }))}
+          onFileTitleChange={(id, title) =>
+            setForm((prev) => ({
+              ...prev,
+              files: prev.files.map((f) => (f.id === id ? { ...f, title } : f)),
+            }))
+          }
           enablePreview={form.enablePreview}
           onTogglePreview={(value) => setForm((prev) => ({ ...prev, enablePreview: value }))}
           resources={form.resources}
@@ -275,13 +290,16 @@ function DatasetCreationFlow({
           }
         />
       )}
+      {step === 2 && (
+        <Step1Metadata metadata={form.metadata} errors={visibleMetadataErrors} onChange={updateMetadata} />
+      )}
       {step === 3 && (
         <Step3Review
           form={form}
           datasetId={editingId}
           canPublish={isMetadataValid(form.metadata)}
           hasLiveVersion={hasLiveVersion}
-          onEditMetadata={() => setStep(1)}
+          onEditStep={(targetStep) => setStep(targetStep)}
           onPublish={handlePublish}
         />
       )}

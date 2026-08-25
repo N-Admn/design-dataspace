@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { Building2, Plus, X } from 'lucide-react'
+import { Building2, X } from 'lucide-react'
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { AddOrganisationForm } from '@/components/event/AddOrganisationForm'
 import { OrganisationSearchField } from '@/components/shared/OrganisationSearchField'
+import { useToast } from '@/components/ui/toast'
 import { useAppData } from '@/context/AppDataContext'
 import type { EventFormState, Organisation } from '@/types/event'
 
@@ -47,16 +48,36 @@ function OrganisationCard({ org, onRemove }: { org: Organisation; onRemove: () =
 
 function EventConnectionsStep({ form, onChange }: EventConnectionsStepProps) {
   const { organisations, addOrganisation } = useAppData()
-  const [showAddOrg, setShowAddOrg] = React.useState(false)
+  const [addOrgTarget, setAddOrgTarget] = React.useState<'organiser' | 'partner' | null>(null)
+  const toast = useToast()
 
   const organiserIds = form.organisers.map((o) => o.id)
   const partnerIds = form.partners.map((o) => o.id)
 
+  const handleCreateOrg = (org: Omit<Organisation, 'id'>) => {
+    const newOrg = addOrganisation(org)
+    if (addOrgTarget === 'organiser') {
+      onChange((prev) => ({ ...prev, organisers: [newOrg] }))
+      toast({ title: 'Organisation created', description: `"${newOrg.name}" created and set as organiser.`, variant: 'success' })
+    } else {
+      onChange((prev) => ({ ...prev, partners: [...prev.partners, newOrg] }))
+      toast({ title: 'Organisation created', description: `"${newOrg.name}" created and added as a partner.`, variant: 'success' })
+    }
+    setAddOrgTarget(null)
+  }
+
   return (
     <div className="flex flex-col gap-6">
       <Card>
-        <CardHeader>
+        <CardHeader className="flex-row items-center justify-between">
           <CardTitle>Organiser</CardTitle>
+          <button
+            type="button"
+            onClick={() => setAddOrgTarget('organiser')}
+            className="text-xs font-medium text-primary hover:underline"
+          >
+            + Add New Organisation
+          </button>
         </CardHeader>
         <CardContent className="flex flex-col gap-3">
           <Label>Search Organisations</Label>
@@ -77,8 +98,15 @@ function EventConnectionsStep({ form, onChange }: EventConnectionsStepProps) {
       </Card>
 
       <Card>
-        <CardHeader>
+        <CardHeader className="flex-row items-center justify-between">
           <CardTitle>Partners</CardTitle>
+          <button
+            type="button"
+            onClick={() => setAddOrgTarget('partner')}
+            className="text-xs font-medium text-primary hover:underline"
+          >
+            + Add New Organisation
+          </button>
         </CardHeader>
         <CardContent className="flex flex-col gap-3">
           <Label>Search Organisations</Label>
@@ -119,29 +147,10 @@ function EventConnectionsStep({ form, onChange }: EventConnectionsStepProps) {
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader className="flex-row items-center justify-between">
-          <CardTitle>Add Organisation</CardTitle>
-          <Button type="button" variant="outline" size="sm" onClick={() => setShowAddOrg(true)}>
-            <Plus className="size-4" />
-            Add Organisation
-          </Button>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm text-muted-foreground">
-            Can't find an organisation above? Add it here — it becomes selectable for this event
-            immediately.
-          </p>
-        </CardContent>
-      </Card>
-
       <AddOrganisationForm
-        open={showAddOrg}
-        onOpenChange={setShowAddOrg}
-        onCreate={(org) => {
-          addOrganisation(org)
-          setShowAddOrg(false)
-        }}
+        open={addOrgTarget !== null}
+        onOpenChange={(open) => !open && setAddOrgTarget(null)}
+        onCreate={handleCreateOrg}
       />
     </div>
   )

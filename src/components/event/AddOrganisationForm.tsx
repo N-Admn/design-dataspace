@@ -83,6 +83,24 @@ function AddOrganisationForm({ open, onOpenChange, onCreate }: AddOrganisationFo
 
         <div className="min-h-0 flex-1 overflow-y-auto px-6 py-5">
           <div className="flex flex-col gap-5">
+            <FileUploadField
+              id="org-logo"
+              label="Logo"
+              required
+              helperText="Upload a logo for this organisation."
+              value={logo}
+              onChange={(asset) => {
+                setLogo(asset)
+                setErrors((prev) => ({ ...prev, logo: undefined }))
+              }}
+              extensions={SUPPORTED_IMAGE_EXTENSIONS}
+              maxBytes={MAX_IMAGE_BYTES}
+              error={errors.logo}
+              fallbackIcon={Building2}
+              variant="dropzone"
+              dropzoneTitle="Drag and drop a logo here, or click to browse."
+            />
+
             <div>
               <Label htmlFor="org-name">
                 Organisation Name <span className="text-destructive">*</span>
@@ -124,22 +142,6 @@ function AddOrganisationForm({ open, onOpenChange, onCreate }: AddOrganisationFo
               </div>
               <FieldError message={errors.sectorType} />
             </div>
-
-            <FileUploadField
-              id="org-logo"
-              label="Logo"
-              required
-              value={logo}
-              onChange={(asset) => {
-                setLogo(asset)
-                setErrors((prev) => ({ ...prev, logo: undefined }))
-              }}
-              extensions={SUPPORTED_IMAGE_EXTENSIONS}
-              maxBytes={MAX_IMAGE_BYTES}
-              error={errors.logo}
-              fallbackIcon={Building2}
-              uploadLabel="Upload Logo"
-            />
           </div>
         </div>
 

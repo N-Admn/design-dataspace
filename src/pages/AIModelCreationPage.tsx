@@ -19,8 +19,8 @@ import { createEmptyAIModelForm, type AIModelFormState, type AIModelMetadata } f
 type AIModelStep = 1 | 2 | 3
 
 const AI_MODEL_STEPS = [
-  { step: 1, label: 'Model Information', description: 'Describe the model', icon: FileText },
-  { step: 2, label: 'Versions', description: 'Configure releases and access', icon: Server },
+  { step: 1, label: 'Versions', description: 'Configure releases and access', icon: Server },
+  { step: 2, label: 'Model Information', description: 'Describe the model', icon: FileText },
   { step: 3, label: 'Review', description: 'Check readiness', icon: ListChecks },
 ]
 
@@ -47,7 +47,7 @@ function AIModelCreationPage() {
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(false)
   const [openVersionId, setOpenVersionId] = useState<string | null>(null)
 
-  const stepLabel = AI_MODEL_STEPS.find((s) => s.step === step)?.label ?? 'Model Information'
+  const stepLabel = AI_MODEL_STEPS.find((s) => s.step === step)?.label ?? 'Versions'
   useEffect(() => {
     setContextLabel(`AI Models → ${stepLabel}`)
   }, [stepLabel, setContextLabel])
@@ -135,8 +135,7 @@ function AIModelCreationPage() {
         <Stepper steps={AI_MODEL_STEPS} currentStep={step} />
       </div>
       <div className="border-t border-border px-6 py-6">
-        {step === 1 && <AIModelStep1Details form={form} otherNames={otherNames} onChange={updateMetadata} />}
-        {step === 2 && (
+        {step === 1 && (
           <AIModelVersionsStep
             versions={form.versions}
             modelType={form.metadata.modelType}
@@ -145,6 +144,7 @@ function AIModelCreationPage() {
             onOpenVersionConsumed={() => setOpenVersionId(null)}
           />
         )}
+        {step === 2 && <AIModelStep1Details form={form} otherNames={otherNames} onChange={updateMetadata} />}
         {step === 3 && (
           <AIModelStep3Review form={form} otherNames={otherNames} onEditStep={goToStep} onPreview={handlePreview} />
         )}

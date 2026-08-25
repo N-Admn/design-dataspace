@@ -24,8 +24,9 @@ import { SearchableSelect } from '@/components/ui/searchable-select'
 import { FilePreviewModal } from '@/components/dataset/FilePreviewModal'
 import { DropzoneUploadField } from '@/components/shared/DropzoneUploadField'
 import { useToast } from '@/components/ui/toast'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
-import { validateIncomingFiles } from '@/lib/file-validation'
+import { getResourceTitle, validateIncomingFiles } from '@/lib/file-validation'
 import { testApiConnection } from '@/lib/api-resource'
 import {
   AUTH_METHOD_OPTIONS,
@@ -46,6 +47,7 @@ interface Step2DataFilesProps {
   files: DatasetFile[]
   onFilesAdd: (files: DatasetFile[]) => void
   onFileRemove: (id: string) => void
+  onFileTitleChange: (id: string, title: string) => void
   enablePreview: boolean
   onTogglePreview: (value: boolean) => void
   resources: DatasetResource[]
@@ -122,6 +124,106 @@ function SecretInput({
       >
         {visible ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
       </button>
+    </div>
+  )
+}
+
+function FileRow({
+  file,
+  onTitleChange,
+  onPreview,
+  onRemove,
+}: {
+  file: DatasetFile
+  onTitleChange: (id: string, title: string) => void
+  onPreview: () => void
+  onRemove: () => void
+}) {
+  const title = getResourceTitle(file)
+  const [isEditing, setIsEditing] = React.useState(false)
+  const [draft, setDraft] = React.useState(title)
+
+  React.useEffect(() => {
+    if (!isEditing) setDraft(title)
+  }, [title, isEditing])
+
+  const commit = () => {
+    setIsEditing(false)
+    const next = draft.trim()
+    if (next) {
+      onTitleChange(file.id, next)
+    } else {
+      setDraft(title)
+    }
+  }
+
+  return (
+    <div className="flex flex-wrap items-center gap-3 rounded-lg border border-border px-4 py-3">
+      <CheckCircle2 className="size-5 shrink-0 text-success" />
+      <div className="min-w-0 flex-1">
+        {isEditing ? (
+          <Input
+            autoFocus
+            value={draft}
+            aria-label={`Resource title for ${file.name}`}
+            onChange={(e) => setDraft(e.target.value)}
+            onBlur={commit}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') commit()
+              if (e.key === 'Escape') {
+                setDraft(title)
+                setIsEditing(false)
+              }
+            }}
+            className="h-8 max-w-xs text-sm font-medium"
+          />
+        ) : (
+          <div className="flex min-w-0 items-center gap-1">
+            <p className="truncate text-sm font-medium text-foreground">{title}</p>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  aria-label={`Edit title for ${file.name}`}
+                  onClick={() => setIsEditing(true)}
+                  className="size-6 shrink-0"
+                >
+                  <Pencil className="size-3.5" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="top">Edit title</TooltipContent>
+            </Tooltip>
+          </div>
+        )}
+        <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
+          <Badge variant="secondary">{file.extension}</Badge>
+          <span>Size: {file.sizeLabel}</span>
+          <span>•</span>
+          <span>Uploaded: {file.uploadedAt}</span>
+          <span>•</span>
+          <span className="truncate">Original: {file.name}</span>
+        </div>
+      </div>
+      <div className="flex shrink-0 items-center gap-2">
+        <Badge variant="success">Ready</Badge>
+        <div className="flex items-center gap-1">
+          <Button type="button" variant="ghost" size="icon" aria-label={`Preview ${file.name}`} onClick={onPreview}>
+            <Eye className="size-4" />
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            aria-label={`Delete ${file.name}`}
+            onClick={onRemove}
+            className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+          >
+            <Trash2 className="size-4" />
+          </Button>
+        </div>
+      </div>
     </div>
   )
 }
@@ -251,6 +353,7 @@ function Step2DataFiles({
   files,
   onFilesAdd,
   onFileRemove,
+  onFileTitleChange,
   enablePreview,
   onTogglePreview,
   resources,
@@ -474,48 +577,16 @@ function Step2DataFiles({
               )}
 
               {files.map((file) => (
-                <div
+                <FileRow
                   key={file.id}
-                  className="flex flex-wrap items-center gap-3 rounded-lg border border-border px-4 py-3"
-                >
-                  <CheckCircle2 className="size-5 shrink-0 text-success" />
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium text-foreground">{file.name}</p>
-                    <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
-                      <Badge variant="secondary">{file.extension}</Badge>
-                      <span>Size: {file.sizeLabel}</span>
-                      <span>•</span>
-                      <span>Uploaded: {file.uploadedAt}</span>
-                    </div>
-                  </div>
-                  <div className="flex shrink-0 items-center gap-2">
-                    <Badge variant="success">Ready</Badge>
-                    <div className="flex items-center gap-1">
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        aria-label={`Preview ${file.name}`}
-                        onClick={() => setPreviewFile(file)}
-                      >
-                        <Eye className="size-4" />
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        aria-label={`Delete ${file.name}`}
-                        onClick={() => {
-                          onFileRemove(file.id)
-                          toast({ title: 'File removed', variant: 'success' })
-                        }}
-                        className="text-destructive hover:bg-destructive/10 hover:text-destructive"
-                      >
-                        <Trash2 className="size-4" />
-                      </Button>
-                    </div>
-                  </div>
-                </div>
+                  file={file}
+                  onTitleChange={onFileTitleChange}
+                  onPreview={() => setPreviewFile(file)}
+                  onRemove={() => {
+                    onFileRemove(file.id)
+                    toast({ title: 'File removed', variant: 'success' })
+                  }}
+                />
               ))}
 
               {files.length > 0 && (

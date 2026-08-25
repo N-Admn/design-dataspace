@@ -8,6 +8,7 @@ import { DatasetConnectionsCard } from '@/components/shared/DatasetConnectionsCa
 import { AddContributorForm } from '@/components/usecase/AddContributorForm'
 import { AddOrganisationForm } from '@/components/event/AddOrganisationForm'
 import { OrganisationSearchField } from '@/components/shared/OrganisationSearchField'
+import { useToast } from '@/components/ui/toast'
 import { useAppData } from '@/context/AppDataContext'
 import type { UseCaseConnections } from '@/types/usecase'
 import type { Organisation } from '@/types/event'
@@ -47,6 +48,7 @@ function OrganisationRow({ org, onRemove }: { org: Organisation; onRemove: () =>
 
 function UseCaseStep3Connections({ connections, onChange }: UseCaseStep3ConnectionsProps) {
   const { organisations, addOrganisation } = useAppData()
+  const toast = useToast()
   const [showContributorForm, setShowContributorForm] = React.useState(false)
   const [showAddOrgForm, setShowAddOrgForm] = React.useState(false)
 
@@ -158,6 +160,7 @@ function UseCaseStep3Connections({ connections, onChange }: UseCaseStep3Connecti
             ],
           })
           setShowContributorForm(false)
+          toast({ title: 'Contributor added', description: `"${contributor.name}" added and connected.`, variant: 'success' })
         }}
       />
 
@@ -168,6 +171,7 @@ function UseCaseStep3Connections({ connections, onChange }: UseCaseStep3Connecti
           const newOrg = addOrganisation(org)
           onChange({ ...connections, organizations: [...connections.organizations, newOrg] })
           setShowAddOrgForm(false)
+          toast({ title: 'Organisation created', description: `"${newOrg.name}" created and connected.`, variant: 'success' })
         }}
       />
     </div>

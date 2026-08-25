@@ -2,6 +2,7 @@ import { FileText, Table2 } from 'lucide-react'
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
+import { getResourceTitle } from '@/lib/file-validation'
 import type { DatasetFile } from '@/types/dataset'
 
 interface FilePreviewModalProps {
@@ -41,9 +42,9 @@ function FilePreviewModal({ file, onOpenChange }: FilePreviewModalProps) {
             {isTabular ? <Table2 className="size-5" /> : <FileText className="size-5" />}
           </div>
           <div className="min-w-0 flex-1">
-            <DialogTitle className="truncate">{file?.name}</DialogTitle>
+            <DialogTitle className="truncate">{file ? getResourceTitle(file) : ''}</DialogTitle>
             <p className="text-xs text-muted-foreground">
-              File Type: {file?.extension} • Size: {file?.sizeLabel}
+              File Type: {file?.extension} • Size: {file?.sizeLabel} • Original: {file?.name}
             </p>
           </div>
         </DialogHeader>

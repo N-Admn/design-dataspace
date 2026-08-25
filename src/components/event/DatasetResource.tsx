@@ -91,6 +91,8 @@ function DatasetResourceStep({ resources, onAddResource, onRemoveResource, error
             maxBytes={MAX_CSV_BYTES}
             error={csvError}
             fallbackIcon={FileSpreadsheet}
+            variant="dropzone"
+            dropzoneTitle="Drag and drop a CSV file here, or click to browse."
           />
           <Button type="button" variant="outline" size="sm" className="mt-3" onClick={handleAdd}>
             Add Resource
