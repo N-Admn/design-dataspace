@@ -65,7 +65,7 @@ function NavRow({ item, isActive, collapsed, onClick }: NavRowProps) {
   )
 }
 
-function ContributorSidebar() {
+function ContributorSidebar({ className }: { className?: string }) {
   const location = useLocation()
   const [collapsed, setCollapsed] = React.useState(readStoredCollapsed)
   const [helpOpen, setHelpOpen] = React.useState(false)
@@ -89,6 +89,7 @@ function ContributorSidebar() {
         'flex w-full shrink-0 flex-col overflow-hidden rounded-xl border border-border bg-card md:sticky md:top-6',
         'md:w-[var(--sidebar-w)] transition-[width] duration-200 ease-in-out',
         WORKSPACE_HEIGHT_CLASS,
+        className,
       )}
     >
       <div className={cn('flex shrink-0 items-center px-3 py-4', collapsed ? 'justify-center' : 'gap-3')}>

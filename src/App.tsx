@@ -62,9 +62,9 @@ function AppLayout() {
           !hideSidebar && 'md:flex-row',
         )}
       >
-        {!hideSidebar && <ContributorSidebar />}
+        {!hideSidebar && <ContributorSidebar className="order-2 md:order-1" />}
 
-        <div className="min-w-0 flex-1">
+        <div className="order-1 min-w-0 flex-1 md:order-2">
           <Routes>
             <Route path="/" element={<DashboardPage />} />
             <Route path="/dashboard/datasets" element={<DatasetsPage />} />

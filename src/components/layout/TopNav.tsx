@@ -1,4 +1,4 @@
-import { ChevronDown, LayoutDashboard, LogOut, Search } from 'lucide-react'
+import { ChevronDown, LayoutDashboard, LogOut, Menu, Search } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
@@ -64,14 +64,48 @@ function UserMenu() {
   )
 }
 
+function MobileNavMenu() {
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <button
+          type="button"
+          aria-label="Open menu"
+          className="flex size-9 items-center justify-center text-white/80 transition-colors hover:text-white md:hidden"
+        >
+          <Menu className="size-5" />
+        </button>
+      </PopoverTrigger>
+      <PopoverContent align="end" className="w-56 p-1.5">
+        <button
+          type="button"
+          className="flex w-full items-center justify-between rounded-md px-2.5 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted"
+        >
+          Explore
+          <ChevronDown className="size-4 text-muted-foreground" />
+        </button>
+        {NAV_LINKS.map((link) => (
+          <button
+            key={link}
+            type="button"
+            className="flex w-full items-center rounded-md px-2.5 py-2 text-left text-sm font-medium capitalize text-foreground transition-colors hover:bg-muted"
+          >
+            {link.toLowerCase()}
+          </button>
+        ))}
+      </PopoverContent>
+    </Popover>
+  )
+}
+
 function TopNav() {
   return (
-    <header className="flex h-[88px] w-full items-center justify-between bg-header-background px-8 text-white">
+    <header className="flex h-[88px] w-full items-center justify-between bg-header-background px-4 text-white sm:px-8">
       <div className="flex items-center gap-2">
         <img src="/brand/CDS-Logo.png" alt="CivicDataSpace" className="h-10 w-auto" />
       </div>
 
-      <nav className="flex items-center gap-8 text-sm font-medium">
+      <nav className="flex items-center gap-4 text-sm font-medium sm:gap-8">
         <button
           type="button"
           aria-label="Search"
@@ -82,7 +116,7 @@ function TopNav() {
 
         <button
           type="button"
-          className="flex items-center gap-1 text-white/90 transition-colors hover:text-white"
+          className="hidden items-center gap-1 text-white/90 transition-colors hover:text-white md:flex"
         >
           EXPLORE
           <ChevronDown className="size-4" />
@@ -92,11 +126,13 @@ function TopNav() {
           <button
             key={link}
             type="button"
-            className="text-white/90 transition-colors hover:text-white"
+            className="hidden text-white/90 transition-colors hover:text-white md:block"
           >
             {link}
           </button>
         ))}
+
+        <MobileNavMenu />
 
         <UserMenu />
       </nav>

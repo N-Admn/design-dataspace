@@ -35,8 +35,8 @@ function WorkspaceHeader({
   }
 
   return (
-    <div className="flex items-center justify-between px-6 py-4">
-      <div className="flex min-w-0 items-center gap-3">
+    <div className="flex flex-wrap items-center justify-between gap-2 px-6 py-4">
+      <div className="flex min-w-[10rem] flex-1 items-center gap-3">
         <button
           type="button"
           aria-label="Close"

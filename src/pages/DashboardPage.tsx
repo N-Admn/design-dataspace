@@ -6,8 +6,12 @@ import { StatusBadge } from '@/components/shared/StatusBadge'
 import { useToast } from '@/components/ui/toast'
 import { useAppData } from '@/context/AppDataContext'
 import { parseAppTimestamp } from '@/lib/format'
-import { WORKSPACE_HEIGHT_CLASS } from '@/lib/layout'
 import { NAV_GROUPS } from '@/components/layout/nav-config'
+
+// Same viewport budget as WORKSPACE_HEIGHT_CLASS, but as a min-height so short
+// viewports let this page grow taller (and the page scroll) instead of forcing
+// the workspace cards and resume rail to compress below their content size.
+const DASHBOARD_MIN_HEIGHT_CLASS = 'md:min-h-[calc(100vh-188px)]'
 
 const ECOSYSTEM_ITEMS = NAV_GROUPS.find((g) => g.key === 'contribution')?.items ?? []
 
@@ -78,7 +82,7 @@ function DashboardPage() {
   const resumeItems = [...pendingItems, ...draftItems].slice(0, 5)
 
   return (
-    <div className={`flex min-h-0 flex-col gap-10 ${WORKSPACE_HEIGHT_CLASS}`}>
+    <div className={`flex min-h-0 flex-col gap-10 ${DASHBOARD_MIN_HEIGHT_CLASS}`}>
       {/* Hero */}
       <div className="shrink-0">
         <h1 className="whitespace-nowrap text-5xl font-semibold leading-tight text-primary">

@@ -19,6 +19,7 @@ const ROW_MIN_HEIGHT_REM = '3rem' // 48px — responsive floor
 const ROW_MAX_HEIGHT_REM = '4.5rem' // 72px — cap; 3.5rem (56px) is where rows land whenever there's enough room
 const FOOTER_HEIGHT_REM = '3.5rem' // 56px
 const ACTIONS_WIDTH_REM = '7rem'
+const PRIMARY_MIN_WIDTH_REM = '12rem' // floor for the flexible first column, so it can never be squeezed to 0
 
 export interface ManagementColumn<T> {
   key: string
@@ -182,7 +183,14 @@ function ManagementTable<T, S extends string>({
   )
 
   const visibleSecondaryColumns = columns.slice(1).filter(isColumnVisible)
-  const columnTemplate = ['minmax(0, 1fr)', ...visibleSecondaryColumns.map((c) => c.widthRem!), ACTIONS_WIDTH_REM].join(' ')
+  const columnTemplate = [`minmax(${PRIMARY_MIN_WIDTH_REM}, 1fr)`, ...visibleSecondaryColumns.map((c) => c.widthRem!), ACTIONS_WIDTH_REM].join(' ')
+  // Sum of every track's floor width, in rem — below this, columns can no longer coexist
+  // without either overlapping or squeezing the primary column to nothing, so the table
+  // scrolls horizontally instead (see the `overflow-x-auto` on the `role="table"` wrapper).
+  const rowMinWidthRem = [PRIMARY_MIN_WIDTH_REM, ...visibleSecondaryColumns.map((c) => c.widthRem!), ACTIONS_WIDTH_REM].reduce(
+    (sum, rem) => sum + parseFloat(rem),
+    0,
+  )
 
   const optionalColumns = columns.filter((c) => c.optional)
   const toggleColumn = (key: string) => {
@@ -243,8 +251,12 @@ function ManagementTable<T, S extends string>({
 
   if (loading) {
     body = (
-      <div role="table" className="flex h-full flex-col text-sm">
-        <div role="rowgroup" className="min-h-0 flex-1 overflow-y-auto" style={{ display: 'grid', gridTemplateRows: `repeat(${PAGE_SIZE}, minmax(${ROW_MIN_HEIGHT_REM}, ${ROW_MAX_HEIGHT_REM}))` }}>
+      <div role="table" className="flex min-h-0 flex-1 flex-col overflow-x-auto text-sm">
+        <div
+          role="rowgroup"
+          className="min-h-0 flex-1 overflow-y-auto"
+          style={{ display: 'grid', gridTemplateRows: `repeat(${PAGE_SIZE}, minmax(${ROW_MIN_HEIGHT_REM}, ${ROW_MAX_HEIGHT_REM}))`, minWidth: `${rowMinWidthRem}rem` }}
+        >
           {Array.from({ length: PAGE_SIZE }).map((_, i) => (
             <div role="row" key={i} className="grid items-center border-b border-border last:border-b-0" style={{ gridTemplateColumns: columnTemplate }}>
               <div className="px-4">
@@ -319,11 +331,11 @@ function ManagementTable<T, S extends string>({
     )
   } else {
     body = (
-      <div role="table" className="flex h-full flex-col text-sm">
+      <div role="table" className="flex min-h-0 flex-1 flex-col overflow-x-auto text-sm">
         <div
           role="row"
           className="grid shrink-0 items-center border-b border-border bg-muted/40 text-left text-xs font-medium uppercase tracking-wide text-muted-foreground"
-          style={{ gridTemplateColumns: columnTemplate, height: HEADER_HEIGHT_REM }}
+          style={{ gridTemplateColumns: columnTemplate, height: HEADER_HEIGHT_REM, minWidth: `${rowMinWidthRem}rem` }}
         >
           <div role="columnheader" className="px-4" aria-sort={sort.key === primaryColumn.key ? (sort.direction === 'asc' ? 'ascending' : 'descending') : undefined}>
             {primaryColumn.sortable ? (
@@ -351,7 +363,11 @@ function ManagementTable<T, S extends string>({
           </div>
         </div>
 
-        <div role="rowgroup" className="min-h-0 flex-1 overflow-y-auto" style={{ display: 'grid', gridTemplateRows: `repeat(${pageItems.length}, minmax(${ROW_MIN_HEIGHT_REM}, ${ROW_MAX_HEIGHT_REM}))` }}>
+        <div
+          role="rowgroup"
+          className="min-h-0 flex-1 overflow-y-auto"
+          style={{ display: 'grid', gridTemplateRows: `repeat(${pageItems.length}, minmax(${ROW_MIN_HEIGHT_REM}, ${ROW_MAX_HEIGHT_REM}))`, minWidth: `${rowMinWidthRem}rem` }}
+        >
           {pageItems.map((row) => {
             const rowActions = getActions(row)
             return (
@@ -406,8 +422,8 @@ function ManagementTable<T, S extends string>({
   )
 
   const searchFilterRow = (
-    <div className="flex shrink-0 items-center justify-between gap-3 border-b border-border px-5 py-3">
-      <div className="flex h-9 w-full max-w-xs items-center gap-2 rounded-md border border-input bg-background px-3">
+    <div className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-border px-5 py-3">
+      <div className="flex h-9 w-full min-w-[10rem] max-w-xs flex-1 items-center gap-2 rounded-md border border-input bg-background px-3">
         <Search className="size-4 shrink-0 text-muted-foreground" />
         <input
           value={query}
