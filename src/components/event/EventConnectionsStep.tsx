@@ -1,15 +1,15 @@
 import * as React from 'react'
-import { Building2, X } from 'lucide-react'
+import { Building2, Mic2, Pencil, Trash2, X } from 'lucide-react'
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { AddOrganisationForm } from '@/components/event/AddOrganisationForm'
+import { SpeakerForm } from '@/components/event/SpeakerForm'
 import { OrganisationSearchField } from '@/components/shared/OrganisationSearchField'
 import { useToast } from '@/components/ui/toast'
 import { useAppData } from '@/context/AppDataContext'
-import type { EventFormState, Organisation } from '@/types/event'
+import type { EventFormState, EventSpeaker, Organisation } from '@/types/event'
 
 interface EventConnectionsStepProps {
   form: EventFormState
@@ -46,10 +46,87 @@ function OrganisationCard({ org, onRemove }: { org: Organisation; onRemove: () =
   )
 }
 
+function SpeakerCard({ speaker, onEdit, onRemove }: { speaker: EventSpeaker; onEdit: () => void; onRemove: () => void }) {
+  const secondary = [speaker.designation, speaker.organisation].filter(Boolean).join(' · ')
+  return (
+    <div className="flex items-center gap-3 rounded-lg border border-border p-3">
+      {speaker.image?.dataUrl ? (
+        <img src={speaker.image.dataUrl} alt="" className="size-9 shrink-0 rounded-full border border-border object-cover" />
+      ) : (
+        <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
+          <Mic2 className="size-4" />
+        </div>
+      )}
+      <div className="min-w-0 flex-1">
+        <p className="truncate text-sm font-medium text-foreground">{speaker.name}</p>
+        <p className="truncate text-xs text-muted-foreground">{secondary || 'Speaker'}</p>
+      </div>
+      <div className="flex shrink-0 items-center gap-1">
+        <Button type="button" variant="ghost" size="icon" aria-label={`Edit ${speaker.name}`} onClick={onEdit}>
+          <Pencil className="size-4" />
+        </Button>
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          aria-label={`Remove ${speaker.name}`}
+          onClick={onRemove}
+          className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+        >
+          <Trash2 className="size-4" />
+        </Button>
+      </div>
+    </div>
+  )
+}
+
 function EventConnectionsStep({ form, onChange }: EventConnectionsStepProps) {
   const { organisations, addOrganisation } = useAppData()
   const [addOrgTarget, setAddOrgTarget] = React.useState<'organiser' | 'partner' | null>(null)
+  const [speakerFormOpen, setSpeakerFormOpen] = React.useState(false)
+  const [editingSpeakerId, setEditingSpeakerId] = React.useState<string | null>(null)
   const toast = useToast()
+
+  const editingSpeaker = form.speakers.find((s) => s.id === editingSpeakerId)
+
+  const openAddSpeaker = () => {
+    setEditingSpeakerId(null)
+    setSpeakerFormOpen(true)
+  }
+
+  const openEditSpeaker = (id: string) => {
+    setEditingSpeakerId(id)
+    setSpeakerFormOpen(true)
+  }
+
+  const closeSpeakerForm = () => {
+    setSpeakerFormOpen(false)
+    setEditingSpeakerId(null)
+  }
+
+  const upsertSpeaker = (speaker: EventSpeaker) => {
+    let wasNew = false
+    onChange((prev) => {
+      const exists = prev.speakers.some((s) => s.id === speaker.id)
+      wasNew = !exists
+      return {
+        ...prev,
+        speakers: exists
+          ? prev.speakers.map((s) => (s.id === speaker.id ? speaker : s))
+          : [...prev.speakers, speaker],
+      }
+    })
+    closeSpeakerForm()
+    toast({
+      title: wasNew ? 'Speaker added' : 'Speaker updated',
+      description: wasNew ? `"${speaker.name}" added to this event.` : `"${speaker.name}" updated.`,
+      variant: 'success',
+    })
+  }
+
+  const removeSpeaker = (id: string) => {
+    onChange((prev) => ({ ...prev, speakers: prev.speakers.filter((s) => s.id !== id) }))
+  }
 
   const organiserIds = form.organisers.map((o) => o.id)
   const partnerIds = form.partners.map((o) => o.id)
@@ -131,19 +208,29 @@ function EventConnectionsStep({ form, onChange }: EventConnectionsStepProps) {
       </Card>
 
       <Card>
-        <CardHeader>
+        <CardHeader className="flex-row items-center justify-between">
           <CardTitle>Speakers</CardTitle>
+          <button
+            type="button"
+            onClick={openAddSpeaker}
+            className="text-xs font-medium text-primary hover:underline"
+          >
+            + Add Speaker
+          </button>
         </CardHeader>
-        <CardContent>
-          <Label htmlFor="speaker-count">Speaker Count</Label>
-          <Input
-            id="speaker-count"
-            type="number"
-            min="0"
-            className="mt-1.5 sm:max-w-xs"
-            value={form.speakerCount}
-            onChange={(e) => onChange((prev) => ({ ...prev, speakerCount: e.target.value }))}
-          />
+        <CardContent className="flex flex-col gap-3">
+          {form.speakers.length === 0 ? (
+            <p className="py-4 text-center text-sm text-muted-foreground">No speakers added yet.</p>
+          ) : (
+            form.speakers.map((speaker) => (
+              <SpeakerCard
+                key={speaker.id}
+                speaker={speaker}
+                onEdit={() => openEditSpeaker(speaker.id)}
+                onRemove={() => removeSpeaker(speaker.id)}
+              />
+            ))
+          )}
         </CardContent>
       </Card>
 
@@ -151,6 +238,13 @@ function EventConnectionsStep({ form, onChange }: EventConnectionsStepProps) {
         open={addOrgTarget !== null}
         onOpenChange={(open) => !open && setAddOrgTarget(null)}
         onCreate={handleCreateOrg}
+      />
+
+      <SpeakerForm
+        open={speakerFormOpen}
+        onOpenChange={(open) => (open ? setSpeakerFormOpen(true) : closeSpeakerForm())}
+        onSave={upsertSpeaker}
+        initial={editingSpeaker}
       />
     </div>
   )

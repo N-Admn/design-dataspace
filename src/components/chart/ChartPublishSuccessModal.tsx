@@ -20,11 +20,11 @@ function ChartPublishSuccessModal({ open, chartName, hasLiveVersion, onViewOnDat
             <CheckCircle2 className="size-6" />
           </div>
           <h2 className="text-base font-semibold text-primary">
-            {hasLiveVersion ? 'Changes submitted' : 'Chart published successfully.'}
+            {hasLiveVersion ? 'Changes published' : 'Chart published successfully.'}
           </h2>
           <p className="text-sm text-muted-foreground">
             {hasLiveVersion ? (
-              <>Your changes to &ldquo;{chartName || 'this chart'}&rdquo; are pending review.</>
+              <>Your changes to &ldquo;{chartName || 'this chart'}&rdquo; are now live on the dataset&rsquo;s public page.</>
             ) : (
               <>
                 <span className="font-medium text-foreground">&ldquo;{chartName || 'Untitled chart'}&rdquo;</span> is now available on

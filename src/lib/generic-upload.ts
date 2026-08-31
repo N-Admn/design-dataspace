@@ -10,6 +10,19 @@ export interface UploadedAsset {
   dataUrl?: string
 }
 
+/** Platform-wide upload ceilings. Exactly two tiers, applied to every upload
+ * field in every module — no per-module overrides, no additional limits.
+ *   - Images (JPG / PNG / WEBP …): 20 MB
+ *   - Documents & data files (PDF / CSV / XLS / XLSX / PPT / PPTX / DOCX / TXT …): 500 MB */
+export const MAX_IMAGE_BYTES = 20 * 1024 * 1024
+export const MAX_DOCUMENT_BYTES = 500 * 1024 * 1024
+
+/** The size ceiling as shown to users — e.g. "20MB", "500MB". */
+export function formatUploadLimit(maxBytes: number): string {
+  const mb = maxBytes / (1024 * 1024)
+  return Number.isInteger(mb) ? `${mb}MB` : `${mb.toFixed(1)}MB`
+}
+
 let assetIdCounter = 0
 
 function getExtension(fileName: string): string {
@@ -33,7 +46,7 @@ export function validateAssetFile(
     return `This file type isn't supported. Upload ${formatExtensionList(opts.extensions).join(', ')}.`
   }
   if (file.size > opts.maxBytes) {
-    return `File exceeds the ${formatFileSize(opts.maxBytes)} size limit.`
+    return `File exceeds the ${formatUploadLimit(opts.maxBytes)} size limit.`
   }
   return null
 }
@@ -63,14 +76,12 @@ export async function buildUploadedAsset(file: File, withPreview = false): Promi
   return asset
 }
 
-/** Derives the standard "JPG, PNG or WEBP. Max 10MB." helper copy from the same
+/** Derives the standard "JPG, PNG or WEBP. Max 20MB." helper copy from the same
  * extensions/maxBytes an upload field already validates against, so the two can
  * never drift out of sync the way hand-typed captions did across the app. */
 export function formatUploadHint(extensions: string[], maxBytes: number): string {
   const list = formatExtensionList(extensions)
   const joined =
     list.length <= 1 ? (list[0] ?? '') : `${list.slice(0, -1).join(', ')} or ${list[list.length - 1]}`
-  const mb = maxBytes / (1024 * 1024)
-  const mbLabel = Number.isInteger(mb) ? `${mb}MB` : `${mb.toFixed(1)}MB`
-  return `${joined}. Max ${mbLabel}.`
+  return `${joined}. Max ${formatUploadLimit(maxBytes)}.`
 }

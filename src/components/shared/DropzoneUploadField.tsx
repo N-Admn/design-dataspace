@@ -15,7 +15,7 @@ interface DropzoneUploadFieldProps {
   title?: string
   browseLabel?: string
   icon?: LucideIcon
-  /** Overrides the auto-generated "JPG, PNG or WEBP. Max 10MB." caption. */
+  /** Overrides the auto-generated "JPG, PNG or WEBP. Max 20MB." caption. */
   formatHint?: string
   /** Show supported extensions as a badge row instead of folding them into formatHint. */
   showExtensionBadges?: boolean

@@ -23,11 +23,11 @@ function AIModelPreviewPage() {
 
   const record = id ? aiModels.find((m) => m.id === id) : undefined
   // Load once on mount and freeze — re-reading after our own publish action would
-  // pick up the just-updated status and flip "Publish" into "Submit Changes" mid-flow.
+  // pick up the just-updated status and flip "Publish" into "Publish Changes" mid-flow.
   const [snapshot] = React.useState(() => (id ? loadAIModelDraftSnapshot(id) : null))
   const form = snapshot?.form ?? record?.form
   const [initialStatus] = React.useState(() => snapshot?.status ?? record?.status ?? 'draft')
-  const hasLiveVersion = initialStatus === 'published' || initialStatus === 'pending'
+  const hasLiveVersion = initialStatus === 'published'
 
   const otherNames = id ? aiModels.filter((m) => m.id !== id).map((m) => m.form.metadata.name) : []
 
@@ -62,11 +62,11 @@ function AIModelPreviewPage() {
   const handlePublish = async () => {
     if (!ready) return
     const ok = await confirm({
-      title: hasLiveVersion ? 'Submit changes?' : 'Publish AI Model?',
+      title: hasLiveVersion ? 'Publish changes?' : 'Publish AI Model?',
       description: hasLiveVersion
-        ? `Your changes to "${form.metadata.name}" will be submitted for review before going live.`
+        ? `Your changes to "${form.metadata.name}" will replace the current published version immediately.`
         : `You're about to publish "${form.metadata.name}". Once published, this AI Model will be publicly available on CivicDataSpace.`,
-      confirmLabel: hasLiveVersion ? 'Submit Changes' : 'Publish AI Model',
+      confirmLabel: hasLiveVersion ? 'Publish Changes' : 'Publish AI Model',
     })
     if (!ok) return
 
@@ -77,15 +77,14 @@ function AIModelPreviewPage() {
       setIsSubmitting(true)
       window.setTimeout(() => {
         try {
-          const nextStatus = hasLiveVersion ? 'pending' : 'published'
-          upsertAIModel(id, nextStatus, form)
+          upsertAIModel(id, 'published', form)
           clearAIModelDraftSnapshot(id)
           setIsSubmitting(false)
           setJustPublished(true)
           toast({
-            title: hasLiveVersion ? 'Changes submitted' : 'AI model published',
+            title: hasLiveVersion ? 'Changes published' : 'AI model published',
             description: hasLiveVersion
-              ? 'Your changes are pending review. The current published version remains live.'
+              ? 'Your changes are now live on CivicDataSpace.'
               : 'Your AI model is now publicly available on CivicDataSpace.',
             variant: 'success',
           })
@@ -104,12 +103,12 @@ function AIModelPreviewPage() {
       <div className="sticky top-4 z-10 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-card px-5 py-4 shadow-sm">
         <div>
           <p className="text-sm font-semibold text-foreground">
-            {justPublished ? (hasLiveVersion ? 'Changes submitted' : 'AI model published') : 'AI Model Preview'}
+            {justPublished ? (hasLiveVersion ? 'Changes published' : 'AI model published') : 'AI Model Preview'}
           </p>
           <p className="text-xs text-muted-foreground">
             {justPublished
               ? hasLiveVersion
-                ? 'Your changes are pending review. The current published version remains live.'
+                ? 'Your changes are now live on CivicDataSpace.'
                 : 'Your AI model is now publicly available on CivicDataSpace.'
               : 'This is what your AI Model will look like when published.'}
           </p>
@@ -138,11 +137,11 @@ function AIModelPreviewPage() {
                 ) : isSubmitting ? (
                   <>
                     <Loader2 className="size-4 animate-spin" />
-                    {hasLiveVersion ? 'Submitting...' : 'Publishing model…'}
+                    Publishing model…
                   </>
                 ) : (
                   <>
-                    {hasLiveVersion ? 'Submit Changes' : 'Publish AI Model'}
+                    {hasLiveVersion ? 'Publish Changes' : 'Publish AI Model'}
                     <Send className="size-4" />
                   </>
                 )}
@@ -155,7 +154,7 @@ function AIModelPreviewPage() {
       {publishFailed && (
         <div className="rounded-md border border-destructive/40 bg-destructive/10 px-4 py-2.5 text-sm text-destructive">
           <p className="font-medium">We couldn't publish your AI model.</p>
-          <p className="mt-0.5">Your changes are saved as a draft. Fix the highlighted issues and try again.</p>
+          <p className="mt-0.5">Your changes have been kept. Fix the highlighted issues and try again.</p>
         </div>
       )}
 

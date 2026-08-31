@@ -19,7 +19,7 @@ interface FileUploadFieldProps {
   onChange: (asset: UploadedAsset | null) => void
   extensions: string[]
   maxBytes: number
-  /** Overrides the auto-generated "JPG, PNG or WEBP. Max 10MB." caption. */
+  /** Overrides the auto-generated "JPG, PNG or WEBP. Max 20MB." caption. */
   formatHint?: string
   error?: string
   /** Icon shown when the asset has no image preview (documents, attachments). Ignored once a dataUrl exists. */

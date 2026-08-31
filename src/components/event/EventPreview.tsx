@@ -10,12 +10,12 @@ function optionLabel(options: { value: string; label: string }[], value: string)
 }
 
 function EventPreview({ form }: { form: EventFormState }) {
-  const { metadata, organisers, partners, speakerCount, publications, relatedContent } = form
+  const { metadata, organisers, partners, speakers, publications, relatedContent } = form
   const registration = getRegistrationStatus(metadata)
   const showVenue =
     (metadata.accessType === 'hybrid' || metadata.accessType === 'in-person') &&
     [metadata.venueName, metadata.address, metadata.city, metadata.state, metadata.country].some(Boolean)
-  const hasSpeakers = Number(speakerCount) > 0
+  const hasSpeakers = speakers.length > 0
   const hasRelatedContent =
     relatedContent.datasets.length > 0 ||
     relatedContent.useCases.length > 0 ||
@@ -123,8 +123,32 @@ function EventPreview({ form }: { form: EventFormState }) {
           <div className="flex items-center gap-2 text-sm text-foreground">
             <Mic2 className="size-4 shrink-0 text-muted-foreground" />
             <span>
-              {speakerCount} speaker{Number(speakerCount) === 1 ? '' : 's'} confirmed
+              {speakers.length} speaker{speakers.length === 1 ? '' : 's'} confirmed
             </span>
+          </div>
+          <div className="mt-3 flex flex-col gap-2">
+            {speakers.map((speaker) => {
+              const secondary = [speaker.designation, speaker.organisation].filter(Boolean).join(' · ')
+              return (
+                <div key={speaker.id} className="flex items-center gap-3">
+                  {speaker.image?.dataUrl ? (
+                    <img
+                      src={speaker.image.dataUrl}
+                      alt=""
+                      className="size-9 shrink-0 rounded-full border border-border object-cover"
+                    />
+                  ) : (
+                    <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
+                      <Mic2 className="size-4" />
+                    </div>
+                  )}
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-medium text-foreground">{speaker.name}</p>
+                    {secondary && <p className="truncate text-xs text-muted-foreground">{secondary}</p>}
+                  </div>
+                </div>
+              )
+            })}
           </div>
         </div>
       )}

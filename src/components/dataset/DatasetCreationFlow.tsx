@@ -21,7 +21,8 @@ import { useHelpContext } from '@/context/HelpContext'
 import { validateMetadata, isMetadataValid } from '@/lib/validation'
 import { getResourceTitle } from '@/lib/file-validation'
 import { datasetLifecycleMessage } from '@/lib/dataset-lifecycle-messages'
-import { emptyDatasetForm, type DatasetFormState, type DatasetMetadata, type DatasetStatus } from '@/types/dataset'
+import { hasUnpublishedEdits, type ContentStatus } from '@/lib/content-status'
+import { emptyDatasetForm, type DatasetFormState, type DatasetMetadata } from '@/types/dataset'
 
 type WizardStep = 1 | 2 | 3
 
@@ -33,7 +34,7 @@ const DATASET_STEPS = [
 
 interface DatasetCreatedResult {
   id: string
-  status: DatasetStatus
+  status: ContentStatus
   name: string
 }
 
@@ -62,7 +63,7 @@ function DrawerSuccessPanel({
   onReturn,
   onViewDataset,
 }: {
-  status: DatasetStatus
+  status: ContentStatus
   returnLabel: string
   onContinueEditing: () => void
   onReturn: () => void
@@ -126,7 +127,7 @@ function DatasetCreationFlow({
   const [showMetadataErrors, setShowMetadataErrors] = React.useState(false)
   const [saved, setSaved] = React.useState(true)
   const [publishSuccess, setPublishSuccess] = React.useState<{ name: string } | null>(null)
-  const [drawerSuccess, setDrawerSuccess] = React.useState<{ status: DatasetStatus; id: string } | null>(null)
+  const [drawerSuccess, setDrawerSuccess] = React.useState<{ status: ContentStatus; id: string } | null>(null)
   const [showLeaveConfirm, setShowLeaveConfirm] = React.useState(false)
 
   // The drawer variant stays mounted between opens (Radix animates in/out), so reset state each time it opens.
@@ -187,22 +188,44 @@ function DatasetCreationFlow({
   const handlePrevious = () => goToStep((Math.max(1, step - 1)) as WizardStep)
 
   const editingRecord = editingId ? datasets.find((d) => d.id === editingId) : undefined
-  const hasLiveVersion = editingRecord?.status === 'published' || editingRecord?.status === 'pending'
+  const hasLiveVersion = editingRecord?.status === 'published'
+  const showUnpublishedIndicator = hasLiveVersion && (hasUnsavedChanges || hasUnpublishedEdits(editingRecord))
+
+  /** Persist the working copy. For an already-published dataset this never changes
+   * its status or its live version — the edits sit as "unsaved changes". */
+  const saveWorkingCopy = () => {
+    const id = upsertDataset(editingId, 'draft', form)
+    if (!editingId) setEditingId(id)
+    setLastSavedForm(form)
+    return id
+  }
 
   const handleSaveDraft = () => {
     setSaved(false)
-    const nextStatus: DatasetStatus = hasLiveVersion ? 'pending' : 'draft'
-    const id = upsertDataset(editingId, nextStatus, form)
-    if (!editingId) setEditingId(id)
-    setLastSavedForm(form)
+    const id = saveWorkingCopy()
     setTimeout(() => setSaved(true), 500)
 
     if (variant === 'drawer' && step === 3) {
-      setDrawerSuccess({ status: nextStatus, id })
+      setDrawerSuccess({ status: 'draft', id })
       return
     }
-    const message = datasetLifecycleMessage(nextStatus)
-    toast({ title: message.title, description: message.description, variant: 'success' })
+    if (hasLiveVersion) {
+      toast({
+        title: 'Changes saved',
+        description: 'Your edits aren’t published yet. The current published version stays live.',
+        variant: 'success',
+      })
+    } else {
+      const message = datasetLifecycleMessage('draft')
+      toast({ title: message.title, description: message.description, variant: 'success' })
+    }
+  }
+
+  const publishNow = () => {
+    const id = upsertDataset(editingId, 'published', form)
+    if (!editingId) setEditingId(id)
+    setLastSavedForm(form)
+    return id
   }
 
   const handlePublish = async () => {
@@ -212,28 +235,51 @@ function DatasetCreationFlow({
       return
     }
     const ok = await confirm({
-      title: hasLiveVersion ? 'Submit changes?' : 'Publish dataset?',
+      title: hasLiveVersion ? 'Publish changes?' : 'Publish dataset?',
       description: hasLiveVersion
-        ? `Your changes to "${form.metadata.name}" will be submitted for review before going live.`
+        ? `Your changes to "${form.metadata.name}" will replace the current published version immediately.`
         : `You're about to publish "${form.metadata.name}". Once published, this dataset will be available in the public repository.`,
-      confirmLabel: hasLiveVersion ? 'Submit Changes' : 'Publish Dataset',
+      confirmLabel: hasLiveVersion ? 'Publish Changes' : 'Publish Dataset',
     })
     if (!ok) return
-    const nextStatus: DatasetStatus = hasLiveVersion ? 'pending' : 'published'
-    const id = upsertDataset(editingId, nextStatus, form)
-    if (!editingId) setEditingId(id)
-    setLastSavedForm(form)
+    const id = publishNow()
 
     if (variant === 'drawer') {
-      setDrawerSuccess({ status: nextStatus, id })
+      setDrawerSuccess({ status: 'published', id })
       return
     }
-    if (nextStatus === 'published') {
-      setPublishSuccess({ name: form.metadata.name })
+    if (hasLiveVersion) {
+      toast({ title: 'Changes published', description: 'Your changes are now live on CivicDataSpace.', variant: 'success' })
     } else {
-      const message = datasetLifecycleMessage(nextStatus)
-      toast({ title: message.title, description: message.description, variant: 'success' })
+      setPublishSuccess({ name: form.metadata.name })
     }
+  }
+
+  /** Leave gate — "Save & Publish" for an already-published dataset. Publishes when
+   * the form is valid; otherwise keeps the edits as unsaved changes (never discards,
+   * never auto-publishes an incomplete dataset). */
+  const handleGateSaveAndPublish = () => {
+    setShowLeaveConfirm(false)
+    if (isMetadataValid(form.metadata)) {
+      publishNow()
+      toast({ title: 'Changes published', description: 'Your changes are now live on CivicDataSpace.', variant: 'success' })
+    } else {
+      saveWorkingCopy()
+      toast({
+        title: 'Changes saved',
+        description: 'Not published yet — complete the required fields in Metadata to publish.',
+        variant: 'success',
+      })
+    }
+    onClose()
+  }
+
+  const handleGateDiscardChanges = () => {
+    setShowLeaveConfirm(false)
+    if (editingId && editingRecord?.publishedForm) {
+      upsertDataset(editingId, 'published', editingRecord.publishedForm)
+    }
+    onClose()
   }
 
   const handleReturnToOrigin = () => {
@@ -321,6 +367,7 @@ function DatasetCreationFlow({
     <LeaveCreationDialog
       open={showLeaveConfirm}
       itemLabel="dataset"
+      mode={hasLiveVersion ? 'published' : 'draft'}
       onContinueEditing={() => setShowLeaveConfirm(false)}
       onSaveDraftAndExit={() => {
         setShowLeaveConfirm(false)
@@ -331,6 +378,8 @@ function DatasetCreationFlow({
         setShowLeaveConfirm(false)
         onClose()
       }}
+      onSaveAndPublish={handleGateSaveAndPublish}
+      onDiscardChanges={handleGateDiscardChanges}
     />
   )
 
@@ -380,6 +429,7 @@ function DatasetCreationFlow({
         saved={saved}
         onClose={requestClose}
         title={editingId ? form.metadata.name || 'Untitled Dataset' : 'New Dataset'}
+        unpublishedChanges={showUnpublishedIndicator}
       />
       <div className="flex items-center justify-between border-t border-border px-6 py-2.5">
         <PublicVisibilityBadge isLive={hasLiveVersion} />

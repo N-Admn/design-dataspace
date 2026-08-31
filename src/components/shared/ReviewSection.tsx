@@ -9,7 +9,8 @@ import { cn } from '@/lib/utils'
 
 interface ReviewSectionProps {
   title: string
-  /** Whether this section starts expanded. Reserve `true` for the first/highest-priority section. */
+  /** Whether this section starts expanded. Every module's Review/Publish step passes
+   *  `true` so all sections are open on entry; users can still collapse them manually. */
   defaultOpen: boolean
   /** Omit for read-only sections (e.g. cross-references to other content) that have nothing to edit. */
   onEdit?: () => void

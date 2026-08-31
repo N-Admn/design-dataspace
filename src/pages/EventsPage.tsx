@@ -7,7 +7,7 @@ import { useAppData } from '@/context/AppDataContext'
 
 function EventsPage() {
   const navigate = useNavigate()
-  const { events, deleteEvent, upsertEvent } = useAppData()
+  const { events, deleteEvent, upsertEvent, unpublishEvent } = useAppData()
   const toast = useToast()
   const confirm = useConfirm()
 
@@ -35,14 +35,14 @@ function EventsPage() {
     if (!record || !record.publishedForm) return
     const title = record.form.metadata.title || 'this event'
     const ok = await confirm({
-      title: 'Discard pending changes?',
-      description: `This will discard the pending changes to "${title}" and revert to the last published version. This cannot be undone.`,
+      title: 'Discard unsaved changes?',
+      description: `This will discard the unsaved changes to "${title}" and restore the last published version. This cannot be undone.`,
       confirmLabel: 'Discard Changes',
       variant: 'destructive',
     })
     if (!ok) return
     upsertEvent(id, 'published', record.publishedForm)
-    toast({ title: 'Changes discarded', description: 'Reverted to the last published version.', variant: 'success' })
+    toast({ title: 'Changes discarded', description: 'Restored the last published version.', variant: 'success' })
   }
 
   const handleUnpublishEvent = async (id: string) => {
@@ -56,7 +56,7 @@ function EventsPage() {
       variant: 'destructive',
     })
     if (!ok) return
-    upsertEvent(id, 'draft', record.form)
+    unpublishEvent(id)
     toast({ title: 'Event unpublished', description: 'Moved back to Draft.', variant: 'success' })
   }
 

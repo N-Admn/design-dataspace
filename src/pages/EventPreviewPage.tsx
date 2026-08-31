@@ -21,11 +21,11 @@ function EventPreviewPage() {
 
   const record = id ? events.find((e) => e.id === id) : undefined
   // Load once on mount and freeze — re-reading after our own publish action would
-  // pick up the just-updated status and flip "Publish" into "Submit Changes" mid-flow.
+  // pick up the just-updated status and flip "Publish" into "Publish Changes" mid-flow.
   const [snapshot] = React.useState(() => (id ? loadEventDraftSnapshot(id) : null))
   const form = snapshot?.form ?? record?.form
   const [initialStatus] = React.useState(() => snapshot?.status ?? record?.status ?? 'draft')
-  const hasLiveVersion = initialStatus === 'published' || initialStatus === 'pending'
+  const hasLiveVersion = initialStatus === 'published'
 
   const handleEditInWorkspace = () => {
     window.close()
@@ -58,24 +58,23 @@ function EventPreviewPage() {
   const handlePublish = async () => {
     if (!ready) return
     const ok = await confirm({
-      title: hasLiveVersion ? 'Submit changes?' : 'Publish event?',
+      title: hasLiveVersion ? 'Publish changes?' : 'Publish event?',
       description: hasLiveVersion
-        ? `Your changes to "${form.metadata.title}" will be submitted for review before going live.`
+        ? `Your changes to "${form.metadata.title}" will replace the current published version immediately.`
         : `You're about to publish "${form.metadata.title}". Once published, this event will be visible to the public.`,
-      confirmLabel: hasLiveVersion ? 'Submit Changes' : 'Publish Event',
+      confirmLabel: hasLiveVersion ? 'Publish Changes' : 'Publish Event',
     })
     if (!ok) return
     setIsSubmitting(true)
     window.setTimeout(() => {
-      const nextStatus = hasLiveVersion ? 'pending' : 'published'
-      upsertEvent(id, nextStatus, form)
+      upsertEvent(id, 'published', form)
       clearEventDraftSnapshot(id)
       setIsSubmitting(false)
       setJustPublished(true)
       toast({
-        title: hasLiveVersion ? 'Changes submitted' : 'Event published',
+        title: hasLiveVersion ? 'Changes published' : 'Event published',
         description: hasLiveVersion
-          ? 'Your changes are pending review. The current published version remains live.'
+          ? 'Your changes are now live on CivicDataSpace.'
           : 'Your event is now publicly available.',
         variant: 'success',
       })
@@ -87,12 +86,12 @@ function EventPreviewPage() {
       <div className="sticky top-4 z-10 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-card px-5 py-4 shadow-sm">
         <div>
           <p className="text-sm font-semibold text-foreground">
-            {justPublished ? (hasLiveVersion ? 'Changes submitted' : 'Event published') : 'Event Preview'}
+            {justPublished ? (hasLiveVersion ? 'Changes published' : 'Event published') : 'Event Preview'}
           </p>
           <p className="text-xs text-muted-foreground">
             {justPublished
               ? hasLiveVersion
-                ? 'Your changes are pending review. The current published version remains live.'
+                ? 'Your changes are now live on CivicDataSpace.'
                 : 'Your event is now publicly available.'
               : 'This is what your event will look like when published.'}
           </p>
@@ -116,11 +115,11 @@ function EventPreviewPage() {
                 {isSubmitting ? (
                   <>
                     <Loader2 className="size-4 animate-spin" />
-                    {hasLiveVersion ? 'Submitting...' : 'Publishing...'}
+                    Publishing...
                   </>
                 ) : (
                   <>
-                    {hasLiveVersion ? 'Submit Changes' : 'Publish Event'}
+                    {hasLiveVersion ? 'Publish Changes' : 'Publish Event'}
                     <Send className="size-4" />
                   </>
                 )}

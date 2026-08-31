@@ -15,7 +15,6 @@ import {
 
 interface EventPublishReviewProps {
   form: EventFormState
-  hasLiveVersion: boolean
   onEditSection: (step: 1 | 2 | 3) => void
   onPreview: () => void
 }
@@ -33,7 +32,7 @@ function ReviewField({ label, value }: { label: string; value: ReactNode }) {
   )
 }
 
-function EventPublishReview({ form, hasLiveVersion, onEditSection, onPreview }: EventPublishReviewProps) {
+function EventPublishReview({ form, onEditSection, onPreview }: EventPublishReviewProps) {
   const { metadata } = form
   const registration = getRegistrationStatus(metadata)
 
@@ -95,7 +94,7 @@ function EventPublishReview({ form, hasLiveVersion, onEditSection, onPreview }: 
         </div>
       </ReviewSection>
 
-      <ReviewSection title="Connections" defaultOpen={false} onEdit={() => onEditSection(2)}>
+      <ReviewSection title="Connections" defaultOpen onEdit={() => onEditSection(2)}>
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
           <ReviewField
             label="Organiser"
@@ -105,11 +104,14 @@ function EventPublishReview({ form, hasLiveVersion, onEditSection, onPreview }: 
             label="Partners"
             value={form.partners.length > 0 ? form.partners.map((o) => o.name).join(', ') : '—'}
           />
-          <ReviewField label="Speaker Count" value={form.speakerCount || '—'} />
+          <ReviewField
+            label="Speakers"
+            value={form.speakers.length > 0 ? form.speakers.map((s) => s.name).join(', ') : '—'}
+          />
         </div>
       </ReviewSection>
 
-      <ReviewSection title="Publications" defaultOpen={false} onEdit={() => onEditSection(3)}>
+      <ReviewSection title="Publications" defaultOpen onEdit={() => onEditSection(3)}>
         {form.publications.length === 0 ? (
           <p className="text-sm text-muted-foreground">No publications added.</p>
         ) : (
@@ -127,7 +129,7 @@ function EventPublishReview({ form, hasLiveVersion, onEditSection, onPreview }: 
         )}
       </ReviewSection>
 
-      <ReviewSection title="Related Content" defaultOpen={false} onEdit={() => onEditSection(3)}>
+      <ReviewSection title="Related Content" defaultOpen onEdit={() => onEditSection(3)}>
         <RelatedGroup icon={Database} label="Datasets" items={form.relatedContent.datasets.map((i) => i.title)} />
         <RelatedGroup icon={Layers} label="Use Cases" items={form.relatedContent.useCases.map((i) => i.title)} />
         <RelatedGroup
@@ -146,9 +148,7 @@ function EventPublishReview({ form, hasLiveVersion, onEditSection, onPreview }: 
           Preview Event
           <ExternalLink className="size-4" />
         </Button>
-        <p className="text-xs text-muted-foreground">
-          {hasLiveVersion ? 'Submitting happens from inside the preview.' : 'Publishing happens from inside the preview.'}
-        </p>
+        <p className="text-xs text-muted-foreground">Publishing happens from inside the preview.</p>
       </div>
     </div>
   )

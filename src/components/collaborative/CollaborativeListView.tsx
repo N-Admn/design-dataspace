@@ -3,6 +3,7 @@ import { Archive, Pencil, Trash2, Undo2, Users2 } from 'lucide-react'
 import { ManagementTable, type ManagementColumn, type ManagementFilterDef, type ManagementRowAction } from '@/components/shared/management-table/ManagementTable'
 import { TruncatedText } from '@/components/shared/TruncatedText'
 import { StatusBadge } from '@/components/shared/StatusBadge'
+import { hasUnpublishedEdits } from '@/lib/content-status'
 import { formatShortDate, parseAppTimestamp } from '@/lib/format'
 import { GEOGRAPHY_OPTIONS, SECTOR_OPTIONS } from '@/types/dataset'
 import type { CollaborativeRecord, CollaborativeStatus } from '@/types/collaborative'
@@ -35,7 +36,6 @@ function matchesSearch(collaborative: CollaborativeRecord, query: string): boole
 const TAB_EMPTY_MESSAGE: Record<CollaborativeStatus, string> = {
   published: 'No published content yet.',
   draft: 'No drafts yet.',
-  pending: 'No pending content.',
 }
 
 function buildColumns(onOpen: (collaborative: CollaborativeRecord) => void): ManagementColumn<CollaborativeRecord>[] {
@@ -71,7 +71,7 @@ function buildColumns(onOpen: (collaborative: CollaborativeRecord) => void): Man
     label: 'Status',
     widthRem: '6.875rem',
     optional: true,
-    render: (c) => <StatusBadge status={c.status} />,
+    render: (c) => <StatusBadge status={c.status} hasUnpublishedEdits={hasUnpublishedEdits(c)} />,
   },
   {
     key: 'updated',
@@ -111,7 +111,6 @@ const FILTERS: ManagementFilterDef<CollaborativeRecord>[] = [
 
 const STATUSES: { key: CollaborativeStatus; label: string }[] = [
   { key: 'draft', label: 'Draft' },
-  { key: 'pending', label: 'Pending' },
   { key: 'published', label: 'Published' },
 ]
 
@@ -139,14 +138,11 @@ function CollaborativeListView({
         { key: 'delete', icon: Trash2, label: () => `Delete ${name}`, onClick: () => onDeleteCollaborative(collaborative.id), destructive: true },
       ]
     }
-    if (collaborative.status === 'pending') {
-      return [
-        { key: 'edit', icon: Pencil, label: () => `Edit ${name}`, onClick: () => onEditCollaborative(collaborative.id) },
-        { key: 'discard', icon: Undo2, label: () => `Discard changes to ${name}`, onClick: () => onDiscardCollaborative(collaborative.id), destructive: true },
-      ]
-    }
     return [
       { key: 'edit', icon: Pencil, label: () => `Edit ${name}`, onClick: () => onEditCollaborative(collaborative.id) },
+      ...(hasUnpublishedEdits(collaborative)
+        ? [{ key: 'discard', icon: Undo2, label: () => `Discard unsaved changes to ${name}`, onClick: () => onDiscardCollaborative(collaborative.id), destructive: true } as ManagementRowAction<CollaborativeRecord>]
+        : []),
       { key: 'unpublish', icon: Archive, label: () => `Unpublish ${name}`, onClick: () => onUnpublishCollaborative(collaborative.id), destructive: true },
     ]
   }

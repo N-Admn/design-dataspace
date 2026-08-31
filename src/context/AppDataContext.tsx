@@ -1,6 +1,7 @@
 import * as React from 'react'
 
 import { formatTimestamp } from '@/lib/format'
+import { resolveLifecycle } from '@/lib/content-status'
 import { MOCK_DATASETS } from '@/lib/mock-datasets'
 import { MOCK_EVENTS } from '@/lib/mock-events'
 import { MOCK_ORGANISATIONS } from '@/lib/mock-organisations'
@@ -15,6 +16,13 @@ import type { UseCaseFormState, UseCaseRecord, UseCaseStatus } from '@/types/use
 import type { CollaborativeFormState, CollaborativeRecord, CollaborativeStatus } from '@/types/collaborative'
 import type { AIModelFormState, AIModelRecord, AIModelStatus } from '@/types/ai-model'
 import type { ChartFormState, ChartRecord, ChartStatus } from '@/types/chart'
+
+/** Migrate any records persisted before the lifecycle was simplified to two
+ * statuses: a legacy 'pending' record always had a live published version, so it
+ * becomes 'published' (its working copy in `form` still reads as unsaved changes). */
+function normalizeStoredRecords<T extends { status: string }>(records: T[]): T[] {
+  return records.map((r) => ((r.status as string) === 'pending' ? { ...r, status: 'published' } : r))
+}
 
 let datasetIdCounter = 0
 let eventIdCounter = 0
@@ -32,7 +40,7 @@ const USE_CASES_STORAGE_KEY = 'civicdataspace:usecases'
 function loadStoredUseCases(): UseCaseRecord[] | null {
   try {
     const raw = window.localStorage.getItem(USE_CASES_STORAGE_KEY)
-    return raw ? (JSON.parse(raw) as UseCaseRecord[]) : null
+    return raw ? normalizeStoredRecords(JSON.parse(raw) as UseCaseRecord[]) : null
   } catch {
     return null
   }
@@ -52,7 +60,7 @@ const COLLABORATIVES_STORAGE_KEY = 'civicdataspace:collaboratives'
 function loadStoredCollaboratives(): CollaborativeRecord[] | null {
   try {
     const raw = window.localStorage.getItem(COLLABORATIVES_STORAGE_KEY)
-    return raw ? (JSON.parse(raw) as CollaborativeRecord[]) : null
+    return raw ? normalizeStoredRecords(JSON.parse(raw) as CollaborativeRecord[]) : null
   } catch {
     return null
   }
@@ -72,7 +80,7 @@ const AI_MODELS_STORAGE_KEY = 'civicdataspace:ai-models'
 function loadStoredAIModels(): AIModelRecord[] | null {
   try {
     const raw = window.localStorage.getItem(AI_MODELS_STORAGE_KEY)
-    return raw ? (JSON.parse(raw) as AIModelRecord[]) : null
+    return raw ? normalizeStoredRecords(JSON.parse(raw) as AIModelRecord[]) : null
   } catch {
     return null
   }
@@ -88,10 +96,12 @@ function bumpAIModelIdCounter(records: AIModelRecord[]) {
 interface AppDataContextValue {
   datasets: DatasetRecord[]
   upsertDataset: (id: string | null, status: DatasetStatus, form: DatasetFormState) => string
+  unpublishDataset: (id: string) => void
   deleteDataset: (id: string) => void
 
   events: EventRecord[]
   upsertEvent: (id: string | null, status: EventStatus, form: EventFormState) => string
+  unpublishEvent: (id: string) => void
   deleteEvent: (id: string) => void
 
   organisations: Organisation[]
@@ -99,18 +109,22 @@ interface AppDataContextValue {
 
   useCases: UseCaseRecord[]
   upsertUseCase: (id: string | null, status: UseCaseStatus, form: UseCaseFormState) => string
+  unpublishUseCase: (id: string) => void
   deleteUseCase: (id: string) => void
 
   collaboratives: CollaborativeRecord[]
   upsertCollaborative: (id: string | null, status: CollaborativeStatus, form: CollaborativeFormState) => string
+  unpublishCollaborative: (id: string) => void
   deleteCollaborative: (id: string) => void
 
   aiModels: AIModelRecord[]
   upsertAIModel: (id: string | null, status: AIModelStatus, form: AIModelFormState) => string
+  unpublishAIModel: (id: string) => void
   deleteAIModel: (id: string) => void
 
   charts: ChartRecord[]
   upsertChart: (id: string | null, status: ChartStatus, form: ChartFormState) => string
+  unpublishChart: (id: string) => void
   deleteChart: (id: string) => void
 
   profile: ContributorProfile
@@ -219,16 +233,21 @@ function AppDataProvider({ children }: { children: React.ReactNode }) {
       const recordId = id ?? `dataset-${(datasetIdCounter += 1)}`
       setDatasets((prev) => {
         const existing = prev.find((d) => d.id === recordId)
-        const publishedForm = status === 'published' ? form : (existing?.publishedForm ?? null)
+        const { status: nextStatus, publishedForm } = resolveLifecycle(existing, status === 'published' ? 'publish' : 'save', form)
         if (existing) {
-          return prev.map((d) => (d.id === recordId ? { ...d, status, updatedAt, form, publishedForm } : d))
+          return prev.map((d) => (d.id === recordId ? { ...d, status: nextStatus, updatedAt, form, publishedForm } : d))
         }
-        return [{ id: recordId, status, updatedAt, form, publishedForm }, ...prev]
+        return [{ id: recordId, status: nextStatus, updatedAt, form, publishedForm }, ...prev]
       })
       return recordId
     },
     [],
   )
+
+  const unpublishDataset = React.useCallback((id: string) => {
+    const updatedAt = formatTimestamp(new Date())
+    setDatasets((prev) => prev.map((d) => (d.id === id ? { ...d, status: 'draft', updatedAt } : d)))
+  }, [])
 
   const deleteDataset = React.useCallback((id: string) => {
     setDatasets((prev) => prev.filter((d) => d.id !== id))
@@ -240,18 +259,23 @@ function AppDataProvider({ children }: { children: React.ReactNode }) {
       const recordId = id ?? `event-${(eventIdCounter += 1)}`
       setEvents((prev) => {
         const existing = prev.find((e) => e.id === recordId)
-        const publishedForm = status === 'published' ? form : (existing?.publishedForm ?? null)
+        const { status: nextStatus, publishedForm } = resolveLifecycle(existing, status === 'published' ? 'publish' : 'save', form)
         if (existing) {
           return prev.map((e) =>
-            e.id === recordId ? { ...e, status, updatedAt: timestamp, form, publishedForm } : e,
+            e.id === recordId ? { ...e, status: nextStatus, updatedAt: timestamp, form, publishedForm } : e,
           )
         }
-        return [{ id: recordId, status, createdAt: timestamp, updatedAt: timestamp, form, publishedForm }, ...prev]
+        return [{ id: recordId, status: nextStatus, createdAt: timestamp, updatedAt: timestamp, form, publishedForm }, ...prev]
       })
       return recordId
     },
     [],
   )
+
+  const unpublishEvent = React.useCallback((id: string) => {
+    const timestamp = formatTimestamp(new Date())
+    setEvents((prev) => prev.map((e) => (e.id === id ? { ...e, status: 'draft', updatedAt: timestamp } : e)))
+  }, [])
 
   const deleteEvent = React.useCallback((id: string) => {
     setEvents((prev) => prev.filter((e) => e.id !== id))
@@ -270,16 +294,21 @@ function AppDataProvider({ children }: { children: React.ReactNode }) {
       const recordId = id ?? `usecase-${(useCaseIdCounter += 1)}`
       setUseCases((prev) => {
         const existing = prev.find((u) => u.id === recordId)
-        const publishedForm = status === 'published' ? form : (existing?.publishedForm ?? null)
+        const { status: nextStatus, publishedForm } = resolveLifecycle(existing, status === 'published' ? 'publish' : 'save', form)
         if (existing) {
-          return prev.map((u) => (u.id === recordId ? { ...u, status, updatedAt, form, publishedForm } : u))
+          return prev.map((u) => (u.id === recordId ? { ...u, status: nextStatus, updatedAt, form, publishedForm } : u))
         }
-        return [{ id: recordId, status, updatedAt, form, publishedForm }, ...prev]
+        return [{ id: recordId, status: nextStatus, updatedAt, form, publishedForm }, ...prev]
       })
       return recordId
     },
     [],
   )
+
+  const unpublishUseCase = React.useCallback((id: string) => {
+    const updatedAt = formatTimestamp(new Date())
+    setUseCases((prev) => prev.map((u) => (u.id === id ? { ...u, status: 'draft', updatedAt } : u)))
+  }, [])
 
   const deleteUseCase = React.useCallback((id: string) => {
     setUseCases((prev) => prev.filter((u) => u.id !== id))
@@ -291,16 +320,21 @@ function AppDataProvider({ children }: { children: React.ReactNode }) {
       const recordId = id ?? `collaborative-${(collaborativeIdCounter += 1)}`
       setCollaboratives((prev) => {
         const existing = prev.find((c) => c.id === recordId)
-        const publishedForm = status === 'published' ? form : (existing?.publishedForm ?? null)
+        const { status: nextStatus, publishedForm } = resolveLifecycle(existing, status === 'published' ? 'publish' : 'save', form)
         if (existing) {
-          return prev.map((c) => (c.id === recordId ? { ...c, status, updatedAt, form, publishedForm } : c))
+          return prev.map((c) => (c.id === recordId ? { ...c, status: nextStatus, updatedAt, form, publishedForm } : c))
         }
-        return [{ id: recordId, status, updatedAt, form, publishedForm }, ...prev]
+        return [{ id: recordId, status: nextStatus, updatedAt, form, publishedForm }, ...prev]
       })
       return recordId
     },
     [],
   )
+
+  const unpublishCollaborative = React.useCallback((id: string) => {
+    const updatedAt = formatTimestamp(new Date())
+    setCollaboratives((prev) => prev.map((c) => (c.id === id ? { ...c, status: 'draft', updatedAt } : c)))
+  }, [])
 
   const deleteCollaborative = React.useCallback((id: string) => {
     setCollaboratives((prev) => prev.filter((c) => c.id !== id))
@@ -312,16 +346,21 @@ function AppDataProvider({ children }: { children: React.ReactNode }) {
       const recordId = id ?? `ai-model-${(aiModelIdCounter += 1)}`
       setAIModels((prev) => {
         const existing = prev.find((m) => m.id === recordId)
-        const publishedForm = status === 'published' ? form : (existing?.publishedForm ?? null)
+        const { status: nextStatus, publishedForm } = resolveLifecycle(existing, status === 'published' ? 'publish' : 'save', form)
         if (existing) {
-          return prev.map((m) => (m.id === recordId ? { ...m, status, updatedAt, form, publishedForm } : m))
+          return prev.map((m) => (m.id === recordId ? { ...m, status: nextStatus, updatedAt, form, publishedForm } : m))
         }
-        return [{ id: recordId, status, updatedAt, form, publishedForm }, ...prev]
+        return [{ id: recordId, status: nextStatus, updatedAt, form, publishedForm }, ...prev]
       })
       return recordId
     },
     [],
   )
+
+  const unpublishAIModel = React.useCallback((id: string) => {
+    const updatedAt = formatTimestamp(new Date())
+    setAIModels((prev) => prev.map((m) => (m.id === id ? { ...m, status: 'draft', updatedAt } : m)))
+  }, [])
 
   const deleteAIModel = React.useCallback((id: string) => {
     setAIModels((prev) => prev.filter((m) => m.id !== id))
@@ -332,13 +371,18 @@ function AppDataProvider({ children }: { children: React.ReactNode }) {
     const recordId = id ?? `chart-${(chartIdCounter += 1)}`
     setCharts((prev) => {
       const existing = prev.find((c) => c.id === recordId)
-      const publishedForm = status === 'published' ? form : (existing?.publishedForm ?? null)
+      const { status: nextStatus, publishedForm } = resolveLifecycle(existing, status === 'published' ? 'publish' : 'save', form)
       if (existing) {
-        return prev.map((c) => (c.id === recordId ? { ...c, status, updatedAt, form, publishedForm } : c))
+        return prev.map((c) => (c.id === recordId ? { ...c, status: nextStatus, updatedAt, form, publishedForm } : c))
       }
-      return [{ id: recordId, status, updatedAt, form, publishedForm }, ...prev]
+      return [{ id: recordId, status: nextStatus, updatedAt, form, publishedForm }, ...prev]
     })
     return recordId
+  }, [])
+
+  const unpublishChart = React.useCallback((id: string) => {
+    const updatedAt = formatTimestamp(new Date())
+    setCharts((prev) => prev.map((c) => (c.id === id ? { ...c, status: 'draft', updatedAt } : c)))
   }, [])
 
   const deleteChart = React.useCallback((id: string) => {
@@ -349,23 +393,29 @@ function AppDataProvider({ children }: { children: React.ReactNode }) {
     () => ({
       datasets,
       upsertDataset,
+      unpublishDataset,
       deleteDataset,
       events,
       upsertEvent,
+      unpublishEvent,
       deleteEvent,
       organisations,
       addOrganisation,
       useCases,
       upsertUseCase,
+      unpublishUseCase,
       deleteUseCase,
       collaboratives,
       upsertCollaborative,
+      unpublishCollaborative,
       deleteCollaborative,
       aiModels,
       upsertAIModel,
+      unpublishAIModel,
       deleteAIModel,
       charts,
       upsertChart,
+      unpublishChart,
       deleteChart,
       profile,
       updateProfile: setProfile,
@@ -373,23 +423,29 @@ function AppDataProvider({ children }: { children: React.ReactNode }) {
     [
       datasets,
       upsertDataset,
+      unpublishDataset,
       deleteDataset,
       events,
       upsertEvent,
+      unpublishEvent,
       deleteEvent,
       organisations,
       addOrganisation,
       useCases,
       upsertUseCase,
+      unpublishUseCase,
       deleteUseCase,
       collaboratives,
       upsertCollaborative,
+      unpublishCollaborative,
       deleteCollaborative,
       aiModels,
       upsertAIModel,
+      unpublishAIModel,
       deleteAIModel,
       charts,
       upsertChart,
+      unpublishChart,
       deleteChart,
       profile,
     ],

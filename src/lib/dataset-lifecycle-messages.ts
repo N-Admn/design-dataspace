@@ -14,12 +14,6 @@ export function datasetLifecycleMessage(status: DatasetStatus): LifecycleMessage
       description: 'It is now publicly available on CivicDataSpace.',
     }
   }
-  if (status === 'pending') {
-    return {
-      title: 'Dataset submitted',
-      description: 'It will become publicly available once it is published.',
-    }
-  }
   return {
     title: 'Dataset saved as Draft',
     description: 'It is not publicly available yet.',

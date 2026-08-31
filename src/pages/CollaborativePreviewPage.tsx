@@ -22,11 +22,11 @@ function CollaborativePreviewPage() {
 
   const record = id ? collaboratives.find((c) => c.id === id) : undefined
   // Load once on mount and freeze — re-reading after our own publish action would
-  // pick up the just-updated status and flip "Publish" into "Submit Changes" mid-flow.
+  // pick up the just-updated status and flip "Publish" into "Publish Changes" mid-flow.
   const [snapshot] = React.useState(() => (id ? loadCollaborativeDraftSnapshot(id) : null))
   const form = snapshot?.form ?? record?.form
   const [initialStatus] = React.useState(() => snapshot?.status ?? record?.status ?? 'draft')
-  const hasLiveVersion = initialStatus === 'published' || initialStatus === 'pending'
+  const hasLiveVersion = initialStatus === 'published'
 
   const handleEditInWorkspace = () => {
     window.close()
@@ -61,26 +61,25 @@ function CollaborativePreviewPage() {
   const handlePublish = async () => {
     if (!ready) return
     const ok = await confirm({
-      title: hasLiveVersion ? 'Submit changes?' : 'Publish Collaborative?',
+      title: hasLiveVersion ? 'Publish changes?' : 'Publish Collaborative?',
       description: hasLiveVersion
-        ? `Your changes to "${form.metadata.name}" will be submitted for review before going live.`
+        ? `Your changes to "${form.metadata.name}" will replace the current published version immediately.`
         : `You're about to publish "${form.metadata.name}". Once published, this Collaborative will be visible to the public.`,
-      confirmLabel: hasLiveVersion ? 'Submit Changes' : 'Publish Collaborative',
+      confirmLabel: hasLiveVersion ? 'Publish Changes' : 'Publish Collaborative',
     })
     if (!ok) return
     setIsSubmitting(true)
     setPublishFailed(false)
     window.setTimeout(() => {
       try {
-        const nextStatus = hasLiveVersion ? 'pending' : 'published'
-        upsertCollaborative(id, nextStatus, form)
+        upsertCollaborative(id, 'published', form)
         clearCollaborativeDraftSnapshot(id)
         setIsSubmitting(false)
         setJustPublished(true)
         toast({
-          title: hasLiveVersion ? 'Changes submitted' : 'Collaborative published',
+          title: hasLiveVersion ? 'Changes published' : 'Collaborative published',
           description: hasLiveVersion
-            ? 'Your changes are pending review. The current published version remains live.'
+            ? 'Your changes are now live on CivicDataSpace.'
             : 'Your Collaborative is now publicly available on CivicDataSpace.',
           variant: 'success',
         })
@@ -96,12 +95,12 @@ function CollaborativePreviewPage() {
       <div className="sticky top-4 z-10 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-card px-5 py-4 shadow-sm">
         <div>
           <p className="text-sm font-semibold text-foreground">
-            {justPublished ? (hasLiveVersion ? 'Changes submitted' : 'Collaborative published') : 'Collaborative Preview'}
+            {justPublished ? (hasLiveVersion ? 'Changes published' : 'Collaborative published') : 'Collaborative Preview'}
           </p>
           <p className="text-xs text-muted-foreground">
             {justPublished
               ? hasLiveVersion
-                ? 'Your changes are pending review. The current published version remains live.'
+                ? 'Your changes are now live on CivicDataSpace.'
                 : 'Your Collaborative is now publicly available on CivicDataSpace.'
               : 'This is what your Collaborative will look like when published.'}
           </p>
@@ -125,11 +124,11 @@ function CollaborativePreviewPage() {
                 {isSubmitting ? (
                   <>
                     <Loader2 className="size-4 animate-spin" />
-                    {hasLiveVersion ? 'Submitting...' : 'Publishing...'}
+                    Publishing...
                   </>
                 ) : (
                   <>
-                    {hasLiveVersion ? 'Submit Changes' : 'Publish Collaborative'}
+                    {hasLiveVersion ? 'Publish Changes' : 'Publish Collaborative'}
                     <Send className="size-4" />
                   </>
                 )}
@@ -142,7 +141,7 @@ function CollaborativePreviewPage() {
       {publishFailed && (
         <div className="rounded-md border border-destructive/40 bg-destructive/10 px-4 py-2.5 text-sm text-destructive">
           <p className="font-medium">We couldn't publish this Collaborative.</p>
-          <p className="mt-0.5">Your changes are saved as a draft. Fix the highlighted issues and try again.</p>
+          <p className="mt-0.5">Your changes have been kept. Fix the highlighted issues and try again.</p>
         </div>
       )}
 

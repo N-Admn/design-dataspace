@@ -3,6 +3,7 @@ import { Archive, BarChart3, Gauge, ImagePlus, LineChart, MapPin, Pencil, PieCha
 import { ManagementTable, type ManagementColumn, type ManagementFilterDef, type ManagementRowAction } from '@/components/shared/management-table/ManagementTable'
 import { TruncatedText } from '@/components/shared/TruncatedText'
 import { StatusBadge } from '@/components/shared/StatusBadge'
+import { hasUnpublishedEdits } from '@/lib/content-status'
 import { useAppData } from '@/context/AppDataContext'
 import { formatShortDate, parseAppTimestamp } from '@/lib/format'
 import { CHART_TYPE_OPTIONS, type ChartRecord, type ChartStatus, type ChartType } from '@/types/chart'
@@ -46,7 +47,6 @@ function matchesSearch(chart: ChartRecord, query: string): boolean {
 const TAB_EMPTY_MESSAGE: Record<ChartStatus, string> = {
   published: 'No published content yet.',
   draft: 'No drafts yet.',
-  pending: 'No pending content.',
 }
 
 function buildColumns(datasets: DatasetRecord[], onOpen: (chart: ChartRecord) => void): ManagementColumn<ChartRecord>[] {
@@ -91,7 +91,7 @@ function buildColumns(datasets: DatasetRecord[], onOpen: (chart: ChartRecord) =>
       label: 'Status',
       widthRem: '6.875rem',
       optional: true,
-      render: (c) => <StatusBadge status={c.status} />,
+      render: (c) => <StatusBadge status={c.status} hasUnpublishedEdits={hasUnpublishedEdits(c)} />,
     },
     {
       key: 'updated',
@@ -108,7 +108,6 @@ function buildColumns(datasets: DatasetRecord[], onOpen: (chart: ChartRecord) =>
 
 const STATUSES: { key: ChartStatus; label: string }[] = [
   { key: 'draft', label: 'Draft' },
-  { key: 'pending', label: 'Pending' },
   { key: 'published', label: 'Published' },
 ]
 
@@ -147,14 +146,11 @@ function ChartListView({
         { key: 'delete', icon: Trash2, label: () => `Delete ${name}`, onClick: () => onDeleteChart(chart.id), destructive: true },
       ]
     }
-    if (chart.status === 'pending') {
-      return [
-        { key: 'edit', icon: Pencil, label: () => `Edit ${name}`, onClick: () => onEditChart(chart.id) },
-        { key: 'discard', icon: Undo2, label: () => `Discard changes to ${name}`, onClick: () => onDiscardChart(chart.id), destructive: true },
-      ]
-    }
     return [
       { key: 'edit', icon: Pencil, label: () => `Edit ${name}`, onClick: () => onEditChart(chart.id) },
+      ...(hasUnpublishedEdits(chart)
+        ? [{ key: 'discard', icon: Undo2, label: () => `Discard unsaved changes to ${name}`, onClick: () => onDiscardChart(chart.id), destructive: true } as ManagementRowAction<ChartRecord>]
+        : []),
       { key: 'unpublish', icon: Archive, label: () => `Unpublish ${name}`, onClick: () => onUnpublishChart(chart.id), destructive: true },
     ]
   }

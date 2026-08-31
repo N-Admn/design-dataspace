@@ -6,6 +6,7 @@ import { StatusBadge } from '@/components/shared/StatusBadge'
 import { useToast } from '@/components/ui/toast'
 import { useAppData } from '@/context/AppDataContext'
 import { parseAppTimestamp } from '@/lib/format'
+import { hasUnpublishedEdits, type ContentStatus } from '@/lib/content-status'
 import { NAV_GROUPS } from '@/components/layout/nav-config'
 
 // Same viewport budget as WORKSPACE_HEIGHT_CLASS, but as a min-height so short
@@ -19,9 +20,17 @@ interface ResumeItem {
   id: string
   title: string
   moduleLabel: 'Dataset' | 'Event' | 'Use Case' | 'Collaborative'
-  status: 'pending' | 'draft'
+  status: ContentStatus
+  /** Published item with a saved-but-unpublished working copy. */
+  unpublishedEdits: boolean
   sortKey: number
   onContinue: () => void
+}
+
+/** Surface anything the contributor still has open work on: drafts, and published
+ * items carrying unpublished edits. */
+function needsAttention(record: { status: ContentStatus; form: unknown; publishedForm: unknown }): boolean {
+  return record.status === 'draft' || hasUnpublishedEdits(record)
 }
 
 function DashboardPage() {
@@ -33,53 +42,59 @@ function DashboardPage() {
     toast({ title: `${label} coming soon`, description: 'This area isn’t available yet.' })
 
   const resumeDatasets: ResumeItem[] = datasets
-    .filter((d) => d.status === 'pending' || d.status === 'draft')
+    .filter(needsAttention)
     .map((d) => ({
       id: `dataset-${d.id}`,
       title: d.form.metadata.name || 'Untitled dataset',
       moduleLabel: 'Dataset',
-      status: d.status as 'pending' | 'draft',
+      status: d.status,
+      unpublishedEdits: hasUnpublishedEdits(d),
       sortKey: parseAppTimestamp(d.updatedAt).getTime(),
       onContinue: () => navigate('/dashboard/datasets', { state: { datasetId: d.id } }),
     }))
 
   const resumeEvents: ResumeItem[] = events
-    .filter((e) => e.status === 'pending' || e.status === 'draft')
+    .filter(needsAttention)
     .map((e) => ({
       id: `event-${e.id}`,
       title: e.form.metadata.title || 'Untitled event',
       moduleLabel: 'Event',
-      status: e.status as 'pending' | 'draft',
+      status: e.status,
+      unpublishedEdits: hasUnpublishedEdits(e),
       sortKey: parseAppTimestamp(e.updatedAt).getTime(),
       onContinue: () => navigate('/dashboard/events/new', { state: { eventId: e.id, initialStep: 1 } }),
     }))
 
   const resumeUseCases: ResumeItem[] = useCases
-    .filter((u) => u.status === 'pending' || u.status === 'draft')
+    .filter(needsAttention)
     .map((u) => ({
       id: `usecase-${u.id}`,
       title: u.form.metadata.title || 'Untitled Use Case',
       moduleLabel: 'Use Case',
-      status: u.status as 'pending' | 'draft',
+      status: u.status,
+      unpublishedEdits: hasUnpublishedEdits(u),
       sortKey: parseAppTimestamp(u.updatedAt).getTime(),
       onContinue: () => navigate('/dashboard/use-cases/new', { state: { useCaseId: u.id, initialStep: 1 } }),
     }))
 
   const resumeCollaboratives: ResumeItem[] = collaboratives
-    .filter((c) => c.status === 'pending' || c.status === 'draft')
+    .filter(needsAttention)
     .map((c) => ({
       id: `collaborative-${c.id}`,
       title: c.form.metadata.name || 'Untitled Collaborative',
       moduleLabel: 'Collaborative',
-      status: c.status as 'pending' | 'draft',
+      status: c.status,
+      unpublishedEdits: hasUnpublishedEdits(c),
       sortKey: parseAppTimestamp(c.updatedAt).getTime(),
       onContinue: () => navigate('/dashboard/collaboratives/new', { state: { collaborativeId: c.id, initialStep: 1 } }),
     }))
 
   const allResumeItems = [...resumeDatasets, ...resumeEvents, ...resumeUseCases, ...resumeCollaboratives]
-  const pendingItems = allResumeItems.filter((i) => i.status === 'pending').sort((a, b) => b.sortKey - a.sortKey)
-  const draftItems = allResumeItems.filter((i) => i.status === 'draft').sort((a, b) => b.sortKey - a.sortKey)
-  const resumeItems = [...pendingItems, ...draftItems].slice(0, 5)
+  // Published items with unpublished edits come first (they have a live version drifting
+  // from the working copy), then plain drafts — each group newest-first.
+  const editedItems = allResumeItems.filter((i) => i.unpublishedEdits).sort((a, b) => b.sortKey - a.sortKey)
+  const draftItems = allResumeItems.filter((i) => !i.unpublishedEdits).sort((a, b) => b.sortKey - a.sortKey)
+  const resumeItems = [...editedItems, ...draftItems].slice(0, 5)
 
   return (
     <div className={`flex min-h-0 flex-col gap-10 ${DASHBOARD_MIN_HEIGHT_CLASS}`}>
@@ -152,7 +167,7 @@ function DashboardPage() {
                   className="flex h-full flex-1 flex-col justify-between overflow-hidden rounded-xl border border-border bg-card p-5 text-left transition-colors hover:border-primary/40"
                 >
                   <div>
-                    <StatusBadge status={item.status} />
+                    <StatusBadge status={item.status} hasUnpublishedEdits={item.unpublishedEdits} />
                     <p className="mt-3 line-clamp-2 text-base font-semibold text-foreground">{item.title}</p>
                     <p className="mt-1 text-sm text-muted-foreground">{item.moduleLabel}</p>
                   </div>

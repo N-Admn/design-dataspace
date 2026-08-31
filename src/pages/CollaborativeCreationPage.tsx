@@ -15,6 +15,8 @@ import { useToast } from '@/components/ui/toast'
 import { useAppData } from '@/context/AppDataContext'
 import { useHelpContext } from '@/context/HelpContext'
 import { saveCollaborativeDraftSnapshot } from '@/lib/collaborative-draft-storage'
+import { isCollaborativeReadyToPublish } from '@/lib/collaborative-validation'
+import { hasUnpublishedEdits } from '@/lib/content-status'
 import { emptyCollaborativeForm, type CollaborativeFormState, type CollaborativeMetadata } from '@/types/collaborative'
 
 type CollaborativeStep = 1 | 2 | 3 | 4
@@ -109,24 +111,48 @@ function CollaborativeCreationPage() {
   }
 
   const editingRecord = editingId ? collaboratives.find((c) => c.id === editingId) : undefined
-  const hasLiveVersion = editingRecord?.status === 'published' || editingRecord?.status === 'pending'
+  const hasLiveVersion = editingRecord?.status === 'published'
+  const showUnpublishedIndicator = hasLiveVersion && (hasUnsavedChanges || hasUnpublishedEdits(editingRecord))
 
   const handleSaveDraft = () => {
     setSaved(false)
-    const nextStatus = hasLiveVersion ? 'pending' : 'draft'
-    const id = upsertCollaborative(editingId, nextStatus, form)
+    const id = upsertCollaborative(editingId, 'draft', form)
     if (!editingId) setEditingId(id)
     setLastSavedForm(form)
     setTimeout(() => setSaved(true), 500)
     toast({
-      title: nextStatus === 'pending' ? 'Changes saved' : 'Draft saved',
-      description:
-        nextStatus === 'pending'
-          ? 'Your changes are pending and awaiting publication. The current published version remains live.'
-          : 'Your Collaborative has been saved as a draft.',
+      title: hasLiveVersion ? 'Changes saved' : 'Draft saved',
+      description: hasLiveVersion
+        ? 'Your edits aren’t published yet. The current published version stays live.'
+        : 'Your Collaborative has been saved as a draft.',
       variant: 'success',
     })
     return id
+  }
+
+  const handleGateSaveAndPublish = () => {
+    setShowLeaveConfirm(false)
+    if (editingId && isCollaborativeReadyToPublish(form)) {
+      upsertCollaborative(editingId, 'published', form)
+      toast({ title: 'Changes published', description: 'Your changes are now live on CivicDataSpace.', variant: 'success' })
+    } else {
+      upsertCollaborative(editingId, 'draft', form)
+      toast({
+        title: 'Changes saved',
+        description: 'Not published yet — complete the required fields to publish.',
+        variant: 'success',
+      })
+    }
+    setLastSavedForm(form)
+    navigate('/dashboard/collaboratives')
+  }
+
+  const handleGateDiscardChanges = () => {
+    setShowLeaveConfirm(false)
+    if (editingId && editingRecord?.publishedForm) {
+      upsertCollaborative(editingId, 'published', editingRecord.publishedForm)
+    }
+    navigate('/dashboard/collaboratives')
   }
 
   const handlePreview = () => {
@@ -160,6 +186,7 @@ function CollaborativeCreationPage() {
         title={form.metadata.name || 'Untitled Collaborative'}
         onTitleChange={(name) => updateMetadata('name', name)}
         editablePlaceholder="Untitled Collaborative"
+        unpublishedChanges={showUnpublishedIndicator}
       />
       <div className="border-t border-border px-6 py-6">
         <Stepper steps={COLLABORATIVE_STEPS} currentStep={step} />
@@ -195,6 +222,7 @@ function CollaborativeCreationPage() {
       <LeaveCreationDialog
         open={showLeaveConfirm}
         itemLabel="Collaborative"
+        mode={hasLiveVersion ? 'published' : 'draft'}
         onContinueEditing={() => setShowLeaveConfirm(false)}
         onSaveDraftAndExit={() => {
           setShowLeaveConfirm(false)
@@ -205,6 +233,8 @@ function CollaborativeCreationPage() {
           setShowLeaveConfirm(false)
           navigate('/dashboard/collaboratives')
         }}
+        onSaveAndPublish={handleGateSaveAndPublish}
+        onDiscardChanges={handleGateDiscardChanges}
       />
     </Card>
   )

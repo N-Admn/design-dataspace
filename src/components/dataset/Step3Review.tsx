@@ -24,7 +24,7 @@ interface Step3ReviewProps {
   /** The saved dataset's id, or null for a brand-new dataset that hasn't been saved yet. */
   datasetId: string | null
   canPublish: boolean
-  /** True when this dataset already has a published/pending version — the primary action submits for review instead of publishing directly. */
+  /** True when this dataset already has a published version — publishing replaces the live version immediately. */
   hasLiveVersion?: boolean
   /** 1 = Data Files, 2 = Metadata. */
   onEditStep: (step: 1 | 2) => void
@@ -183,7 +183,7 @@ function Step3Review({ form, datasetId, canPublish, hasLiveVersion, onEditStep, 
         </div>
       </ReviewSection>
 
-      <ReviewSection title="Publishing Settings" defaultOpen={false} onEdit={() => onEditStep(2)}>
+      <ReviewSection title="Publishing Settings" defaultOpen onEdit={() => onEditStep(2)}>
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
           <ReviewField
             label="Access Type"
@@ -202,7 +202,7 @@ function Step3Review({ form, datasetId, canPublish, hasLiveVersion, onEditStep, 
         </div>
       </ReviewSection>
 
-      <ReviewSection title="Uploaded Files" defaultOpen={false} onEdit={() => onEditStep(1)}>
+      <ReviewSection title="Uploaded Files" defaultOpen onEdit={() => onEditStep(1)}>
         <div className="flex flex-col gap-3">
           {files.length === 0 && (
             <p className="text-sm text-muted-foreground">No files uploaded.</p>
@@ -229,7 +229,7 @@ function Step3Review({ form, datasetId, canPublish, hasLiveVersion, onEditStep, 
       </ReviewSection>
 
       {resources.length > 0 && (
-        <ReviewSection title="Resources" defaultOpen={false} onEdit={() => onEditStep(1)}>
+        <ReviewSection title="Resources" defaultOpen onEdit={() => onEditStep(1)}>
           <div className="flex flex-col gap-3">
             {resources.map((resource) => (
               <div
@@ -273,7 +273,7 @@ function Step3Review({ form, datasetId, canPublish, hasLiveVersion, onEditStep, 
       <div className="flex flex-col items-center gap-2.5 rounded-xl border border-border bg-card px-5 py-5 text-center">
         <p className="text-sm text-muted-foreground">
           {hasLiveVersion
-            ? 'Submitting will send your changes for review before they go live.'
+            ? 'Publishing will replace the current public version of this dataset immediately.'
             : 'Your dataset will be publicly available immediately after publishing.'}
         </p>
         <Button
@@ -283,7 +283,7 @@ function Step3Review({ form, datasetId, canPublish, hasLiveVersion, onEditStep, 
           disabled={!canPublish}
           onClick={onPublish}
         >
-          {hasLiveVersion ? 'Submit Changes' : 'Publish Dataset'}
+          {hasLiveVersion ? 'Publish Changes' : 'Publish Dataset'}
           <Send className="size-4" />
         </Button>
         {!canPublish && (

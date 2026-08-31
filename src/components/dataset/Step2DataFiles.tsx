@@ -27,11 +27,13 @@ import { useToast } from '@/components/ui/toast'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
 import { getResourceTitle, validateIncomingFiles } from '@/lib/file-validation'
+import { formatUploadLimit } from '@/lib/generic-upload'
 import { testApiConnection } from '@/lib/api-resource'
 import {
   AUTH_METHOD_OPTIONS,
   API_KEY_LOCATION_OPTIONS,
   API_RESPONSE_FORMAT_OPTIONS,
+  MAX_FILE_SIZE_BYTES,
   SUPPORTED_FILE_EXTENSIONS,
   type ApiAuthMethod,
   type ApiKeyLocation,
@@ -540,11 +542,11 @@ function Step2DataFiles({
             <CardContent className="flex flex-col gap-4">
               <DropzoneUploadField
                 extensions={SUPPORTED_FILE_EXTENSIONS}
-                maxBytes={50 * 1024 * 1024}
+                maxBytes={MAX_FILE_SIZE_BYTES}
                 multiple
                 onFiles={handleIncoming}
                 showExtensionBadges
-                formatHint="Maximum file size limit: 50MB"
+                formatHint={`Maximum file size limit: ${formatUploadLimit(MAX_FILE_SIZE_BYTES)}`}
               />
 
               {uploadErrors.length > 0 && (

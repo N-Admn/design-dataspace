@@ -92,7 +92,7 @@ function DatasetConnectionsCard({
   const q = query.trim().toLowerCase()
   const hasActiveFilters = q !== '' || sector !== '' || geography !== ''
 
-  // Only published datasets are eligible to connect — drafts and pending content aren't public yet.
+  // Only published datasets are eligible to connect — drafts aren't public yet.
   const results = allDatasets.filter((d) => {
     if (d.status !== 'published') return false
     if (sector && d.form.metadata.sector !== sector) return false
@@ -232,7 +232,7 @@ function DatasetConnectionsCard({
               const liveDataset = allDatasets.find((d) => d.id === item.id)
               // Missing means the dataset record itself is gone (e.g. deleted) — that's the only case
               // that should read as "unavailable". A dataset that exists but hasn't been published yet
-              // (Draft/Pending) is still a valid connection, just not publicly visible yet.
+              // (Draft) is still a valid connection, just not publicly visible yet.
               const isMissing = !liveDataset
               const isNotYetPublic = liveDataset && liveDataset.status !== 'published'
               const isPreviewing = previewId === item.id

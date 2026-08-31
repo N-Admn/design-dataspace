@@ -59,7 +59,7 @@ function ChartStep3Review({ form, otherCharts, onNameChange, onEditStep, onPubli
       </ReviewSection>
 
       {form.chartType === 'upload-image' && (
-        <ReviewSection title="Chart Image" defaultOpen={false} onEdit={() => onEditStep(2)}>
+        <ReviewSection title="Chart Image" defaultOpen onEdit={() => onEditStep(2)}>
           <div>
             <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Image</p>
             <p className="mt-1 text-sm text-foreground">{form.uploadedImage?.name || '—'}</p>
@@ -68,7 +68,7 @@ function ChartStep3Review({ form, otherCharts, onNameChange, onEditStep, onPubli
       )}
 
       {form.chartType && form.chartType !== 'upload-image' && (
-        <ReviewSection title="Chart Type & Configuration" defaultOpen={false} onEdit={() => onEditStep(2)}>
+        <ReviewSection title="Chart Type & Configuration" defaultOpen onEdit={() => onEditStep(2)}>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
               <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Chart Type</p>
@@ -155,7 +155,7 @@ function ChartStep3Review({ form, otherCharts, onNameChange, onEditStep, onPubli
       <div className="flex flex-col items-center gap-2.5 rounded-xl border border-border bg-card px-5 py-8 text-center">
         <p className="text-sm text-muted-foreground">
           {hasLiveVersion
-            ? 'Submitting will send your changes for review before they go live.'
+            ? 'Publishing will replace the current public version of this chart immediately.'
             : "Once published, this chart will appear on the dataset's public page."}
         </p>
         <Button type="button" size="lg" className="w-full max-w-md" disabled={!ready || busy} onClick={onPublish}>
@@ -171,7 +171,7 @@ function ChartStep3Review({ form, otherCharts, onNameChange, onEditStep, onPubli
             </>
           ) : (
             <>
-              {hasLiveVersion ? 'Submit Changes' : 'Publish Chart'}
+              {hasLiveVersion ? 'Publish Changes' : 'Publish Chart'}
               <Send className="size-4" />
             </>
           )}

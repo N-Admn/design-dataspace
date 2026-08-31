@@ -4,6 +4,7 @@ import { ManagementTable, type ManagementColumn, type ManagementFilterDef, type 
 import { Badge } from '@/components/ui/badge'
 import { TruncatedText } from '@/components/shared/TruncatedText'
 import { StatusBadge } from '@/components/shared/StatusBadge'
+import { hasUnpublishedEdits } from '@/lib/content-status'
 import { formatEventDateRange, getRegistrationStatus } from '@/lib/event-status'
 import { formatShortDate, parseAppTimestamp } from '@/lib/format'
 import { ACCESS_TYPE_LABELS, EVENT_TYPE_OPTIONS, type EventRecord, type EventStatus } from '@/types/event'
@@ -34,7 +35,6 @@ function matchesSearch(event: EventRecord, query: string): boolean {
 const TAB_EMPTY_MESSAGE: Record<EventStatus, string> = {
   published: 'No published content yet.',
   draft: 'No drafts yet.',
-  pending: 'No pending content.',
 }
 
 function buildColumns(onOpen: (event: EventRecord) => void): ManagementColumn<EventRecord>[] {
@@ -73,7 +73,7 @@ function buildColumns(onOpen: (event: EventRecord) => void): ManagementColumn<Ev
     label: 'Status',
     widthRem: '6.875rem',
     optional: true,
-    render: (e) => <StatusBadge status={e.status} />,
+    render: (e) => <StatusBadge status={e.status} hasUnpublishedEdits={hasUnpublishedEdits(e)} />,
   },
   {
     key: 'registration',
@@ -127,7 +127,6 @@ const FILTERS: ManagementFilterDef<EventRecord>[] = [
 
 const STATUSES: { key: EventStatus; label: string }[] = [
   { key: 'draft', label: 'Draft' },
-  { key: 'pending', label: 'Pending' },
   { key: 'published', label: 'Published' },
 ]
 
@@ -154,14 +153,11 @@ function EventListView({
         { key: 'delete', icon: Trash2, label: () => `Delete ${title}`, onClick: () => onDeleteEvent(event.id), destructive: true },
       ]
     }
-    if (event.status === 'pending') {
-      return [
-        { key: 'edit', icon: Pencil, label: () => `Edit ${title}`, onClick: () => onEditEvent(event.id) },
-        { key: 'discard', icon: Undo2, label: () => `Discard changes to ${title}`, onClick: () => onDiscardEvent(event.id), destructive: true },
-      ]
-    }
     return [
       { key: 'edit', icon: Pencil, label: () => `Edit ${title}`, onClick: () => onEditEvent(event.id) },
+      ...(hasUnpublishedEdits(event)
+        ? [{ key: 'discard', icon: Undo2, label: () => `Discard unsaved changes to ${title}`, onClick: () => onDiscardEvent(event.id), destructive: true } as ManagementRowAction<EventRecord>]
+        : []),
       { key: 'unpublish', icon: Archive, label: () => `Unpublish ${title}`, onClick: () => onUnpublishEvent(event.id), destructive: true },
     ]
   }

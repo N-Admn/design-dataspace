@@ -7,10 +7,8 @@ import { Button } from '@/components/ui/button'
 import { FieldError } from '@/components/ui/field-error'
 import { FileUploadField } from '@/components/shared/FileUploadField'
 import { cn } from '@/lib/utils'
-import type { UploadedAsset } from '@/lib/generic-upload'
+import { MAX_DOCUMENT_BYTES, type UploadedAsset } from '@/lib/generic-upload'
 import type { DatasetResource, DatasetResourceType } from '@/types/dataset'
-
-const MAX_CSV_BYTES = 50 * 1024 * 1024
 
 interface DatasetResourceStepProps {
   resources: DatasetResource[]
@@ -88,7 +86,7 @@ function DatasetResourceStep({ resources, onAddResource, onRemoveResource, error
               setCsvError(undefined)
             }}
             extensions={['csv']}
-            maxBytes={MAX_CSV_BYTES}
+            maxBytes={MAX_DOCUMENT_BYTES}
             error={csvError}
             fallbackIcon={FileSpreadsheet}
             variant="dropzone"

@@ -14,6 +14,8 @@ import { useToast } from '@/components/ui/toast'
 import { useAppData } from '@/context/AppDataContext'
 import { useHelpContext } from '@/context/HelpContext'
 import { saveAIModelDraftSnapshot } from '@/lib/ai-model-draft-storage'
+import { isAIModelReadyToPublish } from '@/lib/ai-model-validation'
+import { hasUnpublishedEdits } from '@/lib/content-status'
 import { createEmptyAIModelForm, type AIModelFormState, type AIModelMetadata } from '@/types/ai-model'
 
 type AIModelStep = 1 | 2 | 3
@@ -91,24 +93,48 @@ function AIModelCreationPage() {
   }
 
   const editingRecord = editingId ? aiModels.find((m) => m.id === editingId) : undefined
-  const hasLiveVersion = editingRecord?.status === 'published' || editingRecord?.status === 'pending'
+  const hasLiveVersion = editingRecord?.status === 'published'
+  const showUnpublishedIndicator = hasLiveVersion && (hasUnsavedChanges || hasUnpublishedEdits(editingRecord))
 
   const handleSaveDraft = () => {
     setSaved(false)
-    const nextStatus = hasLiveVersion ? 'pending' : 'draft'
-    const id = upsertAIModel(editingId, nextStatus, form)
+    const id = upsertAIModel(editingId, 'draft', form)
     if (!editingId) setEditingId(id)
     setLastSavedForm(form)
     setTimeout(() => setSaved(true), 500)
     toast({
-      title: nextStatus === 'pending' ? 'Changes saved' : 'Draft saved',
-      description:
-        nextStatus === 'pending'
-          ? 'Your changes are pending and awaiting publication. The current published version remains live.'
-          : 'Your AI Model has been saved as a draft.',
+      title: hasLiveVersion ? 'Changes saved' : 'Draft saved',
+      description: hasLiveVersion
+        ? 'Your edits aren’t published yet. The current published version stays live.'
+        : 'Your AI Model has been saved as a draft.',
       variant: 'success',
     })
     return id
+  }
+
+  const handleGateSaveAndPublish = () => {
+    setShowLeaveConfirm(false)
+    if (editingId && isAIModelReadyToPublish(form, otherNames)) {
+      upsertAIModel(editingId, 'published', form)
+      toast({ title: 'Changes published', description: 'Your changes are now live on CivicDataSpace.', variant: 'success' })
+    } else {
+      upsertAIModel(editingId, 'draft', form)
+      toast({
+        title: 'Changes saved',
+        description: 'Not published yet — complete the required fields to publish.',
+        variant: 'success',
+      })
+    }
+    setLastSavedForm(form)
+    navigate('/dashboard/ai-models')
+  }
+
+  const handleGateDiscardChanges = () => {
+    setShowLeaveConfirm(false)
+    if (editingId && editingRecord?.publishedForm) {
+      upsertAIModel(editingId, 'published', editingRecord.publishedForm)
+    }
+    navigate('/dashboard/ai-models')
   }
 
   const handlePreview = () => {
@@ -130,6 +156,7 @@ function AIModelCreationPage() {
         title={form.metadata.name || 'Untitled AI Model'}
         onTitleChange={(name) => updateMetadata('name', name)}
         editablePlaceholder="Untitled AI Model"
+        unpublishedChanges={showUnpublishedIndicator}
       />
       <div className="border-t border-border px-6 py-6">
         <Stepper steps={AI_MODEL_STEPS} currentStep={step} />
@@ -163,6 +190,7 @@ function AIModelCreationPage() {
       <LeaveCreationDialog
         open={showLeaveConfirm}
         itemLabel="AI Model"
+        mode={hasLiveVersion ? 'published' : 'draft'}
         onContinueEditing={() => setShowLeaveConfirm(false)}
         onSaveDraftAndExit={() => {
           setShowLeaveConfirm(false)
@@ -173,6 +201,8 @@ function AIModelCreationPage() {
           setShowLeaveConfirm(false)
           navigate('/dashboard/ai-models')
         }}
+        onSaveAndPublish={handleGateSaveAndPublish}
+        onDiscardChanges={handleGateDiscardChanges}
       />
     </Card>
   )

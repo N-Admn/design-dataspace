@@ -3,6 +3,7 @@ import { Archive, FileText, Pencil, Trash2, Undo2 } from 'lucide-react'
 import { ManagementTable, type ManagementColumn, type ManagementFilterDef, type ManagementRowAction } from '@/components/shared/management-table/ManagementTable'
 import { TruncatedText } from '@/components/shared/TruncatedText'
 import { StatusBadge } from '@/components/shared/StatusBadge'
+import { hasUnpublishedEdits } from '@/lib/content-status'
 import { formatShortDate, parseAppTimestamp } from '@/lib/format'
 import { GEOGRAPHY_OPTIONS, SECTOR_OPTIONS, type DatasetRecord, type DatasetStatus } from '@/types/dataset'
 
@@ -44,7 +45,6 @@ function matchesSearch(dataset: DatasetRecord, query: string): boolean {
 const TAB_EMPTY_MESSAGE: Record<DatasetStatus, string> = {
   published: 'No published content yet.',
   draft: 'No drafts yet.',
-  pending: 'No pending content.',
 }
 
 function buildColumns(onOpen: (dataset: DatasetRecord) => void): ManagementColumn<DatasetRecord>[] {
@@ -98,7 +98,7 @@ function buildColumns(onOpen: (dataset: DatasetRecord) => void): ManagementColum
     label: 'Status',
     widthRem: '6.875rem',
     optional: true,
-    render: (d) => <StatusBadge status={d.status} />,
+    render: (d) => <StatusBadge status={d.status} hasUnpublishedEdits={hasUnpublishedEdits(d)} />,
   },
   {
     key: 'updated',
@@ -120,7 +120,6 @@ const FILTERS: ManagementFilterDef<DatasetRecord>[] = [
 
 const STATUSES: { key: DatasetStatus; label: string }[] = [
   { key: 'draft', label: 'Draft' },
-  { key: 'pending', label: 'Pending' },
   { key: 'published', label: 'Published' },
 ]
 
@@ -147,14 +146,11 @@ function DatasetListView({
         { key: 'delete', icon: Trash2, label: () => `Delete ${name}`, onClick: () => onDeleteDataset(dataset.id), destructive: true },
       ]
     }
-    if (dataset.status === 'pending') {
-      return [
-        { key: 'edit', icon: Pencil, label: () => `Edit ${name}`, onClick: () => onEditDataset(dataset.id) },
-        { key: 'discard', icon: Undo2, label: () => `Discard changes to ${name}`, onClick: () => onDiscardDataset(dataset.id), destructive: true },
-      ]
-    }
     return [
       { key: 'edit', icon: Pencil, label: () => `Edit ${name}`, onClick: () => onEditDataset(dataset.id) },
+      ...(hasUnpublishedEdits(dataset)
+        ? [{ key: 'discard', icon: Undo2, label: () => `Discard unsaved changes to ${name}`, onClick: () => onDiscardDataset(dataset.id), destructive: true } as ManagementRowAction<DatasetRecord>]
+        : []),
       { key: 'unpublish', icon: Archive, label: () => `Unpublish ${name}`, onClick: () => onUnpublishDataset(dataset.id), destructive: true },
     ]
   }

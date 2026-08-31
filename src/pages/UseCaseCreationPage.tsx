@@ -15,6 +15,8 @@ import { useToast } from '@/components/ui/toast'
 import { useAppData } from '@/context/AppDataContext'
 import { useHelpContext } from '@/context/HelpContext'
 import { saveUseCaseDraftSnapshot } from '@/lib/usecase-draft-storage'
+import { isUseCaseReadyToPublish } from '@/lib/usecase-validation'
+import { hasUnpublishedEdits } from '@/lib/content-status'
 import { emptyUseCaseForm, type UseCaseFormState, type UseCaseMetadata } from '@/types/usecase'
 
 type UseCaseStep = 1 | 2 | 3 | 4
@@ -101,26 +103,51 @@ function UseCaseCreationPage() {
   }
 
   const editingRecord = editingId ? useCases.find((u) => u.id === editingId) : undefined
-  const hasLiveVersion = editingRecord?.status === 'published' || editingRecord?.status === 'pending'
+  const hasLiveVersion = editingRecord?.status === 'published'
+  const showUnpublishedIndicator = hasLiveVersion && (hasUnsavedChanges || hasUnpublishedEdits(editingRecord))
 
   const handleSaveDraft = () => {
     setSaved(false)
-    const nextStatus = hasLiveVersion ? 'pending' : 'draft'
-    const id = upsertUseCase(editingId, nextStatus, form)
+    const id = upsertUseCase(editingId, 'draft', form)
     if (!editingId) setEditingId(id)
     setLastSavedForm(form)
     setTimeout(() => setSaved(true), 500)
     toast({
-      title: nextStatus === 'pending' ? 'Changes saved' : 'Draft saved',
-      description:
-        nextStatus === 'pending'
-          ? 'Your changes are pending and awaiting publication. The current published version remains live.'
-          : 'Your use case has been saved as a draft.',
+      title: hasLiveVersion ? 'Changes saved' : 'Draft saved',
+      description: hasLiveVersion
+        ? 'Your edits aren’t published yet. The current published version stays live.'
+        : 'Your use case has been saved as a draft.',
       variant: 'success',
     })
     if (navState?.returnTo) {
       navigate(navState.returnTo, { state: { ...navState.returnState, createdUseCaseId: id } })
     }
+  }
+
+  /** Leave gate for an already-published use case. */
+  const handleGateSaveAndPublish = () => {
+    setShowLeaveConfirm(false)
+    if (editingId && isUseCaseReadyToPublish(form)) {
+      upsertUseCase(editingId, 'published', form)
+      toast({ title: 'Changes published', description: 'Your changes are now live on CivicDataSpace.', variant: 'success' })
+    } else {
+      upsertUseCase(editingId, 'draft', form)
+      toast({
+        title: 'Changes saved',
+        description: 'Not published yet — complete the required fields to publish.',
+        variant: 'success',
+      })
+    }
+    setLastSavedForm(form)
+    returnToOrigin()
+  }
+
+  const handleGateDiscardChanges = () => {
+    setShowLeaveConfirm(false)
+    if (editingId && editingRecord?.publishedForm) {
+      upsertUseCase(editingId, 'published', editingRecord.publishedForm)
+    }
+    returnToOrigin()
   }
 
   const handlePreview = () => {
@@ -142,6 +169,7 @@ function UseCaseCreationPage() {
         title={form.metadata.title || 'Untitled Use Case'}
         onTitleChange={(title) => updateMetadata('title', title)}
         editablePlaceholder="Untitled Use Case"
+        unpublishedChanges={showUnpublishedIndicator}
       />
       <div className="border-t border-border px-6 py-6">
         <Stepper steps={USE_CASE_STEPS} currentStep={step} />
@@ -179,6 +207,7 @@ function UseCaseCreationPage() {
       <LeaveCreationDialog
         open={showLeaveConfirm}
         itemLabel="use case"
+        mode={hasLiveVersion ? 'published' : 'draft'}
         onContinueEditing={() => setShowLeaveConfirm(false)}
         onSaveDraftAndExit={() => {
           setShowLeaveConfirm(false)
@@ -188,6 +217,8 @@ function UseCaseCreationPage() {
           setShowLeaveConfirm(false)
           returnToOrigin()
         }}
+        onSaveAndPublish={handleGateSaveAndPublish}
+        onDiscardChanges={handleGateDiscardChanges}
       />
     </Card>
   )

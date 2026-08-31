@@ -1,7 +1,7 @@
 import type { UploadedAsset } from '@/lib/generic-upload'
 import type { Organisation } from '@/types/event'
 
-export type UseCaseStatus = 'draft' | 'pending' | 'published'
+export type UseCaseStatus = 'draft' | 'published'
 
 export const SDG_GOAL_OPTIONS = [
   { value: 'sdg-1', label: '1. No Poverty' },
@@ -117,7 +117,7 @@ export interface UseCaseRecord {
   updatedAt: string
   form: UseCaseFormState
   /** Snapshot of `form` from the moment this record was last published — untouched
-   * while edits are Pending, so Discard has the live version to revert to. */
+   * while a working copy has unpublished edits, so Discard can restore the live version. */
   publishedForm: UseCaseFormState | null
 }
 

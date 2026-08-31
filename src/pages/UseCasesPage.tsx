@@ -7,7 +7,7 @@ import { useAppData } from '@/context/AppDataContext'
 
 function UseCasesPage() {
   const navigate = useNavigate()
-  const { useCases, deleteUseCase, upsertUseCase } = useAppData()
+  const { useCases, deleteUseCase, upsertUseCase, unpublishUseCase } = useAppData()
   const toast = useToast()
   const confirm = useConfirm()
 
@@ -35,14 +35,14 @@ function UseCasesPage() {
     if (!record || !record.publishedForm) return
     const name = record.form.metadata.title || 'this use case'
     const ok = await confirm({
-      title: 'Discard pending changes?',
-      description: `This will discard the pending changes to "${name}" and revert to the last published version. This cannot be undone.`,
+      title: 'Discard unsaved changes?',
+      description: `This will discard the unsaved changes to "${name}" and restore the last published version. This cannot be undone.`,
       confirmLabel: 'Discard Changes',
       variant: 'destructive',
     })
     if (!ok) return
     upsertUseCase(id, 'published', record.publishedForm)
-    toast({ title: 'Changes discarded', description: 'Reverted to the last published version.', variant: 'success' })
+    toast({ title: 'Changes discarded', description: 'Restored the last published version.', variant: 'success' })
   }
 
   const handleUnpublishUseCase = async (id: string) => {
@@ -56,7 +56,7 @@ function UseCasesPage() {
       variant: 'destructive',
     })
     if (!ok) return
-    upsertUseCase(id, 'draft', record.form)
+    unpublishUseCase(id)
     toast({ title: 'Use case unpublished', description: 'Moved back to Draft.', variant: 'success' })
   }
 

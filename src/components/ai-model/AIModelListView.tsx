@@ -3,6 +3,7 @@ import { Archive, Pencil, Sparkles, Trash2, Undo2 } from 'lucide-react'
 import { ManagementTable, type ManagementColumn, type ManagementFilterDef, type ManagementRowAction } from '@/components/shared/management-table/ManagementTable'
 import { TruncatedText } from '@/components/shared/TruncatedText'
 import { StatusBadge } from '@/components/shared/StatusBadge'
+import { hasUnpublishedEdits } from '@/lib/content-status'
 import { Badge } from '@/components/ui/badge'
 import { DOMAIN_OPTIONS, MODEL_TYPE_OPTIONS, type AIModelRecord, type AIModelStatus } from '@/types/ai-model'
 import { getModelAccessReadiness } from '@/lib/ai-model-validation'
@@ -35,7 +36,6 @@ function matchesSearch(aiModel: AIModelRecord, query: string): boolean {
 const TAB_EMPTY_MESSAGE: Record<AIModelStatus, string> = {
   published: 'No published content yet.',
   draft: 'No drafts yet.',
-  pending: 'No pending content.',
 }
 
 function buildColumns(onOpen: (aiModel: AIModelRecord) => void): ManagementColumn<AIModelRecord>[] {
@@ -81,7 +81,7 @@ function buildColumns(onOpen: (aiModel: AIModelRecord) => void): ManagementColum
     label: 'Status',
     widthRem: '6.875rem',
     optional: true,
-    render: (m) => <StatusBadge status={m.status} />,
+    render: (m) => <StatusBadge status={m.status} hasUnpublishedEdits={hasUnpublishedEdits(m)} />,
   },
   {
     key: 'access',
@@ -124,7 +124,6 @@ const FILTERS: ManagementFilterDef<AIModelRecord>[] = [
 
 const STATUSES: { key: AIModelStatus; label: string }[] = [
   { key: 'draft', label: 'Draft' },
-  { key: 'pending', label: 'Pending' },
   { key: 'published', label: 'Published' },
 ]
 
@@ -151,14 +150,11 @@ function AIModelListView({
         { key: 'delete', icon: Trash2, label: () => `Delete ${name}`, onClick: () => onDeleteAIModel(aiModel.id), destructive: true },
       ]
     }
-    if (aiModel.status === 'pending') {
-      return [
-        { key: 'edit', icon: Pencil, label: () => `Edit ${name}`, onClick: () => onEditAIModel(aiModel.id) },
-        { key: 'discard', icon: Undo2, label: () => `Discard changes to ${name}`, onClick: () => onDiscardAIModel(aiModel.id), destructive: true },
-      ]
-    }
     return [
       { key: 'edit', icon: Pencil, label: () => `Edit ${name}`, onClick: () => onEditAIModel(aiModel.id) },
+      ...(hasUnpublishedEdits(aiModel)
+        ? [{ key: 'discard', icon: Undo2, label: () => `Discard unsaved changes to ${name}`, onClick: () => onDiscardAIModel(aiModel.id), destructive: true } as ManagementRowAction<AIModelRecord>]
+        : []),
       { key: 'unpublish', icon: Archive, label: () => `Unpublish ${name}`, onClick: () => onUnpublishAIModel(aiModel.id), destructive: true },
     ]
   }

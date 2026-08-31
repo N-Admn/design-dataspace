@@ -1,4 +1,5 @@
 import { MAX_FILE_SIZE_BYTES, SUPPORTED_FILE_EXTENSIONS, type DatasetFile } from '@/types/dataset'
+import { formatUploadLimit } from '@/lib/generic-upload'
 import { formatFileSize, formatTimestamp } from '@/lib/format'
 
 interface ValidateFilesResult {
@@ -53,7 +54,7 @@ export function validateIncomingFiles(
     }
 
     if (file.size > MAX_FILE_SIZE_BYTES) {
-      errors.push(`${file.name}: File exceeds the 50MB size limit.`)
+      errors.push(`${file.name}: File exceeds the ${formatUploadLimit(MAX_FILE_SIZE_BYTES)} size limit.`)
       return
     }
 

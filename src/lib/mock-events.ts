@@ -1,5 +1,11 @@
-import type { EventFormState, EventRecord } from '@/types/event'
+import type { EventFormState, EventRecord, EventSpeaker } from '@/types/event'
 import { MOCK_ORGANISATIONS } from '@/lib/mock-organisations'
+
+let mockSpeakerId = 0
+function mkSpeaker(name: string, designation = '', organisation = ''): EventSpeaker {
+  mockSpeakerId += 1
+  return { id: `mock-speaker-${mockSpeakerId}`, name, designation, organisation, bio: '', image: null }
+}
 
 const evt1Form: EventFormState = {
   metadata: {
@@ -27,7 +33,11 @@ const evt1Form: EventFormState = {
   },
   organisers: [MOCK_ORGANISATIONS[0]],
   partners: [MOCK_ORGANISATIONS[1], MOCK_ORGANISATIONS[2]],
-  speakerCount: '12',
+  speakers: [
+    mkSpeaker('Dr. Anjali Rao', 'Chief Economist', 'National Statistics Office'),
+    mkSpeaker('Vikram Mehta', 'Senior Fellow', 'Centre for Policy Research'),
+    mkSpeaker('Sunita Nair', 'Lead Data Analyst', 'CivicDataLab'),
+  ],
   publications: [],
   relatedContent: {
     datasets: [
@@ -65,7 +75,10 @@ const evt2Form: EventFormState = {
   },
   organisers: [MOCK_ORGANISATIONS[0]],
   partners: [],
-  speakerCount: '4',
+  speakers: [
+    mkSpeaker('Rahul Desai', 'Program Director', 'Open Data Institute'),
+    mkSpeaker('Meera Krishnan', 'Researcher', 'IIT Delhi'),
+  ],
   publications: [],
   relatedContent: { datasets: [], useCases: [], collaboratives: [], aiModels: [] },
 }
@@ -96,7 +109,10 @@ const evt3Form: EventFormState = {
   },
   organisers: [MOCK_ORGANISATIONS[0]],
   partners: [],
-  speakerCount: '3',
+  speakers: [
+    mkSpeaker('Arjun Pillai', 'GIS Specialist', 'Bhuvan'),
+    mkSpeaker('Fatima Sheikh', 'Urban Planner', 'Janaagraha'),
+  ],
   publications: [],
   relatedContent: { datasets: [], useCases: [], collaboratives: [], aiModels: [] },
 }
@@ -127,7 +143,7 @@ const evt4Form: EventFormState = {
   },
   organisers: [MOCK_ORGANISATIONS[0]],
   partners: [],
-  speakerCount: '',
+  speakers: [],
   publications: [],
   relatedContent: { datasets: [], useCases: [], collaboratives: [], aiModels: [] },
 }
@@ -158,7 +174,10 @@ const evt5Form: EventFormState = {
   },
   organisers: [MOCK_ORGANISATIONS[0]],
   partners: [],
-  speakerCount: '2',
+  speakers: [
+    mkSpeaker('Kavya Reddy', 'Data Scientist', 'CivicDataLab'),
+    mkSpeaker('Thomas George', 'Facilitator', 'DataMeet'),
+  ],
   publications: [],
   relatedContent: { datasets: [], useCases: [], collaboratives: [], aiModels: [] },
 }
@@ -189,7 +208,11 @@ const evt6Form: EventFormState = {
   },
   organisers: [MOCK_ORGANISATIONS[0]],
   partners: [MOCK_ORGANISATIONS[1]],
-  speakerCount: '5',
+  speakers: [
+    mkSpeaker('Neha Gupta', 'Visualization Lead', 'How India Lives'),
+    mkSpeaker('Sameer Joshi', 'Dashboard Engineer', 'Gramener'),
+    mkSpeaker('Priya Raman', 'Trainer', 'CivicDataLab'),
+  ],
   publications: [],
   relatedContent: { datasets: [], useCases: [], collaboratives: [], aiModels: [] },
 }
@@ -220,7 +243,7 @@ const evt7Form: EventFormState = {
   },
   organisers: [MOCK_ORGANISATIONS[0]],
   partners: [MOCK_ORGANISATIONS[2]],
-  speakerCount: '',
+  speakers: [],
   publications: [],
   relatedContent: { datasets: [], useCases: [], collaboratives: [], aiModels: [] },
 }
@@ -251,9 +274,23 @@ const evt8Form: EventFormState = {
   },
   organisers: [MOCK_ORGANISATIONS[0]],
   partners: [MOCK_ORGANISATIONS[1], MOCK_ORGANISATIONS[2]],
-  speakerCount: '18',
+  speakers: [
+    mkSpeaker('Dr. Ananya Bose', 'Keynote Speaker', 'World Resources Institute'),
+    mkSpeaker('Rohan Malhotra', 'Panel Moderator', 'Ashoka University'),
+    mkSpeaker('Lakshmi Iyer', 'Community Lead', 'DataKind Bangalore'),
+  ],
   publications: [],
   relatedContent: { datasets: [], useCases: [], collaboratives: [], aiModels: [] },
+}
+
+// evt-6 is published and live, but has a saved working copy with unpublished
+// edits — surfaces as "Published · Unsaved changes".
+const evt6WorkingForm: EventFormState = {
+  ...evt6Form,
+  metadata: {
+    ...evt6Form.metadata,
+    subtitle: 'Hands-on training for building public-facing data dashboards (agenda being revised)',
+  },
 }
 
 export const MOCK_EVENTS: EventRecord[] = [
@@ -262,7 +299,7 @@ export const MOCK_EVENTS: EventRecord[] = [
   { id: 'evt-3', status: 'published', createdAt: '01/07/2026 09:00:00', updatedAt: '15/07/2026 11:20:00', form: evt3Form, publishedForm: evt3Form },
   { id: 'evt-4', status: 'draft', createdAt: '28/06/2026 09:00:00', updatedAt: '05/07/2026 16:05:00', form: evt4Form, publishedForm: null },
   { id: 'evt-5', status: 'published', createdAt: '18/06/2026 09:00:00', updatedAt: '22/06/2026 12:30:00', form: evt5Form, publishedForm: evt5Form },
-  { id: 'evt-6', status: 'pending', createdAt: '02/06/2026 09:00:00', updatedAt: '09/06/2026 17:45:00', form: evt6Form, publishedForm: evt6Form },
+  { id: 'evt-6', status: 'published', createdAt: '02/06/2026 09:00:00', updatedAt: '09/06/2026 17:45:00', form: evt6WorkingForm, publishedForm: evt6Form },
   { id: 'evt-7', status: 'draft', createdAt: '20/05/2026 09:00:00', updatedAt: '25/05/2026 10:10:00', form: evt7Form, publishedForm: null },
   { id: 'evt-8', status: 'published', createdAt: '28/04/2026 09:00:00', updatedAt: '05/05/2026 14:20:00', form: evt8Form, publishedForm: evt8Form },
 ]

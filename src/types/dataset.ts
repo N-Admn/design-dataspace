@@ -1,3 +1,5 @@
+import { MAX_DOCUMENT_BYTES } from '@/lib/generic-upload'
+
 export type AccessType = 'open' | 'restricted'
 
 export interface DatasetFile {
@@ -83,7 +85,7 @@ export interface DatasetFormState {
   resources: DatasetResource[]
 }
 
-export type DatasetStatus = 'published' | 'draft' | 'pending'
+export type DatasetStatus = 'draft' | 'published'
 
 export interface DatasetRecord {
   id: string
@@ -91,7 +93,7 @@ export interface DatasetRecord {
   updatedAt: string
   form: DatasetFormState
   /** Snapshot of `form` from the moment this record was last published — untouched
-   * while edits are Pending, so Discard has the live version to revert to. */
+   * while a working copy has unpublished edits, so Discard can restore the live version. */
   publishedForm: DatasetFormState | null
 }
 
@@ -113,7 +115,8 @@ export const emptyDatasetForm: DatasetFormState = {
 }
 
 export const SUPPORTED_FILE_EXTENSIONS = ['pdf', 'csv', 'xls', 'xlsx', 'txt']
-export const MAX_FILE_SIZE_BYTES = 50 * 1024 * 1024
+/** Data resource files share the platform-wide 500 MB document ceiling. */
+export const MAX_FILE_SIZE_BYTES = MAX_DOCUMENT_BYTES
 
 export const SECTOR_OPTIONS = [
   { value: 'agriculture', label: 'Agriculture' },

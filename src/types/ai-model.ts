@@ -1,7 +1,7 @@
 import type { ApiKeyLocation } from '@/types/dataset'
 import { API_KEY_LOCATION_OPTIONS } from '@/types/dataset'
 
-export type AIModelStatus = 'draft' | 'pending' | 'published'
+export type AIModelStatus = 'draft' | 'published'
 
 export const MODEL_TYPE_OPTIONS = [
   { value: 'llm', label: 'Large Language Model' },
@@ -159,7 +159,7 @@ export interface AIModelRecord {
   updatedAt: string
   form: AIModelFormState
   /** Snapshot of `form` from the moment this record was last published — untouched
-   * while edits are Pending, so Discard has the live version to revert to. */
+   * while a working copy has unpublished edits, so Discard can restore the live version. */
   publishedForm: AIModelFormState | null
 }
 

@@ -1,4 +1,4 @@
-import type { UploadedAsset } from '@/lib/generic-upload'
+import { MAX_DOCUMENT_BYTES, type UploadedAsset } from '@/lib/generic-upload'
 
 export const SUPPORT_TOPIC_OPTIONS = [
   { value: 'general', label: 'General question' },
@@ -15,7 +15,8 @@ export const SUPPORT_TOPIC_OPTIONS = [
 ]
 
 export const SUPPORT_ATTACHMENT_EXTENSIONS = ['png', 'jpg', 'jpeg', 'webp', 'pdf', 'txt', 'csv', 'docx']
-export const MAX_SUPPORT_ATTACHMENT_BYTES = 10 * 1024 * 1024
+/** Accepts documents alongside images, so it uses the 500 MB document ceiling. */
+export const MAX_SUPPORT_ATTACHMENT_BYTES = MAX_DOCUMENT_BYTES
 
 export interface SupportMessagePayload {
   topic: string

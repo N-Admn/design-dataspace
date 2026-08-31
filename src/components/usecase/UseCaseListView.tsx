@@ -3,6 +3,7 @@ import { Archive, FolderKanban, Pencil, Trash2, Undo2 } from 'lucide-react'
 import { ManagementTable, type ManagementColumn, type ManagementFilterDef, type ManagementRowAction } from '@/components/shared/management-table/ManagementTable'
 import { TruncatedText } from '@/components/shared/TruncatedText'
 import { StatusBadge } from '@/components/shared/StatusBadge'
+import { hasUnpublishedEdits } from '@/lib/content-status'
 import { formatShortDate, parseAppTimestamp } from '@/lib/format'
 import { GEOGRAPHY_OPTIONS, SECTOR_OPTIONS } from '@/types/dataset'
 import type { UseCaseRecord, UseCaseStatus } from '@/types/usecase'
@@ -35,7 +36,6 @@ function matchesSearch(useCase: UseCaseRecord, query: string): boolean {
 const TAB_EMPTY_MESSAGE: Record<UseCaseStatus, string> = {
   published: 'No published content yet.',
   draft: 'No drafts yet.',
-  pending: 'No pending content.',
 }
 
 function buildColumns(onOpen: (useCase: UseCaseRecord) => void): ManagementColumn<UseCaseRecord>[] {
@@ -71,7 +71,7 @@ function buildColumns(onOpen: (useCase: UseCaseRecord) => void): ManagementColum
     label: 'Status',
     widthRem: '6.875rem',
     optional: true,
-    render: (u) => <StatusBadge status={u.status} />,
+    render: (u) => <StatusBadge status={u.status} hasUnpublishedEdits={hasUnpublishedEdits(u)} />,
   },
   {
     key: 'updated',
@@ -111,7 +111,6 @@ const FILTERS: ManagementFilterDef<UseCaseRecord>[] = [
 
 const STATUSES: { key: UseCaseStatus; label: string }[] = [
   { key: 'draft', label: 'Draft' },
-  { key: 'pending', label: 'Pending' },
   { key: 'published', label: 'Published' },
 ]
 
@@ -138,14 +137,11 @@ function UseCaseListView({
         { key: 'delete', icon: Trash2, label: () => `Delete ${title}`, onClick: () => onDeleteUseCase(useCase.id), destructive: true },
       ]
     }
-    if (useCase.status === 'pending') {
-      return [
-        { key: 'edit', icon: Pencil, label: () => `Edit ${title}`, onClick: () => onEditUseCase(useCase.id) },
-        { key: 'discard', icon: Undo2, label: () => `Discard changes to ${title}`, onClick: () => onDiscardUseCase(useCase.id), destructive: true },
-      ]
-    }
     return [
       { key: 'edit', icon: Pencil, label: () => `Edit ${title}`, onClick: () => onEditUseCase(useCase.id) },
+      ...(hasUnpublishedEdits(useCase)
+        ? [{ key: 'discard', icon: Undo2, label: () => `Discard unsaved changes to ${title}`, onClick: () => onDiscardUseCase(useCase.id), destructive: true } as ManagementRowAction<UseCaseRecord>]
+        : []),
       { key: 'unpublish', icon: Archive, label: () => `Unpublish ${title}`, onClick: () => onUnpublishUseCase(useCase.id), destructive: true },
     ]
   }

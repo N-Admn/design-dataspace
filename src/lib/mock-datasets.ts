@@ -283,12 +283,22 @@ const ds8Form: DatasetFormState = {
   resources: [],
 }
 
+// ds-5 is published and live, but the contributor has a saved working copy with
+// edits that haven't been published yet — surfaces as "Published · Unsaved changes".
+const ds5WorkingForm: DatasetFormState = {
+  ...ds5Form,
+  metadata: {
+    ...ds5Form.metadata,
+    description: `${ds5Form.metadata.description} Updated with newly added Q3 coverage figures, not yet published.`,
+  },
+}
+
 export const MOCK_DATASETS: DatasetRecord[] = [
   { id: 'ds-1', status: 'published', updatedAt: '05/08/2026 09:14:22', form: ds1Form, publishedForm: ds1Form },
   { id: 'ds-2', status: 'published', updatedAt: '18/07/2026 14:02:10', form: ds2Form, publishedForm: ds2Form },
   { id: 'ds-3', status: 'published', updatedAt: '03/05/2026 16:40:00', form: ds3Form, publishedForm: ds3Form },
   { id: 'ds-4', status: 'published', updatedAt: '22/06/2026 11:15:30', form: ds4Form, publishedForm: ds4Form },
-  { id: 'ds-5', status: 'pending', updatedAt: '12/07/2026 08:45:00', form: ds5Form, publishedForm: ds5Form },
+  { id: 'ds-5', status: 'published', updatedAt: '12/07/2026 08:45:00', form: ds5WorkingForm, publishedForm: ds5Form },
   { id: 'ds-6', status: 'draft', updatedAt: '10/08/2026 17:30:00', form: ds6Form, publishedForm: null },
   { id: 'ds-7', status: 'draft', updatedAt: '09/08/2026 12:10:00', form: ds7Form, publishedForm: null },
   { id: 'ds-8', status: 'draft', updatedAt: '08/08/2026 09:05:00', form: ds8Form, publishedForm: null },

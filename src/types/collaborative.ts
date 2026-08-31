@@ -1,6 +1,6 @@
 import type { UploadedAsset } from '@/lib/generic-upload'
 
-export type CollaborativeStatus = 'draft' | 'pending' | 'published'
+export type CollaborativeStatus = 'draft' | 'published'
 
 export type CollaborativeRelationship = 'contributor' | 'partner' | 'supporter'
 
@@ -58,7 +58,7 @@ export interface CollaborativeRecord {
   updatedAt: string
   form: CollaborativeFormState
   /** Snapshot of `form` from the moment this record was last published — untouched
-   * while edits are Pending, so Discard has the live version to revert to. */
+   * while a working copy has unpublished edits, so Discard can restore the live version. */
   publishedForm: CollaborativeFormState | null
 }
 

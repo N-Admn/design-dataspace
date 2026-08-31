@@ -7,7 +7,7 @@ import { useAppData } from '@/context/AppDataContext'
 
 function AIModelsPage() {
   const navigate = useNavigate()
-  const { aiModels, deleteAIModel, upsertAIModel } = useAppData()
+  const { aiModels, deleteAIModel, upsertAIModel, unpublishAIModel } = useAppData()
   const toast = useToast()
   const confirm = useConfirm()
 
@@ -35,14 +35,14 @@ function AIModelsPage() {
     if (!record || !record.publishedForm) return
     const name = record.form.metadata.name || 'this AI Model'
     const ok = await confirm({
-      title: 'Discard pending changes?',
-      description: `This will discard the pending changes to "${name}" and revert to the last published version. This cannot be undone.`,
+      title: 'Discard unsaved changes?',
+      description: `This will discard the unsaved changes to "${name}" and restore the last published version. This cannot be undone.`,
       confirmLabel: 'Discard Changes',
       variant: 'destructive',
     })
     if (!ok) return
     upsertAIModel(id, 'published', record.publishedForm)
-    toast({ title: 'Changes discarded', description: 'Reverted to the last published version.', variant: 'success' })
+    toast({ title: 'Changes discarded', description: 'Restored the last published version.', variant: 'success' })
   }
 
   const handleUnpublishAIModel = async (id: string) => {
@@ -56,7 +56,7 @@ function AIModelsPage() {
       variant: 'destructive',
     })
     if (!ok) return
-    upsertAIModel(id, 'draft', record.form)
+    unpublishAIModel(id)
     toast({ title: 'AI Model unpublished', description: 'Moved back to Draft.', variant: 'success' })
   }
 

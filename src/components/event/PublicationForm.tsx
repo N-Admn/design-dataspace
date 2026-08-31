@@ -12,7 +12,7 @@ import { useConfirm } from '@/components/ui/confirm-dialog'
 import { FileUploadField } from '@/components/shared/FileUploadField'
 import { deriveDefaultResourceTitle } from '@/lib/file-validation'
 import {
-  MAX_PUBLICATION_BYTES,
+  MAX_DOCUMENT_BYTES,
   PUBLICATION_TYPE_OPTIONS,
   SUPPORTED_PUBLICATION_EXTENSIONS,
   type EventPublication,
@@ -133,7 +133,7 @@ function PublicationForm({ open, onOpenChange, onAdd, initial }: PublicationForm
               value={pendingAsset}
               onChange={handleFileChange}
               extensions={SUPPORTED_PUBLICATION_EXTENSIONS}
-              maxBytes={MAX_PUBLICATION_BYTES}
+              maxBytes={MAX_DOCUMENT_BYTES}
               error={errors.file}
               fallbackIcon={FileText}
               variant="dropzone"

@@ -12,13 +12,12 @@ import { useConfirm } from '@/components/ui/confirm-dialog'
 import { useToast } from '@/components/ui/toast'
 import { useAppData } from '@/context/AppDataContext'
 import { FileUploadField } from '@/components/shared/FileUploadField'
-import type { UploadedAsset } from '@/lib/generic-upload'
+import { MAX_IMAGE_BYTES, type UploadedAsset } from '@/lib/generic-upload'
 import { SECTOR_OPTIONS } from '@/types/dataset'
 import { BIO_MAX_LENGTH, type ContributorProfile, type ProfileSocialLinks } from '@/types/profile'
 import { DeleteAccountDialog } from '@/components/profile/DeleteAccountDialog'
 
 const AVATAR_EXTENSIONS = ['jpg', 'jpeg', 'png']
-const MAX_AVATAR_BYTES = 5 * 1024 * 1024
 
 function wrapAvatarAsset(dataUrl: string | null): UploadedAsset | null {
   if (!dataUrl) return null
@@ -237,7 +236,7 @@ function ProfileEditForm({ profile, onSave }: ProfileEditFormProps) {
                 value={avatarAsset}
                 onChange={setAvatarAsset}
                 extensions={AVATAR_EXTENSIONS}
-                maxBytes={MAX_AVATAR_BYTES}
+                maxBytes={MAX_IMAGE_BYTES}
                 roundedFull
                 uploadLabel="Upload picture"
                 fallbackIcon={User}

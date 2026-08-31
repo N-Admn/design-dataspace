@@ -16,7 +16,7 @@ function PublicVisibilityBadge({ isLive }: PublicVisibilityBadgeProps) {
 }
 
 interface PublicVisibilityNoticeProps {
-  /** True when this dataset already has a published/pending version — softens the copy since publishing isn't the first exposure. */
+  /** True when this dataset already has a published version — softens the copy since publishing isn't the first exposure. */
   hasLiveVersion?: boolean
 }
 
@@ -29,7 +29,7 @@ function PublicVisibilityNotice({ hasLiveVersion }: PublicVisibilityNoticeProps)
         <p className="font-medium text-foreground">Public dataset</p>
         {hasLiveVersion ? (
           <p className="mt-1 text-muted-foreground">
-            This dataset is already public. Changes you submit will be reviewed before they go live.
+            This dataset is already public. Changes you publish will replace the current public version immediately.
           </p>
         ) : (
           <>

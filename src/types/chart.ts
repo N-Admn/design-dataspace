@@ -1,6 +1,6 @@
 import type { UploadedAsset } from '@/lib/generic-upload'
 
-export type ChartStatus = 'draft' | 'pending' | 'published'
+export type ChartStatus = 'draft' | 'published'
 
 /** "Upload Image" is a visualization type alongside the data-driven ones, not a
  * separate creation method — every chart still resolves to exactly one File /
@@ -57,7 +57,7 @@ export interface ChartRecord {
   updatedAt: string
   form: ChartFormState
   /** Snapshot of `form` from the moment this record was last published — untouched
-   * while edits are Pending, so Discard has the live version to revert to. */
+   * while a working copy has unpublished edits, so Discard can restore the live version. */
   publishedForm: ChartFormState | null
 }
 

@@ -1,13 +1,24 @@
 import { Badge } from '@/components/ui/badge'
+import type { ContentStatus } from '@/lib/content-status'
 
-type ContentStatus = 'published' | 'draft' | 'pending'
+interface StatusBadgeProps {
+  status: ContentStatus
+  /** Published items with a saved-but-unpublished working copy read as
+   * "Published · Unsaved changes". Ignored for drafts. */
+  hasUnpublishedEdits?: boolean
+}
 
-function StatusBadge({ status }: { status: ContentStatus }) {
+function StatusBadge({ status, hasUnpublishedEdits }: StatusBadgeProps) {
   if (status === 'published') {
+    if (hasUnpublishedEdits) {
+      return (
+        <span className="inline-flex items-center gap-1.5">
+          <Badge variant="success">Published</Badge>
+          <Badge variant="warning">Unsaved changes</Badge>
+        </span>
+      )
+    }
     return <Badge variant="success">Published</Badge>
-  }
-  if (status === 'pending') {
-    return <Badge className="border-transparent bg-primary/10 text-primary">Pending</Badge>
   }
   return <Badge variant="warning">Draft</Badge>
 }

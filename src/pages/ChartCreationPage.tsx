@@ -18,7 +18,8 @@ import { useHelpContext } from '@/context/HelpContext'
 import { getFileColumns } from '@/lib/chart-data'
 import type { UploadedAsset } from '@/lib/generic-upload'
 import { validateChartStep1, validateChartStep2 } from '@/lib/chart-validation'
-import { emptyChartConfig, emptyChartForm, type ChartFormState, type ChartStatus, type ChartType } from '@/types/chart'
+import { hasUnpublishedEdits } from '@/lib/content-status'
+import { emptyChartConfig, emptyChartForm, type ChartFormState, type ChartType } from '@/types/chart'
 
 type ChartStep = 1 | 2 | 3
 
@@ -53,7 +54,7 @@ function ChartCreationPage() {
   const [showStep1Errors, setShowStep1Errors] = useState(false)
   const [showStep2Errors, setShowStep2Errors] = useState(false)
   const [publishState, setPublishState] = useState<'idle' | 'checking' | 'publishing'>('idle')
-  const [publishedStatus, setPublishedStatus] = useState<ChartStatus | null>(null)
+  const [justPublished, setJustPublished] = useState(false)
 
   const stepLabel = CHART_STEPS.find((s) => s.step === step)?.label ?? 'Dataset'
   useEffect(() => {
@@ -117,24 +118,49 @@ function ChartCreationPage() {
   }
 
   const editingRecord = editingId ? charts.find((c) => c.id === editingId) : undefined
-  const hasLiveVersion = editingRecord?.status === 'published' || editingRecord?.status === 'pending'
+  const hasLiveVersion = editingRecord?.status === 'published'
+  const showUnpublishedIndicator = hasLiveVersion && (hasUnsavedChanges || hasUnpublishedEdits(editingRecord))
+  const readyToPublish = Object.keys(step1Errors).length === 0 && Object.keys(step2Errors).length === 0
 
   const handleSaveDraft = () => {
     setSaved(false)
-    const nextStatus = hasLiveVersion ? 'pending' : 'draft'
-    const id = upsertChart(editingId, nextStatus, form)
+    const id = upsertChart(editingId, 'draft', form)
     if (!editingId) setEditingId(id)
     setLastSavedForm(form)
     setTimeout(() => setSaved(true), 500)
     toast({
-      title: nextStatus === 'pending' ? 'Changes saved' : 'Draft saved',
-      description:
-        nextStatus === 'pending'
-          ? 'Your changes are pending and awaiting publication. The current published version remains live.'
-          : 'Your chart has been saved as a draft.',
+      title: hasLiveVersion ? 'Changes saved' : 'Draft saved',
+      description: hasLiveVersion
+        ? 'Your edits aren’t published yet. The current published version stays live.'
+        : 'Your chart has been saved as a draft.',
       variant: 'success',
     })
     return id
+  }
+
+  const handleGateSaveAndPublish = () => {
+    setShowLeaveConfirm(false)
+    if (editingId && readyToPublish) {
+      upsertChart(editingId, 'published', form)
+      toast({ title: 'Changes published', description: 'Your changes are now live on CivicDataSpace.', variant: 'success' })
+    } else {
+      upsertChart(editingId, 'draft', form)
+      toast({
+        title: 'Changes saved',
+        description: 'Not published yet — complete the required fields to publish.',
+        variant: 'success',
+      })
+    }
+    setLastSavedForm(form)
+    navigate('/dashboard/charts')
+  }
+
+  const handleGateDiscardChanges = () => {
+    setShowLeaveConfirm(false)
+    if (editingId && editingRecord?.publishedForm) {
+      upsertChart(editingId, 'published', editingRecord.publishedForm)
+    }
+    navigate('/dashboard/charts')
   }
 
   const handleSelectDataset = (datasetId: string | null) => {
@@ -167,11 +193,11 @@ function ChartCreationPage() {
   const handlePublish = async () => {
     if (publishState !== 'idle') return
     const ok = await confirm({
-      title: hasLiveVersion ? 'Submit changes?' : 'Publish chart?',
+      title: hasLiveVersion ? 'Publish changes?' : 'Publish chart?',
       description: hasLiveVersion
-        ? `Your changes to "${form.name}" will be submitted for review before going live.`
+        ? `Your changes to "${form.name}" will replace the current published version immediately.`
         : `You're about to publish "${form.name || 'this chart'}". It will appear on the dataset's public page.`,
-      confirmLabel: hasLiveVersion ? 'Submit Changes' : 'Publish Chart',
+      confirmLabel: hasLiveVersion ? 'Publish Changes' : 'Publish Chart',
     })
     if (!ok) return
 
@@ -179,12 +205,11 @@ function ChartCreationPage() {
     window.setTimeout(() => {
       setPublishState('publishing')
       window.setTimeout(() => {
-        const nextStatus: ChartStatus = hasLiveVersion ? 'pending' : 'published'
-        const id = upsertChart(editingId, nextStatus, form)
+        const id = upsertChart(editingId, 'published', form)
         if (!editingId) setEditingId(id)
         setLastSavedForm(form)
         setPublishState('idle')
-        setPublishedStatus(nextStatus)
+        setJustPublished(true)
       }, 700)
     }, 500)
   }
@@ -205,6 +230,7 @@ function ChartCreationPage() {
         title={form.name || 'Untitled Chart'}
         onTitleChange={(name) => setForm((prev) => ({ ...prev, name }))}
         editablePlaceholder="Untitled Chart"
+        unpublishedChanges={showUnpublishedIndicator}
       />
       <div className="border-t border-border px-6 py-6">
         <Stepper steps={CHART_STEPS} currentStep={step} />
@@ -254,6 +280,7 @@ function ChartCreationPage() {
       <LeaveCreationDialog
         open={showLeaveConfirm}
         itemLabel="chart"
+        mode={hasLiveVersion ? 'published' : 'draft'}
         onContinueEditing={() => setShowLeaveConfirm(false)}
         onSaveDraftAndExit={() => {
           setShowLeaveConfirm(false)
@@ -264,10 +291,12 @@ function ChartCreationPage() {
           setShowLeaveConfirm(false)
           navigate('/dashboard/charts')
         }}
+        onSaveAndPublish={handleGateSaveAndPublish}
+        onDiscardChanges={handleGateDiscardChanges}
       />
 
       <ChartPublishSuccessModal
-        open={publishedStatus !== null}
+        open={justPublished}
         chartName={form.name}
         hasLiveVersion={Boolean(hasLiveVersion)}
         onViewOnDataset={handleViewOnDataset}

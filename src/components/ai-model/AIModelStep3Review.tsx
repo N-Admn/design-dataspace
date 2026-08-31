@@ -185,7 +185,7 @@ function AIModelStep3Review({ form, otherNames, onEditStep, onPreview }: AIModel
         </div>
       </ReviewSection>
 
-      <ReviewSection title="Versions" defaultOpen={false} onEdit={() => onEditStep(1)}>
+      <ReviewSection title="Versions" defaultOpen onEdit={() => onEditStep(1)}>
         {primaryVersion ? (
           <div className="divide-y divide-border">
             <SummaryRow label="Versions Configured" value={`${versions.length} version${versions.length === 1 ? '' : 's'}`} />
@@ -205,7 +205,7 @@ function AIModelStep3Review({ form, otherNames, onEditStep, onPreview }: AIModel
         )}
       </ReviewSection>
 
-      <ReviewSection title="Access" defaultOpen={false} onEdit={() => onEditStep(1, primaryVersion?.id)}>
+      <ReviewSection title="Access" defaultOpen onEdit={() => onEditStep(1, primaryVersion?.id)}>
         {primaryVersion && primaryVersion.accessMethods.length > 0 && primaryAccess ? (
           <div className="divide-y divide-border">
             <SummaryRow

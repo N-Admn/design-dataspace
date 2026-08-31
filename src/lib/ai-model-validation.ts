@@ -167,7 +167,7 @@ export function validateAIModelAccessMethod(
 export type AccessMethodReadiness = 'ready' | 'incomplete'
 
 /** Configuration Readiness ("is this sufficiently configured?") — distinct from
- * the AI Model's Draft/Pending/Published lifecycle Status. */
+ * the AI Model's Draft/Published lifecycle Status. */
 export function getAccessMethodReadiness(accessMethod: AIModelAccessMethod): AccessMethodReadiness {
   const errors = validateAIModelAccessMethod(accessMethod, [])
   return Object.values(errors).some(Boolean) ? 'incomplete' : 'ready'

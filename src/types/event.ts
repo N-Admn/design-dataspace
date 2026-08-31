@@ -1,6 +1,9 @@
-import type { UploadedAsset } from '@/lib/generic-upload'
+import { MAX_DOCUMENT_BYTES, MAX_IMAGE_BYTES, type UploadedAsset } from '@/lib/generic-upload'
 
-export type EventStatus = 'draft' | 'published' | 'pending'
+/** Re-exported so existing `@/types/event` importers keep the platform-wide limits. */
+export { MAX_DOCUMENT_BYTES, MAX_IMAGE_BYTES }
+
+export type EventStatus = 'draft' | 'published'
 export type EventAccessType = 'online' | 'hybrid' | 'in-person'
 export type RegistrationStatus = 'not-required' | 'open' | 'closed'
 export type RelatedContentType = 'dataset' | 'use-case' | 'collaborative' | 'ai-model'
@@ -12,6 +15,16 @@ export interface Organisation {
   sectorType: string
   logo?: UploadedAsset
   isRegistered: boolean
+}
+
+export interface EventSpeaker {
+  id: string
+  /** Required. */
+  name: string
+  designation: string
+  organisation: string
+  bio: string
+  image: UploadedAsset | null
 }
 
 export interface EventPublication {
@@ -67,7 +80,7 @@ export interface EventFormState {
   metadata: EventMetadata
   organisers: Organisation[]
   partners: Organisation[]
-  speakerCount: string
+  speakers: EventSpeaker[]
   publications: EventPublication[]
   relatedContent: EventRelatedContent
 }
@@ -79,7 +92,7 @@ export interface EventRecord {
   updatedAt: string
   form: EventFormState
   /** Snapshot of `form` from the moment this record was last published — untouched
-   * while edits are Pending, so Discard has the live version to revert to. */
+   * while a working copy has unpublished edits, so Discard can restore the live version. */
   publishedForm: EventFormState | null
 }
 
@@ -115,7 +128,7 @@ export const emptyEventForm: EventFormState = {
   metadata: emptyEventMetadata,
   organisers: [],
   partners: [],
-  speakerCount: '',
+  speakers: [],
   publications: [],
   relatedContent: {
     datasets: [],
@@ -160,10 +173,8 @@ export const ORG_SECTOR_OPTIONS = [
 ]
 
 export const SUPPORTED_IMAGE_EXTENSIONS = ['jpg', 'jpeg', 'png', 'webp']
-export const MAX_IMAGE_BYTES = 10 * 1024 * 1024
 
 export const SUPPORTED_PUBLICATION_EXTENSIONS = ['pdf', 'docx', 'pptx', 'xlsx']
-export const MAX_PUBLICATION_BYTES = 10 * 1024 * 1024
 
 export const RELATED_CONTENT_TYPE_LABELS: Record<RelatedContentType, string> = {
   dataset: 'Dataset',

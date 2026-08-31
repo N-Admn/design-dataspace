@@ -26,7 +26,8 @@ import { RichTextEditor } from '@/components/ui/rich-text-editor'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { useAppData } from '@/context/AppDataContext'
 import { cn } from '@/lib/utils'
-import { validateAssetFile, buildUploadedAsset } from '@/lib/generic-upload'
+import { validateAssetFile, buildUploadedAsset, formatUploadHint } from '@/lib/generic-upload'
+import { FieldError } from '@/components/ui/field-error'
 import { SUPPORTED_IMAGE_EXTENSIONS, MAX_IMAGE_BYTES } from '@/types/event'
 import type { UploadedAsset } from '@/lib/generic-upload'
 import type { UseCaseBlock, UseCaseBlockType, UseCaseHeadingLevel, UseCaseMetadata } from '@/types/usecase'
@@ -567,10 +568,15 @@ function ImageBlockCanvas({
   onCaptionChange: (caption: string) => void
 }) {
   const inputRef = React.useRef<HTMLInputElement>(null)
+  const [uploadError, setUploadError] = React.useState<string>()
 
   const handleFile = async (file: File) => {
     const error = validateAssetFile(file, { extensions: SUPPORTED_IMAGE_EXTENSIONS, maxBytes: MAX_IMAGE_BYTES })
-    if (error) return
+    if (error) {
+      setUploadError(error)
+      return
+    }
+    setUploadError(undefined)
     onAssetChange(await buildUploadedAsset(file, true))
   }
 
@@ -596,8 +602,12 @@ function ImageBlockCanvas({
         >
           <UploadCloud className="size-5" />
           Upload image
+          <span className="text-xs text-muted-foreground">
+            {formatUploadHint(SUPPORTED_IMAGE_EXTENSIONS, MAX_IMAGE_BYTES)}
+          </span>
         </button>
       )}
+      <FieldError message={uploadError} />
       <input
         ref={inputRef}
         type="file"
