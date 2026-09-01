@@ -1,10 +1,13 @@
+import * as React from 'react'
 import type { ReactNode } from 'react'
-import { ArrowRight, BarChart3, CalendarDays, CheckCircle2, FolderKanban, Gauge, Globe, ImagePlus, LineChart, Link2, MapPin, PieChart, Send } from 'lucide-react'
+import { ArrowRight, BarChart3, CalendarDays, CheckCircle2, Eye, FolderKanban, Gauge, Globe, ImagePlus, LineChart, Link2, MapPin, PieChart, Send } from 'lucide-react'
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { ReviewSection } from '@/components/shared/ReviewSection'
+import { ResourcePreviewDialog, type PreviewResource } from '@/components/shared/ResourcePreviewDialog'
+import { ReviewPublishPanel } from '@/components/shared/ReviewPublishPanel'
 import { PublicVisibilityNotice } from '@/components/dataset/PublicVisibilityNotice'
 import { formatFileSize } from '@/lib/format'
 import { getResourceTitle } from '@/lib/file-validation'
@@ -144,6 +147,7 @@ function ReviewField({ label, value }: { label: string; value: ReactNode }) {
 function Step3Review({ form, datasetId, canPublish, hasLiveVersion, onEditStep, onPublish }: Step3ReviewProps) {
   const { metadata, files, resources } = form
   const totalBytes = files.reduce((sum, f) => sum + f.sizeBytes, 0)
+  const [preview, setPreview] = React.useState<PreviewResource | null>(null)
 
   return (
     <div className="flex flex-col gap-6">
@@ -218,6 +222,23 @@ function Step3Review({ form, datasetId, canPublish, hasLiveVersion, onEditStep, 
               <span className="text-xs text-muted-foreground">{file.sizeLabel}</span>
               <span className="text-xs text-muted-foreground">{file.uploadedAt}</span>
               <span className="text-xs text-muted-foreground">Original: {file.name}</span>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="ml-auto shrink-0"
+                aria-label={`Preview ${getResourceTitle(file)}`}
+                onClick={() =>
+                  setPreview({
+                    title: getResourceTitle(file),
+                    fileName: file.name,
+                    extension: file.extension.toUpperCase(),
+                    sizeLabel: file.sizeLabel,
+                  })
+                }
+              >
+                <Eye className="size-4" />
+              </Button>
             </div>
           ))}
           {files.length > 0 && (
@@ -270,7 +291,7 @@ function Step3Review({ form, datasetId, canPublish, hasLiveVersion, onEditStep, 
 
       <PublicVisibilityNotice hasLiveVersion={hasLiveVersion} />
 
-      <div className="flex flex-col items-center gap-2.5 rounded-xl border border-border bg-card px-5 py-5 text-center">
+      <ReviewPublishPanel>
         <p className="text-sm text-muted-foreground">
           {hasLiveVersion
             ? 'Publishing will replace the current public version of this dataset immediately.'
@@ -291,7 +312,9 @@ function Step3Review({ form, datasetId, canPublish, hasLiveVersion, onEditStep, 
             Complete the required fields in Metadata before publishing.
           </p>
         )}
-      </div>
+      </ReviewPublishPanel>
+
+      <ResourcePreviewDialog resource={preview} onOpenChange={(open) => !open && setPreview(null)} />
     </div>
   )
 }

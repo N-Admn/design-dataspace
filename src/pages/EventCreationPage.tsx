@@ -56,6 +56,8 @@ function EventCreationPage() {
   const [lastSavedForm, setLastSavedForm] = useState<EventFormState>(() => resolveInitialForm(events, navState))
   const [saved, setSaved] = useState(true)
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(false)
+  // Stepper is a progress indicator until Review is reached with every step valid.
+  const [stepperUnlocked, setStepperUnlocked] = useState(false)
 
   const stepLabel = EVENT_STEPS.find((s) => s.step === step)?.label ?? 'Information'
   useEffect(() => {
@@ -106,6 +108,16 @@ function EventCreationPage() {
     setStep((prev) => (prev > 1 ? ((prev - 1) as EventStep) : prev))
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
+
+  const goToStep = (next: EventStep) => {
+    setStep(next)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  const allStepsValid = isEventInformationValid(form.metadata)
+  useEffect(() => {
+    if (step === 4 && allStepsValid) setStepperUnlocked(true)
+  }, [step, allStepsValid])
 
   const editingRecord = editingId ? events.find((e) => e.id === editingId) : undefined
   const hasLiveVersion = editingRecord?.status === 'published'
@@ -174,7 +186,12 @@ function EventCreationPage() {
         unpublishedChanges={showUnpublishedIndicator}
       />
       <div className="border-t border-border px-6 py-6">
-        <Stepper steps={EVENT_STEPS} currentStep={step} />
+        <Stepper
+          steps={EVENT_STEPS}
+          currentStep={step}
+          interactive={stepperUnlocked}
+          onStepClick={(n) => goToStep(n as EventStep)}
+        />
       </div>
       <div className="border-t border-border px-6 py-6">
         {step === 1 && (

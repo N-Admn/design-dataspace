@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import { Check, type LucideIcon } from 'lucide-react'
 
 import { cn } from '@/lib/utils'
@@ -13,9 +14,55 @@ interface StepperProps {
   steps: StepperItem[]
   currentStep: number
   compact?: boolean
+  /** When true, every step becomes a button that calls `onStepClick`. Used once the
+   * flow reaches Review & Publish with all steps valid — before that the stepper is a
+   * pure progress indicator. Visual design is unchanged; only a focus/hover affordance
+   * is added. */
+  interactive?: boolean
+  onStepClick?: (step: number) => void
 }
 
-function Stepper({ steps, currentStep, compact = false }: StepperProps) {
+/** Wraps a step's content in a button when the stepper is interactive, otherwise
+ * renders it inert exactly as before. */
+function StepControl({
+  item,
+  interactive,
+  onStepClick,
+  isCurrent,
+  className,
+  children,
+}: {
+  item: StepperItem
+  interactive: boolean
+  onStepClick?: (step: number) => void
+  isCurrent: boolean
+  className: string
+  children: ReactNode
+}) {
+  if (interactive && onStepClick) {
+    return (
+      <button
+        type="button"
+        onClick={() => onStepClick(item.step)}
+        aria-label={`Go to step ${item.step}: ${item.label}`}
+        aria-current={isCurrent ? 'step' : undefined}
+        className={cn(
+          className,
+          'cursor-pointer rounded-xl transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+        )}
+      >
+        {children}
+      </button>
+    )
+  }
+  return (
+    <div className={className} aria-current={isCurrent ? 'step' : undefined}>
+      {children}
+    </div>
+  )
+}
+
+function Stepper({ steps, currentStep, compact = false, interactive = false, onStepClick }: StepperProps) {
   if (compact) {
     return (
       <div className="flex w-full items-center">
@@ -24,7 +71,13 @@ function Stepper({ steps, currentStep, compact = false }: StepperProps) {
           const isCurrent = item.step === currentStep
           return (
             <div key={item.step} className={cn('flex items-center', index < steps.length - 1 && 'flex-1')}>
-              <div className="flex items-center gap-2">
+              <StepControl
+                item={item}
+                interactive={interactive}
+                onStepClick={onStepClick}
+                isCurrent={isCurrent}
+                className="flex items-center gap-2"
+              >
                 <div
                   className={cn(
                     'flex size-6 shrink-0 items-center justify-center rounded-full text-xs font-semibold transition-colors',
@@ -42,7 +95,7 @@ function Stepper({ steps, currentStep, compact = false }: StepperProps) {
                 >
                   {item.label}
                 </span>
-              </div>
+              </StepControl>
               {index < steps.length - 1 && (
                 <div
                   className={cn(
@@ -67,7 +120,13 @@ function Stepper({ steps, currentStep, compact = false }: StepperProps) {
 
         return (
           <div key={item.step} className={cn('flex items-center', index < steps.length - 1 && 'flex-1')}>
-            <div className="flex flex-col items-center gap-2 text-center">
+            <StepControl
+              item={item}
+              interactive={interactive}
+              onStepClick={onStepClick}
+              isCurrent={isCurrent}
+              className="flex flex-col items-center gap-2 text-center"
+            >
               <div
                 className={cn(
                   'flex size-11 shrink-0 items-center justify-center rounded-full text-sm font-semibold transition-colors',
@@ -94,7 +153,7 @@ function Stepper({ steps, currentStep, compact = false }: StepperProps) {
                 </p>
                 {item.description && <p className="text-xs text-muted-foreground">{item.description}</p>}
               </div>
-            </div>
+            </StepControl>
 
             {index < steps.length - 1 && (
               <div

@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { AlertTriangle, CheckCircle2, Loader2, Send } from 'lucide-react'
+import { AlertTriangle, CheckCircle2, Eye, Loader2, Send } from 'lucide-react'
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -7,6 +7,8 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { FieldError } from '@/components/ui/field-error'
 import { ReviewSection } from '@/components/shared/ReviewSection'
+import { ResourcePreviewDialog, assetToPreviewResource, type PreviewResource } from '@/components/shared/ResourcePreviewDialog'
+import { ReviewPublishPanel } from '@/components/shared/ReviewPublishPanel'
 import { ChartPreviewCanvas } from '@/components/chart/ChartPreviewCanvas'
 import { categoryFieldLabel, valueFieldLabel } from '@/components/chart/ChartStep2Create'
 import { useAppData } from '@/context/AppDataContext'
@@ -27,6 +29,7 @@ interface ChartStep3ReviewProps {
 function ChartStep3Review({ form, otherCharts, onNameChange, onEditStep, onPublish, publishState, hasLiveVersion }: ChartStep3ReviewProps) {
   const { datasets } = useAppData()
   const [nameTouched, setNameTouched] = React.useState(false)
+  const [preview, setPreview] = React.useState<PreviewResource | null>(null)
 
   const dataset = form.datasetId ? datasets.find((d) => d.id === form.datasetId) : undefined
   const file = dataset?.form.files.find((f) => f.id === form.fileId)
@@ -60,9 +63,23 @@ function ChartStep3Review({ form, otherCharts, onNameChange, onEditStep, onPubli
 
       {form.chartType === 'upload-image' && (
         <ReviewSection title="Chart Image" defaultOpen onEdit={() => onEditStep(2)}>
-          <div>
-            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Image</p>
-            <p className="mt-1 text-sm text-foreground">{form.uploadedImage?.name || '—'}</p>
+          <div className="flex items-center justify-between gap-3">
+            <div className="min-w-0">
+              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Image</p>
+              <p className="mt-1 truncate text-sm text-foreground">{form.uploadedImage?.name || '—'}</p>
+            </div>
+            {form.uploadedImage && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="shrink-0"
+                aria-label={`Preview ${form.uploadedImage.name}`}
+                onClick={() => setPreview(assetToPreviewResource(form.uploadedImage!, form.name))}
+              >
+                <Eye className="size-4" />
+              </Button>
+            )}
           </div>
         </ReviewSection>
       )}
@@ -152,7 +169,7 @@ function ChartStep3Review({ form, otherCharts, onNameChange, onEditStep, onPubli
         </div>
       </div>
 
-      <div className="flex flex-col items-center gap-2.5 rounded-xl border border-border bg-card px-5 py-8 text-center">
+      <ReviewPublishPanel>
         <p className="text-sm text-muted-foreground">
           {hasLiveVersion
             ? 'Publishing will replace the current public version of this chart immediately.'
@@ -176,7 +193,9 @@ function ChartStep3Review({ form, otherCharts, onNameChange, onEditStep, onPubli
             </>
           )}
         </Button>
-      </div>
+      </ReviewPublishPanel>
+
+      <ResourcePreviewDialog resource={preview} onOpenChange={(open) => !open && setPreview(null)} />
     </div>
   )
 }

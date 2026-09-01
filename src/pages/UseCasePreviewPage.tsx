@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { Loader2, Send } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
+import { PreviewActionBar } from '@/components/shared/PreviewActionBar'
 import { UseCasePreview } from '@/components/usecase/UseCasePreview'
 import { useToast } from '@/components/ui/toast'
 import { useConfirm } from '@/components/ui/confirm-dialog'
@@ -85,7 +86,7 @@ function UseCasePreviewPage() {
 
   return (
     <div className="mx-auto flex max-w-4xl flex-col gap-6 py-6">
-      <div className="sticky top-4 z-10 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-card px-5 py-4 shadow-sm">
+      <PreviewActionBar>
         <div>
           <p className="text-sm font-semibold text-foreground">
             {justPublished ? (hasLiveVersion ? 'Changes published' : 'Use Case published') : 'Use Case Preview'}
@@ -133,7 +134,7 @@ function UseCasePreviewPage() {
             </>
           )}
         </div>
-      </div>
+      </PreviewActionBar>
 
       {!ready && !justPublished && (
         <p className="rounded-md border border-warning/40 bg-warning/10 px-4 py-2.5 text-sm text-warning-foreground">

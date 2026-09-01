@@ -4,6 +4,7 @@ import { AlertTriangle, CheckCircle2, ExternalLink } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { ReviewSection } from '@/components/shared/ReviewSection'
+import { ReviewPublishPanel } from '@/components/shared/ReviewPublishPanel'
 import { LICENSE_OPTIONS, SECTOR_OPTIONS, GEOGRAPHY_OPTIONS } from '@/types/dataset'
 import {
   DOMAIN_OPTIONS,
@@ -237,7 +238,7 @@ function AIModelStep3Review({ form, otherNames, onEditStep, onPreview }: AIModel
         )}
       </ReviewSection>
 
-      <div className="flex flex-col items-center gap-2.5 rounded-xl border border-border bg-card px-5 py-8 text-center">
+      <ReviewPublishPanel>
         <p className="text-sm text-muted-foreground">
           Open a full preview of this AI Model in a new tab, exactly as it will appear once published.
         </p>
@@ -246,7 +247,7 @@ function AIModelStep3Review({ form, otherNames, onEditStep, onPreview }: AIModel
           <ExternalLink className="size-4" />
         </Button>
         <p className="text-xs text-muted-foreground">Publishing happens from inside the preview.</p>
-      </div>
+      </ReviewPublishPanel>
     </div>
   )
 }

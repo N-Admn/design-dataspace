@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { Loader2, Send } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
+import { PreviewActionBar } from '@/components/shared/PreviewActionBar'
 import { CollaborativePreview } from '@/components/collaborative/CollaborativePreview'
 import { useToast } from '@/components/ui/toast'
 import { useConfirm } from '@/components/ui/confirm-dialog'
@@ -92,7 +93,7 @@ function CollaborativePreviewPage() {
 
   return (
     <div className="mx-auto flex max-w-4xl flex-col gap-6 py-6">
-      <div className="sticky top-4 z-10 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-card px-5 py-4 shadow-sm">
+      <PreviewActionBar>
         <div>
           <p className="text-sm font-semibold text-foreground">
             {justPublished ? (hasLiveVersion ? 'Changes published' : 'Collaborative published') : 'Collaborative Preview'}
@@ -136,7 +137,7 @@ function CollaborativePreviewPage() {
             </>
           )}
         </div>
-      </div>
+      </PreviewActionBar>
 
       {publishFailed && (
         <div className="rounded-md border border-destructive/40 bg-destructive/10 px-4 py-2.5 text-sm text-destructive">

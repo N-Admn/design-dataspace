@@ -30,6 +30,7 @@ import { SearchableSelect } from '@/components/ui/searchable-select'
 import { Checkbox } from '@/components/ui/checkbox'
 import { useConfirm } from '@/components/ui/confirm-dialog'
 import { useToast } from '@/components/ui/toast'
+import { EmptyState } from '@/components/shared/EmptyState'
 import {
   API_KEY_LOCATION_OPTIONS,
   CUSTOM_API_AUTH_OPTIONS,
@@ -819,10 +820,7 @@ function AIModelVersionsStep({ versions, onChange, openVersionId, onOpenVersionC
       )}
 
       {versions.length === 0 && (
-        <div className="flex flex-col items-center gap-2 rounded-xl border border-dashed border-border px-5 py-10 text-center">
-          <p className="text-sm font-medium text-foreground">No versions yet</p>
-          <p className="text-xs text-muted-foreground">Create the first version of this model.</p>
-        </div>
+        <EmptyState title="No versions yet" description="Create the first version of this model." />
       )}
 
       <Button type="button" variant="outline" onClick={startAdd} className="self-start">
@@ -915,14 +913,17 @@ function AIModelVersionsStep({ versions, onChange, openVersionId, onOpenVersionC
 
                 <div className="mt-4 flex flex-col gap-3">
                   {draft.accessMethods.length === 0 && editingAccessId !== 'new' && (
-                    <div className="rounded-lg border border-dashed border-border px-4 py-6 text-center">
-                      <p className="text-sm font-medium text-foreground">No access methods configured</p>
-                      <p className="mt-1 text-xs text-muted-foreground">Add one so this version can be reached by consumers.</p>
-                      <Button type="button" size="sm" className="mt-3" onClick={startAddAccess}>
-                        <Plus className="size-4" />
-                        Add Access Method
-                      </Button>
-                    </div>
+                    <EmptyState
+                      variant="compact"
+                      title="No access methods configured"
+                      description="Add one so this version can be reached by consumers."
+                      action={
+                        <Button type="button" size="sm" onClick={startAddAccess}>
+                          <Plus className="size-4" />
+                          Add Access Method
+                        </Button>
+                      }
+                    />
                   )}
 
                   {draft.accessMethods.map((accessMethod, index) =>
@@ -1014,9 +1015,11 @@ function AIModelVersionsStep({ versions, onChange, openVersionId, onOpenVersionC
                 </p>
 
                 {draft.accessMethods.length === 0 ? (
-                  <div className="mt-4 rounded-lg border border-dashed border-border px-4 py-6 text-center">
-                    <p className="text-sm text-muted-foreground">Add and save an access method before testing.</p>
-                  </div>
+                  <EmptyState
+                    variant="compact"
+                    className="mt-4"
+                    description="Add and save an access method before testing."
+                  />
                 ) : (
                   <div className="mt-4 flex flex-col gap-4">
                     <div>

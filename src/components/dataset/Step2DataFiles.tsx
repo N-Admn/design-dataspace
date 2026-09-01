@@ -21,7 +21,7 @@ import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { FieldError } from '@/components/ui/field-error'
 import { SearchableSelect } from '@/components/ui/searchable-select'
-import { FilePreviewModal } from '@/components/dataset/FilePreviewModal'
+import { ResourcePreviewDialog, type PreviewResource } from '@/components/shared/ResourcePreviewDialog'
 import { DropzoneUploadField } from '@/components/shared/DropzoneUploadField'
 import { useToast } from '@/components/ui/toast'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
@@ -364,7 +364,7 @@ function Step2DataFiles({
   onRemoveResource,
 }: Step2DataFilesProps) {
   const [uploadErrors, setUploadErrors] = React.useState<string[]>([])
-  const [previewFile, setPreviewFile] = React.useState<DatasetFile | null>(null)
+  const [previewResource, setPreviewResource] = React.useState<PreviewResource | null>(null)
   const toast = useToast()
 
   const [resourceType, setResourceType] = React.useState<DatasetResourceType>('csv')
@@ -583,7 +583,14 @@ function Step2DataFiles({
                   key={file.id}
                   file={file}
                   onTitleChange={onFileTitleChange}
-                  onPreview={() => setPreviewFile(file)}
+                  onPreview={() =>
+                    setPreviewResource({
+                      title: getResourceTitle(file),
+                      fileName: file.name,
+                      extension: file.extension.toUpperCase(),
+                      sizeLabel: file.sizeLabel,
+                    })
+                  }
                   onRemove={() => {
                     onFileRemove(file.id)
                     toast({ title: 'File removed', variant: 'success' })
@@ -874,7 +881,7 @@ function Step2DataFiles({
         </>
       )}
 
-      <FilePreviewModal file={previewFile} onOpenChange={(open) => !open && setPreviewFile(null)} />
+      <ResourcePreviewDialog resource={previewResource} onOpenChange={(open) => !open && setPreviewResource(null)} />
     </div>
   )
 }

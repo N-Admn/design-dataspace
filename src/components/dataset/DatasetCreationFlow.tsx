@@ -129,6 +129,9 @@ function DatasetCreationFlow({
   const [publishSuccess, setPublishSuccess] = React.useState<{ name: string } | null>(null)
   const [drawerSuccess, setDrawerSuccess] = React.useState<{ status: ContentStatus; id: string } | null>(null)
   const [showLeaveConfirm, setShowLeaveConfirm] = React.useState(false)
+  // The stepper is a plain progress indicator until the user reaches Review with every
+  // step valid; from then on it stays clickable so completed steps can be revisited.
+  const [stepperUnlocked, setStepperUnlocked] = React.useState(false)
 
   // The drawer variant stays mounted between opens (Radix animates in/out), so reset state each time it opens.
   React.useEffect(() => {
@@ -141,8 +144,14 @@ function DatasetCreationFlow({
     setShowMetadataErrors(false)
     setDrawerSuccess(null)
     setSaved(true)
+    setStepperUnlocked(false)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open])
+
+  const allStepsValid = isMetadataValid(form.metadata)
+  React.useEffect(() => {
+    if (step === 3 && allStepsValid) setStepperUnlocked(true)
+  }, [step, allStepsValid])
 
   // Report the active step to Help & Support. Only the page variant owns the route's context —
   // the drawer variant is layered over another module that already sets its own label.
@@ -411,7 +420,13 @@ function DatasetCreationFlow({
           ) : (
             <>
               <div className="shrink-0 px-6 pt-4">
-                <Stepper steps={DATASET_STEPS} currentStep={step} compact />
+                <Stepper
+                  steps={DATASET_STEPS}
+                  currentStep={step}
+                  compact
+                  interactive={stepperUnlocked}
+                  onStepClick={(n) => goToStep(n as WizardStep)}
+                />
               </div>
               <div className="min-h-0 flex-1 overflow-y-auto px-6 py-5">{stepContent}</div>
               <div className="shrink-0 border-t border-border">{footer}</div>
@@ -435,7 +450,12 @@ function DatasetCreationFlow({
         <PublicVisibilityBadge isLive={hasLiveVersion} />
       </div>
       <div className="border-t border-border px-6 py-6">
-        <Stepper steps={DATASET_STEPS} currentStep={step} />
+        <Stepper
+          steps={DATASET_STEPS}
+          currentStep={step}
+          interactive={stepperUnlocked}
+          onStepClick={(n) => goToStep(n as WizardStep)}
+        />
       </div>
       <div className="border-t border-border px-6 py-6">{stepContent}</div>
       <div className="border-t border-border">{footer}</div>
@@ -450,6 +470,7 @@ function DatasetCreationFlow({
           setForm(emptyDatasetForm)
           setLastSavedForm(emptyDatasetForm)
           setShowMetadataErrors(false)
+          setStepperUnlocked(false)
         }}
         onViewWorkspace={() => {
           setPublishSuccess(null)

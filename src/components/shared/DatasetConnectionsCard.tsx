@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { SearchableSelect } from '@/components/ui/searchable-select'
 import { StatusBadge } from '@/components/shared/StatusBadge'
+import { EmptyState } from '@/components/shared/EmptyState'
 import { DatasetCreationWizard } from '@/components/event/DatasetCreationWizard'
 import { useAppData } from '@/context/AppDataContext'
 import { formatShortDate } from '@/lib/format'
@@ -222,10 +223,7 @@ function DatasetConnectionsCard({
         )}
 
         {datasets.length === 0 ? (
-          <div className="flex flex-col items-center gap-1 rounded-lg border border-dashed border-border py-8 text-center">
-            <p className="text-sm font-medium text-foreground">No datasets connected yet.</p>
-            <p className="text-xs text-muted-foreground">{emptyHint}</p>
-          </div>
+          <EmptyState title="No datasets connected yet." description={emptyHint} />
         ) : (
           <div className="flex flex-col gap-2">
             {datasets.map((item) => {

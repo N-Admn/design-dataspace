@@ -53,6 +53,8 @@ function UseCaseCreationPage() {
   const [lastSavedForm, setLastSavedForm] = useState<UseCaseFormState>(resumeRecord?.form ?? emptyUseCaseForm)
   const [saved, setSaved] = useState(true)
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(false)
+  // Stepper is a progress indicator until Review is reached with every step valid.
+  const [stepperUnlocked, setStepperUnlocked] = useState(false)
 
   const stepLabel = USE_CASE_STEPS.find((s) => s.step === step)?.label ?? 'Start'
   useEffect(() => {
@@ -101,6 +103,11 @@ function UseCaseCreationPage() {
     setStep((prev) => (prev > 1 ? ((prev - 1) as UseCaseStep) : prev))
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
+
+  const allStepsValid = isUseCaseReadyToPublish(form)
+  useEffect(() => {
+    if (step === 4 && allStepsValid) setStepperUnlocked(true)
+  }, [step, allStepsValid])
 
   const editingRecord = editingId ? useCases.find((u) => u.id === editingId) : undefined
   const hasLiveVersion = editingRecord?.status === 'published'
@@ -172,7 +179,12 @@ function UseCaseCreationPage() {
         unpublishedChanges={showUnpublishedIndicator}
       />
       <div className="border-t border-border px-6 py-6">
-        <Stepper steps={USE_CASE_STEPS} currentStep={step} />
+        <Stepper
+          steps={USE_CASE_STEPS}
+          currentStep={step}
+          interactive={stepperUnlocked}
+          onStepClick={(n) => goToStep(n as UseCaseStep)}
+        />
       </div>
       <div className="border-t border-border px-6 py-6">
         {step === 1 && (

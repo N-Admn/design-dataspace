@@ -1,9 +1,12 @@
+import * as React from 'react'
 import type { ReactNode } from 'react'
-import { Database, ExternalLink, Layers, Sparkles, Users2 } from 'lucide-react'
+import { Database, ExternalLink, Eye, Layers, Sparkles, Users2 } from 'lucide-react'
 
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { ReviewSection } from '@/components/shared/ReviewSection'
+import { ResourcePreviewDialog, assetToPreviewResource, type PreviewResource } from '@/components/shared/ResourcePreviewDialog'
+import { ReviewPublishPanel } from '@/components/shared/ReviewPublishPanel'
 import { SECTOR_OPTIONS } from '@/types/dataset'
 import { formatEventDateRange, getRegistrationStatus } from '@/lib/event-status'
 import {
@@ -35,6 +38,7 @@ function ReviewField({ label, value }: { label: string; value: ReactNode }) {
 function EventPublishReview({ form, onEditSection, onPreview }: EventPublishReviewProps) {
   const { metadata } = form
   const registration = getRegistrationStatus(metadata)
+  const [preview, setPreview] = React.useState<PreviewResource | null>(null)
 
   return (
     <div className="flex flex-col gap-6">
@@ -123,6 +127,16 @@ function EventPublishReview({ form, onEditSection, onPreview }: EventPublishRevi
                   {PUBLICATION_TYPE_OPTIONS.find((o) => o.value === p.publicationType)?.label ?? p.publicationType}
                 </Badge>
                 <span className="text-xs text-muted-foreground">{p.file.sizeLabel}</span>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="shrink-0"
+                  aria-label={`Preview ${p.title}`}
+                  onClick={() => setPreview(assetToPreviewResource(p.file, p.title))}
+                >
+                  <Eye className="size-4" />
+                </Button>
               </div>
             ))}
           </div>
@@ -140,7 +154,7 @@ function EventPublishReview({ form, onEditSection, onPreview }: EventPublishRevi
         <RelatedGroup icon={Sparkles} label="AI Models" items={form.relatedContent.aiModels.map((i) => i.title)} />
       </ReviewSection>
 
-      <div className="flex flex-col items-center gap-2.5 rounded-xl border border-border bg-card px-5 py-8 text-center">
+      <ReviewPublishPanel>
         <p className="text-sm text-muted-foreground">
           Open a full preview of this event in a new tab, exactly as it will appear once published.
         </p>
@@ -149,7 +163,9 @@ function EventPublishReview({ form, onEditSection, onPreview }: EventPublishRevi
           <ExternalLink className="size-4" />
         </Button>
         <p className="text-xs text-muted-foreground">Publishing happens from inside the preview.</p>
-      </div>
+      </ReviewPublishPanel>
+
+      <ResourcePreviewDialog resource={preview} onOpenChange={(open) => !open && setPreview(null)} />
     </div>
   )
 }

@@ -4,6 +4,7 @@ import { Database, Search } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { FieldError } from '@/components/ui/field-error'
+import { EmptyState } from '@/components/shared/EmptyState'
 import { useAppData } from '@/context/AppDataContext'
 import { GEOGRAPHY_OPTIONS, SECTOR_OPTIONS } from '@/types/dataset'
 
@@ -62,12 +63,10 @@ function ChartStep1Dataset({ datasetId, error, onSelect }: ChartStep1DatasetProp
               </Button>
             </div>
           ) : eligible.length === 0 ? (
-            <div className="flex flex-col items-center gap-1.5 rounded-lg border border-dashed border-border px-5 py-10 text-center">
-              <p className="text-sm font-medium text-foreground">No datasets available</p>
-              <p className="text-xs text-muted-foreground">
-                You can create charts for datasets you own or have permission to manage.
-              </p>
-            </div>
+            <EmptyState
+              title="No datasets available"
+              description="You can create charts for datasets you own or have permission to manage."
+            />
           ) : (
             <>
               <div className="flex items-center gap-2 rounded-md border border-input bg-background px-3 py-2">

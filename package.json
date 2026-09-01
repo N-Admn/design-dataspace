@@ -4,6 +4,9 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "gen:tokens": "node scripts/generate-tokens.mjs",
+    "predev": "node scripts/generate-tokens.mjs",
+    "prebuild": "node scripts/generate-tokens.mjs",
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "oxlint",

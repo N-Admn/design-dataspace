@@ -7,12 +7,8 @@ import { useToast } from '@/components/ui/toast'
 import { useAppData } from '@/context/AppDataContext'
 import { parseAppTimestamp } from '@/lib/format'
 import { hasUnpublishedEdits, type ContentStatus } from '@/lib/content-status'
+import { DASHBOARD_MIN_HEIGHT_CLASS } from '@/lib/layout'
 import { NAV_GROUPS } from '@/components/layout/nav-config'
-
-// Same viewport budget as WORKSPACE_HEIGHT_CLASS, but as a min-height so short
-// viewports let this page grow taller (and the page scroll) instead of forcing
-// the workspace cards and resume rail to compress below their content size.
-const DASHBOARD_MIN_HEIGHT_CLASS = 'md:min-h-[calc(100vh-188px)]'
 
 const ECOSYSTEM_ITEMS = NAV_GROUPS.find((g) => g.key === 'contribution')?.items ?? []
 
@@ -158,7 +154,7 @@ function DashboardPage() {
         {resumeItems.length > 0 && (
           <div className="flex h-full min-h-0 flex-col gap-3">
             <p className="shrink-0 text-base font-semibold text-foreground">Continue working</p>
-            <div className="flex min-h-0 flex-1 gap-[20px] overflow-hidden">
+            <div className="flex min-h-0 flex-1 gap-5 overflow-hidden">
               {resumeItems.map((item) => (
                 <button
                   key={item.id}
@@ -183,7 +179,7 @@ function DashboardPage() {
       </div>
 
       {/* Footer — supporting copy and ecosystem icon stack */}
-      <div className="flex shrink-0 items-center gap-[11px]">
+      <div className="flex shrink-0 items-center gap-3">
         <p className="max-w-sm text-sm text-muted-foreground">
           Create and share data, models, knowledge and&nbsp;visualizations with the civic data community.
         </p>

@@ -26,7 +26,7 @@ function Logo({ large = false }: { large?: boolean }) {
 
 function AuthFooter({ dark = false, className }: { dark?: boolean; className?: string }) {
   const linkClass = dark
-    ? 'text-white/70 transition-colors hover:text-white'
+    ? 'text-primary-foreground/70 transition-colors hover:text-primary-foreground'
     : 'text-muted-foreground transition-colors hover:text-foreground'
 
   return (
@@ -35,11 +35,11 @@ function AuthFooter({ dark = false, className }: { dark?: boolean; className?: s
         <a href="#" className={linkClass}>
           Privacy
         </a>
-        <span className={dark ? 'text-white/40' : 'text-muted-foreground'}>·</span>
+        <span className={dark ? 'text-primary-foreground/40' : 'text-muted-foreground'}>·</span>
         <a href="#" className={linkClass}>
           Terms
         </a>
-        <span className={dark ? 'text-white/40' : 'text-muted-foreground'}>·</span>
+        <span className={dark ? 'text-primary-foreground/40' : 'text-muted-foreground'}>·</span>
         <a href="#" className={linkClass}>
           Legal
         </a>

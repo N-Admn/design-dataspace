@@ -71,7 +71,7 @@ function MobileNavMenu() {
         <button
           type="button"
           aria-label="Open menu"
-          className="flex size-9 items-center justify-center text-white/80 transition-colors hover:text-white md:hidden"
+          className="flex size-9 items-center justify-center text-primary-foreground/80 transition-colors hover:text-primary-foreground md:hidden"
         >
           <Menu className="size-5" />
         </button>
@@ -100,7 +100,7 @@ function MobileNavMenu() {
 
 function TopNav() {
   return (
-    <header className="flex h-[88px] w-full items-center justify-between bg-header-background px-4 text-white sm:px-8">
+    <header className="flex h-[88px] w-full items-center justify-between bg-header-background px-4 text-primary-foreground sm:px-8">
       <div className="flex items-center gap-2">
         <img src="/brand/CDS-Logo.png" alt="CivicDataSpace" className="h-10 w-auto" />
       </div>
@@ -109,14 +109,14 @@ function TopNav() {
         <button
           type="button"
           aria-label="Search"
-          className="text-white/80 transition-colors hover:text-white"
+          className="text-primary-foreground/80 transition-colors hover:text-primary-foreground"
         >
           <Search className="size-5" />
         </button>
 
         <button
           type="button"
-          className="hidden items-center gap-1 text-white/90 transition-colors hover:text-white md:flex"
+          className="hidden items-center gap-1 text-primary-foreground/90 transition-colors hover:text-primary-foreground md:flex"
         >
           EXPLORE
           <ChevronDown className="size-4" />
@@ -126,7 +126,7 @@ function TopNav() {
           <button
             key={link}
             type="button"
-            className="hidden text-white/90 transition-colors hover:text-white md:block"
+            className="hidden text-primary-foreground/90 transition-colors hover:text-primary-foreground md:block"
           >
             {link}
           </button>

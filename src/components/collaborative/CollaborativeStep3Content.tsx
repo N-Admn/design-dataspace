@@ -4,6 +4,7 @@ import { CheckCircle2, FolderKanban, Plus, Search, Trash2 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { StatusBadge } from '@/components/shared/StatusBadge'
+import { EmptyState } from '@/components/shared/EmptyState'
 import { DatasetConnectionsCard } from '@/components/shared/DatasetConnectionsCard'
 import { useAppData } from '@/context/AppDataContext'
 import { cn } from '@/lib/utils'
@@ -163,10 +164,10 @@ function CollaborativeStep3Content({ connections, onChange, onCreateUseCase }: C
           )}
 
           {connections.useCases.length === 0 ? (
-            <div className="flex flex-col items-center gap-1 rounded-lg border border-dashed border-border py-8 text-center">
-              <p className="text-sm font-medium text-foreground">No Use Cases connected yet.</p>
-              <p className="text-xs text-muted-foreground">Connect an existing published Use Case to this Collaborative.</p>
-            </div>
+            <EmptyState
+              title="No Use Cases connected yet."
+              description="Connect an existing published Use Case to this Collaborative."
+            />
           ) : (
             <div className="flex flex-col gap-2">
               {connections.useCases.map((item) => {

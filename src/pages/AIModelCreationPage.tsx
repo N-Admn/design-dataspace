@@ -48,6 +48,8 @@ function AIModelCreationPage() {
   const [saved, setSaved] = useState(true)
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(false)
   const [openVersionId, setOpenVersionId] = useState<string | null>(null)
+  // Stepper is a progress indicator until Review is reached with every step valid.
+  const [stepperUnlocked, setStepperUnlocked] = useState(false)
 
   const stepLabel = AI_MODEL_STEPS.find((s) => s.step === step)?.label ?? 'Versions'
   useEffect(() => {
@@ -91,6 +93,11 @@ function AIModelCreationPage() {
     setStep((prev) => (prev > 1 ? ((prev - 1) as AIModelStep) : prev))
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
+
+  const allStepsValid = isAIModelReadyToPublish(form, otherNames)
+  useEffect(() => {
+    if (step === 3 && allStepsValid) setStepperUnlocked(true)
+  }, [step, allStepsValid])
 
   const editingRecord = editingId ? aiModels.find((m) => m.id === editingId) : undefined
   const hasLiveVersion = editingRecord?.status === 'published'
@@ -159,7 +166,12 @@ function AIModelCreationPage() {
         unpublishedChanges={showUnpublishedIndicator}
       />
       <div className="border-t border-border px-6 py-6">
-        <Stepper steps={AI_MODEL_STEPS} currentStep={step} />
+        <Stepper
+          steps={AI_MODEL_STEPS}
+          currentStep={step}
+          interactive={stepperUnlocked}
+          onStepClick={(n) => goToStep(n as AIModelStep)}
+        />
       </div>
       <div className="border-t border-border px-6 py-6">
         {step === 1 && (

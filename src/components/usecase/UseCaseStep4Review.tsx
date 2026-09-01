@@ -1,6 +1,7 @@
 import { AlertTriangle, CheckCircle2, ExternalLink } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
+import { ReviewPublishPanel } from '@/components/shared/ReviewPublishPanel'
 import { validateUseCaseStart, isUseCaseReadyToPublish } from '@/lib/usecase-validation'
 import type { UseCaseFormState } from '@/types/usecase'
 
@@ -58,7 +59,7 @@ function UseCaseStep4Review({ form, onEditStep, onPreview }: UseCaseStep4ReviewP
         </div>
       </div>
 
-      <div className="flex flex-col items-center gap-2.5 rounded-xl border border-border bg-card px-5 py-8 text-center">
+      <ReviewPublishPanel>
         <p className="text-sm text-muted-foreground">
           Open a full preview of this Use Case in a new tab, exactly as it will appear once published.
         </p>
@@ -67,7 +68,7 @@ function UseCaseStep4Review({ form, onEditStep, onPreview }: UseCaseStep4ReviewP
           <ExternalLink className="size-4" />
         </Button>
         <p className="text-xs text-muted-foreground">Publishing happens from inside the preview.</p>
-      </div>
+      </ReviewPublishPanel>
     </div>
   )
 }

@@ -55,6 +55,8 @@ function ChartCreationPage() {
   const [showStep2Errors, setShowStep2Errors] = useState(false)
   const [publishState, setPublishState] = useState<'idle' | 'checking' | 'publishing'>('idle')
   const [justPublished, setJustPublished] = useState(false)
+  // Stepper is a progress indicator until Review is reached with every step valid.
+  const [stepperUnlocked, setStepperUnlocked] = useState(false)
 
   const stepLabel = CHART_STEPS.find((s) => s.step === step)?.label ?? 'Dataset'
   useEffect(() => {
@@ -121,6 +123,17 @@ function ChartCreationPage() {
   const hasLiveVersion = editingRecord?.status === 'published'
   const showUnpublishedIndicator = hasLiveVersion && (hasUnsavedChanges || hasUnpublishedEdits(editingRecord))
   const readyToPublish = Object.keys(step1Errors).length === 0 && Object.keys(step2Errors).length === 0
+
+  useEffect(() => {
+    if (step === 3 && readyToPublish) setStepperUnlocked(true)
+  }, [step, readyToPublish])
+
+  const handleStepperNav = (next: ChartStep) => {
+    // Surface any issues on the step being opened so they are visible immediately.
+    setShowStep1Errors(true)
+    setShowStep2Errors(true)
+    goToStep(next)
+  }
 
   const handleSaveDraft = () => {
     setSaved(false)
@@ -233,7 +246,12 @@ function ChartCreationPage() {
         unpublishedChanges={showUnpublishedIndicator}
       />
       <div className="border-t border-border px-6 py-6">
-        <Stepper steps={CHART_STEPS} currentStep={step} />
+        <Stepper
+          steps={CHART_STEPS}
+          currentStep={step}
+          interactive={stepperUnlocked}
+          onStepClick={(n) => handleStepperNav(n as ChartStep)}
+        />
       </div>
       <div className="border-t border-border px-6 py-6">
         {step === 1 && (

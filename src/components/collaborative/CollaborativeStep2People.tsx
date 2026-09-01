@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { SearchableSelect } from '@/components/ui/searchable-select'
 import { PeopleOrgSearchField, type PeopleOrgSearchResult } from '@/components/collaborative/PeopleOrgSearchField'
+import { EmptyState } from '@/components/shared/EmptyState'
 import { useAppData } from '@/context/AppDataContext'
 import { RELATIONSHIP_OPTIONS } from '@/types/collaborative'
 import type { CollaborativeConnections, CollaborativeRelationship } from '@/types/collaborative'
@@ -59,13 +60,11 @@ function CollaborativeStep2People({ connections, onChange }: CollaborativeStep2P
           />
 
           {connections.people.length === 0 ? (
-            <div className="flex flex-col items-center gap-1 rounded-lg border border-dashed border-border py-8 text-center">
-              <Users className="size-5 text-muted-foreground" />
-              <p className="mt-1 text-sm font-medium text-foreground">People and organisations will appear here.</p>
-              <p className="text-xs text-muted-foreground">
-                Search CivicDataSpace to add contributors, partners or supporters.
-              </p>
-            </div>
+            <EmptyState
+              icon={Users}
+              title="People and organisations will appear here."
+              description="Search CivicDataSpace to add contributors, partners or supporters."
+            />
           ) : (
             <div className="flex flex-col gap-2">
               {connections.people.map((person) => (

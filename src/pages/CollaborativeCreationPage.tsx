@@ -51,6 +51,8 @@ function CollaborativeCreationPage() {
   const [lastSavedForm, setLastSavedForm] = useState<CollaborativeFormState>(resumeRecord?.form ?? emptyCollaborativeForm)
   const [saved, setSaved] = useState(true)
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(false)
+  // Stepper is a progress indicator until Review is reached with every step valid.
+  const [stepperUnlocked, setStepperUnlocked] = useState(false)
 
   const stepLabel = COLLABORATIVE_STEPS.find((s) => s.step === step)?.label ?? 'About'
   useEffect(() => {
@@ -109,6 +111,11 @@ function CollaborativeCreationPage() {
     setStep((prev) => (prev > 1 ? ((prev - 1) as CollaborativeStep) : prev))
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
+
+  const allStepsValid = isCollaborativeReadyToPublish(form)
+  useEffect(() => {
+    if (step === 4 && allStepsValid) setStepperUnlocked(true)
+  }, [step, allStepsValid])
 
   const editingRecord = editingId ? collaboratives.find((c) => c.id === editingId) : undefined
   const hasLiveVersion = editingRecord?.status === 'published'
@@ -189,7 +196,12 @@ function CollaborativeCreationPage() {
         unpublishedChanges={showUnpublishedIndicator}
       />
       <div className="border-t border-border px-6 py-6">
-        <Stepper steps={COLLABORATIVE_STEPS} currentStep={step} />
+        <Stepper
+          steps={COLLABORATIVE_STEPS}
+          currentStep={step}
+          interactive={stepperUnlocked}
+          onStepClick={(n) => goToStep(n as CollaborativeStep)}
+        />
       </div>
       <div className="border-t border-border px-6 py-6">
         {step === 1 && <CollaborativeStep1About metadata={form.metadata} errors={{}} onChange={updateMetadata} />}
