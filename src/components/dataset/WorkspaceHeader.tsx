@@ -11,8 +11,9 @@ interface WorkspaceHeaderProps {
   /** When provided, the title becomes inline-editable via a pencil icon next to it. */
   onTitleChange?: (title: string) => void
   editablePlaceholder?: string
-  /** True when editing a published item that has edits not yet published. */
-  unpublishedChanges?: boolean
+  /** Edit state — true when the working copy has changed since it was last saved.
+   * Shown as an "Unsaved changes" editing indicator; never a lifecycle status. */
+  unsavedChanges?: boolean
 }
 
 function WorkspaceHeader({
@@ -21,7 +22,7 @@ function WorkspaceHeader({
   onClose,
   onTitleChange,
   editablePlaceholder = 'Untitled',
-  unpublishedChanges = false,
+  unsavedChanges = false,
 }: WorkspaceHeaderProps) {
   const [isEditing, setIsEditing] = React.useState(false)
   const [draft, setDraft] = React.useState(title)
@@ -91,15 +92,16 @@ function WorkspaceHeader({
       </div>
 
       <div className="flex shrink-0 items-center gap-2">
-        {unpublishedChanges && (
+        {unsavedChanges ? (
           <span className="rounded-full bg-warning/20 px-3 py-1.5 text-xs font-medium text-warning-foreground">
-            Unpublished changes
+            Unsaved changes
           </span>
+        ) : (
+          <div className="flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary">
+            <Check className="size-3.5" />
+            {saved ? 'All changes saved' : 'Saving…'}
+          </div>
         )}
-        <div className="flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary">
-          <Check className="size-3.5" />
-          {saved ? 'All changes saved' : 'Saving…'}
-        </div>
       </div>
     </div>
   )

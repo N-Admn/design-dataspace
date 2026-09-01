@@ -21,7 +21,7 @@ import { useHelpContext } from '@/context/HelpContext'
 import { validateMetadata, isMetadataValid } from '@/lib/validation'
 import { getResourceTitle } from '@/lib/file-validation'
 import { datasetLifecycleMessage } from '@/lib/dataset-lifecycle-messages'
-import { hasUnpublishedEdits, type ContentStatus } from '@/lib/content-status'
+import { hasUnsavedEdits, type ContentStatus } from '@/lib/content-status'
 import { emptyDatasetForm, type DatasetFormState, type DatasetMetadata } from '@/types/dataset'
 
 type WizardStep = 1 | 2 | 3
@@ -161,7 +161,7 @@ function DatasetCreationFlow({
     setContextLabel(`Datasets → ${editingId ? 'Edit Dataset' : 'Create Dataset'} → ${stepLabel}`)
   }, [variant, stepLabel, editingId, setContextLabel])
 
-  const hasUnsavedChanges = JSON.stringify(form) !== JSON.stringify(lastSavedForm)
+  const hasUnsavedChanges = hasUnsavedEdits(form, lastSavedForm)
 
   const isFirstRender = React.useRef(true)
   React.useEffect(() => {
@@ -198,7 +198,7 @@ function DatasetCreationFlow({
 
   const editingRecord = editingId ? datasets.find((d) => d.id === editingId) : undefined
   const hasLiveVersion = editingRecord?.status === 'published'
-  const showUnpublishedIndicator = hasLiveVersion && (hasUnsavedChanges || hasUnpublishedEdits(editingRecord))
+  const showUnsavedIndicator = hasLiveVersion && hasUnsavedChanges
 
   /** Persist the working copy. For an already-published dataset this never changes
    * its status or its live version — the edits sit as "unsaved changes". */
@@ -264,33 +264,6 @@ function DatasetCreationFlow({
     }
   }
 
-  /** Leave gate — "Save & Publish" for an already-published dataset. Publishes when
-   * the form is valid; otherwise keeps the edits as unsaved changes (never discards,
-   * never auto-publishes an incomplete dataset). */
-  const handleGateSaveAndPublish = () => {
-    setShowLeaveConfirm(false)
-    if (isMetadataValid(form.metadata)) {
-      publishNow()
-      toast({ title: 'Changes published', description: 'Your changes are now live on CivicDataSpace.', variant: 'success' })
-    } else {
-      saveWorkingCopy()
-      toast({
-        title: 'Changes saved',
-        description: 'Not published yet — complete the required fields in Metadata to publish.',
-        variant: 'success',
-      })
-    }
-    onClose()
-  }
-
-  const handleGateDiscardChanges = () => {
-    setShowLeaveConfirm(false)
-    if (editingId && editingRecord?.publishedForm) {
-      upsertDataset(editingId, 'published', editingRecord.publishedForm)
-    }
-    onClose()
-  }
-
   const handleReturnToOrigin = () => {
     if (drawerSuccess) {
       onCreated?.({ id: drawerSuccess.id, status: drawerSuccess.status, name: form.metadata.name || 'Untitled dataset' })
@@ -330,18 +303,11 @@ function DatasetCreationFlow({
               files: prev.files.map((f) => (f.id === id ? { ...f, title } : f)),
             }))
           }
-          enablePreview={form.enablePreview}
-          onTogglePreview={(value) => setForm((prev) => ({ ...prev, enablePreview: value }))}
-          resources={form.resources}
-          onAddResource={(resource) => setForm((prev) => ({ ...prev, resources: [...prev.resources, resource] }))}
-          onUpdateResource={(resource) =>
+          onFileMetaChange={(id, patch) =>
             setForm((prev) => ({
               ...prev,
-              resources: prev.resources.map((r) => (r.id === resource.id ? resource : r)),
+              files: prev.files.map((f) => (f.id === id ? { ...f, ...patch } : f)),
             }))
-          }
-          onRemoveResource={(id) =>
-            setForm((prev) => ({ ...prev, resources: prev.resources.filter((r) => r.id !== id) }))
           }
         />
       )}
@@ -376,19 +342,16 @@ function DatasetCreationFlow({
     <LeaveCreationDialog
       open={showLeaveConfirm}
       itemLabel="dataset"
-      mode={hasLiveVersion ? 'published' : 'draft'}
-      onContinueEditing={() => setShowLeaveConfirm(false)}
-      onSaveDraftAndExit={() => {
+      onCancel={() => setShowLeaveConfirm(false)}
+      onSave={() => {
         setShowLeaveConfirm(false)
         handleSaveDraft()
         onClose()
       }}
-      onDiscardAndExit={() => {
+      onDiscard={() => {
         setShowLeaveConfirm(false)
         onClose()
       }}
-      onSaveAndPublish={handleGateSaveAndPublish}
-      onDiscardChanges={handleGateDiscardChanges}
     />
   )
 
@@ -444,7 +407,7 @@ function DatasetCreationFlow({
         saved={saved}
         onClose={requestClose}
         title={editingId ? form.metadata.name || 'Untitled Dataset' : 'New Dataset'}
-        unpublishedChanges={showUnpublishedIndicator}
+        unsavedChanges={showUnsavedIndicator}
       />
       <div className="flex items-center justify-between border-t border-border px-6 py-2.5">
         <PublicVisibilityBadge isLive={hasLiveVersion} />

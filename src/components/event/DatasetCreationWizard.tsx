@@ -97,7 +97,6 @@ function DatasetCreationWizard({ open, onOpenChange, onCreated }: DatasetCreatio
           accessType: metadata.accessType,
         },
         files: [],
-        enablePreview: false,
         resources,
       }
       const id = upsertDataset(null, 'published', form)

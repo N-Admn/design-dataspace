@@ -16,7 +16,7 @@ import { useAppData } from '@/context/AppDataContext'
 import { useHelpContext } from '@/context/HelpContext'
 import { saveCollaborativeDraftSnapshot } from '@/lib/collaborative-draft-storage'
 import { isCollaborativeReadyToPublish } from '@/lib/collaborative-validation'
-import { hasUnpublishedEdits } from '@/lib/content-status'
+import { hasUnsavedEdits } from '@/lib/content-status'
 import { emptyCollaborativeForm, type CollaborativeFormState, type CollaborativeMetadata } from '@/types/collaborative'
 
 type CollaborativeStep = 1 | 2 | 3 | 4
@@ -77,7 +77,7 @@ function CollaborativeCreationPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [navState?.createdUseCaseId])
 
-  const hasUnsavedChanges = JSON.stringify(form) !== JSON.stringify(lastSavedForm)
+  const hasUnsavedChanges = hasUnsavedEdits(form, lastSavedForm)
 
   const isFirstRender = useRef(true)
   useEffect(() => {
@@ -119,7 +119,7 @@ function CollaborativeCreationPage() {
 
   const editingRecord = editingId ? collaboratives.find((c) => c.id === editingId) : undefined
   const hasLiveVersion = editingRecord?.status === 'published'
-  const showUnpublishedIndicator = hasLiveVersion && (hasUnsavedChanges || hasUnpublishedEdits(editingRecord))
+  const showUnsavedIndicator = hasLiveVersion && hasUnsavedChanges
 
   const handleSaveDraft = () => {
     setSaved(false)
@@ -137,30 +137,6 @@ function CollaborativeCreationPage() {
     return id
   }
 
-  const handleGateSaveAndPublish = () => {
-    setShowLeaveConfirm(false)
-    if (editingId && isCollaborativeReadyToPublish(form)) {
-      upsertCollaborative(editingId, 'published', form)
-      toast({ title: 'Changes published', description: 'Your changes are now live on CivicDataSpace.', variant: 'success' })
-    } else {
-      upsertCollaborative(editingId, 'draft', form)
-      toast({
-        title: 'Changes saved',
-        description: 'Not published yet — complete the required fields to publish.',
-        variant: 'success',
-      })
-    }
-    setLastSavedForm(form)
-    navigate('/dashboard/collaboratives')
-  }
-
-  const handleGateDiscardChanges = () => {
-    setShowLeaveConfirm(false)
-    if (editingId && editingRecord?.publishedForm) {
-      upsertCollaborative(editingId, 'published', editingRecord.publishedForm)
-    }
-    navigate('/dashboard/collaboratives')
-  }
 
   const handlePreview = () => {
     let id = editingId
@@ -193,7 +169,7 @@ function CollaborativeCreationPage() {
         title={form.metadata.name || 'Untitled Collaborative'}
         onTitleChange={(name) => updateMetadata('name', name)}
         editablePlaceholder="Untitled Collaborative"
-        unpublishedChanges={showUnpublishedIndicator}
+        unsavedChanges={showUnsavedIndicator}
       />
       <div className="border-t border-border px-6 py-6">
         <Stepper
@@ -234,19 +210,16 @@ function CollaborativeCreationPage() {
       <LeaveCreationDialog
         open={showLeaveConfirm}
         itemLabel="Collaborative"
-        mode={hasLiveVersion ? 'published' : 'draft'}
-        onContinueEditing={() => setShowLeaveConfirm(false)}
-        onSaveDraftAndExit={() => {
+        onCancel={() => setShowLeaveConfirm(false)}
+        onSave={() => {
           setShowLeaveConfirm(false)
           handleSaveDraft()
           navigate('/dashboard/collaboratives')
         }}
-        onDiscardAndExit={() => {
+        onDiscard={() => {
           setShowLeaveConfirm(false)
           navigate('/dashboard/collaboratives')
         }}
-        onSaveAndPublish={handleGateSaveAndPublish}
-        onDiscardChanges={handleGateDiscardChanges}
       />
     </Card>
   )

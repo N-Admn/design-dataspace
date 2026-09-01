@@ -13,6 +13,18 @@ export interface DatasetFile {
   sizeLabel: string
   sizeBytes: number
   uploadedAt: string
+  /** How the file entered the dataset — omitted means a direct "File upload".
+   *  Platform imports set 'Kaggle' | 'GitHub' | 'Hugging Face'. */
+  source?: string
+  /** Folder path within the source (platform imports that preserve a hierarchy),
+   *  e.g. "train" for `dataset/train/data.csv`. Omitted for flat / direct uploads. */
+  path?: string
+  /** The platform dataset/repository URL this file was imported from. */
+  importUrl?: string
+  /** System-inferred where it can be reliably determined (e.g. parsing a CSV
+   *  header/lines). Contributor-editable in the File Details side sheet. */
+  rowCount?: number
+  columnCount?: number
 }
 
 export interface DatasetMetadata {
@@ -80,8 +92,9 @@ export const API_RESPONSE_FORMAT_OPTIONS: { value: ApiResponseFormat; label: str
 export interface DatasetFormState {
   metadata: DatasetMetadata
   files: DatasetFile[]
-  enablePreview: boolean
-  /** API and Link resources attached to the dataset (CSV files are tracked separately in `files`). */
+  /** Vestigial: the Data Files stage now offers only File Upload and Public Platform
+   *  import — both produce `files`. Kept for backward-compatibility with saved
+   *  records (always `[]` for anything created through the current flow). */
   resources: DatasetResource[]
 }
 
@@ -110,7 +123,6 @@ export const emptyDatasetForm: DatasetFormState = {
     license: '',
   },
   files: [],
-  enablePreview: false,
   resources: [],
 }
 

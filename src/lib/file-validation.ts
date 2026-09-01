@@ -28,6 +28,28 @@ export function getResourceTitle(file: DatasetFile): string {
   return file.title?.trim() || deriveDefaultResourceTitle(file.name)
 }
 
+/** Client-side row/column inference from the file the contributor actually selected
+ * (never fabricated). Only CSV/TSV, and only below a size cap so a 500 MB file
+ * doesn't block the tab. Returns {} when it can't be determined. */
+export async function inferCsvShape(
+  file: File,
+): Promise<{ rowCount?: number; columnCount?: number }> {
+  const ext = getExtension(file.name)
+  if (ext !== 'csv' && ext !== 'tsv') return {}
+  if (file.size > 5 * 1024 * 1024) return {}
+  try {
+    const text = await file.text()
+    const lines = text.split(/\r?\n/).filter((line) => line.trim().length > 0)
+    if (lines.length === 0) return {}
+    const delimiter = ext === 'tsv' ? '\t' : ','
+    const columnCount = lines[0].split(delimiter).length || undefined
+    const rowCount = lines.length > 1 ? lines.length - 1 : undefined
+    return { rowCount, columnCount }
+  } catch {
+    return {}
+  }
+}
+
 let fileIdCounter = 0
 
 export function validateIncomingFiles(

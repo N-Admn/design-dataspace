@@ -1,9 +1,8 @@
-import { Archive, Pencil, Sparkles, Trash2, Undo2 } from 'lucide-react'
+import { Archive, Pencil, Sparkles, Trash2 } from 'lucide-react'
 
 import { ManagementTable, type ManagementColumn, type ManagementFilterDef, type ManagementRowAction } from '@/components/shared/management-table/ManagementTable'
 import { TruncatedText } from '@/components/shared/TruncatedText'
 import { StatusBadge } from '@/components/shared/StatusBadge'
-import { hasUnpublishedEdits } from '@/lib/content-status'
 import { Badge } from '@/components/ui/badge'
 import { DOMAIN_OPTIONS, MODEL_TYPE_OPTIONS, type AIModelRecord, type AIModelStatus } from '@/types/ai-model'
 import { getModelAccessReadiness } from '@/lib/ai-model-validation'
@@ -15,7 +14,6 @@ interface AIModelListViewProps {
   onViewAIModel: (id: string) => void
   onEditAIModel: (id: string) => void
   onDeleteAIModel: (id: string) => void
-  onDiscardAIModel: (id: string) => void
   onUnpublishAIModel: (id: string) => void
   loading?: boolean
   loadError?: boolean
@@ -81,7 +79,7 @@ function buildColumns(onOpen: (aiModel: AIModelRecord) => void): ManagementColum
     label: 'Status',
     widthRem: '6.875rem',
     optional: true,
-    render: (m) => <StatusBadge status={m.status} hasUnpublishedEdits={hasUnpublishedEdits(m)} />,
+    render: (m) => <StatusBadge status={m.status} />,
   },
   {
     key: 'access',
@@ -133,7 +131,6 @@ function AIModelListView({
   onViewAIModel,
   onEditAIModel,
   onDeleteAIModel,
-  onDiscardAIModel,
   onUnpublishAIModel,
   loading,
   loadError,
@@ -152,9 +149,6 @@ function AIModelListView({
     }
     return [
       { key: 'edit', icon: Pencil, label: () => `Edit ${name}`, onClick: () => onEditAIModel(aiModel.id) },
-      ...(hasUnpublishedEdits(aiModel)
-        ? [{ key: 'discard', icon: Undo2, label: () => `Discard unsaved changes to ${name}`, onClick: () => onDiscardAIModel(aiModel.id), destructive: true } as ManagementRowAction<AIModelRecord>]
-        : []),
       { key: 'unpublish', icon: Archive, label: () => `Unpublish ${name}`, onClick: () => onUnpublishAIModel(aiModel.id), destructive: true },
     ]
   }

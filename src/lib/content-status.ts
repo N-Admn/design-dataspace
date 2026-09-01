@@ -1,13 +1,14 @@
-/** The content lifecycle is deliberately just two persistent statuses across every
- * module (Datasets, Use Cases, AI Models, Collaboratives, Charts, Events):
+/** LIFECYCLE STATUS — deliberately just two persistent values across every module
+ * (Datasets, Use Cases, AI Models, Collaboratives, Charts, Events):
  *
  *  - `draft`     — never published; not publicly available.
  *  - `published` — publicly available.
  *
- * Editing an already-published item never changes its status. The working copy is
- * held in `form` while `publishedForm` keeps the version the public sees; the item
- * stays `published` and the public version stays live until the user explicitly
- * publishes again (which replaces `publishedForm`) or discards (which restores it). */
+ * This is the ONLY thing shown in a Status column / status badge. It is separate
+ * from EDIT STATE (Saved | Unsaved changes) — see `hasUnsavedEdits`. Editing an
+ * already-published item never changes its status: the working copy is held in
+ * `form` while `publishedForm` keeps the version the public sees; the item stays
+ * `published` until the user explicitly publishes again or discards. */
 export type ContentStatus = 'draft' | 'published'
 
 interface LifecycleRecord<F> {
@@ -16,9 +17,18 @@ interface LifecycleRecord<F> {
   publishedForm: F | null
 }
 
-/** True when a published item has a working copy that differs from the version the
- * public currently sees — i.e. saved edits that have not been published yet.
- * Surfaced in list views as "Published · Unsaved changes". */
+/** EDIT STATE — has the working copy changed since it was last saved/loaded?
+ * "Unsaved changes" is an editing indicator, never a lifecycle status. Shared by
+ * every creation flow so the check can't drift per module. */
+export function hasUnsavedEdits(current: unknown, lastSaved: unknown): boolean {
+  return JSON.stringify(current) !== JSON.stringify(lastSaved)
+}
+
+/** True when a published record has a persisted working copy that differs from the
+ * version the public currently sees. Drives the dashboard "continue working" queue —
+ * it is NOT a status, is never rendered as a badge, and has no list/table action.
+ * Unpublished edits are resolved only from inside the creation flow (publish, or
+ * the leave-with-unsaved-changes gate's Discard). */
 export function hasUnpublishedEdits<F>(record: LifecycleRecord<F> | null | undefined): boolean {
   if (!record || record.status !== 'published' || record.publishedForm == null) return false
   return JSON.stringify(record.form) !== JSON.stringify(record.publishedForm)

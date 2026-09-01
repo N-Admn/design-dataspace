@@ -1,9 +1,8 @@
-import { Archive, FolderKanban, Pencil, Trash2, Undo2 } from 'lucide-react'
+import { Archive, FolderKanban, Pencil, Trash2 } from 'lucide-react'
 
 import { ManagementTable, type ManagementColumn, type ManagementFilterDef, type ManagementRowAction } from '@/components/shared/management-table/ManagementTable'
 import { TruncatedText } from '@/components/shared/TruncatedText'
 import { StatusBadge } from '@/components/shared/StatusBadge'
-import { hasUnpublishedEdits } from '@/lib/content-status'
 import { formatShortDate, parseAppTimestamp } from '@/lib/format'
 import { GEOGRAPHY_OPTIONS, SECTOR_OPTIONS } from '@/types/dataset'
 import type { UseCaseRecord, UseCaseStatus } from '@/types/usecase'
@@ -14,7 +13,6 @@ interface UseCaseListViewProps {
   onViewUseCase: (id: string) => void
   onEditUseCase: (id: string) => void
   onDeleteUseCase: (id: string) => void
-  onDiscardUseCase: (id: string) => void
   onUnpublishUseCase: (id: string) => void
   loading?: boolean
   loadError?: boolean
@@ -71,7 +69,7 @@ function buildColumns(onOpen: (useCase: UseCaseRecord) => void): ManagementColum
     label: 'Status',
     widthRem: '6.875rem',
     optional: true,
-    render: (u) => <StatusBadge status={u.status} hasUnpublishedEdits={hasUnpublishedEdits(u)} />,
+    render: (u) => <StatusBadge status={u.status} />,
   },
   {
     key: 'updated',
@@ -120,7 +118,6 @@ function UseCaseListView({
   onViewUseCase,
   onEditUseCase,
   onDeleteUseCase,
-  onDiscardUseCase,
   onUnpublishUseCase,
   loading,
   loadError,
@@ -139,9 +136,6 @@ function UseCaseListView({
     }
     return [
       { key: 'edit', icon: Pencil, label: () => `Edit ${title}`, onClick: () => onEditUseCase(useCase.id) },
-      ...(hasUnpublishedEdits(useCase)
-        ? [{ key: 'discard', icon: Undo2, label: () => `Discard unsaved changes to ${title}`, onClick: () => onDiscardUseCase(useCase.id), destructive: true } as ManagementRowAction<UseCaseRecord>]
-        : []),
       { key: 'unpublish', icon: Archive, label: () => `Unpublish ${title}`, onClick: () => onUnpublishUseCase(useCase.id), destructive: true },
     ]
   }

@@ -1,149 +1,65 @@
 import * as React from 'react'
-import {
-  CheckCircle2,
-  Eye,
-  EyeOff,
-  FileSpreadsheet,
-  Globe,
-  Link2,
-  Loader2,
-  Pencil,
-  Plus,
-  Trash2,
-  X,
-} from 'lucide-react'
+import { AlertCircle, CheckCircle2, Eye, Folder, Globe, Loader2, Pencil, Sparkles, Trash2, UploadCloud } from 'lucide-react'
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Checkbox } from '@/components/ui/checkbox'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { FieldError } from '@/components/ui/field-error'
 import { SearchableSelect } from '@/components/ui/searchable-select'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { ResourcePreviewDialog, type PreviewResource } from '@/components/shared/ResourcePreviewDialog'
 import { DropzoneUploadField } from '@/components/shared/DropzoneUploadField'
+import { FileDetailsSheet } from '@/components/dataset/FileDetailsSheet'
 import { useToast } from '@/components/ui/toast'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
-import { getResourceTitle, validateIncomingFiles } from '@/lib/file-validation'
+import { deriveDefaultResourceTitle, getResourceTitle, inferCsvShape, validateIncomingFiles } from '@/lib/file-validation'
 import { formatUploadLimit } from '@/lib/generic-upload'
-import { testApiConnection } from '@/lib/api-resource'
+import { formatTimestamp } from '@/lib/format'
 import {
-  AUTH_METHOD_OPTIONS,
-  API_KEY_LOCATION_OPTIONS,
-  API_RESPONSE_FORMAT_OPTIONS,
-  MAX_FILE_SIZE_BYTES,
-  SUPPORTED_FILE_EXTENSIONS,
-  type ApiAuthMethod,
-  type ApiKeyLocation,
-  type ApiResponseFormat,
-  type DatasetFile,
-  type DatasetResource,
-  type DatasetResourceApiConfig,
-  type DatasetResourceType,
-  type KeyValuePair,
-} from '@/types/dataset'
+  PLATFORM_LABELS,
+  PLATFORM_OPTIONS,
+  extractDatasetFromPlatform,
+  platformOption,
+  platformUrlErrorMessage,
+  validatePlatformUrl,
+  type ImportPlatform,
+} from '@/lib/platform-import'
+import { MAX_FILE_SIZE_BYTES, SUPPORTED_FILE_EXTENSIONS, type DatasetFile } from '@/types/dataset'
+
+type UploadMethod = 'file' | 'platform'
+
+const UPLOAD_METHODS: { value: UploadMethod; label: string; icon: typeof UploadCloud }[] = [
+  { value: 'file', label: 'File Upload', icon: UploadCloud },
+  { value: 'platform', label: 'Public Platform', icon: Globe },
+]
+
+let importIdCounter = 0
 
 interface Step2DataFilesProps {
   files: DatasetFile[]
   onFilesAdd: (files: DatasetFile[]) => void
   onFileRemove: (id: string) => void
   onFileTitleChange: (id: string, title: string) => void
-  enablePreview: boolean
-  onTogglePreview: (value: boolean) => void
-  resources: DatasetResource[]
-  onAddResource: (resource: DatasetResource) => void
-  onUpdateResource: (resource: DatasetResource) => void
-  onRemoveResource: (id: string) => void
-}
-
-const RESOURCE_TABS: { type: DatasetResourceType; label: string; icon: typeof FileSpreadsheet }[] = [
-  { type: 'csv', label: 'File Upload', icon: FileSpreadsheet },
-  { type: 'api', label: 'API', icon: Globe },
-  { type: 'link', label: 'Link', icon: Link2 },
-]
-
-let resourceIdCounter = 0
-let kvIdCounter = 0
-
-function emptyApiConfig(): DatasetResourceApiConfig {
-  return {
-    url: '',
-    method: 'GET',
-    authMethod: 'none',
-    apiKey: '',
-    apiKeyLocation: 'header',
-    bearerToken: '',
-    parameters: [],
-    headers: [],
-    responseFormat: 'json',
-    tested: false,
-  }
-}
-
-function newKeyValuePair(): KeyValuePair {
-  kvIdCounter += 1
-  return { id: `kv-${kvIdCounter}`, key: '', value: '' }
-}
-
-function isValidUrl(value: string): boolean {
-  try {
-    const parsed = new URL(value)
-    return parsed.protocol === 'http:' || parsed.protocol === 'https:'
-  } catch {
-    return false
-  }
-}
-
-function SecretInput({
-  value,
-  onChange,
-  placeholder,
-  id,
-}: {
-  value: string
-  onChange: (value: string) => void
-  placeholder: string
-  id: string
-}) {
-  const [visible, setVisible] = React.useState(false)
-  return (
-    <div className="relative">
-      <Input
-        id={id}
-        type={visible ? 'text' : 'password'}
-        className="pr-10"
-        placeholder={placeholder}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-      />
-      <button
-        type="button"
-        aria-label={visible ? 'Hide value' : 'Show value'}
-        onClick={() => setVisible((v) => !v)}
-        className="absolute inset-y-0 right-0 flex w-10 items-center justify-center text-muted-foreground hover:text-foreground"
-      >
-        {visible ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
-      </button>
-    </div>
-  )
+  onFileMetaChange: (id: string, patch: { rowCount?: number; columnCount?: number }) => void
 }
 
 function FileRow({
   file,
   onTitleChange,
-  onPreview,
+  onOpenDetails,
   onRemove,
 }: {
   file: DatasetFile
   onTitleChange: (id: string, title: string) => void
-  onPreview: () => void
+  onOpenDetails: () => void
   onRemove: () => void
 }) {
   const title = getResourceTitle(file)
   const [isEditing, setIsEditing] = React.useState(false)
   const [draft, setDraft] = React.useState(title)
+  const isPlatformImport = Boolean(file.source && file.source !== 'File upload')
 
   React.useEffect(() => {
     if (!isEditing) setDraft(title)
@@ -203,15 +119,27 @@ function FileRow({
           <Badge variant="secondary">{file.extension}</Badge>
           <span>Size: {file.sizeLabel}</span>
           <span>•</span>
-          <span>Uploaded: {file.uploadedAt}</span>
+          <span>{isPlatformImport ? 'Imported' : 'Uploaded'}: {file.uploadedAt}</span>
           <span>•</span>
           <span className="truncate">Original: {file.name}</span>
+          {isPlatformImport && (
+            <>
+              <span>•</span>
+              <span>Source: {file.source}</span>
+            </>
+          )}
         </div>
       </div>
       <div className="flex shrink-0 items-center gap-2">
         <Badge variant="success">Ready</Badge>
         <div className="flex items-center gap-1">
-          <Button type="button" variant="ghost" size="icon" aria-label={`Preview ${file.name}`} onClick={onPreview}>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            aria-label={`View details for ${file.name}`}
+            onClick={onOpenDetails}
+          >
             <Eye className="size-4" />
           </Button>
           <Button
@@ -230,656 +158,335 @@ function FileRow({
   )
 }
 
-function KeyValueList({
-  items,
-  onChange,
-  addLabel,
-  keyPlaceholder,
-}: {
-  items: KeyValuePair[]
-  onChange: (items: KeyValuePair[]) => void
-  addLabel: string
-  keyPlaceholder: string
-}) {
-  return (
-    <div className="flex flex-col gap-2">
-      {items.map((item, index) => (
-        <div key={item.id} className="flex items-center gap-2">
-          <Input
-            placeholder={keyPlaceholder}
-            value={item.key}
-            onChange={(e) => {
-              const next = [...items]
-              next[index] = { ...item, key: e.target.value }
-              onChange(next)
-            }}
-          />
-          <Input
-            placeholder="Value"
-            value={item.value}
-            onChange={(e) => {
-              const next = [...items]
-              next[index] = { ...item, value: e.target.value }
-              onChange(next)
-            }}
-          />
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            aria-label="Remove"
-            onClick={() => onChange(items.filter((_, i) => i !== index))}
-            className="shrink-0 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
-          >
-            <X className="size-4" />
-          </Button>
-        </div>
-      ))}
-      <Button
-        type="button"
-        variant="outline"
-        size="sm"
-        className="self-start"
-        onClick={() => onChange([...items, newKeyValuePair()])}
-      >
-        <Plus className="size-4" />
-        {addLabel}
-      </Button>
-    </div>
-  )
-}
-
-function ResourceListCard({
-  title,
-  icon: Icon,
-  resources,
-  subtitle,
-  onEdit,
-  onRemove,
-}: {
-  title: string
-  icon: typeof Globe
-  resources: DatasetResource[]
-  subtitle: (resource: DatasetResource) => string
-  onEdit: (resource: DatasetResource) => void
-  onRemove: (id: string) => void
-}) {
-  if (resources.length === 0) return null
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>
-          {title} ({resources.length})
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="flex flex-col gap-3">
-        {resources.map((resource) => (
-          <div key={resource.id} className="flex flex-wrap items-center gap-3 rounded-lg border border-border px-4 py-3">
-            <Icon className="size-5 shrink-0 text-muted-foreground" />
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-medium text-foreground">{resource.url}</p>
-              <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
-                <span>{subtitle(resource)}</span>
-              </div>
-            </div>
-            <div className="flex shrink-0 items-center gap-1">
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                aria-label={`Edit ${resource.url}`}
-                onClick={() => onEdit(resource)}
-                className="text-muted-foreground hover:bg-muted hover:text-primary"
-              >
-                <Pencil className="size-4" />
-              </Button>
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                aria-label={`Remove ${resource.url}`}
-                onClick={() => onRemove(resource.id)}
-                className="text-destructive hover:bg-destructive/10 hover:text-destructive"
-              >
-                <Trash2 className="size-4" />
-              </Button>
-            </div>
-          </div>
-        ))}
-      </CardContent>
-    </Card>
-  )
-}
-
 function Step2DataFiles({
   files,
   onFilesAdd,
   onFileRemove,
   onFileTitleChange,
-  enablePreview,
-  onTogglePreview,
-  resources,
-  onAddResource,
-  onUpdateResource,
-  onRemoveResource,
+  onFileMetaChange,
 }: Step2DataFilesProps) {
-  const [uploadErrors, setUploadErrors] = React.useState<string[]>([])
-  const [previewResource, setPreviewResource] = React.useState<PreviewResource | null>(null)
   const toast = useToast()
+  const [method, setMethod] = React.useState<UploadMethod>('file')
 
-  const [resourceType, setResourceType] = React.useState<DatasetResourceType>('csv')
-  const [editingId, setEditingId] = React.useState<string | null>(null)
-  const [apiConfig, setApiConfig] = React.useState<DatasetResourceApiConfig>(emptyApiConfig())
-  const [apiUrlTouched, setApiUrlTouched] = React.useState(false)
-  const [linkUrl, setLinkUrl] = React.useState('')
-  const [linkUrlTouched, setLinkUrlTouched] = React.useState(false)
-  const [testStatus, setTestStatus] = React.useState<'idle' | 'testing' | 'success' | 'error'>('idle')
-  const [testMessage, setTestMessage] = React.useState<string | undefined>(undefined)
+  const [uploadErrors, setUploadErrors] = React.useState<string[]>([])
+  const [detailsId, setDetailsId] = React.useState<string | null>(null)
+  const [previewResource, setPreviewResource] = React.useState<PreviewResource | null>(null)
 
-  const apiResources = resources.filter((r) => r.type === 'api')
-  const linkResources = resources.filter((r) => r.type === 'link')
+  // Public Platform import flow
+  const [platform, setPlatform] = React.useState<ImportPlatform | ''>('')
+  const [platformUrl, setPlatformUrl] = React.useState('')
+  const [platformUrlTouched, setPlatformUrlTouched] = React.useState(false)
+  const [extractStatus, setExtractStatus] = React.useState<'idle' | 'extracting' | 'error'>('idle')
+  const [extractError, setExtractError] = React.useState<string | undefined>(undefined)
 
-  const handleIncoming = (fileList: FileList | File[]) => {
-    const { accepted, errors } = validateIncomingFiles(fileList, files)
-    if (accepted.length > 0) {
-      onFilesAdd(accepted)
-      if (accepted.length === 1) {
-        toast({ title: 'File uploaded', description: `${accepted[0].name} has been added.`, variant: 'success' })
-      } else {
-        toast({ title: 'Files uploaded', description: `${accepted.length} files have been added.`, variant: 'success' })
-      }
-    }
+  const detailsFile = detailsId ? (files.find((f) => f.id === detailsId) ?? null) : null
+
+  const urlError = platform ? validatePlatformUrl(platform, platformUrl) : 'empty'
+  const canExtract = platform !== '' && urlError === null && extractStatus !== 'extracting'
+
+  const handleIncoming = async (fileList: FileList | File[]) => {
+    const raw = Array.from(fileList)
+    const { accepted, errors } = validateIncomingFiles(raw, files)
     setUploadErrors(errors)
     if (errors.length > 0) {
       toast({ title: 'File upload failed', description: errors[0], variant: 'error' })
     }
+    if (accepted.length === 0) return
+
+    const enriched = await Promise.all(
+      accepted.map(async (df) => {
+        const original = raw.find((f) => f.name === df.name)
+        const shape = original ? await inferCsvShape(original) : {}
+        return { ...df, source: 'File upload', ...shape }
+      }),
+    )
+    onFilesAdd(enriched)
+    toast(
+      enriched.length === 1
+        ? { title: 'File uploaded', description: `${enriched[0].name} has been added.`, variant: 'success' }
+        : { title: 'Files uploaded', description: `${enriched.length} files have been added.`, variant: 'success' },
+    )
   }
 
-  const resetApiForm = () => {
-    setEditingId(null)
-    setApiConfig(emptyApiConfig())
-    setApiUrlTouched(false)
-    setTestStatus('idle')
-    setTestMessage(undefined)
+  const handleMethodChange = (next: UploadMethod) => {
+    if (next === method) return
+    setMethod(next)
+    setUploadErrors([])
   }
 
-  const resetLinkForm = () => {
-    setEditingId(null)
-    setLinkUrl('')
-    setLinkUrlTouched(false)
+  const handlePlatformChange = (value: string) => {
+    setPlatform(value as ImportPlatform)
+    setPlatformUrl('')
+    setPlatformUrlTouched(false)
+    setExtractStatus('idle')
+    setExtractError(undefined)
   }
 
-  const updateApiConfig = <K extends keyof DatasetResourceApiConfig>(
-    field: K,
-    value: DatasetResourceApiConfig[K],
-  ) => {
-    setApiConfig((prev) => ({ ...prev, [field]: value, tested: false }))
-    setTestStatus('idle')
-    setTestMessage(undefined)
-  }
-
-  const apiUrlValid = isValidUrl(apiConfig.url)
-  const apiAuthValid =
-    apiConfig.authMethod === 'none' ||
-    (apiConfig.authMethod === 'api-key' && apiConfig.apiKey.trim() !== '') ||
-    (apiConfig.authMethod === 'bearer-token' && apiConfig.bearerToken.trim() !== '')
-  const canAddApiResource = apiUrlValid && apiAuthValid && apiConfig.tested
-
-  const handleTestConnection = async () => {
-    setApiUrlTouched(true)
-    if (!apiUrlValid) {
-      setTestStatus('error')
-      setTestMessage('Enter a valid API URL to test.')
+  const handleExtract = async () => {
+    if (platform === '' || extractStatus === 'extracting') return
+    const err = validatePlatformUrl(platform, platformUrl)
+    if (err) {
+      setPlatformUrlTouched(true)
       return
     }
-    if (!apiAuthValid) {
-      setTestStatus('error')
-      setTestMessage(
-        apiConfig.authMethod === 'api-key'
-          ? 'Enter an API key to authenticate the request.'
-          : 'Enter a bearer token to authenticate the request.',
-      )
-      return
-    }
-    setTestStatus('testing')
-    setTestMessage(undefined)
-    const result = await testApiConnection(apiConfig)
-    setTestStatus(result.success ? 'success' : 'error')
-    setTestMessage(result.message)
-    setApiConfig((prev) => ({ ...prev, tested: result.success }))
-  }
-
-  const handleAddOrSaveApiResource = () => {
-    if (!canAddApiResource) return
-    const resource: DatasetResource = {
-      id: editingId ?? `resource-${(resourceIdCounter += 1)}`,
-      type: 'api',
-      url: apiConfig.url.trim(),
-      apiConfig: { ...apiConfig, url: apiConfig.url.trim() },
-    }
-    if (editingId) {
-      onUpdateResource(resource)
+    setExtractStatus('extracting')
+    setExtractError(undefined)
+    const importedUrl = platformUrl.trim()
+    const result = await extractDatasetFromPlatform(platform, importedUrl)
+    if (result.ok) {
+      const known = new Set(files.map((f) => `${f.path ?? ''}/${f.name}`.toLowerCase()))
+      const imported: DatasetFile[] = result.files
+        .filter((f) => !known.has(`${f.path ?? ''}/${f.name}`.toLowerCase()))
+        .map((f) => ({
+          id: `import-${(importIdCounter += 1)}-${f.name}`,
+          name: f.name,
+          title: deriveDefaultResourceTitle(f.name),
+          extension: f.extension.toUpperCase(),
+          sizeLabel: f.sizeLabel,
+          sizeBytes: f.sizeBytes,
+          uploadedAt: formatTimestamp(new Date()),
+          source: PLATFORM_LABELS[platform],
+          path: f.path,
+          importUrl: importedUrl,
+          rowCount: f.rowCount,
+          columnCount: f.columnCount,
+        }))
+      setExtractStatus('idle')
+      setPlatformUrl('')
+      setPlatformUrlTouched(false)
+      if (imported.length === 0) {
+        toast({ title: 'Already imported', description: 'Those files are already in this dataset.', variant: 'success' })
+      } else {
+        onFilesAdd(imported)
+        toast({
+          title: 'Dataset extracted successfully',
+          description: `${imported.length} file${imported.length === 1 ? '' : 's'} added.`,
+          variant: 'success',
+        })
+      }
     } else {
-      onAddResource(resource)
+      setExtractStatus('error')
+      setExtractError(result.error)
+      toast({ title: 'Extraction failed', description: result.error, variant: 'error' })
     }
-    resetApiForm()
   }
 
-  const handleEditApiResource = (resource: DatasetResource) => {
-    setResourceType('api')
-    setEditingId(resource.id)
-    setApiConfig(resource.apiConfig ?? { ...emptyApiConfig(), url: resource.url ?? '' })
-    setApiUrlTouched(false)
-    setTestStatus('idle')
-    setTestMessage(undefined)
+  const openPreview = (file: DatasetFile) => {
+    setPreviewResource({
+      title: getResourceTitle(file),
+      fileName: file.name,
+      extension: file.extension.toUpperCase(),
+      sizeLabel: file.sizeLabel,
+    })
   }
 
-  const linkUrlValid = isValidUrl(linkUrl)
-
-  const handleAddOrSaveLinkResource = () => {
-    if (!linkUrlValid) {
-      setLinkUrlTouched(true)
-      return
+  // Folder-aware grouping — direct uploads have no `path` and render flat.
+  const grouped = React.useMemo(() => {
+    const map = new Map<string, DatasetFile[]>()
+    for (const f of files) {
+      const key = f.path ?? ''
+      map.set(key, [...(map.get(key) ?? []), f])
     }
-    const resource: DatasetResource = {
-      id: editingId ?? `resource-${(resourceIdCounter += 1)}`,
-      type: 'link',
-      url: linkUrl.trim(),
-    }
-    if (editingId) {
-      onUpdateResource(resource)
-    } else {
-      onAddResource(resource)
-    }
-    resetLinkForm()
-  }
-
-  const handleEditLinkResource = (resource: DatasetResource) => {
-    setResourceType('link')
-    setEditingId(resource.id)
-    setLinkUrl(resource.url ?? '')
-    setLinkUrlTouched(false)
-  }
-
-  const handleTabChange = (type: DatasetResourceType) => {
-    if (type === resourceType) return
-    if (editingId) {
-      resetApiForm()
-      resetLinkForm()
-    }
-    setResourceType(type)
-  }
+    return [...map.entries()].sort(([a], [b]) => a.localeCompare(b))
+  }, [files])
+  const hasFolders = grouped.some(([key]) => key !== '')
 
   return (
     <div className="flex flex-col gap-6">
       <div className="flex gap-1 rounded-lg border border-border bg-muted/40 p-1">
-        {RESOURCE_TABS.map((tab) => {
-          const Icon = tab.icon
-          const isActive = tab.type === resourceType
+        {UPLOAD_METHODS.map((option) => {
+          const Icon = option.icon
+          const isActive = option.value === method
           return (
             <button
-              key={tab.type}
+              key={option.value}
               type="button"
-              onClick={() => handleTabChange(tab.type)}
+              onClick={() => handleMethodChange(option.value)}
               className={cn(
                 'flex flex-1 items-center justify-center gap-1.5 rounded-md py-2 text-sm font-medium transition-colors',
                 isActive ? 'bg-card text-primary shadow-sm' : 'text-muted-foreground hover:text-foreground',
               )}
             >
               <Icon className="size-4" />
-              {tab.label}
+              {option.label}
             </button>
           )
         })}
       </div>
 
-      {resourceType === 'csv' && (
-        <>
-          <Card>
-            <CardHeader>
-              <CardTitle>Upload Dataset File</CardTitle>
-            </CardHeader>
-            <CardContent className="flex flex-col gap-4">
-              <DropzoneUploadField
-                extensions={SUPPORTED_FILE_EXTENSIONS}
-                maxBytes={MAX_FILE_SIZE_BYTES}
-                multiple
-                onFiles={handleIncoming}
-                showExtensionBadges
-                formatHint={`Maximum file size limit: ${formatUploadLimit(MAX_FILE_SIZE_BYTES)}`}
-              />
+      {method === 'file' && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Upload Dataset File</CardTitle>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-4">
+            <DropzoneUploadField
+              extensions={SUPPORTED_FILE_EXTENSIONS}
+              maxBytes={MAX_FILE_SIZE_BYTES}
+              multiple
+              onFiles={handleIncoming}
+              showExtensionBadges
+              formatHint={`Maximum file size limit: ${formatUploadLimit(MAX_FILE_SIZE_BYTES)}`}
+            />
 
-              {uploadErrors.length > 0 && (
-                <div className="rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2">
-                  {uploadErrors.map((message) => (
-                    <p key={message} className="text-xs font-medium text-destructive">
-                      {message}
-                    </p>
-                  ))}
+            {uploadErrors.length > 0 && (
+              <div className="rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2">
+                {uploadErrors.map((message) => (
+                  <p key={message} className="text-xs font-medium text-destructive">
+                    {message}
+                  </p>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {method === 'platform' && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Import from a public platform</CardTitle>
+            <p className="mt-1 text-sm font-normal text-muted-foreground">
+              Select a platform, paste the dataset URL, then extract its files into this dataset.
+            </p>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-5">
+            <div>
+              <Label htmlFor="platform-select">
+                Select Platform <span className="text-destructive">*</span>
+              </Label>
+              <div className="mt-1.5">
+                <SearchableSelect
+                  id="platform-select"
+                  options={PLATFORM_OPTIONS.map((p) => ({ value: p.value, label: p.label }))}
+                  value={platform}
+                  onChange={handlePlatformChange}
+                  placeholder="Select a platform..."
+                />
+              </div>
+            </div>
+
+            {platform !== '' && (
+              <div>
+                <Label htmlFor="platform-url">
+                  Dataset URL <span className="text-destructive">*</span>
+                </Label>
+                <Input
+                  id="platform-url"
+                  className="mt-1.5"
+                  placeholder={platformOption(platform).urlPlaceholder}
+                  value={platformUrl}
+                  onBlur={() => setPlatformUrlTouched(true)}
+                  onChange={(e) => {
+                    setPlatformUrl(e.target.value)
+                    if (extractStatus === 'error') {
+                      setExtractStatus('idle')
+                      setExtractError(undefined)
+                    }
+                  }}
+                />
+                <p className="mt-1.5 text-xs text-muted-foreground">{platformOption(platform).urlHelp}</p>
+                {platformUrlTouched && urlError && (
+                  <FieldError message={platformUrlErrorMessage(urlError, platform)} />
+                )}
+              </div>
+            )}
+
+            {platform !== '' && urlError === null && (
+              <div className="flex flex-col gap-2 border-t border-border pt-5">
+                <Button
+                  type="button"
+                  className="self-start"
+                  onClick={handleExtract}
+                  disabled={!canExtract}
+                >
+                  {extractStatus === 'extracting' ? (
+                    <>
+                      <Loader2 className="size-4 animate-spin" />
+                      Extracting dataset files…
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="size-4" />
+                      Extract Dataset
+                    </>
+                  )}
+                </Button>
+
+                {extractStatus === 'error' && extractError && (
+                  <div className="flex items-start gap-2 rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2.5 text-sm text-destructive">
+                    <AlertCircle className="mt-0.5 size-4 shrink-0" />
+                    <p className="font-medium">{extractError}</p>
+                  </div>
+                )}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      <Card>
+        <CardHeader className="flex-row items-center justify-between">
+          <CardTitle>Uploaded Files ({files.length})</CardTitle>
+          {files.length > 0 && (
+            <div className="flex items-center gap-1.5 text-sm font-medium text-success">
+              <CheckCircle2 className="size-4" />
+              {files.length} File{files.length === 1 ? '' : 's'} Ready
+            </div>
+          )}
+        </CardHeader>
+        <CardContent className="flex flex-col gap-3">
+          {files.length === 0 && (
+            <p className="py-6 text-center text-sm text-muted-foreground">No files uploaded yet.</p>
+          )}
+
+          {hasFolders
+            ? grouped.map(([key, groupFiles]) => (
+                <div key={key || 'root'} className="flex flex-col gap-3">
+                  {key !== '' && (
+                    <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+                      <Folder className="size-3.5" />
+                      {key}/
+                    </div>
+                  )}
+                  <div className={cn('flex flex-col gap-3', key !== '' && 'border-l border-border pl-3')}>
+                    {groupFiles.map((file) => (
+                      <FileRow
+                        key={file.id}
+                        file={file}
+                        onTitleChange={onFileTitleChange}
+                        onOpenDetails={() => setDetailsId(file.id)}
+                        onRemove={() => {
+                          onFileRemove(file.id)
+                          toast({ title: 'File removed', variant: 'success' })
+                        }}
+                      />
+                    ))}
+                  </div>
                 </div>
-              )}
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex-row items-center justify-between">
-              <CardTitle>Uploaded Files ({files.length})</CardTitle>
-              {files.length > 0 && (
-                <div className="flex items-center gap-1.5 text-sm font-medium text-success">
-                  <CheckCircle2 className="size-4" />
-                  {files.length} File{files.length === 1 ? '' : 's'} Ready
-                </div>
-              )}
-            </CardHeader>
-            <CardContent className="flex flex-col gap-3">
-              {files.length === 0 && (
-                <p className="py-6 text-center text-sm text-muted-foreground">
-                  No files uploaded yet.
-                </p>
-              )}
-
-              {files.map((file) => (
+              ))
+            : files.map((file) => (
                 <FileRow
                   key={file.id}
                   file={file}
                   onTitleChange={onFileTitleChange}
-                  onPreview={() =>
-                    setPreviewResource({
-                      title: getResourceTitle(file),
-                      fileName: file.name,
-                      extension: file.extension.toUpperCase(),
-                      sizeLabel: file.sizeLabel,
-                    })
-                  }
+                  onOpenDetails={() => setDetailsId(file.id)}
                   onRemove={() => {
                     onFileRemove(file.id)
                     toast({ title: 'File removed', variant: 'success' })
                   }}
                 />
               ))}
+        </CardContent>
+      </Card>
 
-              {files.length > 0 && (
-                <div className="flex items-start gap-2 pt-1">
-                  <Checkbox
-                    id="enable-preview"
-                    className="mt-0.5"
-                    checked={enablePreview}
-                    onCheckedChange={(checked) => onTogglePreview(checked === true)}
-                  />
-                  <div>
-                    <Label htmlFor="enable-preview" className="cursor-pointer font-normal">
-                      Enable Interactive Preview
-                    </Label>
-                    <p className="text-xs text-muted-foreground">
-                      Generates tabular data preview grid for public viewers
-                    </p>
-                  </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </>
-      )}
-
-      {resourceType === 'api' && (
-        <>
-          <Card>
-            <CardHeader>
-              <CardTitle>API Resource</CardTitle>
-            </CardHeader>
-            <CardContent className="flex flex-col gap-5">
-              {editingId && (
-                <div className="flex items-center justify-between rounded-md bg-primary/5 px-3 py-2 text-sm text-primary">
-                  Editing resource
-                  <button type="button" className="font-medium underline underline-offset-2" onClick={resetApiForm}>
-                    Cancel
-                  </button>
-                </div>
-              )}
-
-              <div>
-                <Label htmlFor="api-resource-url">
-                  API URL <span className="text-destructive">*</span>
-                </Label>
-                <Input
-                  id="api-resource-url"
-                  className="mt-1.5"
-                  placeholder="https://api.example.com/data"
-                  value={apiConfig.url}
-                  onBlur={() => setApiUrlTouched(true)}
-                  onChange={(e) => updateApiConfig('url', e.target.value)}
-                />
-                <p className="mt-1.5 text-xs text-muted-foreground">
-                  Enter the endpoint URL that provides access to this dataset.
-                </p>
-                {apiUrlTouched && !apiUrlValid && <FieldError message="Enter a valid API URL." />}
-              </div>
-
-              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-                <div>
-                  <Label htmlFor="api-resource-method">Request method</Label>
-                  <div className="mt-1.5">
-                    <SearchableSelect
-                      id="api-resource-method"
-                      options={[{ value: 'GET', label: 'GET' }]}
-                      value={apiConfig.method}
-                      onChange={() => updateApiConfig('method', 'GET')}
-                      placeholder="Select method..."
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <Label htmlFor="api-resource-auth">Authentication</Label>
-                  <div className="mt-1.5">
-                    <SearchableSelect
-                      id="api-resource-auth"
-                      options={AUTH_METHOD_OPTIONS}
-                      value={apiConfig.authMethod}
-                      onChange={(value) => updateApiConfig('authMethod', value as ApiAuthMethod)}
-                      placeholder="Select authentication method..."
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {apiConfig.authMethod === 'api-key' && (
-                <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-                  <div>
-                    <Label htmlFor="api-resource-key">API Key</Label>
-                    <div className="mt-1.5">
-                      <SecretInput
-                        id="api-resource-key"
-                        placeholder="Enter API key"
-                        value={apiConfig.apiKey}
-                        onChange={(value) => updateApiConfig('apiKey', value)}
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <Label htmlFor="api-resource-key-location">Key location</Label>
-                    <div className="mt-1.5">
-                      <SearchableSelect
-                        id="api-resource-key-location"
-                        options={API_KEY_LOCATION_OPTIONS}
-                        value={apiConfig.apiKeyLocation}
-                        onChange={(value) => updateApiConfig('apiKeyLocation', value as ApiKeyLocation)}
-                        placeholder="Select key location..."
-                      />
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {apiConfig.authMethod === 'bearer-token' && (
-                <div>
-                  <Label htmlFor="api-resource-bearer">Bearer Token</Label>
-                  <div className="mt-1.5">
-                    <SecretInput
-                      id="api-resource-bearer"
-                      placeholder="Enter bearer token"
-                      value={apiConfig.bearerToken}
-                      onChange={(value) => updateApiConfig('bearerToken', value)}
-                    />
-                  </div>
-                </div>
-              )}
-
-              <div>
-                <Label>Parameters</Label>
-                <p className="mt-0.5 text-xs text-muted-foreground">Optional query parameters for the API request.</p>
-                <div className="mt-1.5">
-                  <KeyValueList
-                    items={apiConfig.parameters}
-                    onChange={(items) => updateApiConfig('parameters', items)}
-                    addLabel="Add parameter"
-                    keyPlaceholder="Parameter name"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <Label>Headers</Label>
-                <p className="mt-0.5 text-xs text-muted-foreground">Optional HTTP headers required by the API.</p>
-                <div className="mt-1.5">
-                  <KeyValueList
-                    items={apiConfig.headers}
-                    onChange={(items) => updateApiConfig('headers', items)}
-                    addLabel="Add header"
-                    keyPlaceholder="Header name"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <Label htmlFor="api-resource-format">Response format</Label>
-                <div className="mt-1.5">
-                  <SearchableSelect
-                    id="api-resource-format"
-                    options={API_RESPONSE_FORMAT_OPTIONS}
-                    value={apiConfig.responseFormat}
-                    onChange={(value) => updateApiConfig('responseFormat', value as ApiResponseFormat)}
-                    placeholder="Select response format..."
-                  />
-                </div>
-              </div>
-
-              <div className="flex flex-col gap-2 border-t border-border pt-5">
-                <div className="flex flex-wrap items-center gap-3">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={handleTestConnection}
-                    disabled={testStatus === 'testing'}
-                  >
-                    {testStatus === 'testing' ? (
-                      <>
-                        <Loader2 className="size-4 animate-spin" />
-                        Testing...
-                      </>
-                    ) : (
-                      'Test connection'
-                    )}
-                  </Button>
-                  {testStatus === 'success' && (
-                    <span className="flex items-center gap-1.5 text-sm font-medium text-success">
-                      <CheckCircle2 className="size-4" />
-                      Connection successful
-                    </span>
-                  )}
-                </div>
-                {testStatus === 'success' && testMessage && (
-                  <p className="text-xs text-muted-foreground">{testMessage}</p>
-                )}
-                {testStatus === 'error' && <FieldError message={testMessage} />}
-
-                <div className="mt-2 flex items-center gap-2">
-                  <Button type="button" size="sm" onClick={handleAddOrSaveApiResource} disabled={!canAddApiResource}>
-                    {editingId ? 'Save Resource' : 'Add Resource'}
-                  </Button>
-                  {editingId && (
-                    <Button type="button" variant="ghost" size="sm" onClick={resetApiForm}>
-                      Cancel
-                    </Button>
-                  )}
-                </div>
-                {!apiConfig.tested && apiUrlValid && apiAuthValid && (
-                  <p className="text-xs text-muted-foreground">
-                    Test the connection successfully before adding this resource.
-                  </p>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-
-          <ResourceListCard
-            title="API Resources"
-            icon={Globe}
-            resources={apiResources}
-            subtitle={(resource) =>
-              `${resource.apiConfig?.method ?? 'GET'} · ${(resource.apiConfig?.responseFormat ?? 'json').toUpperCase()} · ${
-                resource.apiConfig?.tested ? 'Tested successfully' : 'Not tested'
-              }`
-            }
-            onEdit={handleEditApiResource}
-            onRemove={onRemoveResource}
-          />
-        </>
-      )}
-
-      {resourceType === 'link' && (
-        <>
-          <Card>
-            <CardHeader>
-              <CardTitle>Link Resource</CardTitle>
-            </CardHeader>
-            <CardContent className="flex flex-col gap-4">
-              {editingId && (
-                <div className="flex items-center justify-between rounded-md bg-primary/5 px-3 py-2 text-sm text-primary">
-                  Editing resource
-                  <button type="button" className="font-medium underline underline-offset-2" onClick={resetLinkForm}>
-                    Cancel
-                  </button>
-                </div>
-              )}
-              <div>
-                <Label htmlFor="link-resource-url">
-                  Resource URL <span className="text-destructive">*</span>
-                </Label>
-                <Input
-                  id="link-resource-url"
-                  className="mt-1.5"
-                  placeholder="https://example.com/dataset"
-                  value={linkUrl}
-                  onBlur={() => setLinkUrlTouched(true)}
-                  onChange={(e) => setLinkUrl(e.target.value)}
-                />
-                {linkUrlTouched && !linkUrlValid && <FieldError message="Enter a valid resource URL." />}
-              </div>
-              <div className="flex items-center gap-2">
-                <Button type="button" size="sm" onClick={handleAddOrSaveLinkResource} disabled={!linkUrlValid}>
-                  {editingId ? 'Save Resource' : 'Add Resource'}
-                </Button>
-                {editingId && (
-                  <Button type="button" variant="ghost" size="sm" onClick={resetLinkForm}>
-                    Cancel
-                  </Button>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-
-          <ResourceListCard
-            title="Link Resources"
-            icon={Link2}
-            resources={linkResources}
-            subtitle={() => 'External link'}
-            onEdit={handleEditLinkResource}
-            onRemove={onRemoveResource}
-          />
-        </>
-      )}
+      <FileDetailsSheet
+        file={detailsFile}
+        onOpenChange={(open) => !open && setDetailsId(null)}
+        onTitleChange={onFileTitleChange}
+        onMetaChange={onFileMetaChange}
+        onPreview={openPreview}
+      />
 
       <ResourcePreviewDialog resource={previewResource} onOpenChange={(open) => !open && setPreviewResource(null)} />
     </div>

@@ -43,7 +43,6 @@ const ds1Form: DatasetFormState = {
       uploadedAt: '05/08/2026 09:14:22',
     },
   ],
-  enablePreview: true,
   resources: [],
 }
 
@@ -86,7 +85,6 @@ const ds2Form: DatasetFormState = {
       uploadedAt: '18/07/2026 14:02:10',
     },
   ],
-  enablePreview: true,
   resources: [],
 }
 
@@ -121,7 +119,6 @@ const ds3Form: DatasetFormState = {
       uploadedAt: '03/05/2026 16:40:00',
     },
   ],
-  enablePreview: true,
   resources: [],
 }
 
@@ -164,7 +161,6 @@ const ds4Form: DatasetFormState = {
       uploadedAt: '22/06/2026 11:15:30',
     },
   ],
-  enablePreview: true,
   resources: [],
 }
 
@@ -199,7 +195,6 @@ const ds5Form: DatasetFormState = {
       uploadedAt: '12/07/2026 08:45:00',
     },
   ],
-  enablePreview: true,
   resources: [],
 }
 
@@ -234,7 +229,6 @@ const ds6Form: DatasetFormState = {
       uploadedAt: '10/08/2026 17:30:00',
     },
   ],
-  enablePreview: false,
   resources: [],
 }
 
@@ -261,7 +255,6 @@ const ds7Form: DatasetFormState = {
       uploadedAt: '09/08/2026 12:10:00',
     },
   ],
-  enablePreview: false,
   resources: [],
 }
 
@@ -279,7 +272,6 @@ const ds8Form: DatasetFormState = {
     license: '',
   },
   files: [],
-  enablePreview: false,
   resources: [],
 }
 

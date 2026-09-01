@@ -16,7 +16,7 @@ import { useAppData } from '@/context/AppDataContext'
 import { useHelpContext } from '@/context/HelpContext'
 import { saveEventDraftSnapshot } from '@/lib/event-draft-storage'
 import { isEventInformationValid } from '@/lib/event-validation'
-import { hasUnpublishedEdits } from '@/lib/content-status'
+import { hasUnsavedEdits } from '@/lib/content-status'
 import { emptyEventForm, type EventFormState, type EventMetadata } from '@/types/event'
 
 type EventStep = 1 | 2 | 3 | 4
@@ -64,7 +64,7 @@ function EventCreationPage() {
     setContextLabel(`Events → Create Event → ${stepLabel}`)
   }, [stepLabel, setContextLabel])
 
-  const hasUnsavedChanges = JSON.stringify(form) !== JSON.stringify(lastSavedForm)
+  const hasUnsavedChanges = hasUnsavedEdits(form, lastSavedForm)
 
   const isFirstRender = useRef(true)
   useEffect(() => {
@@ -121,7 +121,7 @@ function EventCreationPage() {
 
   const editingRecord = editingId ? events.find((e) => e.id === editingId) : undefined
   const hasLiveVersion = editingRecord?.status === 'published'
-  const showUnpublishedIndicator = hasLiveVersion && (hasUnsavedChanges || hasUnpublishedEdits(editingRecord))
+  const showUnsavedIndicator = hasLiveVersion && hasUnsavedChanges
 
   const handleSaveDraft = () => {
     setSaved(false)
@@ -138,30 +138,6 @@ function EventCreationPage() {
     })
   }
 
-  const handleGateSaveAndPublish = () => {
-    setShowLeaveConfirm(false)
-    if (editingId && isEventInformationValid(form.metadata)) {
-      upsertEvent(editingId, 'published', form)
-      toast({ title: 'Changes published', description: 'Your changes are now live on CivicDataSpace.', variant: 'success' })
-    } else {
-      upsertEvent(editingId, 'draft', form)
-      toast({
-        title: 'Changes saved',
-        description: 'Not published yet — complete the required fields to publish.',
-        variant: 'success',
-      })
-    }
-    setLastSavedForm(form)
-    navigate('/dashboard/events')
-  }
-
-  const handleGateDiscardChanges = () => {
-    setShowLeaveConfirm(false)
-    if (editingId && editingRecord?.publishedForm) {
-      upsertEvent(editingId, 'published', editingRecord.publishedForm)
-    }
-    navigate('/dashboard/events')
-  }
 
   const handlePreview = () => {
     let id = editingId
@@ -183,7 +159,7 @@ function EventCreationPage() {
         saved={saved}
         onClose={handleClose}
         title={editingId ? form.metadata.title || 'Untitled Event' : 'New Event'}
-        unpublishedChanges={showUnpublishedIndicator}
+        unsavedChanges={showUnsavedIndicator}
       />
       <div className="border-t border-border px-6 py-6">
         <Stepper
@@ -221,19 +197,16 @@ function EventCreationPage() {
       <LeaveCreationDialog
         open={showLeaveConfirm}
         itemLabel="event"
-        mode={hasLiveVersion ? 'published' : 'draft'}
-        onContinueEditing={() => setShowLeaveConfirm(false)}
-        onSaveDraftAndExit={() => {
+        onCancel={() => setShowLeaveConfirm(false)}
+        onSave={() => {
           setShowLeaveConfirm(false)
           handleSaveDraft()
           navigate('/dashboard/events')
         }}
-        onDiscardAndExit={() => {
+        onDiscard={() => {
           setShowLeaveConfirm(false)
           navigate('/dashboard/events')
         }}
-        onSaveAndPublish={handleGateSaveAndPublish}
-        onDiscardChanges={handleGateDiscardChanges}
       />
     </Card>
   )

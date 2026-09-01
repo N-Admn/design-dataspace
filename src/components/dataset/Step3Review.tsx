@@ -1,6 +1,6 @@
 import * as React from 'react'
 import type { ReactNode } from 'react'
-import { ArrowRight, BarChart3, CalendarDays, CheckCircle2, Eye, FolderKanban, Gauge, Globe, ImagePlus, LineChart, Link2, MapPin, PieChart, Send } from 'lucide-react'
+import { ArrowRight, BarChart3, CalendarDays, CheckCircle2, Eye, FolderKanban, Gauge, ImagePlus, LineChart, MapPin, PieChart, Send } from 'lucide-react'
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -145,7 +145,7 @@ function ReviewField({ label, value }: { label: string; value: ReactNode }) {
 }
 
 function Step3Review({ form, datasetId, canPublish, hasLiveVersion, onEditStep, onPublish }: Step3ReviewProps) {
-  const { metadata, files, resources } = form
+  const { metadata, files } = form
   const totalBytes = files.reduce((sum, f) => sum + f.sizeBytes, 0)
   const [preview, setPreview] = React.useState<PreviewResource | null>(null)
 
@@ -248,42 +248,6 @@ function Step3Review({ form, datasetId, canPublish, hasLiveVersion, onEditStep, 
           )}
         </div>
       </ReviewSection>
-
-      {resources.length > 0 && (
-        <ReviewSection title="Resources" defaultOpen onEdit={() => onEditStep(1)}>
-          <div className="flex flex-col gap-3">
-            {resources.map((resource) => (
-              <div
-                key={resource.id}
-                className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg border border-border px-4 py-3"
-              >
-                {resource.type === 'api' ? (
-                  <Globe className="size-5 shrink-0 text-muted-foreground" />
-                ) : (
-                  <Link2 className="size-5 shrink-0 text-muted-foreground" />
-                )}
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium text-foreground">{resource.url}</p>
-                  <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
-                    <Badge variant="secondary">{resource.type === 'api' ? 'API' : 'Link'}</Badge>
-                    {resource.type === 'api' && resource.apiConfig && (
-                      <>
-                        <span>
-                          {resource.apiConfig.method} · {resource.apiConfig.responseFormat.toUpperCase()}
-                        </span>
-                        <span>•</span>
-                        <span className={resource.apiConfig.tested ? 'text-success' : undefined}>
-                          {resource.apiConfig.tested ? '✓ Connected' : 'Not tested'}
-                        </span>
-                      </>
-                    )}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </ReviewSection>
-      )}
 
       {datasetId && <ChartsSection datasetId={datasetId} />}
 

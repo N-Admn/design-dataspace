@@ -1,9 +1,8 @@
-import { Archive, Pencil, Trash2, Undo2, Users2 } from 'lucide-react'
+import { Archive, Pencil, Trash2, Users2 } from 'lucide-react'
 
 import { ManagementTable, type ManagementColumn, type ManagementFilterDef, type ManagementRowAction } from '@/components/shared/management-table/ManagementTable'
 import { TruncatedText } from '@/components/shared/TruncatedText'
 import { StatusBadge } from '@/components/shared/StatusBadge'
-import { hasUnpublishedEdits } from '@/lib/content-status'
 import { formatShortDate, parseAppTimestamp } from '@/lib/format'
 import { GEOGRAPHY_OPTIONS, SECTOR_OPTIONS } from '@/types/dataset'
 import type { CollaborativeRecord, CollaborativeStatus } from '@/types/collaborative'
@@ -14,7 +13,6 @@ interface CollaborativeListViewProps {
   onViewCollaborative: (id: string) => void
   onEditCollaborative: (id: string) => void
   onDeleteCollaborative: (id: string) => void
-  onDiscardCollaborative: (id: string) => void
   onUnpublishCollaborative: (id: string) => void
   loading?: boolean
   loadError?: boolean
@@ -71,7 +69,7 @@ function buildColumns(onOpen: (collaborative: CollaborativeRecord) => void): Man
     label: 'Status',
     widthRem: '6.875rem',
     optional: true,
-    render: (c) => <StatusBadge status={c.status} hasUnpublishedEdits={hasUnpublishedEdits(c)} />,
+    render: (c) => <StatusBadge status={c.status} />,
   },
   {
     key: 'updated',
@@ -120,7 +118,6 @@ function CollaborativeListView({
   onViewCollaborative,
   onEditCollaborative,
   onDeleteCollaborative,
-  onDiscardCollaborative,
   onUnpublishCollaborative,
   loading,
   loadError,
@@ -140,9 +137,6 @@ function CollaborativeListView({
     }
     return [
       { key: 'edit', icon: Pencil, label: () => `Edit ${name}`, onClick: () => onEditCollaborative(collaborative.id) },
-      ...(hasUnpublishedEdits(collaborative)
-        ? [{ key: 'discard', icon: Undo2, label: () => `Discard unsaved changes to ${name}`, onClick: () => onDiscardCollaborative(collaborative.id), destructive: true } as ManagementRowAction<CollaborativeRecord>]
-        : []),
       { key: 'unpublish', icon: Archive, label: () => `Unpublish ${name}`, onClick: () => onUnpublishCollaborative(collaborative.id), destructive: true },
     ]
   }

@@ -163,7 +163,7 @@ function DashboardPage() {
                   className="flex h-full flex-1 flex-col justify-between overflow-hidden rounded-xl border border-border bg-card p-5 text-left transition-colors hover:border-primary/40"
                 >
                   <div>
-                    <StatusBadge status={item.status} hasUnpublishedEdits={item.unpublishedEdits} />
+                    <StatusBadge status={item.status} />
                     <p className="mt-3 line-clamp-2 text-base font-semibold text-foreground">{item.title}</p>
                     <p className="mt-1 text-sm text-muted-foreground">{item.moduleLabel}</p>
                   </div>

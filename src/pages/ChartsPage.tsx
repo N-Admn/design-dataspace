@@ -7,7 +7,7 @@ import { useAppData } from '@/context/AppDataContext'
 
 function ChartsPage() {
   const navigate = useNavigate()
-  const { charts, deleteChart, upsertChart, unpublishChart } = useAppData()
+  const { charts, deleteChart, unpublishChart } = useAppData()
   const toast = useToast()
   const confirm = useConfirm()
 
@@ -28,21 +28,6 @@ function ChartsPage() {
     if (!ok) return
     deleteChart(id)
     toast({ title: 'Chart deleted', variant: 'success' })
-  }
-
-  const handleDiscardChart = async (id: string) => {
-    const record = charts.find((c) => c.id === id)
-    if (!record || !record.publishedForm) return
-    const name = record.form.name || 'this chart'
-    const ok = await confirm({
-      title: 'Discard unsaved changes?',
-      description: `This will discard the unsaved changes to "${name}" and restore the last published version. This cannot be undone.`,
-      confirmLabel: 'Discard Changes',
-      variant: 'destructive',
-    })
-    if (!ok) return
-    upsertChart(id, 'published', record.publishedForm)
-    toast({ title: 'Changes discarded', description: 'Restored the last published version.', variant: 'success' })
   }
 
   const handleUnpublishChart = async (id: string) => {
@@ -67,7 +52,6 @@ function ChartsPage() {
       onViewChart={(id) => openChart(id, 3)}
       onEditChart={(id) => openChart(id, 1)}
       onDeleteChart={handleDeleteChart}
-      onDiscardChart={handleDiscardChart}
       onUnpublishChart={handleUnpublishChart}
     />
   )

@@ -1,9 +1,8 @@
-import { Archive, BarChart3, Gauge, ImagePlus, LineChart, MapPin, Pencil, PieChart, Trash2, Undo2 } from 'lucide-react'
+import { Archive, BarChart3, Gauge, ImagePlus, LineChart, MapPin, Pencil, PieChart, Trash2 } from 'lucide-react'
 
 import { ManagementTable, type ManagementColumn, type ManagementFilterDef, type ManagementRowAction } from '@/components/shared/management-table/ManagementTable'
 import { TruncatedText } from '@/components/shared/TruncatedText'
 import { StatusBadge } from '@/components/shared/StatusBadge'
-import { hasUnpublishedEdits } from '@/lib/content-status'
 import { useAppData } from '@/context/AppDataContext'
 import { formatShortDate, parseAppTimestamp } from '@/lib/format'
 import { CHART_TYPE_OPTIONS, type ChartRecord, type ChartStatus, type ChartType } from '@/types/chart'
@@ -15,7 +14,6 @@ interface ChartListViewProps {
   onViewChart: (id: string) => void
   onEditChart: (id: string) => void
   onDeleteChart: (id: string) => void
-  onDiscardChart: (id: string) => void
   onUnpublishChart: (id: string) => void
   loading?: boolean
   loadError?: boolean
@@ -91,7 +89,7 @@ function buildColumns(datasets: DatasetRecord[], onOpen: (chart: ChartRecord) =>
       label: 'Status',
       widthRem: '6.875rem',
       optional: true,
-      render: (c) => <StatusBadge status={c.status} hasUnpublishedEdits={hasUnpublishedEdits(c)} />,
+      render: (c) => <StatusBadge status={c.status} />,
     },
     {
       key: 'updated',
@@ -117,7 +115,6 @@ function ChartListView({
   onViewChart,
   onEditChart,
   onDeleteChart,
-  onDiscardChart,
   onUnpublishChart,
   loading,
   loadError,
@@ -148,9 +145,6 @@ function ChartListView({
     }
     return [
       { key: 'edit', icon: Pencil, label: () => `Edit ${name}`, onClick: () => onEditChart(chart.id) },
-      ...(hasUnpublishedEdits(chart)
-        ? [{ key: 'discard', icon: Undo2, label: () => `Discard unsaved changes to ${name}`, onClick: () => onDiscardChart(chart.id), destructive: true } as ManagementRowAction<ChartRecord>]
-        : []),
       { key: 'unpublish', icon: Archive, label: () => `Unpublish ${name}`, onClick: () => onUnpublishChart(chart.id), destructive: true },
     ]
   }

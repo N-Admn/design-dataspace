@@ -18,7 +18,7 @@ import { useHelpContext } from '@/context/HelpContext'
 import { getFileColumns } from '@/lib/chart-data'
 import type { UploadedAsset } from '@/lib/generic-upload'
 import { validateChartStep1, validateChartStep2 } from '@/lib/chart-validation'
-import { hasUnpublishedEdits } from '@/lib/content-status'
+import { hasUnsavedEdits } from '@/lib/content-status'
 import { emptyChartConfig, emptyChartForm, type ChartFormState, type ChartType } from '@/types/chart'
 
 type ChartStep = 1 | 2 | 3
@@ -63,7 +63,7 @@ function ChartCreationPage() {
     setContextLabel(`Charts → ${stepLabel}`)
   }, [stepLabel, setContextLabel])
 
-  const hasUnsavedChanges = JSON.stringify(form) !== JSON.stringify(lastSavedForm)
+  const hasUnsavedChanges = hasUnsavedEdits(form, lastSavedForm)
 
   const isFirstRender = useRef(true)
   useEffect(() => {
@@ -121,7 +121,7 @@ function ChartCreationPage() {
 
   const editingRecord = editingId ? charts.find((c) => c.id === editingId) : undefined
   const hasLiveVersion = editingRecord?.status === 'published'
-  const showUnpublishedIndicator = hasLiveVersion && (hasUnsavedChanges || hasUnpublishedEdits(editingRecord))
+  const showUnsavedIndicator = hasLiveVersion && hasUnsavedChanges
   const readyToPublish = Object.keys(step1Errors).length === 0 && Object.keys(step2Errors).length === 0
 
   useEffect(() => {
@@ -151,30 +151,6 @@ function ChartCreationPage() {
     return id
   }
 
-  const handleGateSaveAndPublish = () => {
-    setShowLeaveConfirm(false)
-    if (editingId && readyToPublish) {
-      upsertChart(editingId, 'published', form)
-      toast({ title: 'Changes published', description: 'Your changes are now live on CivicDataSpace.', variant: 'success' })
-    } else {
-      upsertChart(editingId, 'draft', form)
-      toast({
-        title: 'Changes saved',
-        description: 'Not published yet — complete the required fields to publish.',
-        variant: 'success',
-      })
-    }
-    setLastSavedForm(form)
-    navigate('/dashboard/charts')
-  }
-
-  const handleGateDiscardChanges = () => {
-    setShowLeaveConfirm(false)
-    if (editingId && editingRecord?.publishedForm) {
-      upsertChart(editingId, 'published', editingRecord.publishedForm)
-    }
-    navigate('/dashboard/charts')
-  }
 
   const handleSelectDataset = (datasetId: string | null) => {
     setForm((prev) => ({
@@ -243,7 +219,7 @@ function ChartCreationPage() {
         title={form.name || 'Untitled Chart'}
         onTitleChange={(name) => setForm((prev) => ({ ...prev, name }))}
         editablePlaceholder="Untitled Chart"
-        unpublishedChanges={showUnpublishedIndicator}
+        unsavedChanges={showUnsavedIndicator}
       />
       <div className="border-t border-border px-6 py-6">
         <Stepper
@@ -298,19 +274,16 @@ function ChartCreationPage() {
       <LeaveCreationDialog
         open={showLeaveConfirm}
         itemLabel="chart"
-        mode={hasLiveVersion ? 'published' : 'draft'}
-        onContinueEditing={() => setShowLeaveConfirm(false)}
-        onSaveDraftAndExit={() => {
+        onCancel={() => setShowLeaveConfirm(false)}
+        onSave={() => {
           setShowLeaveConfirm(false)
           handleSaveDraft()
           navigate('/dashboard/charts')
         }}
-        onDiscardAndExit={() => {
+        onDiscard={() => {
           setShowLeaveConfirm(false)
           navigate('/dashboard/charts')
         }}
-        onSaveAndPublish={handleGateSaveAndPublish}
-        onDiscardChanges={handleGateDiscardChanges}
       />
 
       <ChartPublishSuccessModal

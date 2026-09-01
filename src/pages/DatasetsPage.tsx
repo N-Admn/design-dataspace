@@ -14,7 +14,7 @@ interface DatasetNavState {
 }
 
 function DatasetsPage() {
-  const { datasets, deleteDataset, upsertDataset, unpublishDataset, events } = useAppData()
+  const { datasets, deleteDataset, unpublishDataset, events } = useAppData()
   const toast = useToast()
   const confirm = useConfirm()
   const location = useLocation()
@@ -65,21 +65,6 @@ function DatasetsPage() {
     toast({ title: 'Dataset deleted', variant: 'success' })
   }
 
-  const handleDiscardDataset = async (id: string) => {
-    const record = datasets.find((d) => d.id === id)
-    if (!record || !record.publishedForm) return
-    const name = record.form.metadata.name || 'this dataset'
-    const ok = await confirm({
-      title: 'Discard unsaved changes?',
-      description: `This will discard the unsaved changes to "${name}" and restore the last published version. This cannot be undone.`,
-      confirmLabel: 'Discard Changes',
-      variant: 'destructive',
-    })
-    if (!ok) return
-    upsertDataset(id, 'published', record.publishedForm)
-    toast({ title: 'Changes discarded', description: 'Restored the last published version.', variant: 'success' })
-  }
-
   const handleUnpublishDataset = async (id: string) => {
     const record = datasets.find((d) => d.id === id)
     if (!record) return
@@ -103,7 +88,6 @@ function DatasetsPage() {
         onViewDataset={handleViewDataset}
         onEditDataset={handleEditDataset}
         onDeleteDataset={handleDeleteDataset}
-        onDiscardDataset={handleDiscardDataset}
         onUnpublishDataset={handleUnpublishDataset}
       />
     )

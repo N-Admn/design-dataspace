@@ -1,9 +1,8 @@
-import { Archive, FileText, Pencil, Trash2, Undo2 } from 'lucide-react'
+import { Archive, FileText, Pencil, Trash2 } from 'lucide-react'
 
 import { ManagementTable, type ManagementColumn, type ManagementFilterDef, type ManagementRowAction } from '@/components/shared/management-table/ManagementTable'
 import { TruncatedText } from '@/components/shared/TruncatedText'
 import { StatusBadge } from '@/components/shared/StatusBadge'
-import { hasUnpublishedEdits } from '@/lib/content-status'
 import { formatShortDate, parseAppTimestamp } from '@/lib/format'
 import { GEOGRAPHY_OPTIONS, SECTOR_OPTIONS, type DatasetRecord, type DatasetStatus } from '@/types/dataset'
 
@@ -13,7 +12,6 @@ interface DatasetListViewProps {
   onViewDataset: (id: string) => void
   onEditDataset: (id: string) => void
   onDeleteDataset: (id: string) => void
-  onDiscardDataset: (id: string) => void
   onUnpublishDataset: (id: string) => void
   loading?: boolean
   loadError?: boolean
@@ -98,7 +96,7 @@ function buildColumns(onOpen: (dataset: DatasetRecord) => void): ManagementColum
     label: 'Status',
     widthRem: '6.875rem',
     optional: true,
-    render: (d) => <StatusBadge status={d.status} hasUnpublishedEdits={hasUnpublishedEdits(d)} />,
+    render: (d) => <StatusBadge status={d.status} />,
   },
   {
     key: 'updated',
@@ -129,7 +127,6 @@ function DatasetListView({
   onViewDataset,
   onEditDataset,
   onDeleteDataset,
-  onDiscardDataset,
   onUnpublishDataset,
   loading,
   loadError,
@@ -148,9 +145,6 @@ function DatasetListView({
     }
     return [
       { key: 'edit', icon: Pencil, label: () => `Edit ${name}`, onClick: () => onEditDataset(dataset.id) },
-      ...(hasUnpublishedEdits(dataset)
-        ? [{ key: 'discard', icon: Undo2, label: () => `Discard unsaved changes to ${name}`, onClick: () => onDiscardDataset(dataset.id), destructive: true } as ManagementRowAction<DatasetRecord>]
-        : []),
       { key: 'unpublish', icon: Archive, label: () => `Unpublish ${name}`, onClick: () => onUnpublishDataset(dataset.id), destructive: true },
     ]
   }

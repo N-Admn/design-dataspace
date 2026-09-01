@@ -15,7 +15,7 @@ import { useAppData } from '@/context/AppDataContext'
 import { useHelpContext } from '@/context/HelpContext'
 import { saveAIModelDraftSnapshot } from '@/lib/ai-model-draft-storage'
 import { isAIModelReadyToPublish } from '@/lib/ai-model-validation'
-import { hasUnpublishedEdits } from '@/lib/content-status'
+import { hasUnsavedEdits } from '@/lib/content-status'
 import { createEmptyAIModelForm, type AIModelFormState, type AIModelMetadata } from '@/types/ai-model'
 
 type AIModelStep = 1 | 2 | 3
@@ -56,7 +56,7 @@ function AIModelCreationPage() {
     setContextLabel(`AI Models → ${stepLabel}`)
   }, [stepLabel, setContextLabel])
 
-  const hasUnsavedChanges = JSON.stringify(form) !== JSON.stringify(lastSavedForm)
+  const hasUnsavedChanges = hasUnsavedEdits(form, lastSavedForm)
 
   const isFirstRender = useRef(true)
   useEffect(() => {
@@ -101,7 +101,7 @@ function AIModelCreationPage() {
 
   const editingRecord = editingId ? aiModels.find((m) => m.id === editingId) : undefined
   const hasLiveVersion = editingRecord?.status === 'published'
-  const showUnpublishedIndicator = hasLiveVersion && (hasUnsavedChanges || hasUnpublishedEdits(editingRecord))
+  const showUnsavedIndicator = hasLiveVersion && hasUnsavedChanges
 
   const handleSaveDraft = () => {
     setSaved(false)
@@ -119,30 +119,6 @@ function AIModelCreationPage() {
     return id
   }
 
-  const handleGateSaveAndPublish = () => {
-    setShowLeaveConfirm(false)
-    if (editingId && isAIModelReadyToPublish(form, otherNames)) {
-      upsertAIModel(editingId, 'published', form)
-      toast({ title: 'Changes published', description: 'Your changes are now live on CivicDataSpace.', variant: 'success' })
-    } else {
-      upsertAIModel(editingId, 'draft', form)
-      toast({
-        title: 'Changes saved',
-        description: 'Not published yet — complete the required fields to publish.',
-        variant: 'success',
-      })
-    }
-    setLastSavedForm(form)
-    navigate('/dashboard/ai-models')
-  }
-
-  const handleGateDiscardChanges = () => {
-    setShowLeaveConfirm(false)
-    if (editingId && editingRecord?.publishedForm) {
-      upsertAIModel(editingId, 'published', editingRecord.publishedForm)
-    }
-    navigate('/dashboard/ai-models')
-  }
 
   const handlePreview = () => {
     let id = editingId
@@ -163,7 +139,7 @@ function AIModelCreationPage() {
         title={form.metadata.name || 'Untitled AI Model'}
         onTitleChange={(name) => updateMetadata('name', name)}
         editablePlaceholder="Untitled AI Model"
-        unpublishedChanges={showUnpublishedIndicator}
+        unsavedChanges={showUnsavedIndicator}
       />
       <div className="border-t border-border px-6 py-6">
         <Stepper
@@ -202,19 +178,16 @@ function AIModelCreationPage() {
       <LeaveCreationDialog
         open={showLeaveConfirm}
         itemLabel="AI Model"
-        mode={hasLiveVersion ? 'published' : 'draft'}
-        onContinueEditing={() => setShowLeaveConfirm(false)}
-        onSaveDraftAndExit={() => {
+        onCancel={() => setShowLeaveConfirm(false)}
+        onSave={() => {
           setShowLeaveConfirm(false)
           handleSaveDraft()
           navigate('/dashboard/ai-models')
         }}
-        onDiscardAndExit={() => {
+        onDiscard={() => {
           setShowLeaveConfirm(false)
           navigate('/dashboard/ai-models')
         }}
-        onSaveAndPublish={handleGateSaveAndPublish}
-        onDiscardChanges={handleGateDiscardChanges}
       />
     </Card>
   )

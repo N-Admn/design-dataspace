@@ -16,7 +16,7 @@ import { useAppData } from '@/context/AppDataContext'
 import { useHelpContext } from '@/context/HelpContext'
 import { saveUseCaseDraftSnapshot } from '@/lib/usecase-draft-storage'
 import { isUseCaseReadyToPublish } from '@/lib/usecase-validation'
-import { hasUnpublishedEdits } from '@/lib/content-status'
+import { hasUnsavedEdits } from '@/lib/content-status'
 import { emptyUseCaseForm, type UseCaseFormState, type UseCaseMetadata } from '@/types/usecase'
 
 type UseCaseStep = 1 | 2 | 3 | 4
@@ -61,7 +61,7 @@ function UseCaseCreationPage() {
     setContextLabel(`Use Cases → ${stepLabel}`)
   }, [stepLabel, setContextLabel])
 
-  const hasUnsavedChanges = JSON.stringify(form) !== JSON.stringify(lastSavedForm)
+  const hasUnsavedChanges = hasUnsavedEdits(form, lastSavedForm)
 
   const isFirstRender = useRef(true)
   useEffect(() => {
@@ -111,7 +111,7 @@ function UseCaseCreationPage() {
 
   const editingRecord = editingId ? useCases.find((u) => u.id === editingId) : undefined
   const hasLiveVersion = editingRecord?.status === 'published'
-  const showUnpublishedIndicator = hasLiveVersion && (hasUnsavedChanges || hasUnpublishedEdits(editingRecord))
+  const showUnsavedIndicator = hasLiveVersion && hasUnsavedChanges
 
   const handleSaveDraft = () => {
     setSaved(false)
@@ -132,30 +132,6 @@ function UseCaseCreationPage() {
   }
 
   /** Leave gate for an already-published use case. */
-  const handleGateSaveAndPublish = () => {
-    setShowLeaveConfirm(false)
-    if (editingId && isUseCaseReadyToPublish(form)) {
-      upsertUseCase(editingId, 'published', form)
-      toast({ title: 'Changes published', description: 'Your changes are now live on CivicDataSpace.', variant: 'success' })
-    } else {
-      upsertUseCase(editingId, 'draft', form)
-      toast({
-        title: 'Changes saved',
-        description: 'Not published yet — complete the required fields to publish.',
-        variant: 'success',
-      })
-    }
-    setLastSavedForm(form)
-    returnToOrigin()
-  }
-
-  const handleGateDiscardChanges = () => {
-    setShowLeaveConfirm(false)
-    if (editingId && editingRecord?.publishedForm) {
-      upsertUseCase(editingId, 'published', editingRecord.publishedForm)
-    }
-    returnToOrigin()
-  }
 
   const handlePreview = () => {
     let id = editingId
@@ -176,7 +152,7 @@ function UseCaseCreationPage() {
         title={form.metadata.title || 'Untitled Use Case'}
         onTitleChange={(title) => updateMetadata('title', title)}
         editablePlaceholder="Untitled Use Case"
-        unpublishedChanges={showUnpublishedIndicator}
+        unsavedChanges={showUnsavedIndicator}
       />
       <div className="border-t border-border px-6 py-6">
         <Stepper
@@ -219,18 +195,15 @@ function UseCaseCreationPage() {
       <LeaveCreationDialog
         open={showLeaveConfirm}
         itemLabel="use case"
-        mode={hasLiveVersion ? 'published' : 'draft'}
-        onContinueEditing={() => setShowLeaveConfirm(false)}
-        onSaveDraftAndExit={() => {
+        onCancel={() => setShowLeaveConfirm(false)}
+        onSave={() => {
           setShowLeaveConfirm(false)
           handleSaveDraft()
         }}
-        onDiscardAndExit={() => {
+        onDiscard={() => {
           setShowLeaveConfirm(false)
           returnToOrigin()
         }}
-        onSaveAndPublish={handleGateSaveAndPublish}
-        onDiscardChanges={handleGateDiscardChanges}
       />
     </Card>
   )

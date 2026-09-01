@@ -1,10 +1,9 @@
-import { Archive, Pencil, Trash2, Undo2 } from 'lucide-react'
+import { Archive, Pencil, Trash2 } from 'lucide-react'
 
 import { ManagementTable, type ManagementColumn, type ManagementFilterDef, type ManagementRowAction } from '@/components/shared/management-table/ManagementTable'
 import { Badge } from '@/components/ui/badge'
 import { TruncatedText } from '@/components/shared/TruncatedText'
 import { StatusBadge } from '@/components/shared/StatusBadge'
-import { hasUnpublishedEdits } from '@/lib/content-status'
 import { formatEventDateRange, getRegistrationStatus } from '@/lib/event-status'
 import { formatShortDate, parseAppTimestamp } from '@/lib/format'
 import { ACCESS_TYPE_LABELS, EVENT_TYPE_OPTIONS, type EventRecord, type EventStatus } from '@/types/event'
@@ -15,7 +14,6 @@ interface EventListViewProps {
   onViewEvent: (id: string) => void
   onEditEvent: (id: string) => void
   onDeleteEvent: (id: string) => void
-  onDiscardEvent: (id: string) => void
   onUnpublishEvent: (id: string) => void
   loading?: boolean
   loadError?: boolean
@@ -73,7 +71,7 @@ function buildColumns(onOpen: (event: EventRecord) => void): ManagementColumn<Ev
     label: 'Status',
     widthRem: '6.875rem',
     optional: true,
-    render: (e) => <StatusBadge status={e.status} hasUnpublishedEdits={hasUnpublishedEdits(e)} />,
+    render: (e) => <StatusBadge status={e.status} />,
   },
   {
     key: 'registration',
@@ -136,7 +134,6 @@ function EventListView({
   onViewEvent,
   onEditEvent,
   onDeleteEvent,
-  onDiscardEvent,
   onUnpublishEvent,
   loading,
   loadError,
@@ -155,9 +152,6 @@ function EventListView({
     }
     return [
       { key: 'edit', icon: Pencil, label: () => `Edit ${title}`, onClick: () => onEditEvent(event.id) },
-      ...(hasUnpublishedEdits(event)
-        ? [{ key: 'discard', icon: Undo2, label: () => `Discard unsaved changes to ${title}`, onClick: () => onDiscardEvent(event.id), destructive: true } as ManagementRowAction<EventRecord>]
-        : []),
       { key: 'unpublish', icon: Archive, label: () => `Unpublish ${title}`, onClick: () => onUnpublishEvent(event.id), destructive: true },
     ]
   }
