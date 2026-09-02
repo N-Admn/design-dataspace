@@ -5,11 +5,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
-import { SearchableSelect } from '@/components/ui/searchable-select'
+import { MultiSelectFilter } from '@/components/ui/multi-select-filter'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
-import { WORKSPACE_MAX_HEIGHT_CLASS } from '@/lib/layout'
+import { WORKSPACE_HEIGHT_CLASS } from '@/lib/layout'
 import { useMediaQuery } from '@/hooks/use-media-query'
 
 // ---------- Shared row-geometry tokens (the validated Datasets reference values) ----------
@@ -161,7 +161,9 @@ function ManagementTable<T, S extends string>({
 
   const [statusTab, setStatusTab] = React.useState<S | 'all'>('all')
   const [query, setQuery] = React.useState('')
-  const [filterValues, setFilterValues] = React.useState<Record<string, string>>({})
+  // Per-filter selected option values, in the order the user picked them — drives
+  // both matching (OR across a filter's values) and the "selected float to top" list order.
+  const [filterValues, setFilterValues] = React.useState<Record<string, string[]>>({})
   const [sort, setSort] = React.useState<SortState>({ key: defaultSortKey, direction: defaultSortDirection })
   const [page, setPage] = React.useState(1)
   const [filterOpen, setFilterOpen] = React.useState(false)
@@ -208,7 +210,12 @@ function ManagementTable<T, S extends string>({
 
   const tabFiltered = statuses && getStatus && statusTab !== 'all' ? items.filter((i) => getStatus(i) === statusTab) : items
   const searched = query.trim() && searchMatch ? tabFiltered.filter((i) => searchMatch(i, query)) : tabFiltered
-  const filtered = searched.filter((row) => filters.every((f) => !filterValues[f.key] || f.matches(row, filterValues[f.key])))
+  const filtered = searched.filter((row) =>
+    filters.every((f) => {
+      const values = filterValues[f.key]
+      return !values || values.length === 0 || values.some((v) => f.matches(row, v))
+    }),
+  )
 
   const sortColumn = columns.find((c) => c.key === sort.key)
   const sorted = sortColumn?.compare
@@ -236,10 +243,26 @@ function ManagementTable<T, S extends string>({
     setQuery('')
     setPage(1)
   }
-  const activeFilterCount = filters.filter((f) => filterValues[f.key]).length
+  const activeFilterCount = filters.filter((f) => (filterValues[f.key]?.length ?? 0) > 0).length
   const hasActiveFilters = activeFilterCount > 0
   const clearFilters = () => {
     setFilterValues({})
+    setPage(1)
+  }
+  const applyFilterValues = (prev: Record<string, string[]>, key: string, values: string[]) => {
+    const next = { ...prev }
+    if (values.length === 0) delete next[key]
+    else next[key] = values
+    return next
+  }
+  const toggleFilterOption = (key: string, value: string) => {
+    setFilterValues((prev) => {
+      const current = prev[key] ?? []
+      // Deselect → drop it (it falls back to its original position in the list);
+      // select → append so it joins the selected group at the bottom, in pick order.
+      const nextValues = current.includes(value) ? current.filter((v) => v !== value) : [...current, value]
+      return applyFilterValues(prev, key, nextValues)
+    })
     setPage(1)
   }
   const handleSortClick = (key: string) => {
@@ -454,14 +477,11 @@ function ManagementTable<T, S extends string>({
                   <div key={f.key}>
                     <Label htmlFor={`filter-${f.key}`}>{f.label}</Label>
                     <div className="mt-1.5">
-                      <SearchableSelect
+                      <MultiSelectFilter
                         id={`filter-${f.key}`}
                         options={f.options}
-                        value={filterValues[f.key] ?? ''}
-                        onChange={(value) => {
-                          setFilterValues((prev) => ({ ...prev, [f.key]: value }))
-                          setPage(1)
-                        }}
+                        value={filterValues[f.key] ?? []}
+                        onToggle={(value) => toggleFilterOption(f.key, value)}
                         placeholder={f.placeholder}
                       />
                     </div>
@@ -512,7 +532,7 @@ function ManagementTable<T, S extends string>({
   )
 
   return (
-    <Card className={cn('flex flex-col', WORKSPACE_MAX_HEIGHT_CLASS)}>
+    <Card className={cn('flex flex-col', WORKSPACE_HEIGHT_CLASS)}>
       <CardHeader className="flex-row shrink-0 flex-wrap items-center justify-between gap-3">
         <div>
           <CardTitle>{title}</CardTitle>

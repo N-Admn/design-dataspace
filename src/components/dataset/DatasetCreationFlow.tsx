@@ -303,10 +303,10 @@ function DatasetCreationFlow({
               files: prev.files.map((f) => (f.id === id ? { ...f, title } : f)),
             }))
           }
-          onFileMetaChange={(id, patch) =>
+          onFileDescriptionChange={(id, description) =>
             setForm((prev) => ({
               ...prev,
-              files: prev.files.map((f) => (f.id === id ? { ...f, ...patch } : f)),
+              files: prev.files.map((f) => (f.id === id ? { ...f, description } : f)),
             }))
           }
         />

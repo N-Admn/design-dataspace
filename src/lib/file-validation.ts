@@ -28,6 +28,29 @@ export function getResourceTitle(file: DatasetFile): string {
   return file.title?.trim() || deriveDefaultResourceTitle(file.name)
 }
 
+const TABULAR_EXTENSIONS = ['CSV', 'TSV', 'XLS', 'XLSX']
+
+/** System-generated description from what could be inferred about the file. Users
+ *  can override it in the File Details sheet (see getResourceDescription). */
+export function deriveFileDescription(file: DatasetFile): string {
+  const type = file.extension.toUpperCase()
+  if (TABULAR_EXTENSIONS.includes(type)) {
+    if (file.rowCount != null && file.columnCount != null) {
+      return `${type} data file with ${file.rowCount.toLocaleString()} rows and ${file.columnCount.toLocaleString()} columns.`
+    }
+    return `${type} data file.`
+  }
+  if (type === 'PDF') return 'PDF document.'
+  if (type === 'TXT') return 'Plain-text file.'
+  return `${type} file.`
+}
+
+/** The description shown to contributors: their edit if present, otherwise the
+ *  system-generated one. */
+export function getResourceDescription(file: DatasetFile): string {
+  return file.description?.trim() || deriveFileDescription(file)
+}
+
 /** Client-side row/column inference from the file the contributor actually selected
  * (never fabricated). Only CSV/TSV, and only below a size cap so a 500 MB file
  * doesn't block the tab. Returns {} when it can't be determined. */

@@ -1,50 +1,71 @@
 import * as React from 'react'
-import { Eye } from 'lucide-react'
+import { Eye, Lock } from 'lucide-react'
 
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
-import { getResourceTitle } from '@/lib/file-validation'
+import { getResourceDescription, getResourceTitle } from '@/lib/file-validation'
 import type { DatasetFile } from '@/types/dataset'
 
 const TABULAR_EXTENSIONS = ['CSV', 'XLS', 'XLSX', 'TSV']
-
-interface FileMetaPatch {
-  rowCount?: number
-  columnCount?: number
-}
 
 interface FileDetailsSheetProps {
   /** The file to inspect, or null when the sheet is closed. */
   file: DatasetFile | null
   onOpenChange: (open: boolean) => void
   onTitleChange: (id: string, title: string) => void
-  onMetaChange: (id: string, patch: FileMetaPatch) => void
+  onDescriptionChange: (id: string, description: string) => void
   /** Opens the shared table/resource preview for this file. */
   onPreview: (file: DatasetFile) => void
 }
 
-function ReadOnlyField({ label, value }: { label: string; value: React.ReactNode }) {
+/** A single system-inferred value. Read-only by design — falls back to a clear
+ *  "couldn't read this" status rather than an editable input. */
+function InferredField({
+  label,
+  value,
+  fallback = 'Unable to determine',
+  fallbackHint = 'We couldn’t read this information from the file.',
+}: {
+  label: string
+  value: React.ReactNode
+  fallback?: string
+  fallbackHint?: string
+}) {
+  const hasValue = value !== undefined && value !== null && value !== ''
   return (
     <div>
       <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{label}</p>
-      <div className="mt-1 break-words text-sm text-foreground">{value || '—'}</div>
+      {hasValue ? (
+        <div className="mt-1 break-words text-sm text-foreground">{value}</div>
+      ) : (
+        <>
+          <p className="mt-1 text-sm text-muted-foreground">{fallback}</p>
+          <p className="mt-0.5 text-xs text-muted-foreground">{fallbackHint}</p>
+        </>
+      )}
     </div>
   )
 }
 
 /** Shared File Details side sheet — used for both direct File Upload and Public
- * Platform files. System-inferred values are shown; the ones the product lets a
- * contributor adjust (title, row/column counts) stay editable here. */
-function FileDetailsSheet({ file, onOpenChange, onTitleChange, onMetaChange, onPreview }: FileDetailsSheetProps) {
+ * Platform files. Only Title and Description are editable; every structural value
+ * (type, size, row/column counts, original filename, source, date) is
+ * system-inferred and shown read-only. */
+function FileDetailsSheet({ file, onOpenChange, onTitleChange, onDescriptionChange, onPreview }: FileDetailsSheetProps) {
   const isPlatformImport = Boolean(file?.source && file.source !== 'File upload')
   const isTabular = file ? TABULAR_EXTENSIONS.includes(file.extension.toUpperCase()) : false
 
   const [titleDraft, setTitleDraft] = React.useState('')
+  const [descriptionDraft, setDescriptionDraft] = React.useState('')
   React.useEffect(() => {
-    if (file) setTitleDraft(getResourceTitle(file))
-    // Re-sync only when a different file is opened, not on every metadata edit.
+    if (file) {
+      setTitleDraft(getResourceTitle(file))
+      setDescriptionDraft(getResourceDescription(file))
+    }
+    // Re-sync only when a different file is opened, not on every edit.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [file?.id])
 
@@ -55,15 +76,10 @@ function FileDetailsSheet({ file, onOpenChange, onTitleChange, onMetaChange, onP
     else setTitleDraft(getResourceTitle(file))
   }
 
-  const commitCount = (key: 'rowCount' | 'columnCount', raw: string) => {
+  const commitDescription = () => {
     if (!file) return
-    const trimmed = raw.trim()
-    if (trimmed === '') {
-      onMetaChange(file.id, { [key]: undefined })
-      return
-    }
-    const n = Number(trimmed)
-    if (Number.isFinite(n) && n >= 0) onMetaChange(file.id, { [key]: Math.round(n) })
+    const next = descriptionDraft.trim()
+    if (next !== getResourceDescription(file)) onDescriptionChange(file.id, next)
   }
 
   return (
@@ -80,6 +96,7 @@ function FileDetailsSheet({ file, onOpenChange, onTitleChange, onMetaChange, onP
           <>
             <div className="min-h-0 flex-1 overflow-y-auto px-6 py-5">
               <div className="flex flex-col gap-5">
+                {/* --- Editable --- */}
                 <div>
                   <Label htmlFor="file-details-title">Title</Label>
                   <Input
@@ -94,70 +111,71 @@ function FileDetailsSheet({ file, onOpenChange, onTitleChange, onMetaChange, onP
                   />
                 </div>
 
-                <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-                  <ReadOnlyField label="File type" value={file.extension} />
-                  <ReadOnlyField label="File size" value={file.sizeLabel} />
-                </div>
-
-                <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-                  <div>
-                    <Label htmlFor="file-details-rows">Number of rows</Label>
-                    <Input
-                      id="file-details-rows"
-                      type="number"
-                      min={0}
-                      inputMode="numeric"
-                      className="mt-1.5"
-                      placeholder="Not detected"
-                      defaultValue={file.rowCount ?? ''}
-                      key={`rows-${file.id}`}
-                      onBlur={(e) => commitCount('rowCount', e.target.value)}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="file-details-cols">Number of columns</Label>
-                    <Input
-                      id="file-details-cols"
-                      type="number"
-                      min={0}
-                      inputMode="numeric"
-                      className="mt-1.5"
-                      placeholder="Not detected"
-                      defaultValue={file.columnCount ?? ''}
-                      key={`cols-${file.id}`}
-                      onBlur={(e) => commitCount('columnCount', e.target.value)}
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-                  <ReadOnlyField label="Source" value={file.source ?? 'File upload'} />
-                  <ReadOnlyField label={isPlatformImport ? 'Imported' : 'Uploaded'} value={file.uploadedAt} />
-                </div>
-
-                <ReadOnlyField label="Original filename" value={file.name} />
-
-                {file.path && <ReadOnlyField label="Folder path" value={`${file.path}/`} />}
-
-                {file.importUrl && (
-                  <ReadOnlyField
-                    label="Imported from"
-                    value={
-                      <a
-                        href={file.importUrl}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="text-primary underline underline-offset-2"
-                      >
-                        {file.importUrl}
-                      </a>
-                    }
+                <div>
+                  <Label htmlFor="file-details-description">Description</Label>
+                  <Textarea
+                    id="file-details-description"
+                    className="mt-1.5"
+                    rows={3}
+                    value={descriptionDraft}
+                    onChange={(e) => setDescriptionDraft(e.target.value)}
+                    onBlur={commitDescription}
                   />
-                )}
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Starts from a system-generated summary — edit it to add context.
+                  </p>
+                </div>
 
-                <p className="text-xs text-muted-foreground">
-                  Row and column counts are inferred where the file can be read; adjust them if needed.
-                </p>
+                {/* --- System-inferred, read-only --- */}
+                <div className="border-t border-border pt-5">
+                  <div className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                    <Lock className="size-3" />
+                    Read from the file — not editable
+                  </div>
+
+                  <div className="mt-3 flex flex-col gap-5">
+                    <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                      <InferredField label="File type" value={file.extension} />
+                      <InferredField label="File size" value={file.sizeLabel} />
+                    </div>
+
+                    <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                      <InferredField
+                        label="Number of rows"
+                        value={file.rowCount != null ? file.rowCount.toLocaleString() : undefined}
+                      />
+                      <InferredField
+                        label="Number of columns"
+                        value={file.columnCount != null ? file.columnCount.toLocaleString() : undefined}
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                      <InferredField label="Source" value={file.source ?? 'File upload'} />
+                      <InferredField label={isPlatformImport ? 'Imported' : 'Uploaded'} value={file.uploadedAt} />
+                    </div>
+
+                    <InferredField label="Original filename" value={file.name} />
+
+                    {file.path && <InferredField label="Folder path" value={`${file.path}/`} />}
+
+                    {file.importUrl && (
+                      <InferredField
+                        label="Imported from"
+                        value={
+                          <a
+                            href={file.importUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="text-primary underline underline-offset-2"
+                          >
+                            {file.importUrl}
+                          </a>
+                        }
+                      />
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
 

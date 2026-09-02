@@ -42,7 +42,7 @@ interface Step2DataFilesProps {
   onFilesAdd: (files: DatasetFile[]) => void
   onFileRemove: (id: string) => void
   onFileTitleChange: (id: string, title: string) => void
-  onFileMetaChange: (id: string, patch: { rowCount?: number; columnCount?: number }) => void
+  onFileDescriptionChange: (id: string, description: string) => void
 }
 
 function FileRow({
@@ -163,7 +163,7 @@ function Step2DataFiles({
   onFilesAdd,
   onFileRemove,
   onFileTitleChange,
-  onFileMetaChange,
+  onFileDescriptionChange,
 }: Step2DataFilesProps) {
   const toast = useToast()
   const [method, setMethod] = React.useState<UploadMethod>('file')
@@ -484,7 +484,7 @@ function Step2DataFiles({
         file={detailsFile}
         onOpenChange={(open) => !open && setDetailsId(null)}
         onTitleChange={onFileTitleChange}
-        onMetaChange={onFileMetaChange}
+        onDescriptionChange={onFileDescriptionChange}
         onPreview={openPreview}
       />
 

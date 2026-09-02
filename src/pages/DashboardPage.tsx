@@ -1,21 +1,36 @@
 import { useNavigate } from 'react-router-dom'
-import { ArrowRight, Building2, LayoutGrid } from 'lucide-react'
+import { ArrowRight, CalendarDays, Database, FolderKanban, LayoutGrid, Users } from 'lucide-react'
 
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
-import { StatusBadge } from '@/components/shared/StatusBadge'
+import { CircleArrow } from '@/components/shared/CircleArrow'
 import { useToast } from '@/components/ui/toast'
 import { useAppData } from '@/context/AppDataContext'
 import { parseAppTimestamp } from '@/lib/format'
 import { hasUnpublishedEdits, type ContentStatus } from '@/lib/content-status'
 import { DASHBOARD_MIN_HEIGHT_CLASS } from '@/lib/layout'
+import { cn } from '@/lib/utils'
 import { NAV_GROUPS } from '@/components/layout/nav-config'
 
 const ECOSYSTEM_ITEMS = NAV_GROUPS.find((g) => g.key === 'contribution')?.items ?? []
 
+const MODULE_LIST = 'Datasets · Use Cases · AI Models · Collaboratives · Charts · Events'
+
+/** Landing-panel radius — the top step of the shared radius scale (--radius-xl). */
+const PANEL_RADIUS = 'rounded-xl'
+
+type ModuleLabel = 'Dataset' | 'Event' | 'Use Case' | 'Collaborative'
+
+const MODULE_ICONS: Record<ModuleLabel, typeof Database> = {
+  Dataset: Database,
+  Event: CalendarDays,
+  'Use Case': FolderKanban,
+  Collaborative: Users,
+}
+
 interface ResumeItem {
   id: string
   title: string
-  moduleLabel: 'Dataset' | 'Event' | 'Use Case' | 'Collaborative'
+  moduleLabel: ModuleLabel
   status: ContentStatus
   /** Published item with a saved-but-unpublished working copy. */
   unpublishedEdits: boolean
@@ -90,98 +105,102 @@ function DashboardPage() {
   // from the working copy), then plain drafts — each group newest-first.
   const editedItems = allResumeItems.filter((i) => i.unpublishedEdits).sort((a, b) => b.sortKey - a.sortKey)
   const draftItems = allResumeItems.filter((i) => !i.unpublishedEdits).sort((a, b) => b.sortKey - a.sortKey)
-  const resumeItems = [...editedItems, ...draftItems].slice(0, 5)
+  const resumeItems = [...editedItems, ...draftItems].slice(0, 3)
 
   return (
-    <div className={`flex min-h-0 flex-col gap-10 ${DASHBOARD_MIN_HEIGHT_CLASS}`}>
-      {/* Hero */}
-      <div className="shrink-0">
-        <h1 className="whitespace-nowrap text-5xl font-semibold leading-tight text-primary">
-          Welcome to CivicDataSpace
-        </h1>
-        <p className="mt-3 whitespace-nowrap text-sm text-muted-foreground">
-          Create, manage and share data, knowledge and tools through CivicDataSpace.
-        </p>
-      </div>
-
-      {/* Workspace cards — side by side */}
-      <div className="grid min-h-0 flex-[0.49] grid-cols-1 gap-6 md:grid-cols-2">
-        <button
-          type="button"
-          onClick={() => navigate('/dashboard/datasets')}
-          className="flex min-h-0 flex-col rounded-xl border border-border bg-card p-6 text-left transition-colors hover:border-primary/40"
-        >
-          <div className="flex size-16 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
-            <LayoutGrid className="size-8" />
-          </div>
-          <div className="flex-1" />
+    <div className={cn('flex flex-col gap-10', DASHBOARD_MIN_HEIGHT_CLASS)}>
+      <div className="grid flex-1 grid-cols-1 items-stretch gap-6 lg:grid-cols-2">
+        {/* Left panel — hero + My Workspace */}
+        <div className={cn('flex flex-col justify-between gap-10 bg-card p-8 md:p-10', PANEL_RADIUS)}>
           <div>
-            <p className="text-lg font-semibold text-foreground">My Workspace</p>
-            <p className="mt-1 text-sm text-muted-foreground">Manage your individual contributions.</p>
-            <p className="mt-2 text-xs text-muted-foreground">
-              Datasets · Use Cases · AI Models · Collaboratives · Charts · Events
+            <h1 className="text-5xl font-semibold leading-[1.05] text-primary md:text-6xl">
+              Welcome to CivicDataSpace
+            </h1>
+            <p className="mt-5 text-sm text-muted-foreground">
+              Create, manage and share data, knowledge and tools through CivicDataSpace.
             </p>
-            <span className="mt-3 flex items-center gap-1 text-sm font-medium text-primary">
-              Open My Workspace
-              <ArrowRight className="size-3.5" />
-            </span>
           </div>
-        </button>
 
-        <button
-          type="button"
-          onClick={() => comingSoon('Organization Workspace')}
-          className="flex min-h-0 flex-col rounded-xl border border-border bg-card p-6 text-left transition-colors hover:border-primary/40"
-        >
-          <div className="flex size-16 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
-            <Building2 className="size-8" />
-          </div>
-          <div className="flex-1" />
-          <div>
-            <p className="text-lg font-semibold text-foreground">Organization Workspace</p>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Manage contributions on behalf of an organization.
-            </p>
-            <span className="mt-3 flex items-center gap-1 text-sm font-medium text-primary">
-              Open Organization Workspace
-              <ArrowRight className="size-3.5" />
-            </span>
-          </div>
-        </button>
-      </div>
-
-      <div className="min-h-0 flex-[0.51]">
-        {resumeItems.length > 0 && (
-          <div className="flex h-full min-h-0 flex-col gap-3">
-            <p className="shrink-0 text-base font-semibold text-foreground">Continue working</p>
-            <div className="flex min-h-0 flex-1 gap-5 overflow-hidden">
-              {resumeItems.map((item) => (
-                <button
-                  key={item.id}
-                  type="button"
-                  onClick={item.onContinue}
-                  className="flex h-full flex-1 flex-col justify-between overflow-hidden rounded-xl border border-border bg-card p-5 text-left transition-colors hover:border-primary/40"
-                >
-                  <div>
-                    <StatusBadge status={item.status} />
-                    <p className="mt-3 line-clamp-2 text-base font-semibold text-foreground">{item.title}</p>
-                    <p className="mt-1 text-sm text-muted-foreground">{item.moduleLabel}</p>
-                  </div>
-                  <span className="flex items-center gap-1 self-end text-sm font-medium text-primary">
-                    Continue
-                    <ArrowRight className="size-3.5" />
-                  </span>
-                </button>
-              ))}
+          <button
+            type="button"
+            onClick={() => navigate('/dashboard/datasets')}
+            className={cn(
+              'flex flex-1 flex-col justify-between gap-8 bg-[linear-gradient(252deg,#F4F5F8_0%,#D3E9FF_97.53%)] p-8 text-left transition-shadow hover:shadow-md md:min-h-[22rem]',
+              PANEL_RADIUS,
+            )}
+          >
+            {/* strokeWidth is in the 24-unit viewBox; at size-50 (200px) one unit ≈ 8.3px,
+                so 1.2 ≈ a 10px stroke. */}
+            <LayoutGrid strokeWidth={1.2} className="size-50 shrink-0 text-primary-foreground" />
+            <div className="flex items-end justify-between gap-4">
+              <div>
+                <p className="text-2xl font-semibold text-primary">My Workspace</p>
+                <p className="mt-1 text-sm text-muted-foreground">Manage your individual contributions.</p>
+                <p className="mt-2 text-xs font-medium text-muted-foreground">{MODULE_LIST}</p>
+              </div>
+              <CircleArrow />
             </div>
+          </button>
+        </div>
+
+        {/* Right column — Organisation Workspace + Continue working */}
+        <div className="flex flex-col gap-6">
+          <button
+            type="button"
+            onClick={() => comingSoon('Organization Workspace')}
+            className={cn('bg-card p-8 text-left transition-shadow hover:shadow-md md:p-10', PANEL_RADIUS)}
+          >
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <p className="text-2xl font-semibold text-primary">Organisation Workspace</p>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  Manage contributions on behalf of an organization.
+                </p>
+                <p className="mt-1 text-xs font-medium text-muted-foreground">{MODULE_LIST}</p>
+              </div>
+              <CircleArrow />
+            </div>
+          </button>
+
+          <div className={cn('flex flex-1 flex-col gap-4 bg-card p-8 md:p-10', PANEL_RADIUS)}>
+            <p className="text-2xl font-semibold text-primary">Continue Working</p>
+            {resumeItems.length === 0 ? (
+              <p className="text-sm text-muted-foreground">Nothing to work on today.</p>
+            ) : (
+              <div className="flex flex-1 flex-col gap-3">
+                {resumeItems.map((item) => {
+                  const Icon = MODULE_ICONS[item.moduleLabel]
+                  return (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={item.onContinue}
+                      className="flex flex-1 items-center gap-4 rounded-xl bg-muted/60 p-4 text-left transition-colors hover:bg-muted"
+                    >
+                      <div className="flex size-12 shrink-0 items-center justify-center rounded-lg bg-card text-primary">
+                        <Icon className="size-[34px]" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-sm font-semibold text-foreground">{item.title}</p>
+                        <p className="text-xs text-muted-foreground">{item.moduleLabel}</p>
+                      </div>
+                      <span className="flex shrink-0 items-center gap-1 text-sm font-medium text-primary">
+                        Continue
+                        <ArrowRight className="size-3.5" />
+                      </span>
+                    </button>
+                  )
+                })}
+              </div>
+            )}
           </div>
-        )}
+        </div>
       </div>
 
       {/* Footer — supporting copy and ecosystem icon stack */}
-      <div className="flex shrink-0 items-center gap-3">
-        <p className="max-w-sm text-sm text-muted-foreground">
-          Create and share data, models, knowledge and&nbsp;visualizations with the civic data community.
+      <div className="flex shrink-0 flex-wrap items-center justify-between gap-4">
+        <p className="whitespace-nowrap text-sm text-muted-foreground">
+          Create and share data, models, knowledge and visualizations with the civic data community.
         </p>
 
         <div className="flex shrink-0 -space-x-2">

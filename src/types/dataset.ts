@@ -9,6 +9,9 @@ export interface DatasetFile {
   /** Human-readable, contributor-editable label for this resource. Falls back to a
    *  filename-derived title (see getResourceTitle) when absent, e.g. for older records. */
   title?: string
+  /** Contributor-editable description. Falls back to a system-generated one
+   *  (see getResourceDescription / deriveFileDescription) when absent. */
+  description?: string
   extension: string
   sizeLabel: string
   sizeBytes: number
