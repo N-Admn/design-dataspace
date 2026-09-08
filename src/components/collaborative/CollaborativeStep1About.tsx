@@ -24,7 +24,7 @@ function CollaborativeStep1About({ metadata, errors, onChange }: CollaborativeSt
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h2 className="text-lg font-semibold text-primary">About</h2>
+        <h2 className="type-heading-2 text-primary">About</h2>
         <p className="mt-1 text-sm text-muted-foreground">
           Tell people what this Collaborative is, what it focuses on, and why it matters.
         </p>

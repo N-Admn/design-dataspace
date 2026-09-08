@@ -66,7 +66,7 @@ import {
 type AccessMethodDisplayStatus = AccessMethodTestStatus | 'not-tested' | 'testing' | 'stale'
 
 const TEST_STATUS_META: Record<AccessMethodDisplayStatus, { label: string; icon: typeof CheckCircle2; className: string }> = {
-  success: { label: 'Success', icon: CheckCircle2, className: 'text-success' },
+  success: { label: 'Success', icon: CheckCircle2, className: 'text-success-text' },
   'auth-failed': { label: 'Authentication Failed', icon: ShieldAlert, className: 'text-destructive' },
   'connection-failed': { label: 'Connection Failed', icon: WifiOff, className: 'text-destructive' },
   'invalid-request': { label: 'Invalid Request Configuration', icon: AlertTriangle, className: 'text-destructive' },
@@ -776,7 +776,7 @@ function AIModelVersionsStep({ versions, onChange, openVersionId, onOpenVersionC
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h2 className="text-lg font-semibold text-primary">Versions</h2>
+        <h2 className="type-heading-2 text-primary">Versions</h2>
         <p className="mt-1 text-sm text-muted-foreground">
           Configure the releases of this model and how they can be accessed.
         </p>
@@ -1054,7 +1054,7 @@ function AIModelVersionsStep({ versions, onChange, openVersionId, onOpenVersionC
                           {testRows.length} Tested · {successCount} Successful · {failedCount} Failed · {notTestedCount} Not Tested
                         </p>
                         {overallMessage && <p className="mt-1.5 text-xs font-medium text-foreground">{overallMessage}</p>}
-                        <p className="mt-1.5 text-[11px] text-muted-foreground">
+                        <p className="mt-1.5 text-xs text-muted-foreground">
                           Results reflect the current configuration and Test Input — editing either marks a result as changed.
                         </p>
                       </div>
@@ -1114,10 +1114,10 @@ function AIModelVersionsStep({ versions, onChange, openVersionId, onOpenVersionC
                                 )}
 
                                 {!isTesting && status !== 'not-tested' && status !== 'stale' && result && (
-                                  <div className="mt-2 flex flex-col gap-1.5 rounded-md bg-muted/40 p-3 font-mono text-[11px]">
+                                  <div className="mt-2 flex flex-col gap-1.5 rounded-md bg-muted/40 p-3 font-mono text-xs">
                                     <p className="text-muted-foreground">Test Started</p>
                                     {result.steps.map((step) => (
-                                      <p key={step.sequence} className={step.status === 'pass' ? 'text-success' : 'text-destructive'}>
+                                      <p key={step.sequence} className={step.status === 'pass' ? 'text-success-text' : 'text-destructive'}>
                                         {step.status === 'pass' ? '✓' : '✕'} {step.stage}
                                         <span className="ml-1 text-muted-foreground">— {step.message}</span>
                                       </p>

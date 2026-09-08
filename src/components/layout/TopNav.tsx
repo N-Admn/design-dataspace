@@ -100,7 +100,10 @@ function MobileNavMenu() {
 
 function TopNav() {
   return (
-    <header className="flex h-[88px] w-full items-center justify-between bg-header-background px-4 text-primary-foreground sm:px-8">
+    <header
+      data-chrome="dark"
+      className="flex h-[88px] w-full items-center justify-between bg-header-background px-4 text-primary-foreground sm:px-8"
+    >
       <div className="flex items-center gap-2">
         <img src="/brand/CDS-Logo.png" alt="CivicDataSpace" className="h-10 w-auto" />
       </div>

@@ -261,7 +261,7 @@ function HelpSupportPanel({ open, onOpenChange }: { open: boolean; onOpenChange:
               <DialogTitle>Contact support</DialogTitle>
             </DialogHeader>
             <div className="flex flex-col items-center gap-3 px-6 py-12 text-center">
-              <div className="flex size-12 items-center justify-center rounded-full bg-success/10 text-success">
+              <div className="flex size-12 items-center justify-center rounded-full bg-success/5 text-success-text">
                 <CheckCircle2 className="size-6" />
               </div>
               <div>
@@ -286,7 +286,7 @@ function HelpSupportPanel({ open, onOpenChange }: { open: boolean; onOpenChange:
               <DialogTitle>Contact support</DialogTitle>
             </DialogHeader>
             <div className="flex flex-col items-center gap-3 px-6 py-12 text-center">
-              <div className="flex size-12 items-center justify-center rounded-full bg-destructive/10 text-destructive">
+              <div className="flex size-12 items-center justify-center rounded-full bg-destructive/5 text-destructive-text">
                 <AlertCircle className="size-6" />
               </div>
               <div>

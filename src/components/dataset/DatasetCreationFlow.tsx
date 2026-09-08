@@ -74,7 +74,7 @@ function DrawerSuccessPanel({
 
   return (
     <div className="flex flex-col items-center gap-3 px-6 py-12 text-center">
-      <div className="flex size-12 items-center justify-center rounded-full bg-success/10 text-success">
+      <div className="flex size-12 items-center justify-center rounded-full bg-success/5 text-success-text">
         <CheckCircle2 className="size-6" />
       </div>
       <div>

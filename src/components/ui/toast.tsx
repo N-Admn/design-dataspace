@@ -51,7 +51,7 @@ function ToastProvider({ children }: { children: React.ReactNode }) {
             {t.variant === 'error' ? (
               <AlertCircle className="mt-0.5 size-4 shrink-0 text-destructive" />
             ) : (
-              <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-success" />
+              <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-success-text" />
             )}
             <div className="min-w-0 flex-1">
               <p className="text-sm font-medium text-foreground">{t.title}</p>

@@ -135,7 +135,7 @@ function ProfileEditForm({ profile, onSave }: ProfileEditFormProps) {
   return (
     <Card>
       <div className="px-6 py-4">
-        <h1 className="text-lg font-semibold text-primary">My Profile</h1>
+        <h1 className="type-heading-2 text-primary">My Profile</h1>
         <p className="mt-0.5 text-sm text-muted-foreground">
           Manage your profile information and how you appear on CivicDataSpace.
         </p>

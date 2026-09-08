@@ -30,7 +30,7 @@ function EventPreview({ form }: { form: EventFormState }) {
           <img src={metadata.coverImage.dataUrl} alt="" className="h-56 w-full object-cover" />
         )}
         <div className="px-6 py-6">
-          <h1 className="text-2xl font-semibold text-primary">{metadata.title || 'Untitled Event'}</h1>
+          <h1 className="type-heading-1 text-primary">{metadata.title || 'Untitled Event'}</h1>
           {metadata.subtitle && <p className="mt-2 text-base text-muted-foreground">{metadata.subtitle}</p>}
 
           <div className="mt-3 flex flex-wrap items-center gap-1.5">
@@ -64,7 +64,7 @@ function EventPreview({ form }: { form: EventFormState }) {
               <Badge variant="muted">Registration Closed</Badge>
             )}
             {metadata.registrationUrl && (
-              <a href={metadata.registrationUrl} target="_blank" rel="noreferrer" className="text-sm text-primary hover:underline">
+              <a href={metadata.registrationUrl} target="_blank" rel="noreferrer" className="text-sm text-primary underline underline-offset-4">
                 Register →
               </a>
             )}

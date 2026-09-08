@@ -16,7 +16,7 @@ function ReadinessRow({ label, ok, detail, onEdit }: { label: string; ok: boolea
     <div className="flex items-start justify-between gap-3 py-1.5">
       <div className="flex items-start gap-2">
         {ok ? (
-          <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-success" />
+          <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-success-text" />
         ) : (
           <AlertTriangle className="mt-0.5 size-4 shrink-0 text-warning-foreground" />
         )}
@@ -44,12 +44,12 @@ function UseCaseStep4Review({ form, onEditStep, onPreview }: UseCaseStep4ReviewP
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h2 className="text-lg font-semibold text-primary">Review</h2>
+        <h2 className="type-heading-2 text-primary">Review</h2>
         <p className="mt-1 text-sm text-muted-foreground">Check that your Use Case is ready.</p>
       </div>
 
       <div className="rounded-xl border border-border bg-card p-5">
-        <p className={ready ? 'text-sm font-semibold text-success' : 'text-sm font-semibold text-warning-foreground'}>
+        <p className={ready ? 'text-sm font-semibold text-success-text' : 'text-sm font-semibold text-warning-foreground'}>
           {ready ? 'Ready to publish' : 'Not ready to publish'}
         </p>
         <div className="mt-2 divide-y divide-border">

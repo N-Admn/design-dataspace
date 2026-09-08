@@ -250,7 +250,7 @@ function UseCaseStep2Builder({ metadata, blocks, onBlocksChange }: UseCaseStep2B
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h2 className="text-lg font-semibold text-primary">Builder</h2>
+        <h2 className="type-heading-2 text-primary">Builder</h2>
         <p className="mt-1 text-sm text-muted-foreground">Tell the story using flexible content blocks.</p>
       </div>
 
@@ -313,13 +313,13 @@ function UseCaseStep2Builder({ metadata, blocks, onBlocksChange }: UseCaseStep2B
                               placeholder="Untitled heading"
                               className={cn(
                                 ghostField,
-                                block.level === 2 ? 'text-xl font-semibold text-primary' : 'text-lg font-semibold text-foreground',
+                                block.level === 2 ? 'type-heading-2 text-primary' : 'type-heading-3 text-foreground',
                               )}
                             />
                             <HeadingLevelToggle level={block.level} onChange={(level) => updateBlock(block.id, { level })} />
                           </div>
                         ) : (
-                          <Tag className={block.level === 2 ? 'text-xl font-semibold text-primary' : 'text-lg font-semibold text-foreground'}>
+                          <Tag className={block.level === 2 ? 'type-heading-2 text-primary' : 'type-heading-3 text-foreground'}>
                             {block.text || 'Untitled heading'}
                           </Tag>
                         )}

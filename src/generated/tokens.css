@@ -16,51 +16,59 @@
   --radius-xl: calc(var(--radius) + 8px);
 
   /* Base, brand & semantic colors */
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
+  --background: #ffffff;
+  --foreground: #0a0a0a;
+  --card: #ffffff;
+  --card-foreground: #0a0a0a;
+  --popover: #ffffff;
+  --popover-foreground: #0a0a0a;
   --primary: #0b3865;
   --primary-foreground: #ffffff;
-  --secondary: oklch(0.967 0.001 286.375);
-  --secondary-foreground: oklch(0.21 0.006 285.885);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
+  --secondary: #f4f4f5;
+  --secondary-foreground: #18181b;
+  --muted: #f5f5f5;
+  --muted-foreground: #6b6b6b;
   --accent: #fdb557;
   --accent-foreground: #0b3865;
-  --destructive: oklch(0.577 0.245 27.325);
+  --destructive: #e7000b;
+  --destructive-text: #d12222;
   --destructive-foreground: #ffffff;
   --success: #46a758;
   --success-foreground: #ffffff;
+  --success-text: #317f37;
   --warning: #ffc53d;
   --warning-foreground: #0b3865;
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
+  --border: #e5e5e5;
+  --input: #8c8c8c;
   --ring: #0b3865;
+  --ring-on-dark: #ffffff;
+  --control-hover: #e4e4e6;
+  --control-active: #d8d8db;
+  --border-strong: #727272;
 
   /* Chart palette */
-  --chart-1: #fdb557;
-  --chart-2: oklch(0.705 0.213 47.604);
-  --chart-3: oklch(0.646 0.222 41.116);
-  --chart-4: oklch(0.553 0.195 38.402);
-  --chart-5: oklch(0.47 0.157 37.304);
+  --chart-1: #d27802;
+  --chart-2: #b46702;
+  --chart-3: #a05b02;
+  --chart-4: #8b5002;
+  --chart-5: #7c4701;
 
   /* Sidebar */
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar: #fafafa;
+  --sidebar-foreground: #0a0a0a;
   --sidebar-primary: #0b3865;
   --sidebar-primary-foreground: #ffffff;
   --sidebar-accent: #fdb557;
   --sidebar-accent-foreground: #0b3865;
-  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-border: #e5e5e5;
   --sidebar-ring: #0b3865;
 
   /* App-chrome surfaces */
   --page-background: #f3f5f8;
   --header-background: #0b2540;
   --breadcrumb-background: #fdb557;
+  --workspace-hero-from: #f4f5f8;
+  --workspace-hero-to: #d3e9ff;
 }
 
 @theme inline {
@@ -90,14 +98,18 @@
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
   --color-destructive: var(--destructive);
+  --color-destructive-text: var(--destructive-text);
   --color-destructive-foreground: var(--destructive-foreground);
   --color-success: var(--success);
   --color-success-foreground: var(--success-foreground);
+  --color-success-text: var(--success-text);
   --color-warning: var(--warning);
   --color-warning-foreground: var(--warning-foreground);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+  --color-control-hover: var(--control-hover);
+  --color-control-active: var(--control-active);
 
   /* Chart palette */
   --color-chart-1: var(--chart-1);
@@ -120,4 +132,6 @@
   --color-page-background: var(--page-background);
   --color-header-background: var(--header-background);
   --color-breadcrumb-background: var(--breadcrumb-background);
+  --color-workspace-hero-from: var(--workspace-hero-from);
+  --color-workspace-hero-to: var(--workspace-hero-to);
 }

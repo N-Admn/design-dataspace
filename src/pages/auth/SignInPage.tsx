@@ -177,7 +177,7 @@ function SignInPage() {
   if (view === 'google-failure') {
     return (
       <AuthLayout>
-        <h1 className="text-2xl font-semibold text-primary">Google sign-in failed</h1>
+        <h1 className="type-heading-1 text-primary">Google sign-in failed</h1>
         <p className="mt-2 text-sm text-muted-foreground">
           We couldn't sign you in with Google. Please try again or use another sign-in method.
         </p>
@@ -195,7 +195,7 @@ function SignInPage() {
   if (view === 'account-found' && linkedAccount) {
     return (
       <AuthLayout>
-        <h1 className="text-2xl font-semibold text-primary">Existing account found</h1>
+        <h1 className="type-heading-1 text-primary">Existing account found</h1>
         <p className="mt-2 text-sm text-muted-foreground">
           This email is already associated with a CivicDataSpace account. Continue with Google to verify your
           identity.
@@ -215,10 +215,10 @@ function SignInPage() {
     return (
       <AuthLayout>
         <div className="flex flex-col items-center text-center">
-          <div className="flex size-14 items-center justify-center rounded-full bg-success/10 text-success">
+          <div className="flex size-14 items-center justify-center rounded-full bg-success/5 text-success-text">
             <CheckCircle2 className="size-7" />
           </div>
-          <h1 className="mt-4 text-2xl font-semibold text-primary">Account verified</h1>
+          <h1 className="mt-4 type-heading-1 text-primary">Account verified</h1>
           <p className="mt-2 text-sm text-muted-foreground">
             Your Google account is now connected to CivicDataSpace.
           </p>
@@ -231,7 +231,7 @@ function SignInPage() {
   if (view === 'different-account' && pendingGoogleAccount) {
     return (
       <AuthLayout>
-        <h1 className="text-2xl font-semibold text-primary">Different account detected</h1>
+        <h1 className="type-heading-1 text-primary">Different account detected</h1>
         <p className="mt-2 text-sm text-muted-foreground">
           This Google account is different from your existing CivicDataSpace account.
         </p>
@@ -252,7 +252,7 @@ function SignInPage() {
   if (view === 'create-account-google' && pendingNewAccount) {
     return (
       <AuthLayout>
-        <h1 className="text-2xl font-semibold text-primary">Create your CivicDataSpace account</h1>
+        <h1 className="type-heading-1 text-primary">Create your CivicDataSpace account</h1>
         <p className="mt-2 text-sm text-muted-foreground">Your Google account is ready. Create your CivicDataSpace account.</p>
 
         <div className="mt-6 flex flex-col gap-4">
@@ -263,7 +263,7 @@ function SignInPage() {
               className="mt-1.5 flex h-10 items-center justify-between gap-3 rounded-md border border-input bg-muted/40 px-3 text-sm text-foreground"
             >
               <span className="truncate">{pendingNewAccount.email}</span>
-              <span className="flex shrink-0 items-center gap-1 text-xs font-medium text-success">
+              <span className="flex shrink-0 items-center gap-1 text-xs font-medium text-success-text">
                 <Check className="size-3.5" />
                 Verified
               </span>
@@ -273,7 +273,7 @@ function SignInPage() {
           <button
             type="button"
             onClick={() => { setView('sign-in'); setGoogleChooserOpen(true) }}
-            className="self-start text-xs font-medium text-primary hover:underline"
+            className="self-start text-xs font-medium text-primary underline underline-offset-4"
           >
             Use a different Google account
           </button>
@@ -293,7 +293,7 @@ function SignInPage() {
   if (view === 'create-account-failure') {
     return (
       <AuthLayout>
-        <h1 className="text-2xl font-semibold text-primary">We couldn't create your account</h1>
+        <h1 className="type-heading-1 text-primary">We couldn't create your account</h1>
         <p className="mt-2 text-sm text-muted-foreground">
           Something went wrong while creating your CivicDataSpace account. Please try again.
         </p>
@@ -312,10 +312,10 @@ function SignInPage() {
     return (
       <AuthLayout>
         <div className="flex flex-col items-center text-center">
-          <div className="flex size-14 items-center justify-center rounded-full bg-success/10 text-success">
+          <div className="flex size-14 items-center justify-center rounded-full bg-success/5 text-success-text">
             <CheckCircle2 className="size-7" />
           </div>
-          <h1 className="mt-4 text-2xl font-semibold text-primary">Account created</h1>
+          <h1 className="mt-4 type-heading-1 text-primary">Account created</h1>
           <p className="mt-2 text-sm text-muted-foreground">Your CivicDataSpace account is ready.</p>
         </div>
       </AuthLayout>
@@ -325,7 +325,7 @@ function SignInPage() {
   /* ---------- Sign in (default) ---------- */
   return (
     <AuthLayout>
-      <h1 className="text-2xl font-semibold text-primary">Welcome back</h1>
+      <h1 className="type-heading-1 text-primary">Welcome back</h1>
       <p className="mt-2 text-sm text-muted-foreground">Sign in to continue to CivicDataSpace.</p>
 
       <form onSubmit={handleSubmit} noValidate className="mt-6 flex flex-col gap-4">
@@ -350,7 +350,7 @@ function SignInPage() {
         <div>
           <div className="flex items-center justify-between">
             <Label htmlFor="signin-password">Password *</Label>
-            <Link to="/auth/forgot-password" state={{ email }} className="text-xs font-medium text-primary hover:underline">
+            <Link to="/auth/forgot-password" state={{ email }} className="text-xs font-medium text-primary underline underline-offset-4">
               Forgot password?
             </Link>
           </div>
@@ -384,7 +384,7 @@ function SignInPage() {
 
       <p className="mt-6 text-center text-sm text-muted-foreground">
         Don't have an account?{' '}
-        <Link to="/auth/register" className="font-medium text-primary hover:underline">
+        <Link to="/auth/register" className="font-medium text-primary underline underline-offset-4">
           Create an account
         </Link>
       </p>

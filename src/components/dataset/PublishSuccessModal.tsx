@@ -36,7 +36,7 @@ function CopyField({ label, value }: { label: string; value: string }) {
       <div className="mt-1.5 flex items-center justify-between gap-3">
         <p className="min-w-0 flex-1 truncate font-mono text-sm text-foreground">{value}</p>
         <Button type="button" variant="outline" size="sm" className="shrink-0" onClick={handleCopy}>
-          {justCopied ? <Check className="size-4 text-success" /> : <Copy className="size-4" />}
+          {justCopied ? <Check className="size-4 text-success-text" /> : <Copy className="size-4" />}
           Copy
         </Button>
       </div>
@@ -50,7 +50,7 @@ function PublishSuccessModal({ open, datasetName, onCreateAnother, onViewWorkspa
       <DialogContent className="flex max-w-xl flex-col gap-0 p-0" showClose={false}>
         <div className="min-h-0 flex-1 overflow-y-auto">
           <div className="flex flex-col items-center gap-2 px-6 pb-1 pt-6 text-center">
-            <div className="flex size-12 items-center justify-center rounded-full bg-success/10 text-success">
+            <div className="flex size-12 items-center justify-center rounded-full bg-success/5 text-success-text">
               <CheckCircle2 className="size-6" />
             </div>
             <h2 className="text-base font-semibold text-primary">Dataset published</h2>

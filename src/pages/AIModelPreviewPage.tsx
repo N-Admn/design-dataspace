@@ -49,7 +49,7 @@ function AIModelPreviewPage() {
   if (!id || !form) {
     return (
       <div className="mx-auto flex max-w-lg flex-col items-center gap-3 py-24 text-center">
-        <p className="text-lg font-semibold text-foreground">Preview unavailable</p>
+        <p className="type-heading-3 text-foreground">Preview unavailable</p>
         <p className="text-sm text-muted-foreground">This AI Model preview could not be found. It may have been removed.</p>
         <Button type="button" variant="outline" onClick={() => navigate('/dashboard/ai-models')}>
           Back to AI Models
@@ -153,7 +153,7 @@ function AIModelPreviewPage() {
       </PreviewActionBar>
 
       {publishFailed && (
-        <div className="rounded-md border border-destructive/40 bg-destructive/10 px-4 py-2.5 text-sm text-destructive">
+        <div className="rounded-md border border-destructive/40 bg-destructive/5 px-4 py-2.5 text-sm text-destructive-text">
           <p className="font-medium">We couldn't publish your AI model.</p>
           <p className="mt-0.5">Your changes have been kept. Fix the highlighted issues and try again.</p>
         </div>

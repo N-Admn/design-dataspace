@@ -20,7 +20,7 @@ function PasswordRequirements({ password }: { password: string }) {
             key={item.label}
             className={cn(
               'flex items-center gap-1.5 text-xs',
-              item.met ? 'text-success' : 'text-muted-foreground',
+              item.met ? 'text-success-text' : 'text-muted-foreground',
             )}
           >
             {item.met ? (

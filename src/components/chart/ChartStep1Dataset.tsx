@@ -34,7 +34,7 @@ function ChartStep1Dataset({ datasetId, error, onSelect }: ChartStep1DatasetProp
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h2 className="text-lg font-semibold text-primary">Dataset</h2>
+        <h2 className="type-heading-2 text-primary">Dataset</h2>
         <p className="mt-1 text-sm text-muted-foreground">Choose the dataset this chart will appear on.</p>
       </div>
 

@@ -29,7 +29,7 @@ function AIModelPreview({ form }: { form: AIModelFormState }) {
           <Sparkles className="size-3.5" />
           AI Model
         </div>
-        <h1 className="mt-1.5 text-2xl font-semibold text-primary">{metadata.name || 'Untitled AI Model'}</h1>
+        <h1 className="mt-1.5 type-heading-1 text-primary">{metadata.name || 'Untitled AI Model'}</h1>
 
         <div className="mt-3 flex flex-wrap items-center gap-1.5">
           {metadata.modelType && <Badge variant="accent">{optionLabel(MODEL_TYPE_OPTIONS, metadata.modelType)}</Badge>}
@@ -48,7 +48,7 @@ function AIModelPreview({ form }: { form: AIModelFormState }) {
             href={metadata.website}
             target="_blank"
             rel="noreferrer"
-            className="mt-3 inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline"
+            className="mt-3 inline-flex items-center gap-1.5 text-sm font-medium text-primary underline underline-offset-4"
           >
             <ExternalLink className="size-3.5" />
             {metadata.website}

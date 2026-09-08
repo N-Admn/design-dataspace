@@ -47,14 +47,14 @@ function AIModelStep3Review({ form, otherNames, onEditStep, onPreview }: AIModel
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h2 className="text-lg font-semibold text-primary">Review AI Model</h2>
+        <h2 className="type-heading-2 text-primary">Review AI Model</h2>
         <p className="mt-1 text-sm text-muted-foreground">
           Check the model information, versions and access configuration before publishing.
         </p>
       </div>
 
       <div className="rounded-xl border border-border bg-card p-5">
-        <p className={ready ? 'text-sm font-semibold text-success' : 'text-sm font-semibold text-warning-foreground'}>
+        <p className={ready ? 'text-sm font-semibold text-success-text' : 'text-sm font-semibold text-warning-foreground'}>
           {ready ? 'Ready to publish' : 'Needs attention'}
         </p>
         {!ready && (
@@ -77,7 +77,7 @@ function AIModelStep3Review({ form, otherNames, onEditStep, onPreview }: AIModel
         )}
         {ready && (
           <div className="mt-2 flex items-center gap-2">
-            <CheckCircle2 className="size-4 text-success" />
+            <CheckCircle2 className="size-4 text-success-text" />
             <p className="text-sm text-muted-foreground">Everything required to publish is in place.</p>
           </div>
         )}
@@ -177,7 +177,7 @@ function AIModelStep3Review({ form, otherNames, onEditStep, onPreview }: AIModel
           <SummaryRow
             label="Model Website"
             value={metadata.website ? (
-              <a href={metadata.website} target="_blank" rel="noreferrer" className="text-primary hover:underline">
+              <a href={metadata.website} target="_blank" rel="noreferrer" className="text-primary underline underline-offset-4">
                 {metadata.website}
               </a>
             ) : '—'}

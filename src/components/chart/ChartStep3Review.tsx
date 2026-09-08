@@ -44,7 +44,7 @@ function ChartStep3Review({ form, otherCharts, onNameChange, onEditStep, onPubli
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h2 className="text-lg font-semibold text-primary">Review</h2>
+        <h2 className="type-heading-2 text-primary">Review</h2>
         <p className="mt-1 text-sm text-muted-foreground">Check your chart before publishing.</p>
       </div>
 
@@ -142,7 +142,7 @@ function ChartStep3Review({ form, otherCharts, onNameChange, onEditStep, onPubli
       </Card>
 
       <div className="rounded-xl border border-border bg-card p-5">
-        <p className={ready ? 'text-sm font-semibold text-success' : 'text-sm font-semibold text-warning-foreground'}>
+        <p className={ready ? 'text-sm font-semibold text-success-text' : 'text-sm font-semibold text-warning-foreground'}>
           {ready ? 'Ready to publish' : 'Needs attention'}
         </p>
         <div className="mt-3 flex flex-col gap-2">
@@ -152,7 +152,7 @@ function ChartStep3Review({ form, otherCharts, onNameChange, onEditStep, onPubli
               <div key={item.key} className="flex items-center justify-between gap-3">
                 <div className="flex items-center gap-2">
                   {item.ok ? (
-                    <CheckCircle2 className="size-4 shrink-0 text-success" />
+                    <CheckCircle2 className="size-4 shrink-0 text-success-text" />
                   ) : (
                     <AlertTriangle className="size-4 shrink-0 text-warning-foreground" />
                   )}

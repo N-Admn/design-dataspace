@@ -96,7 +96,7 @@ function ChartStep2Create({ datasetId, form, errors, onSelectFile, onSelectChart
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h2 className="text-lg font-semibold text-primary">Create your chart</h2>
+        <h2 className="type-heading-2 text-primary">Create your chart</h2>
       </div>
 
       <Card>
@@ -155,7 +155,7 @@ function ChartStep2Create({ datasetId, form, errors, onSelectFile, onSelectChart
                         <div className="flex w-full items-center justify-between">
                           <Icon className={cn('size-5', isSelected ? 'text-primary' : 'text-muted-foreground')} />
                           {option.value === recommended && (
-                            <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary">
+                            <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
                               Recommended
                             </span>
                           )}

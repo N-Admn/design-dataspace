@@ -394,7 +394,7 @@ function ManagementTable<T, S extends string>({
           {pageItems.map((row) => {
             const rowActions = getActions(row)
             return (
-              <div key={getId(row)} role="row" className="grid items-center border-b border-border last:border-b-0 hover:bg-muted/30" style={{ gridTemplateColumns: columnTemplate }}>
+              <div key={getId(row)} role="row" className="grid items-center border-b border-border tabular-nums last:border-b-0 hover:bg-control-hover" style={{ gridTemplateColumns: columnTemplate }}>
                 <div role="cell" className="min-w-0 px-4">
                   {primaryColumn.render(row)}
                 </div>
@@ -513,7 +513,7 @@ function ManagementTable<T, S extends string>({
                   <span className="text-xs text-muted-foreground">locked</span>
                 </label>
                 {optionalColumns.map((col) => (
-                  <label key={col.key} className="flex items-center gap-2.5 rounded-sm px-2.5 py-1.5 hover:bg-muted">
+                  <label key={col.key} className="flex items-center gap-2.5 rounded-sm px-2.5 py-1.5 hover:bg-control-hover">
                     <Checkbox checked={visibleColumns.has(col.key)} onCheckedChange={() => toggleColumn(col.key)} />
                     <span className="flex-1 text-sm text-foreground">{col.label}</span>
                   </label>

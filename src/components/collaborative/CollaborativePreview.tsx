@@ -27,7 +27,7 @@ function CollaborativePreview({ form }: { form: CollaborativeFormState }) {
       <div className="border-b border-border">
         {metadata.image?.dataUrl && <img src={metadata.image.dataUrl} alt="" className="h-56 w-full object-cover" />}
         <div className="px-6 py-6">
-          <h1 className="text-2xl font-semibold text-primary">{metadata.name || 'Untitled Collaborative'}</h1>
+          <h1 className="type-heading-1 text-primary">{metadata.name || 'Untitled Collaborative'}</h1>
 
           <div className="mt-3 flex flex-wrap items-center gap-1.5">
             {metadata.sectors.map((s) => (
@@ -54,7 +54,7 @@ function CollaborativePreview({ form }: { form: CollaborativeFormState }) {
               href={metadata.externalUrl}
               target="_blank"
               rel="noreferrer"
-              className="mt-3 inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline"
+              className="mt-3 inline-flex items-center gap-1.5 text-sm font-medium text-primary underline underline-offset-4"
             >
               <ExternalLink className="size-3.5" />
               {metadata.externalUrl}

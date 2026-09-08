@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom'
-import { ArrowRight, CalendarDays, Database, FolderKanban, LayoutGrid, Users } from 'lucide-react'
+import { ArrowRight, CalendarDays, Database, FolderKanban, Users } from 'lucide-react'
 
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { CircleArrow } from '@/components/shared/CircleArrow'
@@ -113,9 +113,7 @@ function DashboardPage() {
         {/* Left panel — hero + My Workspace */}
         <div className={cn('flex flex-col justify-between gap-10 bg-card p-8 md:p-10', PANEL_RADIUS)}>
           <div>
-            <h1 className="text-5xl font-semibold leading-[1.05] text-primary md:text-6xl">
-              Welcome to CivicDataSpace
-            </h1>
+            <h1 className="type-display text-primary">Welcome to CivicDataSpace</h1>
             <p className="mt-5 text-sm text-muted-foreground">
               Create, manage and share data, knowledge and tools through CivicDataSpace.
             </p>
@@ -125,16 +123,18 @@ function DashboardPage() {
             type="button"
             onClick={() => navigate('/dashboard/datasets')}
             className={cn(
-              'flex flex-1 flex-col justify-between gap-8 bg-[linear-gradient(252deg,#F4F5F8_0%,#D3E9FF_97.53%)] p-8 text-left transition-shadow hover:shadow-md md:min-h-[22rem]',
+              'flex flex-1 flex-col justify-between gap-8 bg-[linear-gradient(252deg,var(--workspace-hero-from)_0%,var(--workspace-hero-to)_97.53%)] p-8 text-left transition-shadow hover:shadow-md md:min-h-[22rem]',
               PANEL_RADIUS,
             )}
           >
-            {/* strokeWidth is in the 24-unit viewBox; at size-50 (200px) one unit ≈ 8.3px,
-                so 1.2 ≈ a 10px stroke. */}
-            <LayoutGrid strokeWidth={1.2} className="size-50 shrink-0 text-primary-foreground" />
+            <img
+              src="/visuals/my-workspace-infographic.png"
+              alt=""
+              className="h-[250px] w-auto max-w-[250px] shrink-0 select-none object-contain"
+            />
             <div className="flex items-end justify-between gap-4">
               <div>
-                <p className="text-2xl font-semibold text-primary">My Workspace</p>
+                <p className="type-heading-1 text-primary">My Workspace</p>
                 <p className="mt-1 text-sm text-muted-foreground">Manage your individual contributions.</p>
                 <p className="mt-2 text-xs font-medium text-muted-foreground">{MODULE_LIST}</p>
               </div>
@@ -152,7 +152,7 @@ function DashboardPage() {
           >
             <div className="flex items-center justify-between gap-4">
               <div>
-                <p className="text-2xl font-semibold text-primary">Organisation Workspace</p>
+                <p className="type-heading-1 text-primary">Organisation Workspace</p>
                 <p className="mt-2 text-sm text-muted-foreground">
                   Manage contributions on behalf of an organization.
                 </p>
@@ -163,7 +163,7 @@ function DashboardPage() {
           </button>
 
           <div className={cn('flex flex-1 flex-col gap-4 bg-card p-8 md:p-10', PANEL_RADIUS)}>
-            <p className="text-2xl font-semibold text-primary">Continue Working</p>
+            <p className="type-heading-1 text-primary">Continue Working</p>
             {resumeItems.length === 0 ? (
               <p className="text-sm text-muted-foreground">Nothing to work on today.</p>
             ) : (
@@ -178,7 +178,7 @@ function DashboardPage() {
                       className="flex flex-1 items-center gap-4 rounded-xl bg-muted/60 p-4 text-left transition-colors hover:bg-muted"
                     >
                       <div className="flex size-12 shrink-0 items-center justify-center rounded-lg bg-card text-primary">
-                        <Icon className="size-[34px]" />
+                        <Icon className="size-7" />
                       </div>
                       <div className="min-w-0 flex-1">
                         <p className="truncate text-sm font-semibold text-foreground">{item.title}</p>

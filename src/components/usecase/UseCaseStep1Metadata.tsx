@@ -20,7 +20,7 @@ function UseCaseStep1Metadata({ metadata, errors, onChange }: UseCaseStep1Metada
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h2 className="text-lg font-semibold text-primary">Start</h2>
+        <h2 className="type-heading-2 text-primary">Start</h2>
         <p className="mt-1 text-sm text-muted-foreground">Name and classify this Use Case.</p>
       </div>
 

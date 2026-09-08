@@ -45,7 +45,7 @@ function ForgotPasswordPage() {
           <div className="flex size-14 items-center justify-center rounded-full bg-primary/10 text-primary">
             <Mail className="size-7" />
           </div>
-          <h1 className="mt-4 text-2xl font-semibold text-primary">Check your email</h1>
+          <h1 className="mt-4 type-heading-1 text-primary">Check your email</h1>
           <p className="mt-2 text-sm text-muted-foreground">
             If an account exists for this email, we've sent instructions to reset your password.
           </p>
@@ -59,7 +59,7 @@ function ForgotPasswordPage() {
 
   return (
     <AuthLayout>
-      <h1 className="text-2xl font-semibold text-primary">Reset your password</h1>
+      <h1 className="type-heading-1 text-primary">Reset your password</h1>
       <p className="mt-2 text-sm text-muted-foreground">
         Enter your email address and we'll send you a link to reset your password.
       </p>
@@ -89,7 +89,7 @@ function ForgotPasswordPage() {
       </form>
 
       <p className="mt-6 text-center text-sm">
-        <Link to="/auth/sign-in" className="font-medium text-primary hover:underline">
+        <Link to="/auth/sign-in" className="font-medium text-primary underline underline-offset-4">
           Back to Sign In
         </Link>
       </p>

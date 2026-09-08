@@ -15,7 +15,7 @@ function HelpButton() {
             type="button"
             aria-label="Help & guidance"
             onClick={() => setOpen(true)}
-            className="fixed bottom-6 right-6 z-40 flex size-12 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg transition-colors hover:bg-primary/90"
+            className="fixed bottom-[34px] right-6 z-40 flex size-12 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg transition-colors hover:bg-primary/90"
           >
             <HelpCircle className="size-5" />
           </button>

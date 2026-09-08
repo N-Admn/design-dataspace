@@ -122,7 +122,7 @@ function DatasetConnectionsCard({
           <button
             type="button"
             onClick={() => setCreateOpen(true)}
-            className="text-xs font-medium text-primary hover:underline"
+            className="text-xs font-medium text-primary underline underline-offset-4"
           >
             + Create New Dataset
           </button>
@@ -130,7 +130,7 @@ function DatasetConnectionsCard({
       </CardHeader>
       <CardContent className="flex flex-col gap-3">
         {justAddedMessage && (
-          <div className="flex items-center gap-2 rounded-md border border-success/30 bg-success/10 px-3 py-2.5 text-sm font-medium text-success">
+          <div className="flex items-center gap-2 rounded-md border border-success/30 bg-success/5 px-3 py-2.5 text-sm font-medium text-success-text">
             <CheckCircle2 className="size-4 shrink-0" />
             {justAddedMessage}
           </div>

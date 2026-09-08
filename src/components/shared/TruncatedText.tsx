@@ -25,7 +25,7 @@ function TruncatedText({ children, className }: TruncatedTextProps) {
   }, [children])
 
   const content = (
-    <span ref={ref} tabIndex={overflowing ? 0 : undefined} className={cn('block truncate outline-none', className)}>
+    <span ref={ref} tabIndex={overflowing ? 0 : undefined} className={cn('block truncate rounded-sm', className)}>
       {children}
     </span>
   )

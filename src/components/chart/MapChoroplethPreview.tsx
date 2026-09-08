@@ -12,7 +12,7 @@ import type { ChartAggregation } from '@/types/chart'
 import type { ChartRow } from '@/lib/chart-data'
 
 const NO_DATA_FILL = 'var(--muted)'
-const BASE_BORDER = 'var(--border)'
+const BASE_BORDER = 'var(--border-strong)'
 const HOVER_BORDER = 'var(--primary)'
 const UNMATCHED_VALUES_DISPLAY_LIMIT = 6
 
@@ -122,7 +122,7 @@ function ChoroplethMap({ data, valueLabel, configKey }: ChoroplethMapProps) {
 
       {hasAnyData && (
         <div className="flex flex-col items-center gap-1 self-center">
-          <div className="flex w-48 justify-between text-[10px] font-medium text-foreground">
+          <div className="flex w-48 justify-between text-xs font-medium text-foreground">
             <span>{formatChartNumber(data.min)}</span>
             <span>{formatChartNumber(data.max)}</span>
           </div>
@@ -130,7 +130,7 @@ function ChoroplethMap({ data, valueLabel, configKey }: ChoroplethMapProps) {
             className="h-2 w-48 rounded-full"
             style={{ background: 'linear-gradient(to right, color-mix(in srgb, var(--primary) 12%, var(--muted)), var(--primary))' }}
           />
-          <div className="flex w-48 justify-between text-[10px] text-muted-foreground">
+          <div className="flex w-48 justify-between text-xs text-muted-foreground">
             <span>Low</span>
             <span>High</span>
           </div>

@@ -151,7 +151,7 @@ function EventConnectionsStep({ form, onChange }: EventConnectionsStepProps) {
           <button
             type="button"
             onClick={() => setAddOrgTarget('organiser')}
-            className="text-xs font-medium text-primary hover:underline"
+            className="text-xs font-medium text-primary underline underline-offset-4"
           >
             + Add New Organisation
           </button>
@@ -180,7 +180,7 @@ function EventConnectionsStep({ form, onChange }: EventConnectionsStepProps) {
           <button
             type="button"
             onClick={() => setAddOrgTarget('partner')}
-            className="text-xs font-medium text-primary hover:underline"
+            className="text-xs font-medium text-primary underline underline-offset-4"
           >
             + Add New Organisation
           </button>
@@ -213,7 +213,7 @@ function EventConnectionsStep({ form, onChange }: EventConnectionsStepProps) {
           <button
             type="button"
             onClick={openAddSpeaker}
-            className="text-xs font-medium text-primary hover:underline"
+            className="text-xs font-medium text-primary underline underline-offset-4"
           >
             + Add Speaker
           </button>

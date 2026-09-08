@@ -65,11 +65,11 @@ function WorkspaceHeader({
                 setIsEditing(false)
               }
             }}
-            className="min-w-0 flex-1 rounded-md border border-input bg-background px-2 py-1 text-lg font-semibold text-primary outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="min-w-0 flex-1 rounded-md border border-input bg-background px-2 py-1 type-heading-2 text-primary outline-none focus-visible:ring-2 focus-visible:ring-ring"
           />
         ) : (
           <div className="flex min-w-0 items-center gap-1.5">
-            <h1 className="truncate text-lg font-semibold text-primary">{title}</h1>
+            <h1 className="truncate type-heading-2 text-primary">{title}</h1>
             {onTitleChange && (
               <Tooltip>
                 <TooltipTrigger asChild>

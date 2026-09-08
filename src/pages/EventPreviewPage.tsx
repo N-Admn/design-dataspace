@@ -45,7 +45,7 @@ function EventPreviewPage() {
   if (!id || !form) {
     return (
       <div className="mx-auto flex max-w-lg flex-col items-center gap-3 py-24 text-center">
-        <p className="text-lg font-semibold text-foreground">Preview unavailable</p>
+        <p className="type-heading-3 text-foreground">Preview unavailable</p>
         <p className="text-sm text-muted-foreground">This event preview could not be found. It may have been removed.</p>
         <Button type="button" variant="outline" onClick={() => navigate('/dashboard/events')}>
           Back to Events

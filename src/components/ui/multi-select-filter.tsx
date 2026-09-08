@@ -101,7 +101,7 @@ function MultiSelectFilter({
                 <button
                   type="button"
                   onClick={() => onToggle(option.value)}
-                  className="flex w-full items-center justify-between rounded-sm px-2 py-2 text-left text-sm hover:bg-muted focus-visible:bg-muted focus-visible:outline-none"
+                  className="flex w-full items-center justify-between rounded-sm px-2 py-2 text-left text-sm hover:bg-control-hover focus-visible:bg-control-hover focus-visible:outline-none"
                 >
                   <span>{option.label}</span>
                   {isSelected && <Check className="size-4 text-primary" />}

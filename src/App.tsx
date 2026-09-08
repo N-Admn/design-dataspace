@@ -1,3 +1,4 @@
+import * as React from 'react'
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 
 import { TopNav } from '@/components/layout/TopNav'
@@ -27,18 +28,48 @@ import { AIModelPreviewPage } from '@/pages/AIModelPreviewPage'
 import { ChartsPage } from '@/pages/ChartsPage'
 import { ChartCreationPage } from '@/pages/ChartCreationPage'
 import { ProfilePage } from '@/pages/ProfilePage'
+import { DesignSystemPage } from '@/pages/DesignSystemPage'
 import { SignInPage } from '@/pages/auth/SignInPage'
 import { RegisterPage } from '@/pages/auth/RegisterPage'
 import { ForgotPasswordPage } from '@/pages/auth/ForgotPasswordPage'
 
+/** Measure the actual fixed-chrome height (top nav + breadcrumb + the main
+ *  element's vertical padding) and publish it as `--layout-chrome-offset`, so
+ *  workspace/table heights stay correct when the chrome grows at narrow widths
+ *  or under text-resize. Falls back to the 188px static value in index.css. */
+function useChromeOffset(routeKey: string) {
+  React.useLayoutEffect(() => {
+    const root = document.documentElement
+    const header = document.querySelector('header[data-chrome="dark"]')
+    const crumb = document.querySelector('[data-slot="breadcrumb"]')
+    const sync = () => {
+      const mainPad = 64 // px-10 py-8 → 32px top + 32px bottom
+      const px = ((header as HTMLElement | null)?.offsetHeight ?? 88) + ((crumb as HTMLElement | null)?.offsetHeight ?? 0) + mainPad
+      root.style.setProperty('--layout-chrome-offset', `${px}px`)
+    }
+    sync()
+    const ro = new ResizeObserver(sync)
+    if (header) ro.observe(header)
+    if (crumb) ro.observe(crumb)
+    window.addEventListener('resize', sync)
+    return () => {
+      ro.disconnect()
+      window.removeEventListener('resize', sync)
+    }
+    // Re-query when the route changes (the breadcrumb is conditionally rendered).
+  }, [routeKey])
+}
+
 function AppLayout() {
   const location = useLocation()
+  useChromeOffset(location.pathname)
   const isDashboard = location.pathname === '/'
   const isUseCasePreview = /^\/dashboard\/use-cases\/[^/]+\/preview$/.test(location.pathname)
   const isCollaborativePreview = /^\/dashboard\/collaboratives\/[^/]+\/preview$/.test(location.pathname)
   const isAIModelPreview = /^\/dashboard\/ai-models\/[^/]+\/preview$/.test(location.pathname)
   const isEventPreview = /^\/dashboard\/events\/[^/]+\/preview$/.test(location.pathname)
-  const hideSidebar = isDashboard || isUseCasePreview || isCollaborativePreview || isAIModelPreview || isEventPreview
+  const isDesignSystem = location.pathname === '/design-system'
+  const hideSidebar = isDashboard || isUseCasePreview || isCollaborativePreview || isAIModelPreview || isEventPreview || isDesignSystem
   const isAuthRoute = location.pathname.startsWith('/auth/')
 
   if (isAuthRoute) {
@@ -83,6 +114,7 @@ function AppLayout() {
             <Route path="/dashboard/charts" element={<ChartsPage />} />
             <Route path="/dashboard/charts/new" element={<ChartCreationPage />} />
             <Route path="/dashboard/profile" element={<ProfilePage />} />
+            <Route path="/design-system" element={<DesignSystemPage />} />
             <Route path="*" element={<Navigate to="/dashboard/datasets" replace />} />
           </Routes>
         </div>

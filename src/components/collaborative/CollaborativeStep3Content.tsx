@@ -42,7 +42,7 @@ function CollaborativeStep3Content({ connections, onChange, onCreateUseCase }: C
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h2 className="text-lg font-semibold text-primary">Content</h2>
+        <h2 className="type-heading-2 text-primary">Content</h2>
         <p className="mt-1 text-sm text-muted-foreground">Connect datasets and use cases related to this Collaborative.</p>
       </div>
 
@@ -74,7 +74,7 @@ function CollaborativeStep3Content({ connections, onChange, onCreateUseCase }: C
             <button
               type="button"
               onClick={onCreateUseCase}
-              className="text-xs font-medium text-primary hover:underline"
+              className="text-xs font-medium text-primary underline underline-offset-4"
             >
               + Create New Use Case
             </button>
@@ -82,7 +82,7 @@ function CollaborativeStep3Content({ connections, onChange, onCreateUseCase }: C
         </CardHeader>
         <CardContent className="flex flex-col gap-3">
           {justAddedMessage && (
-            <div className="flex items-center gap-2 rounded-md border border-success/30 bg-success/10 px-3 py-2.5 text-sm font-medium text-success">
+            <div className="flex items-center gap-2 rounded-md border border-success/30 bg-success/5 px-3 py-2.5 text-sm font-medium text-success-text">
               <CheckCircle2 className="size-4 shrink-0" />
               {justAddedMessage}
             </div>

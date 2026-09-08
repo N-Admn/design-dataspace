@@ -216,7 +216,7 @@ function Step3Review({ form, datasetId, canPublish, hasLiveVersion, onEditStep, 
               key={file.id}
               className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg border border-border px-4 py-3"
             >
-              <CheckCircle2 className="size-5 shrink-0 text-success" />
+              <CheckCircle2 className="size-5 shrink-0 text-success-text" />
               <span className="text-sm font-medium text-foreground">{getResourceTitle(file)}</span>
               <Badge variant="secondary">{file.extension}</Badge>
               <span className="text-xs text-muted-foreground">{file.sizeLabel}</span>

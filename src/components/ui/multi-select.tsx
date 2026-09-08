@@ -92,7 +92,7 @@ function MultiSelect({
                   type="button"
                   onClick={() => toggle(option.value)}
                   className={cn(
-                    'flex w-full items-center justify-between rounded-sm px-2 py-2 text-left text-sm hover:bg-muted',
+                    'flex w-full items-center justify-between rounded-sm px-2 py-2 text-left text-sm hover:bg-control-hover',
                     isSelected && 'bg-muted',
                   )}
                 >

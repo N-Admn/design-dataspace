@@ -40,7 +40,7 @@ function CollaborativeStep2People({ connections, onChange }: CollaborativeStep2P
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h2 className="text-lg font-semibold text-primary">People</h2>
+        <h2 className="type-heading-2 text-primary">People</h2>
         <p className="mt-1 text-sm text-muted-foreground">Who is involved in this Collaborative?</p>
       </div>
 

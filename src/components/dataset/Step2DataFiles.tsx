@@ -77,7 +77,7 @@ function FileRow({
 
   return (
     <div className="flex flex-wrap items-center gap-3 rounded-lg border border-border px-4 py-3">
-      <CheckCircle2 className="size-5 shrink-0 text-success" />
+      <CheckCircle2 className="size-5 shrink-0 text-success-text" />
       <div className="min-w-0 flex-1">
         {isEditing ? (
           <Input
@@ -414,7 +414,7 @@ function Step2DataFiles({
                 </Button>
 
                 {extractStatus === 'error' && extractError && (
-                  <div className="flex items-start gap-2 rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2.5 text-sm text-destructive">
+                  <div className="flex items-start gap-2 rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2.5 text-sm text-destructive-text">
                     <AlertCircle className="mt-0.5 size-4 shrink-0" />
                     <p className="font-medium">{extractError}</p>
                   </div>
@@ -429,7 +429,7 @@ function Step2DataFiles({
         <CardHeader className="flex-row items-center justify-between">
           <CardTitle>Uploaded Files ({files.length})</CardTitle>
           {files.length > 0 && (
-            <div className="flex items-center gap-1.5 text-sm font-medium text-success">
+            <div className="flex items-center gap-1.5 text-sm font-medium text-success-text">
               <CheckCircle2 className="size-4" />
               {files.length} File{files.length === 1 ? '' : 's'} Ready
             </div>

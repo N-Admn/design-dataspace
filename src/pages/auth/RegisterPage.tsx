@@ -88,10 +88,10 @@ function RegisterPage() {
     return (
       <AuthLayout>
         <div className="flex flex-col items-center text-center">
-          <div className="flex size-14 items-center justify-center rounded-full bg-success/10 text-success">
+          <div className="flex size-14 items-center justify-center rounded-full bg-success/5 text-success-text">
             <CheckCircle2 className="size-7" />
           </div>
-          <h1 className="mt-4 text-2xl font-semibold text-primary">Account created</h1>
+          <h1 className="mt-4 type-heading-1 text-primary">Account created</h1>
           <p className="mt-2 text-sm text-muted-foreground">Welcome to CivicDataSpace.</p>
           <Button type="button" size="lg" className="mt-6 w-full" onClick={() => navigate('/')}>
             Continue to Dashboard
@@ -103,7 +103,7 @@ function RegisterPage() {
 
   return (
     <AuthLayout>
-      <h1 className="text-2xl font-semibold text-primary">Create your account</h1>
+      <h1 className="type-heading-1 text-primary">Create your account</h1>
       <p className="mt-2 text-sm text-muted-foreground">
         Join CivicDataSpace to create, manage and share civic data and knowledge.
       </p>
@@ -223,7 +223,7 @@ function RegisterPage() {
 
       <p className="mt-6 text-center text-sm text-muted-foreground">
         Already have an account?{' '}
-        <Link to="/auth/sign-in" className="font-medium text-primary hover:underline">
+        <Link to="/auth/sign-in" className="font-medium text-primary underline underline-offset-4">
           Sign in
         </Link>
       </p>

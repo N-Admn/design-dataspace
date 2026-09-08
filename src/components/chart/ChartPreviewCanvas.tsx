@@ -22,7 +22,7 @@ function BarPreview({
     <div className="flex items-stretch gap-2">
       {yAxisLabel && (
         <div className="flex w-14 shrink-0 items-center justify-end sm:w-20">
-          <span className="text-right text-[11px] leading-tight text-muted-foreground" title={yAxisLabel}>
+          <span className="text-right text-xs leading-tight text-muted-foreground" title={yAxisLabel}>
             {yAxisLabel}
           </span>
         </div>
@@ -31,12 +31,12 @@ function BarPreview({
         <div className="flex h-48 items-end gap-3 px-1">
           {points.map((point, i) => (
             <div key={point.label} className="flex min-w-0 flex-1 flex-col items-center gap-1.5">
-              <span className="text-xs font-medium text-foreground">{formatNumber(point.value)}</span>
+              <span className="text-xs font-medium tabular-nums text-foreground">{formatNumber(point.value)}</span>
               <div
                 className="w-full rounded-t-md"
                 style={{ height: `${Math.max((point.value / max) * 160, 4)}px`, backgroundColor: SERIES_COLORS[i % SERIES_COLORS.length] }}
               />
-              <span className="w-full truncate text-center text-[11px] text-muted-foreground" title={point.label}>
+              <span className="w-full truncate text-center text-xs text-muted-foreground" title={point.label}>
                 {point.label}
               </span>
             </div>
@@ -85,7 +85,7 @@ function LinePreview({
     <div className="flex items-stretch gap-2">
       {yAxisLabel && (
         <div className="flex w-14 shrink-0 items-center justify-end sm:w-20">
-          <span className="text-right text-[11px] leading-tight text-muted-foreground" title={yAxisLabel}>
+          <span className="text-right text-xs leading-tight text-muted-foreground" title={yAxisLabel}>
             {yAxisLabel}
           </span>
         </div>
@@ -103,7 +103,7 @@ function LinePreview({
             <circle key={c.label} cx={c.x} cy={c.y} r={3.5} fill="var(--primary)" />
           ))}
         </svg>
-        <div className="mt-1 flex justify-between px-1 text-[11px] text-muted-foreground">
+        <div className="mt-1 flex justify-between px-1 text-xs text-muted-foreground">
           {coords.map((c) => (
             <span key={c.label} className="max-w-[70px] truncate" title={c.label}>
               {c.label}
@@ -140,7 +140,7 @@ function PiePreview({ points, showLegend }: { points: { label: string; value: nu
             <div key={point.label} className="flex items-center gap-2 text-sm">
               <span className="size-2.5 shrink-0 rounded-full" style={{ backgroundColor: SERIES_COLORS[i % SERIES_COLORS.length] }} />
               <span className="text-foreground">{point.label}</span>
-              <span className="text-xs text-muted-foreground">
+              <span className="text-xs tabular-nums text-muted-foreground">
                 {formatNumber(point.value)} · {Math.round((point.value / total) * 100)}%
               </span>
             </div>
@@ -172,7 +172,7 @@ function BigNumberPreview({ value, unit, label }: { value: number; unit: string;
     <div className="flex flex-col items-center justify-center gap-2 py-10 text-center">
       <p className="flex flex-wrap items-baseline justify-center gap-x-1.5">
         {isCurrency && <span className="text-3xl font-semibold text-primary">{trimmedUnit}</span>}
-        <span className="text-5xl font-bold leading-none text-primary">{formatted}</span>
+        <span className="text-5xl font-bold leading-none tabular-nums text-primary">{formatted}</span>
         {trimmedUnit && !isCurrency && <span className="text-lg font-medium text-primary/70">{trimmedUnit}</span>}
       </p>
       <p className="text-sm text-muted-foreground">{label}</p>

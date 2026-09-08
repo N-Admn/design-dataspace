@@ -84,7 +84,7 @@ function AIModelStep1Details({ form, otherNames, onChange }: AIModelStep1Details
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h2 className="text-lg font-semibold text-primary">Model Information</h2>
+        <h2 className="type-heading-2 text-primary">Model Information</h2>
         <p className="mt-1 text-sm text-muted-foreground">
           Describe the model, who it is for, and how it should be discovered.
         </p>
@@ -387,7 +387,7 @@ function AIModelStep1Details({ form, otherNames, onChange }: AIModelStep1Details
               <button
                 type="button"
                 onClick={() => onChange('license', 'cc-by-4.0')}
-                className="mt-1.5 text-xs font-medium text-primary hover:underline"
+                className="mt-1.5 text-xs font-medium text-primary underline underline-offset-4"
               >
                 Use suggested default — CC BY 4.0
               </button>
