@@ -29,6 +29,7 @@ import { ChartsPage } from '@/pages/ChartsPage'
 import { ChartCreationPage } from '@/pages/ChartCreationPage'
 import { ProfilePage } from '@/pages/ProfilePage'
 import { DesignSystemPage } from '@/pages/DesignSystemPage'
+import { ComingSoonPage } from '@/pages/ComingSoonPage'
 import { SignInPage } from '@/pages/auth/SignInPage'
 import { RegisterPage } from '@/pages/auth/RegisterPage'
 import { ForgotPasswordPage } from '@/pages/auth/ForgotPasswordPage'
@@ -69,7 +70,12 @@ function AppLayout() {
   const isAIModelPreview = /^\/dashboard\/ai-models\/[^/]+\/preview$/.test(location.pathname)
   const isEventPreview = /^\/dashboard\/events\/[^/]+\/preview$/.test(location.pathname)
   const isDesignSystem = location.pathname === '/design-system'
-  const hideSidebar = isDashboard || isUseCasePreview || isCollaborativePreview || isAIModelPreview || isEventPreview || isDesignSystem
+  const isConsumerRoute =
+    location.pathname.startsWith('/explore/') ||
+    location.pathname === '/collaboratives' ||
+    location.pathname === '/forum'
+  const hideSidebar =
+    isDashboard || isUseCasePreview || isCollaborativePreview || isAIModelPreview || isEventPreview || isDesignSystem || isConsumerRoute
   const isAuthRoute = location.pathname.startsWith('/auth/')
 
   if (isAuthRoute) {
@@ -85,7 +91,7 @@ function AppLayout() {
   return (
     <div className="flex min-h-screen flex-col">
       <TopNav />
-      {!isUseCasePreview && !isCollaborativePreview && !isAIModelPreview && !isEventPreview && <BreadcrumbBar />}
+      {!isUseCasePreview && !isCollaborativePreview && !isAIModelPreview && !isEventPreview && !isConsumerRoute && <BreadcrumbBar />}
 
       <main
         className={cn(
@@ -115,6 +121,13 @@ function AppLayout() {
             <Route path="/dashboard/charts/new" element={<ChartCreationPage />} />
             <Route path="/dashboard/profile" element={<ProfilePage />} />
             <Route path="/design-system" element={<DesignSystemPage />} />
+            <Route path="/explore/datasets" element={<ComingSoonPage title="Datasets" />} />
+            <Route path="/explore/use-cases" element={<ComingSoonPage title="Use Cases" />} />
+            <Route path="/explore/ai-models" element={<ComingSoonPage title="AI Models and Prompts" />} />
+            <Route path="/explore/publications" element={<ComingSoonPage title="Publications" />} />
+            <Route path="/explore/events" element={<ComingSoonPage title="Events" />} />
+            <Route path="/collaboratives" element={<ComingSoonPage title="Collaboratives" />} />
+            <Route path="/forum" element={<ComingSoonPage title="Forum" />} />
             <Route path="*" element={<Navigate to="/dashboard/datasets" replace />} />
           </Routes>
         </div>
