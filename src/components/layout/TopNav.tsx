@@ -1,9 +1,22 @@
+import { useState } from 'react'
 import { ChevronDown, LayoutDashboard, LogOut, Menu, Search } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 
+import { Button } from '@/components/ui/button'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 
-const NAV_LINKS = ['COLLABORATIVES', 'CONTRIBUTORS', 'ABOUT US']
+const EXPLORE_LINKS = [
+  { label: 'Datasets', to: '/explore/datasets' },
+  { label: 'Use Cases', to: '/explore/use-cases' },
+  { label: 'AI Models and Prompts', to: '/explore/ai-models' },
+  { label: 'Publications', to: '/explore/publications' },
+  { label: 'Events', to: '/explore/events' },
+]
+
+const NAV_LINKS = [
+  { label: 'COLLABORATIVES', to: '/collaboratives' },
+  { label: 'FORUM', to: '/forum' },
+]
 
 const CURRENT_USER = {
   name: 'John Doe',
@@ -11,7 +24,50 @@ const CURRENT_USER = {
   initials: 'JD',
 }
 
-function UserMenu() {
+function ExploreMenu() {
+  const navigate = useNavigate()
+
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <button
+          type="button"
+          className="hidden items-center gap-1 text-primary-foreground/90 transition-colors hover:text-primary-foreground md:flex"
+        >
+          EXPLORE
+          <ChevronDown className="size-4" />
+        </button>
+      </PopoverTrigger>
+      <PopoverContent align="start" className="w-56 p-1.5">
+        {EXPLORE_LINKS.map((item) => (
+          <button
+            key={item.label}
+            type="button"
+            onClick={() => navigate(item.to)}
+            className="flex w-full items-center rounded-md px-2.5 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted"
+          >
+            {item.label}
+          </button>
+        ))}
+      </PopoverContent>
+    </Popover>
+  )
+}
+
+function AuthButton({ onLogIn }: { onLogIn: () => void }) {
+  return (
+    <Button
+      type="button"
+      size="sm"
+      onClick={onLogIn}
+      className="bg-primary-foreground text-header-background hover:bg-primary-foreground/90"
+    >
+      Log In / Sign Up
+    </Button>
+  )
+}
+
+function UserMenu({ onSignOut }: { onSignOut: () => void }) {
   const navigate = useNavigate()
 
   return (
@@ -52,7 +108,7 @@ function UserMenu() {
         <div className="border-t border-border p-1.5">
           <button
             type="button"
-            onClick={() => navigate('/auth/sign-in')}
+            onClick={onSignOut}
             className="flex w-full items-center gap-2.5 rounded-md px-2.5 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted"
           >
             <LogOut className="size-4 text-muted-foreground" />
@@ -65,6 +121,8 @@ function UserMenu() {
 }
 
 function MobileNavMenu() {
+  const navigate = useNavigate()
+
   return (
     <Popover>
       <PopoverTrigger asChild>
@@ -77,20 +135,26 @@ function MobileNavMenu() {
         </button>
       </PopoverTrigger>
       <PopoverContent align="end" className="w-56 p-1.5">
-        <button
-          type="button"
-          className="flex w-full items-center justify-between rounded-md px-2.5 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted"
-        >
-          Explore
-          <ChevronDown className="size-4 text-muted-foreground" />
-        </button>
+        <p className="px-2.5 pb-1 pt-2 text-xs font-semibold uppercase text-muted-foreground">Explore</p>
+        {EXPLORE_LINKS.map((item) => (
+          <button
+            key={item.label}
+            type="button"
+            onClick={() => navigate(item.to)}
+            className="flex w-full items-center rounded-md px-2.5 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted"
+          >
+            {item.label}
+          </button>
+        ))}
+        <div className="my-1 border-t border-border" />
         {NAV_LINKS.map((link) => (
           <button
-            key={link}
+            key={link.label}
             type="button"
+            onClick={() => navigate(link.to)}
             className="flex w-full items-center rounded-md px-2.5 py-2 text-left text-sm font-medium capitalize text-foreground transition-colors hover:bg-muted"
           >
-            {link.toLowerCase()}
+            {link.label.toLowerCase()}
           </button>
         ))}
       </PopoverContent>
@@ -99,6 +163,9 @@ function MobileNavMenu() {
 }
 
 function TopNav() {
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const navigate = useNavigate()
+
   return (
     <header
       data-chrome="dark"
@@ -117,27 +184,26 @@ function TopNav() {
           <Search className="size-5" />
         </button>
 
-        <button
-          type="button"
-          className="hidden items-center gap-1 text-primary-foreground/90 transition-colors hover:text-primary-foreground md:flex"
-        >
-          EXPLORE
-          <ChevronDown className="size-4" />
-        </button>
+        <ExploreMenu />
 
         {NAV_LINKS.map((link) => (
           <button
-            key={link}
+            key={link.label}
             type="button"
+            onClick={() => navigate(link.to)}
             className="hidden text-primary-foreground/90 transition-colors hover:text-primary-foreground md:block"
           >
-            {link}
+            {link.label}
           </button>
         ))}
 
         <MobileNavMenu />
 
-        <UserMenu />
+        {isLoggedIn ? (
+          <UserMenu onSignOut={() => setIsLoggedIn(false)} />
+        ) : (
+          <AuthButton onLogIn={() => setIsLoggedIn(true)} />
+        )}
       </nav>
     </header>
   )
