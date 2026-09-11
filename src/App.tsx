@@ -30,6 +30,8 @@ import { ChartCreationPage } from '@/pages/ChartCreationPage'
 import { ProfilePage } from '@/pages/ProfilePage'
 import { DesignSystemPage } from '@/pages/DesignSystemPage'
 import { ComingSoonPage } from '@/pages/ComingSoonPage'
+import { UseCasesExplorePage } from '@/pages/explore/UseCasesExplorePage'
+import { UseCaseDetailPage } from '@/pages/explore/UseCaseDetailPage'
 import { SignInPage } from '@/pages/auth/SignInPage'
 import { RegisterPage } from '@/pages/auth/RegisterPage'
 import { ForgotPasswordPage } from '@/pages/auth/ForgotPasswordPage'
@@ -122,7 +124,8 @@ function AppLayout() {
             <Route path="/dashboard/profile" element={<ProfilePage />} />
             <Route path="/design-system" element={<DesignSystemPage />} />
             <Route path="/explore/datasets" element={<ComingSoonPage title="Datasets" />} />
-            <Route path="/explore/use-cases" element={<ComingSoonPage title="Use Cases" />} />
+            <Route path="/explore/use-cases" element={<UseCasesExplorePage />} />
+            <Route path="/explore/use-cases/:id" element={<UseCaseDetailPage />} />
             <Route path="/explore/ai-models" element={<ComingSoonPage title="AI Models and Prompts" />} />
             <Route path="/explore/publications" element={<ComingSoonPage title="Publications" />} />
             <Route path="/explore/events" element={<ComingSoonPage title="Events" />} />
