@@ -89,6 +89,12 @@ export interface UseCaseContributor {
   id: string
   name: string
   role: string
+  /** Organisation the contributor is affiliated with, when known. */
+  organisation?: string
+  /** Short description / bio, when provided. */
+  bio?: string
+  /** Profile photo, when uploaded. */
+  image?: UploadedAsset | null
 }
 
 export interface UseCaseConnections {

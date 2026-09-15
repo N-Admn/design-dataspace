@@ -61,7 +61,10 @@ function UseCaseStep3Connections({ connections, onChange }: UseCaseStep3Connecti
   const addContributorFromDirectory = (person: MockPerson) => {
     onChange({
       ...connections,
-      contributors: [...connections.contributors, { id: `contributor-${person.id}`, name: person.name, role: person.role ?? '' }],
+      contributors: [
+        ...connections.contributors,
+        { id: `contributor-${person.id}`, name: person.name, role: person.role ?? '', organisation: person.organisation },
+      ],
     })
     toast({ title: 'Contributor added', description: `"${person.name}" added and connected.`, variant: 'success' })
   }
@@ -101,12 +104,20 @@ function UseCaseStep3Connections({ connections, onChange }: UseCaseStep3Connecti
           ) : (
             connections.contributors.map((c) => (
               <div key={c.id} className="flex items-center gap-3 rounded-lg border border-border p-3">
-                <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
-                  <User className="size-4" />
-                </div>
+                {c.image?.dataUrl ? (
+                  <img src={c.image.dataUrl} alt="" className="size-9 shrink-0 rounded-full border border-border object-cover" />
+                ) : (
+                  <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
+                    <User className="size-4" />
+                  </div>
+                )}
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-medium text-foreground">{c.name}</p>
-                  {c.role && <p className="text-xs text-muted-foreground">{c.role}</p>}
+                  {[c.role, c.organisation].filter(Boolean).length > 0 && (
+                    <p className="truncate text-xs text-muted-foreground">
+                      {[c.role, c.organisation].filter(Boolean).join(' · ')}
+                    </p>
+                  )}
                 </div>
                 <Button
                   type="button"

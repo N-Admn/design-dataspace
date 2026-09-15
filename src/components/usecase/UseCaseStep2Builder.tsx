@@ -432,7 +432,7 @@ function UseCaseStep2Builder({ metadata, blocks, onBlocksChange }: UseCaseStep2B
                   if (block.type === 'highlight') {
                     return (
                       <BlockWrapper key={block.id} {...shellProps}>
-                        <div className="rounded-lg border-l-4 border-primary bg-primary/5 px-4 py-3.5">
+                        <div className="rounded-lg bg-muted px-4 py-3.5">
                           {active ? (
                             <>
                               <input

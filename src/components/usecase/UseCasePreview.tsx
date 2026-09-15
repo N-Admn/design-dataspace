@@ -97,7 +97,7 @@ function UseCasePreview({ form }: { form: UseCaseFormState }) {
               )
             }
             return (
-              <div key={block.id} className="rounded-lg border-l-4 border-primary bg-primary/5 px-4 py-3.5">
+              <div key={block.id} className="rounded-lg bg-muted px-4 py-3.5">
                 <p className="text-base font-semibold text-primary">{block.highlight || 'Key highlight'}</p>
                 {block.supportingText && <p className="mt-1 text-sm text-muted-foreground">{block.supportingText}</p>}
               </div>
