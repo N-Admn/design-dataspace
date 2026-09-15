@@ -4,26 +4,26 @@ import { Loader2, Send } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { PreviewActionBar } from '@/components/shared/PreviewActionBar'
-import { UseCasePreview } from '@/components/usecase/UseCasePreview'
+import { PublicationPreview } from '@/components/publication/PublicationPreview'
 import { useToast } from '@/components/ui/toast'
 import { useConfirm } from '@/components/ui/confirm-dialog'
 import { useAppData } from '@/context/AppDataContext'
-import { isUseCaseReadyToPublish } from '@/lib/usecase-validation'
-import { clearUseCaseDraftSnapshot, loadUseCaseDraftSnapshot } from '@/lib/usecase-draft-storage'
+import { isPublicationReadyToPublish } from '@/lib/publication-validation'
+import { clearPublicationDraftSnapshot, loadPublicationDraftSnapshot } from '@/lib/publication-draft-storage'
 
-function UseCasePreviewPage() {
+function PublicationPreviewPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-  const { useCases, upsertUseCase } = useAppData()
+  const { publications, upsertPublication } = useAppData()
   const confirm = useConfirm()
   const toast = useToast()
   const [isSubmitting, setIsSubmitting] = React.useState(false)
   const [justPublished, setJustPublished] = React.useState(false)
 
-  const record = id ? useCases.find((u) => u.id === id) : undefined
+  const record = id ? publications.find((p) => p.id === id) : undefined
   // Load once on mount and freeze — re-reading after our own publish action would
   // pick up the just-updated status and flip "Publish" into "Publish Changes" mid-flow.
-  const [snapshot] = React.useState(() => (id ? loadUseCaseDraftSnapshot(id) : null))
+  const [snapshot] = React.useState(() => (id ? loadPublicationDraftSnapshot(id) : null))
   const form = snapshot?.form ?? record?.form
   const [initialStatus] = React.useState(() => snapshot?.status ?? record?.status ?? 'draft')
   const hasLiveVersion = initialStatus === 'published'
@@ -31,14 +31,14 @@ function UseCasePreviewPage() {
   const handleEditInWorkspace = () => {
     window.close()
     window.setTimeout(() => {
-      navigate('/dashboard/use-cases/new', { state: { useCaseId: id, initialStep: 1 } })
+      navigate('/dashboard/publications/new', { state: { publicationId: id, initialStep: 1 } })
     }, 50)
   }
 
-  const handleContinueToManage = () => {
+  const handleBackToDashboard = () => {
     window.close()
     window.setTimeout(() => {
-      navigate('/dashboard/use-cases')
+      navigate('/dashboard/publications')
     }, 50)
   }
 
@@ -46,77 +46,71 @@ function UseCasePreviewPage() {
     return (
       <div className="mx-auto flex max-w-lg flex-col items-center gap-3 py-24 text-center">
         <p className="type-heading-3 text-foreground">Preview unavailable</p>
-        <p className="text-sm text-muted-foreground">
-          This Use Case preview could not be found. It may have been removed.
-        </p>
-        <Button type="button" variant="outline" onClick={() => navigate('/dashboard/use-cases')}>
-          Back to Use Cases
+        <p className="text-sm text-muted-foreground">This Publication preview could not be found. It may have been removed.</p>
+        <Button type="button" variant="outline" onClick={() => navigate('/dashboard/publications')}>
+          Back to Publications
         </Button>
       </div>
     )
   }
 
-  const ready = isUseCaseReadyToPublish(form)
+  const ready = isPublicationReadyToPublish(form)
 
   const handlePublish = async () => {
     if (!ready) return
     const ok = await confirm({
-      title: hasLiveVersion ? 'Publish changes?' : 'Publish use case?',
+      title: hasLiveVersion ? 'Publish changes?' : 'Publish Publication?',
       description: hasLiveVersion
-        ? `Your changes to "${form.metadata.title}" will replace the current published version immediately.`
-        : `You're about to publish "${form.metadata.title}". Once published, this Use Case will be visible to the public.`,
-      confirmLabel: hasLiveVersion ? 'Publish Changes' : 'Publish Use Case',
+        ? `Your changes to "${form.metadata.name}" will replace the current published version immediately.`
+        : `You're about to publish "${form.metadata.name}". Once published, this Publication will be publicly available on CivicDataSpace.`,
+      confirmLabel: hasLiveVersion ? 'Publish Changes' : 'Publish Publication',
     })
     if (!ok) return
     setIsSubmitting(true)
     window.setTimeout(() => {
-      upsertUseCase(id, 'published', form)
-      clearUseCaseDraftSnapshot(id)
+      upsertPublication(id, 'published', form)
+      clearPublicationDraftSnapshot(id)
       setIsSubmitting(false)
       setJustPublished(true)
       toast({
-        title: hasLiveVersion ? 'Changes published' : 'Use Case published',
+        title: hasLiveVersion ? 'Changes published' : 'Publication published',
         description: hasLiveVersion
           ? 'Your changes are now live on CivicDataSpace.'
-          : 'Your Use Case is now available on CivicDataSpace.',
+          : 'Your Publication is now publicly available on CivicDataSpace.',
         variant: 'success',
       })
     }, 500)
   }
 
   return (
-    <div className="mx-auto flex max-w-5xl flex-col gap-6 py-6">
+    <div className="mx-auto flex max-w-4xl flex-col gap-6 py-6">
       <PreviewActionBar>
         <div>
           <p className="text-sm font-semibold text-foreground">
-            {justPublished ? (hasLiveVersion ? 'Changes published' : 'Use Case published') : 'Use Case Preview'}
+            {justPublished ? (hasLiveVersion ? 'Changes published' : 'Publication published') : 'Publication Preview'}
           </p>
           <p className="text-xs text-muted-foreground">
             {justPublished
               ? hasLiveVersion
                 ? 'Your changes are now live on CivicDataSpace.'
-                : 'Your Use Case is now available on CivicDataSpace.'
-              : 'This is what your Use Case will look like when published.'}
+                : 'Your Publication is now publicly available on CivicDataSpace.'
+              : 'This is what your Publication will look like when published.'}
           </p>
         </div>
         <div className="flex items-center gap-2">
           {justPublished ? (
             <>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-              >
-                View Use Case
+              <Button type="button" variant="outline" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
+                View Publication
               </Button>
-              <Button type="button" onClick={handleContinueToManage}>
-                Continue to Manage
+              <Button type="button" onClick={handleBackToDashboard}>
+                Back to Publications
               </Button>
             </>
           ) : (
             <>
               <Button type="button" variant="outline" onClick={handleEditInWorkspace}>
-                Edit in Workspace
+                ← Back to Editor
               </Button>
               <Button type="button" onClick={handlePublish} disabled={!ready || isSubmitting}>
                 {isSubmitting ? (
@@ -126,7 +120,7 @@ function UseCasePreviewPage() {
                   </>
                 ) : (
                   <>
-                    {hasLiveVersion ? 'Publish Changes' : 'Publish Use Case'}
+                    {hasLiveVersion ? 'Publish Changes' : 'Publish Publication'}
                     <Send className="size-4" />
                   </>
                 )}
@@ -138,13 +132,13 @@ function UseCasePreviewPage() {
 
       {!ready && !justPublished && (
         <p className="rounded-md border border-warning/40 bg-warning/10 px-4 py-2.5 text-sm text-warning-foreground">
-          This Use Case isn't ready to publish yet. Return to the workspace to complete the required fields.
+          This Publication isn't ready to publish yet. Return to the workspace to complete the required fields.
         </p>
       )}
 
-      <UseCasePreview form={form} publishedAt={record?.updatedAt} />
+      <PublicationPreview form={form} publishedAt={record?.updatedAt} />
     </div>
   )
 }
 
-export { UseCasePreviewPage }
+export { PublicationPreviewPage }

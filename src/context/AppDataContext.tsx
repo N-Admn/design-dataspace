@@ -8,6 +8,7 @@ import { MOCK_ORGANISATIONS } from '@/lib/mock-organisations'
 import { MOCK_USE_CASE_RECORDS } from '@/lib/mock-usecases'
 import { MOCK_COLLABORATIVE_RECORDS } from '@/lib/mock-collaboratives'
 import { MOCK_AI_MODEL_RECORDS } from '@/lib/mock-ai-models'
+import { MOCK_PUBLICATION_RECORDS } from '@/lib/mock-publications'
 import { MOCK_CHART_RECORDS } from '@/lib/mock-charts'
 import type { DatasetFormState, DatasetRecord, DatasetStatus } from '@/types/dataset'
 import type { EventFormState, EventRecord, EventStatus, Organisation } from '@/types/event'
@@ -15,6 +16,7 @@ import { MOCK_PROFILE, type ContributorProfile } from '@/types/profile'
 import type { UseCaseFormState, UseCaseRecord, UseCaseStatus } from '@/types/usecase'
 import type { CollaborativeFormState, CollaborativeRecord, CollaborativeStatus } from '@/types/collaborative'
 import type { AIModelFormState, AIModelRecord, AIModelStatus } from '@/types/ai-model'
+import type { PublicationFormState, PublicationRecord, PublicationStatus } from '@/types/publication'
 import type { ChartFormState, ChartRecord, ChartStatus } from '@/types/chart'
 
 /** Migrate any records persisted before the lifecycle was simplified to two
@@ -30,6 +32,7 @@ let orgIdCounter = 0
 let useCaseIdCounter = 0
 let collaborativeIdCounter = 0
 let aiModelIdCounter = 0
+let publicationIdCounter = 0
 let chartIdCounter = 0
 
 /** Use cases are persisted to localStorage (and synced across tabs) so a Use Case
@@ -93,6 +96,26 @@ function bumpAIModelIdCounter(records: AIModelRecord[]) {
   }
 }
 
+/** Publications follow the same cross-tab persistence pattern as AI Models —
+ * their preview/publish also happens from a separate window.open() tab. */
+const PUBLICATIONS_STORAGE_KEY = 'civicdataspace:publications'
+
+function loadStoredPublications(): PublicationRecord[] | null {
+  try {
+    const raw = window.localStorage.getItem(PUBLICATIONS_STORAGE_KEY)
+    return raw ? normalizeStoredRecords(JSON.parse(raw) as PublicationRecord[]) : null
+  } catch {
+    return null
+  }
+}
+
+function bumpPublicationIdCounter(records: PublicationRecord[]) {
+  for (const record of records) {
+    const match = /^publication-(\d+)$/.exec(record.id)
+    if (match) publicationIdCounter = Math.max(publicationIdCounter, Number(match[1]))
+  }
+}
+
 interface AppDataContextValue {
   datasets: DatasetRecord[]
   upsertDataset: (id: string | null, status: DatasetStatus, form: DatasetFormState) => string
@@ -127,6 +150,11 @@ interface AppDataContextValue {
   unpublishChart: (id: string) => void
   deleteChart: (id: string) => void
 
+  publications: PublicationRecord[]
+  upsertPublication: (id: string | null, status: PublicationStatus, form: PublicationFormState) => string
+  unpublishPublication: (id: string) => void
+  deletePublication: (id: string) => void
+
   profile: ContributorProfile
   updateProfile: (profile: ContributorProfile) => void
 }
@@ -156,6 +184,12 @@ function AppDataProvider({ children }: { children: React.ReactNode }) {
     return initial
   })
   const [charts, setCharts] = React.useState<ChartRecord[]>(MOCK_CHART_RECORDS)
+  const [publications, setPublications] = React.useState<PublicationRecord[]>(() => {
+    const stored = loadStoredPublications()
+    const initial = stored ?? MOCK_PUBLICATION_RECORDS
+    bumpPublicationIdCounter(initial)
+    return initial
+  })
   const [profile, setProfile] = React.useState<ContributorProfile>(MOCK_PROFILE)
 
   React.useEffect(() => {
@@ -219,6 +253,29 @@ function AppDataProvider({ children }: { children: React.ReactNode }) {
         const next = JSON.parse(event.newValue) as AIModelRecord[]
         bumpAIModelIdCounter(next)
         setAIModels(next)
+      } catch {
+        // Ignore malformed payloads from other tabs.
+      }
+    }
+    window.addEventListener('storage', handleStorage)
+    return () => window.removeEventListener('storage', handleStorage)
+  }, [])
+
+  React.useEffect(() => {
+    try {
+      window.localStorage.setItem(PUBLICATIONS_STORAGE_KEY, JSON.stringify(publications))
+    } catch {
+      // Ignore storage write failures (e.g. private browsing quota).
+    }
+  }, [publications])
+
+  React.useEffect(() => {
+    const handleStorage = (event: StorageEvent) => {
+      if (event.key !== PUBLICATIONS_STORAGE_KEY || !event.newValue) return
+      try {
+        const next = JSON.parse(event.newValue) as PublicationRecord[]
+        bumpPublicationIdCounter(next)
+        setPublications(next)
       } catch {
         // Ignore malformed payloads from other tabs.
       }
@@ -389,6 +446,32 @@ function AppDataProvider({ children }: { children: React.ReactNode }) {
     setCharts((prev) => prev.filter((c) => c.id !== id))
   }, [])
 
+  const upsertPublication = React.useCallback(
+    (id: string | null, status: PublicationStatus, form: PublicationFormState) => {
+      const updatedAt = formatTimestamp(new Date())
+      const recordId = id ?? `publication-${(publicationIdCounter += 1)}`
+      setPublications((prev) => {
+        const existing = prev.find((p) => p.id === recordId)
+        const { status: nextStatus, publishedForm } = resolveLifecycle(existing, status === 'published' ? 'publish' : 'save', form)
+        if (existing) {
+          return prev.map((p) => (p.id === recordId ? { ...p, status: nextStatus, updatedAt, form, publishedForm } : p))
+        }
+        return [{ id: recordId, status: nextStatus, updatedAt, form, publishedForm }, ...prev]
+      })
+      return recordId
+    },
+    [],
+  )
+
+  const unpublishPublication = React.useCallback((id: string) => {
+    const updatedAt = formatTimestamp(new Date())
+    setPublications((prev) => prev.map((p) => (p.id === id ? { ...p, status: 'draft', updatedAt } : p)))
+  }, [])
+
+  const deletePublication = React.useCallback((id: string) => {
+    setPublications((prev) => prev.filter((p) => p.id !== id))
+  }, [])
+
   const value = React.useMemo<AppDataContextValue>(
     () => ({
       datasets,
@@ -417,6 +500,10 @@ function AppDataProvider({ children }: { children: React.ReactNode }) {
       upsertChart,
       unpublishChart,
       deleteChart,
+      publications,
+      upsertPublication,
+      unpublishPublication,
+      deletePublication,
       profile,
       updateProfile: setProfile,
     }),
@@ -447,6 +534,10 @@ function AppDataProvider({ children }: { children: React.ReactNode }) {
       upsertChart,
       unpublishChart,
       deleteChart,
+      publications,
+      upsertPublication,
+      unpublishPublication,
+      deletePublication,
       profile,
     ],
   )

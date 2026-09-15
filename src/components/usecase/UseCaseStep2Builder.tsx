@@ -430,9 +430,11 @@ function UseCaseStep2Builder({ metadata, blocks, onBlocksChange }: UseCaseStep2B
                   }
 
                   if (block.type === 'highlight') {
+                    const highlightIndex = blocks.slice(0, index).filter((b) => b.type === 'highlight').length
+                    const highlightStyle = HIGHLIGHT_STYLES[highlightIndex % HIGHLIGHT_STYLES.length]
                     return (
                       <BlockWrapper key={block.id} {...shellProps}>
-                        <div className="rounded-lg bg-muted px-4 py-3.5">
+                        <div className={cn('rounded-xl px-4 py-3.5', highlightStyle)}>
                           {active ? (
                             <>
                               <input
