@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { Building2, Plus, User, X } from 'lucide-react'
+import { Building2, Plus, Trash2, User } from 'lucide-react'
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
@@ -8,8 +8,10 @@ import { DatasetConnectionsCard } from '@/components/shared/DatasetConnectionsCa
 import { AddContributorForm } from '@/components/usecase/AddContributorForm'
 import { AddOrganisationForm } from '@/components/event/AddOrganisationForm'
 import { OrganisationSearchField } from '@/components/shared/OrganisationSearchField'
+import { SpeakerSearchField } from '@/components/event/SpeakerSearchField'
 import { useToast } from '@/components/ui/toast'
 import { useAppData } from '@/context/AppDataContext'
+import { MOCK_PEOPLE, type MockPerson } from '@/lib/mock-people'
 import type { UseCaseConnections } from '@/types/usecase'
 import type { Organisation } from '@/types/event'
 
@@ -40,7 +42,7 @@ function OrganisationRow({ org, onRemove }: { org: Organisation; onRemove: () =>
         onClick={onRemove}
         className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
       >
-        <X className="size-4" />
+        <Trash2 className="size-4" />
       </Button>
     </div>
   )
@@ -54,17 +56,23 @@ function UseCaseStep3Connections({ connections, onChange }: UseCaseStep3Connecti
 
   const organizationIds = connections.organizations.map((o) => o.id)
 
+  /** Add a CivicDataSpace contributor straight to the Contributors list. Mirrors
+   * how Event's Speaker search connects a directory profile. */
+  const addContributorFromDirectory = (person: MockPerson) => {
+    onChange({
+      ...connections,
+      contributors: [...connections.contributors, { id: `contributor-${person.id}`, name: person.name, role: person.role ?? '' }],
+    })
+    toast({ title: 'Contributor added', description: `"${person.name}" added and connected.`, variant: 'success' })
+  }
+
   return (
     <div className="flex flex-col gap-6">
-      <div>
-        <h2 className="type-heading-2 text-primary">Connect</h2>
-        <p className="mt-1 text-sm text-muted-foreground">Datasets & people supporting this Use Case.</p>
-      </div>
-
       <DatasetConnectionsCard
         datasets={connections.datasets}
         parentLabel="this Use Case"
         onChange={(datasets) => onChange({ ...connections, datasets })}
+        searchVariant="dropdown"
       />
 
       <Card>
@@ -81,6 +89,13 @@ function UseCaseStep3Connections({ connections, onChange }: UseCaseStep3Connecti
           </Button>
         </CardHeader>
         <CardContent className="flex flex-col gap-3">
+          <Label className="sr-only">Search Contributors</Label>
+          <SpeakerSearchField
+            people={MOCK_PEOPLE}
+            excludeNames={connections.contributors.map((c) => c.name)}
+            placeholder="Search contributors..."
+            onSelect={addContributorFromDirectory}
+          />
           {connections.contributors.length === 0 ? (
             <p className="py-4 text-center text-sm text-muted-foreground">No contributors added yet.</p>
           ) : (
@@ -103,7 +118,7 @@ function UseCaseStep3Connections({ connections, onChange }: UseCaseStep3Connecti
                   }
                   className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
                 >
-                  <X className="size-4" />
+                  <Trash2 className="size-4" />
                 </Button>
               </div>
             ))

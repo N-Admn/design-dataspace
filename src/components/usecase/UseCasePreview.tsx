@@ -1,6 +1,7 @@
 import { BarChart3, Building2, Database, ExternalLink, User } from 'lucide-react'
 
 import { Badge } from '@/components/ui/badge'
+import { richTextClassName } from '@/components/ui/rich-text-editor'
 import { GEOGRAPHY_OPTIONS, SECTOR_OPTIONS } from '@/types/dataset'
 import { SDG_GOAL_OPTIONS, type UseCaseFormState } from '@/types/usecase'
 
@@ -41,19 +42,11 @@ function UseCasePreview({ form }: { form: UseCaseFormState }) {
       {blocks.length > 0 && (
         <div className="flex flex-col gap-5 px-6 py-6">
           {blocks.map((block) => {
-            if (block.type === 'heading') {
-              const Tag = block.level === 2 ? 'h2' : 'h3'
-              return (
-                <Tag key={block.id} className={block.level === 2 ? 'type-heading-2 text-primary' : 'type-heading-3 text-foreground'}>
-                  {block.text || 'Untitled heading'}
-                </Tag>
-              )
-            }
             if (block.type === 'text') {
               return (
                 <div
                   key={block.id}
-                  className="prose-sm text-sm text-foreground [&_a]:text-primary [&_a]:underline [&_ol]:list-decimal [&_ol]:pl-5 [&_ul]:list-disc [&_ul]:pl-5"
+                  className={richTextClassName}
                   dangerouslySetInnerHTML={{ __html: block.html || '<p class="text-muted-foreground">Empty text block</p>' }}
                 />
               )

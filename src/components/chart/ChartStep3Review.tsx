@@ -43,11 +43,6 @@ function ChartStep3Review({ form, otherCharts, onNameChange, onEditStep, onPubli
 
   return (
     <div className="flex flex-col gap-6">
-      <div>
-        <h2 className="type-heading-2 text-primary">Review</h2>
-        <p className="mt-1 text-sm text-muted-foreground">Check your chart before publishing.</p>
-      </div>
-
       <ReviewSection title="Dataset & Source" defaultOpen onEdit={() => onEditStep(1)}>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>

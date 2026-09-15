@@ -54,7 +54,7 @@ function CollaborativePreview({ form }: { form: CollaborativeFormState }) {
               href={metadata.externalUrl}
               target="_blank"
               rel="noreferrer"
-              className="mt-3 inline-flex items-center gap-1.5 text-sm font-medium text-primary underline underline-offset-4"
+              className="mt-3 inline-flex items-center gap-1.5 text-sm font-medium text-primary underline-offset-4 hover:underline focus-visible:underline"
             >
               <ExternalLink className="size-3.5" />
               {metadata.externalUrl}

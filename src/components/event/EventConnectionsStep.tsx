@@ -1,14 +1,16 @@
 import * as React from 'react'
-import { Building2, Mic2, Pencil, Trash2, X } from 'lucide-react'
+import { Building2, Mic2, Pencil, Plus, Trash2 } from 'lucide-react'
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { AddOrganisationForm } from '@/components/event/AddOrganisationForm'
 import { SpeakerForm } from '@/components/event/SpeakerForm'
+import { SpeakerSearchField } from '@/components/event/SpeakerSearchField'
 import { OrganisationSearchField } from '@/components/shared/OrganisationSearchField'
 import { useToast } from '@/components/ui/toast'
 import { useAppData } from '@/context/AppDataContext'
+import { MOCK_PEOPLE, type MockPerson } from '@/lib/mock-people'
 import type { EventFormState, EventSpeaker, Organisation } from '@/types/event'
 
 interface EventConnectionsStepProps {
@@ -40,13 +42,13 @@ function OrganisationCard({ org, onRemove }: { org: Organisation; onRemove: () =
         onClick={onRemove}
         className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
       >
-        <X className="size-4" />
+        <Trash2 className="size-4" />
       </Button>
     </div>
   )
 }
 
-function SpeakerCard({ speaker, onEdit, onRemove }: { speaker: EventSpeaker; onEdit: () => void; onRemove: () => void }) {
+function SpeakerCard({ speaker, onEdit, onRemove }: { speaker: EventSpeaker; onEdit?: () => void; onRemove: () => void }) {
   const secondary = [speaker.designation, speaker.organisation].filter(Boolean).join(' · ')
   return (
     <div className="flex items-center gap-3 rounded-lg border border-border p-3">
@@ -62,9 +64,11 @@ function SpeakerCard({ speaker, onEdit, onRemove }: { speaker: EventSpeaker; onE
         <p className="truncate text-xs text-muted-foreground">{secondary || 'Speaker'}</p>
       </div>
       <div className="flex shrink-0 items-center gap-1">
-        <Button type="button" variant="ghost" size="icon" aria-label={`Edit ${speaker.name}`} onClick={onEdit}>
-          <Pencil className="size-4" />
-        </Button>
+        {onEdit && (
+          <Button type="button" variant="ghost" size="icon" aria-label={`Edit ${speaker.name}`} onClick={onEdit}>
+            <Pencil className="size-4" />
+          </Button>
+        )}
         <Button
           type="button"
           variant="ghost"
@@ -128,6 +132,20 @@ function EventConnectionsStep({ form, onChange }: EventConnectionsStepProps) {
     onChange((prev) => ({ ...prev, speakers: prev.speakers.filter((s) => s.id !== id) }))
   }
 
+  /** Add a CivicDataSpace contributor straight to the Speakers list. Role and
+   * organisation carry over when present; the manual form stays the fallback. */
+  const addContributorAsSpeaker = (person: MockPerson) => {
+    upsertSpeaker({
+      id: `speaker-${person.id}`,
+      name: person.name,
+      designation: person.role ?? '',
+      organisation: person.organisation ?? '',
+      bio: '',
+      image: null,
+      source: 'directory',
+    })
+  }
+
   const organiserIds = form.organisers.map((o) => o.id)
   const partnerIds = form.partners.map((o) => o.id)
 
@@ -148,13 +166,10 @@ function EventConnectionsStep({ form, onChange }: EventConnectionsStepProps) {
       <Card>
         <CardHeader className="flex-row items-center justify-between">
           <CardTitle>Organiser</CardTitle>
-          <button
-            type="button"
-            onClick={() => setAddOrgTarget('organiser')}
-            className="text-xs font-medium text-primary underline underline-offset-4"
-          >
-            + Add New Organisation
-          </button>
+          <Button type="button" variant="outline" size="sm" onClick={() => setAddOrgTarget('organiser')}>
+            <Plus className="size-4" />
+            Add New Organisation
+          </Button>
         </CardHeader>
         <CardContent className="flex flex-col gap-3">
           <Label>Search Organisations</Label>
@@ -177,13 +192,10 @@ function EventConnectionsStep({ form, onChange }: EventConnectionsStepProps) {
       <Card>
         <CardHeader className="flex-row items-center justify-between">
           <CardTitle>Partners</CardTitle>
-          <button
-            type="button"
-            onClick={() => setAddOrgTarget('partner')}
-            className="text-xs font-medium text-primary underline underline-offset-4"
-          >
-            + Add New Organisation
-          </button>
+          <Button type="button" variant="outline" size="sm" onClick={() => setAddOrgTarget('partner')}>
+            <Plus className="size-4" />
+            Add New Organisation
+          </Button>
         </CardHeader>
         <CardContent className="flex flex-col gap-3">
           <Label>Search Organisations</Label>
@@ -210,15 +222,19 @@ function EventConnectionsStep({ form, onChange }: EventConnectionsStepProps) {
       <Card>
         <CardHeader className="flex-row items-center justify-between">
           <CardTitle>Speakers</CardTitle>
-          <button
-            type="button"
-            onClick={openAddSpeaker}
-            className="text-xs font-medium text-primary underline underline-offset-4"
-          >
-            + Add Speaker
-          </button>
+          <Button type="button" variant="outline" size="sm" onClick={openAddSpeaker}>
+            <Plus className="size-4" />
+            Add Speaker
+          </Button>
         </CardHeader>
         <CardContent className="flex flex-col gap-3">
+          <Label>Search Contributors</Label>
+          <SpeakerSearchField
+            people={MOCK_PEOPLE}
+            excludeNames={form.speakers.map((s) => s.name)}
+            placeholder="Search contributors by name..."
+            onSelect={addContributorAsSpeaker}
+          />
           {form.speakers.length === 0 ? (
             <p className="py-4 text-center text-sm text-muted-foreground">No speakers added yet.</p>
           ) : (
@@ -226,7 +242,7 @@ function EventConnectionsStep({ form, onChange }: EventConnectionsStepProps) {
               <SpeakerCard
                 key={speaker.id}
                 speaker={speaker}
-                onEdit={() => openEditSpeaker(speaker.id)}
+                onEdit={speaker.source === 'directory' ? undefined : () => openEditSpeaker(speaker.id)}
                 onRemove={() => removeSpeaker(speaker.id)}
               />
             ))

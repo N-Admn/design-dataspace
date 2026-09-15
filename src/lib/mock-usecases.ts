@@ -12,11 +12,10 @@ const useCase1Form: UseCaseFormState = {
     geographies: ['india'],
   },
   blocks: [
-    { id: 'block-seed-1', type: 'heading', text: 'The Challenge', level: 2 },
     {
       id: 'block-seed-2',
       type: 'text',
-      html: '<p>Maternal mortality in several rural districts remained above the national average despite existing health infrastructure investment.</p>',
+      html: '<h2>The Challenge</h2><p>Maternal mortality in several rural districts remained above the national average despite existing health infrastructure investment.</p>',
     },
     {
       id: 'block-seed-3',

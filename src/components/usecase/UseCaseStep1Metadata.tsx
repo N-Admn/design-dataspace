@@ -19,11 +19,6 @@ interface UseCaseStep1MetadataProps {
 function UseCaseStep1Metadata({ metadata, errors, onChange }: UseCaseStep1MetadataProps) {
   return (
     <div className="flex flex-col gap-6">
-      <div>
-        <h2 className="type-heading-2 text-primary">Start</h2>
-        <p className="mt-1 text-sm text-muted-foreground">Name and classify this Use Case.</p>
-      </div>
-
       <Card>
         <CardHeader>
           <CardTitle>Basic Information</CardTitle>

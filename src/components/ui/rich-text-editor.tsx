@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { Bold, Italic, Link2, List, ListOrdered, Underline } from 'lucide-react'
+import { Bold, Heading2, Heading3, Italic, Link2, List, ListOrdered, Pilcrow, Quote, Underline } from 'lucide-react'
 
 import { cn } from '@/lib/utils'
 
@@ -9,9 +9,41 @@ interface RichTextEditorProps {
   placeholder?: string
   id?: string
   minHeightClassName?: string
+  /** Show the structured block controls (paragraph, H2, H3, quote) ahead of the
+   * inline formatting group. Off by default so lightweight description fields
+   * keep the compact inline-only toolbar. */
+  blockControls?: boolean
 }
 
-const TOOLBAR_ACTIONS: { command: string; icon: typeof Bold; label: string; needsValue?: boolean }[] = [
+/** Shared styling for rendered rich-text output — used by the editor's own
+ * editable surface and by every read-only view that prints saved HTML, so the
+ * draft and the published block look identical. */
+export const richTextClassName =
+  'prose-sm text-sm text-foreground ' +
+  '[&_a]:text-primary [&_a]:underline ' +
+  '[&_ol]:list-decimal [&_ol]:pl-5 [&_ul]:list-disc [&_ul]:pl-5 ' +
+  '[&_p+p]:mt-2 ' +
+  '[&_h2]:mt-3 [&_h2]:text-xl [&_h2]:font-semibold [&_h2]:leading-tight [&_h2]:text-primary [&_h2:first-child]:mt-0 ' +
+  '[&_h3]:mt-3 [&_h3]:text-base [&_h3]:font-semibold [&_h3]:text-foreground [&_h3:first-child]:mt-0 ' +
+  '[&_blockquote]:border-l-2 [&_blockquote]:border-border [&_blockquote]:pl-3 [&_blockquote]:text-muted-foreground [&_blockquote]:italic'
+
+type ToolbarAction = {
+  command: string
+  icon: typeof Bold
+  label: string
+  /** For `formatBlock` — the block tag this button applies. */
+  value?: string
+  needsValue?: boolean
+}
+
+const BLOCK_ACTIONS: ToolbarAction[] = [
+  { command: 'formatBlock', value: 'p', icon: Pilcrow, label: 'Paragraph' },
+  { command: 'formatBlock', value: 'h2', icon: Heading2, label: 'Heading 2' },
+  { command: 'formatBlock', value: 'h3', icon: Heading3, label: 'Heading 3' },
+  { command: 'formatBlock', value: 'blockquote', icon: Quote, label: 'Quote' },
+]
+
+const INLINE_ACTIONS: ToolbarAction[] = [
   { command: 'bold', icon: Bold, label: 'Bold' },
   { command: 'italic', icon: Italic, label: 'Italic' },
   { command: 'underline', icon: Underline, label: 'Underline' },
@@ -20,7 +52,14 @@ const TOOLBAR_ACTIONS: { command: string; icon: typeof Bold; label: string; need
   { command: 'createLink', icon: Link2, label: 'Link', needsValue: true },
 ]
 
-function RichTextEditor({ value, onChange, placeholder, id, minHeightClassName = 'min-h-28' }: RichTextEditorProps) {
+function RichTextEditor({
+  value,
+  onChange,
+  placeholder,
+  id,
+  minHeightClassName = 'min-h-28',
+  blockControls = false,
+}: RichTextEditorProps) {
   const editorRef = React.useRef<HTMLDivElement>(null)
   const isEmpty = value.trim() === '' || value.trim() === '<p></p>' || value.trim() === '<br>'
 
@@ -34,36 +73,44 @@ function RichTextEditor({ value, onChange, placeholder, id, minHeightClassName =
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const runCommand = (command: string, needsValue?: boolean) => {
+  const runCommand = (action: ToolbarAction) => {
     editorRef.current?.focus()
-    if (needsValue) {
+    if (action.needsValue) {
       const url = window.prompt('Enter a URL')
       if (!url) return
-      document.execCommand(command, false, url)
+      document.execCommand(action.command, false, url)
     } else {
-      document.execCommand(command, false)
+      document.execCommand(action.command, false, action.value)
     }
     onChange(editorRef.current?.innerHTML ?? '')
   }
 
+  const renderButton = (action: ToolbarAction) => {
+    const Icon = action.icon
+    return (
+      <button
+        key={action.label}
+        type="button"
+        aria-label={action.label}
+        onMouseDown={(e) => e.preventDefault()}
+        onClick={() => runCommand(action)}
+        className="flex size-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+      >
+        <Icon className="size-3.5" />
+      </button>
+    )
+  }
+
   return (
     <div className={cn('rounded-md border border-input bg-background', 'focus-within:ring-2 focus-within:ring-ring focus-within:border-ring')}>
-      <div className="flex items-center gap-0.5 border-b border-border px-1.5 py-1">
-        {TOOLBAR_ACTIONS.map((action) => {
-          const Icon = action.icon
-          return (
-            <button
-              key={action.command}
-              type="button"
-              aria-label={action.label}
-              onMouseDown={(e) => e.preventDefault()}
-              onClick={() => runCommand(action.command, action.needsValue)}
-              className="flex size-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-            >
-              <Icon className="size-3.5" />
-            </button>
-          )
-        })}
+      <div className="flex flex-wrap items-center gap-0.5 border-b border-border px-1.5 py-1">
+        {blockControls && (
+          <>
+            {BLOCK_ACTIONS.map(renderButton)}
+            <span className="mx-1 h-4 w-px shrink-0 bg-border" />
+          </>
+        )}
+        {INLINE_ACTIONS.map(renderButton)}
       </div>
       <div className="relative">
         {isEmpty && placeholder && (
@@ -76,10 +123,7 @@ function RichTextEditor({ value, onChange, placeholder, id, minHeightClassName =
           suppressContentEditableWarning
           onInput={(e) => onChange(e.currentTarget.innerHTML)}
           onBlur={(e) => onChange(e.currentTarget.innerHTML)}
-          className={cn(
-            'prose-sm w-full px-3 py-2 text-sm text-foreground outline-none [&_a]:text-primary [&_a]:underline [&_ol]:list-decimal [&_ol]:pl-5 [&_ul]:list-disc [&_ul]:pl-5',
-            minHeightClassName,
-          )}
+          className={cn(richTextClassName, 'w-full px-3 py-2 outline-none', minHeightClassName)}
         />
       </div>
     </div>

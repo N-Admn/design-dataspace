@@ -4,7 +4,7 @@ function FooterLink({ children }: { children: string }) {
   return (
     <button
       type="button"
-      className="text-muted-foreground underline underline-offset-4 transition-colors hover:text-foreground"
+      className="text-muted-foreground underline-offset-4 hover:underline focus-visible:underline transition-colors hover:text-foreground"
     >
       {children}
     </button>

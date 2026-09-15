@@ -273,7 +273,7 @@ function SignInPage() {
           <button
             type="button"
             onClick={() => { setView('sign-in'); setGoogleChooserOpen(true) }}
-            className="self-start text-xs font-medium text-primary underline underline-offset-4"
+            className="self-start text-xs font-medium text-primary underline-offset-4 hover:underline focus-visible:underline"
           >
             Use a different Google account
           </button>
@@ -350,7 +350,7 @@ function SignInPage() {
         <div>
           <div className="flex items-center justify-between">
             <Label htmlFor="signin-password">Password *</Label>
-            <Link to="/auth/forgot-password" state={{ email }} className="text-xs font-medium text-primary underline underline-offset-4">
+            <Link to="/auth/forgot-password" state={{ email }} className="text-xs font-medium text-primary underline-offset-4 hover:underline focus-visible:underline">
               Forgot password?
             </Link>
           </div>
@@ -384,7 +384,7 @@ function SignInPage() {
 
       <p className="mt-6 text-center text-sm text-muted-foreground">
         Don't have an account?{' '}
-        <Link to="/auth/register" className="font-medium text-primary underline underline-offset-4">
+        <Link to="/auth/register" className="font-medium text-primary underline-offset-4 hover:underline focus-visible:underline">
           Create an account
         </Link>
       </p>

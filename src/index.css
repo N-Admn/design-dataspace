@@ -47,6 +47,32 @@
     scroll-margin-top: 7.5rem;
     scroll-margin-bottom: 2rem;
   }
+
+  /* Native date/time controls: pin the browser's picker indicator to the input's
+   * trailing edge (like the SearchableSelect chevron) instead of letting it float
+   * beside the value text. Consistent affordance across date and time fields. */
+  input[type="date"],
+  input[type="time"] {
+    position: relative;
+  }
+  input[type="date"]::-webkit-datetime-edit,
+  input[type="time"]::-webkit-datetime-edit {
+    flex: 1 1 auto;
+  }
+  input[type="date"]::-webkit-calendar-picker-indicator,
+  input[type="time"]::-webkit-calendar-picker-indicator {
+    position: absolute;
+    right: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    margin: 0;
+    opacity: 0.6;
+    cursor: pointer;
+  }
+  input[type="date"]::-webkit-calendar-picker-indicator:hover,
+  input[type="time"]::-webkit-calendar-picker-indicator:hover {
+    opacity: 1;
+  }
 }
 
 /* Named type roles — size + line-height + weight bundled so no component picks an

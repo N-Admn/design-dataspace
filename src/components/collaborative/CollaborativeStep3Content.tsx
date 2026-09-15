@@ -41,11 +41,6 @@ function CollaborativeStep3Content({ connections, onChange, onCreateUseCase }: C
 
   return (
     <div className="flex flex-col gap-6">
-      <div>
-        <h2 className="type-heading-2 text-primary">Content</h2>
-        <p className="mt-1 text-sm text-muted-foreground">Connect datasets and use cases related to this Collaborative.</p>
-      </div>
-
       <DatasetConnectionsCard
         datasets={connections.datasets}
         parentLabel="this Collaborative"
@@ -74,7 +69,7 @@ function CollaborativeStep3Content({ connections, onChange, onCreateUseCase }: C
             <button
               type="button"
               onClick={onCreateUseCase}
-              className="text-xs font-medium text-primary underline underline-offset-4"
+              className="text-xs font-medium text-primary underline-offset-4 hover:underline focus-visible:underline"
             >
               + Create New Use Case
             </button>

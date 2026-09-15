@@ -167,7 +167,7 @@ function FileDetailsSheet({ file, onOpenChange, onTitleChange, onDescriptionChan
                             href={file.importUrl}
                             target="_blank"
                             rel="noreferrer"
-                            className="text-primary underline underline-offset-2"
+                            className="text-primary underline-offset-2 hover:underline focus-visible:underline"
                           >
                             {file.importUrl}
                           </a>

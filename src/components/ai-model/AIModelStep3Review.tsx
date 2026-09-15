@@ -177,7 +177,7 @@ function AIModelStep3Review({ form, otherNames, onEditStep, onPreview }: AIModel
           <SummaryRow
             label="Model Website"
             value={metadata.website ? (
-              <a href={metadata.website} target="_blank" rel="noreferrer" className="text-primary underline underline-offset-4">
+              <a href={metadata.website} target="_blank" rel="noreferrer" className="text-primary underline-offset-4 hover:underline focus-visible:underline">
                 {metadata.website}
               </a>
             ) : '—'}

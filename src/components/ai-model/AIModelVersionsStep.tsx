@@ -775,13 +775,6 @@ function AIModelVersionsStep({ versions, onChange, openVersionId, onOpenVersionC
 
   return (
     <div className="flex flex-col gap-6">
-      <div>
-        <h2 className="type-heading-2 text-primary">Versions</h2>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Configure the releases of this model and how they can be accessed.
-        </p>
-      </div>
-
       {versions.length > 0 && (
         <div className="flex flex-col gap-3">
           {versions.map((version) => (
