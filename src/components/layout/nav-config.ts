@@ -1,6 +1,7 @@
 import {
   CalendarDays,
   Database,
+  FileStack,
   FolderKanban,
   HelpCircle,
   LineChart,
@@ -42,6 +43,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { key: 'datasets', label: 'Datasets', icon: Database, path: '/dashboard/datasets' },
       { key: 'use-cases', label: 'Use Cases', icon: FolderKanban, path: '/dashboard/use-cases' },
       { key: 'ai-models', label: 'AI Models', icon: Sparkles, path: '/dashboard/ai-models' },
+      { key: 'publications', label: 'Publications', icon: FileStack, path: '/dashboard/publications' },
       { key: 'collaboratives', label: 'Collaboratives', icon: Users, path: '/dashboard/collaboratives' },
       { key: 'charts', label: 'Charts', icon: LineChart, path: '/dashboard/charts' },
       { key: 'events', label: 'Events', icon: CalendarDays, path: '/dashboard/events' },

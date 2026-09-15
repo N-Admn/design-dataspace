@@ -27,6 +27,9 @@ import { AIModelCreationPage } from '@/pages/AIModelCreationPage'
 import { AIModelPreviewPage } from '@/pages/AIModelPreviewPage'
 import { ChartsPage } from '@/pages/ChartsPage'
 import { ChartCreationPage } from '@/pages/ChartCreationPage'
+import { PublicationsPage } from '@/pages/PublicationsPage'
+import { PublicationCreationPage } from '@/pages/PublicationCreationPage'
+import { PublicationPreviewPage } from '@/pages/PublicationPreviewPage'
 import { ProfilePage } from '@/pages/ProfilePage'
 import { DesignSystemPage } from '@/pages/DesignSystemPage'
 import { ComingSoonPage } from '@/pages/ComingSoonPage'
@@ -71,13 +74,21 @@ function AppLayout() {
   const isCollaborativePreview = /^\/dashboard\/collaboratives\/[^/]+\/preview$/.test(location.pathname)
   const isAIModelPreview = /^\/dashboard\/ai-models\/[^/]+\/preview$/.test(location.pathname)
   const isEventPreview = /^\/dashboard\/events\/[^/]+\/preview$/.test(location.pathname)
+  const isPublicationPreview = /^\/dashboard\/publications\/[^/]+\/preview$/.test(location.pathname)
   const isDesignSystem = location.pathname === '/design-system'
   const isConsumerRoute =
     location.pathname.startsWith('/explore/') ||
     location.pathname === '/collaboratives' ||
     location.pathname === '/forum'
   const hideSidebar =
-    isDashboard || isUseCasePreview || isCollaborativePreview || isAIModelPreview || isEventPreview || isDesignSystem || isConsumerRoute
+    isDashboard ||
+    isUseCasePreview ||
+    isCollaborativePreview ||
+    isAIModelPreview ||
+    isEventPreview ||
+    isPublicationPreview ||
+    isDesignSystem ||
+    isConsumerRoute
   const isAuthRoute = location.pathname.startsWith('/auth/')
 
   if (isAuthRoute) {
@@ -93,7 +104,12 @@ function AppLayout() {
   return (
     <div className="flex min-h-screen flex-col">
       <TopNav />
-      {!isUseCasePreview && !isCollaborativePreview && !isAIModelPreview && !isEventPreview && !isConsumerRoute && <BreadcrumbBar />}
+      {!isUseCasePreview &&
+        !isCollaborativePreview &&
+        !isAIModelPreview &&
+        !isEventPreview &&
+        !isPublicationPreview &&
+        !isConsumerRoute && <BreadcrumbBar />}
 
       <main
         className={cn(
@@ -121,6 +137,9 @@ function AppLayout() {
             <Route path="/dashboard/ai-models/:id/preview" element={<AIModelPreviewPage />} />
             <Route path="/dashboard/charts" element={<ChartsPage />} />
             <Route path="/dashboard/charts/new" element={<ChartCreationPage />} />
+            <Route path="/dashboard/publications" element={<PublicationsPage />} />
+            <Route path="/dashboard/publications/new" element={<PublicationCreationPage />} />
+            <Route path="/dashboard/publications/:id/preview" element={<PublicationPreviewPage />} />
             <Route path="/dashboard/profile" element={<ProfilePage />} />
             <Route path="/design-system" element={<DesignSystemPage />} />
             <Route path="/explore/datasets" element={<ComingSoonPage title="Datasets" />} />
