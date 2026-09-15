@@ -8,7 +8,7 @@ import { WorkspaceHeader } from '@/components/dataset/WorkspaceHeader'
 import { WizardFooter } from '@/components/dataset/WizardFooter'
 import { EventInformationStep } from '@/components/event/EventInformationStep'
 import { EventConnectionsStep } from '@/components/event/EventConnectionsStep'
-import { EventPublicationsStep } from '@/components/event/EventPublicationsStep'
+import { EventResourcesStep } from '@/components/event/EventResourcesStep'
 import { EventPublishReview } from '@/components/event/EventPublishReview'
 import { LeaveCreationDialog } from '@/components/shared/LeaveCreationDialog'
 import { useToast } from '@/components/ui/toast'
@@ -22,10 +22,10 @@ import { emptyEventForm, type EventFormState, type EventMetadata } from '@/types
 type EventStep = 1 | 2 | 3 | 4
 
 const EVENT_STEPS = [
-  { step: 1, label: 'Information', description: 'Event details & identity', icon: FileText },
-  { step: 2, label: 'Connections', description: 'Datasets & related content', icon: Link2 },
-  { step: 3, label: 'Publications', description: 'Reports & supporting content', icon: Newspaper },
-  { step: 4, label: 'Publish', description: 'Final review & publish', icon: ListChecks },
+  { step: 1, label: 'Details', description: 'Add event details and information', icon: FileText },
+  { step: 2, label: 'Connections', description: 'Add organisations, people and partners', icon: Link2 },
+  { step: 3, label: 'Resources', description: 'Add related content and resources', icon: Newspaper },
+  { step: 4, label: 'Publish', description: 'Review details and publish event', icon: ListChecks },
 ]
 
 interface EventNavState {
@@ -99,7 +99,7 @@ function EventCreationPage() {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
-  const handleContinueFromPublications = () => {
+  const handleContinueFromResources = () => {
     setStep(4)
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
@@ -151,7 +151,7 @@ function EventCreationPage() {
   }
 
   const handleContinue =
-    step === 1 ? handleContinueFromInformation : step === 2 ? handleContinueFromConnections : handleContinueFromPublications
+    step === 1 ? handleContinueFromInformation : step === 2 ? handleContinueFromConnections : handleContinueFromResources
 
   return (
     <Card>
@@ -174,7 +174,7 @@ function EventCreationPage() {
           <EventInformationStep metadata={form.metadata} errors={{}} onChange={updateMetadata} />
         )}
         {step === 2 && <EventConnectionsStep form={form} onChange={setForm} />}
-        {step === 3 && <EventPublicationsStep form={form} onChange={setForm} />}
+        {step === 3 && <EventResourcesStep form={form} onChange={setForm} />}
         {step === 4 && (
           <EventPublishReview
             form={form}

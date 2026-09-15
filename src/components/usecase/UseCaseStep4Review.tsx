@@ -43,11 +43,6 @@ function UseCaseStep4Review({ form, onEditStep, onPreview }: UseCaseStep4ReviewP
 
   return (
     <div className="flex flex-col gap-6">
-      <div>
-        <h2 className="type-heading-2 text-primary">Review</h2>
-        <p className="mt-1 text-sm text-muted-foreground">Check that your Use Case is ready.</p>
-      </div>
-
       <div className="rounded-xl border border-border bg-card p-5">
         <p className={ready ? 'text-sm font-semibold text-success-text' : 'text-sm font-semibold text-warning-foreground'}>
           {ready ? 'Ready to publish' : 'Not ready to publish'}

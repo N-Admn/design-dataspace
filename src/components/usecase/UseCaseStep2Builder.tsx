@@ -7,7 +7,6 @@ import {
   ChevronUp,
   Copy,
   ExternalLink,
-  Heading as HeadingIcon,
   ImageIcon,
   Link2,
   MessageSquareQuote,
@@ -22,7 +21,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
-import { RichTextEditor } from '@/components/ui/rich-text-editor'
+import { RichTextEditor, richTextClassName } from '@/components/ui/rich-text-editor'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { useAppData } from '@/context/AppDataContext'
 import { cn } from '@/lib/utils'
@@ -30,12 +29,11 @@ import { validateAssetFile, buildUploadedAsset, formatUploadHint } from '@/lib/g
 import { FieldError } from '@/components/ui/field-error'
 import { SUPPORTED_IMAGE_EXTENSIONS, MAX_IMAGE_BYTES } from '@/types/event'
 import type { UploadedAsset } from '@/lib/generic-upload'
-import type { UseCaseBlock, UseCaseBlockType, UseCaseHeadingLevel, UseCaseMetadata } from '@/types/usecase'
+import type { UseCaseBlock, UseCaseBlockType, UseCaseMetadata } from '@/types/usecase'
 
 let blockIdCounter = 0
 
-const BLOCK_MENU: { type: UseCaseBlockType; label: string; icon: typeof HeadingIcon }[] = [
-  { type: 'heading', label: 'Heading', icon: HeadingIcon },
+const BLOCK_MENU: { type: UseCaseBlockType; label: string; icon: typeof Pilcrow }[] = [
   { type: 'text', label: 'Text', icon: Pilcrow },
   { type: 'image', label: 'Image', icon: ImageIcon },
   { type: 'chart', label: 'Chart', icon: BarChart3 },
@@ -47,8 +45,6 @@ function createBlock(type: UseCaseBlockType): UseCaseBlock {
   blockIdCounter += 1
   const id = `block-${blockIdCounter}`
   switch (type) {
-    case 'heading':
-      return { id, type: 'heading', text: '', level: 2 }
     case 'text':
       return { id, type: 'text', html: '' }
     case 'image':
@@ -75,6 +71,9 @@ interface BlockWrapperProps {
   active: boolean
   isFirst: boolean
   isLast: boolean
+  /** Enter edit mode. Fired by clicking anywhere in the block body. */
+  onActivate: () => void
+  /** Toggle edit mode — backs the pen / done control. */
   onToggleActive: () => void
   onMoveUp: () => void
   onMoveDown: () => void
@@ -87,6 +86,7 @@ function BlockWrapper({
   active,
   isFirst,
   isLast,
+  onActivate,
   onToggleActive,
   onMoveUp,
   onMoveDown,
@@ -98,8 +98,9 @@ function BlockWrapper({
     <div
       className={cn(
         'group/block relative -mx-3 rounded-lg border px-3 py-2 transition-colors',
-        active ? 'border-primary/40 bg-primary/[0.03]' : 'border-transparent hover:border-border',
+        active ? 'border-primary/40 bg-primary/[0.03]' : 'cursor-pointer border-transparent hover:border-border',
       )}
+      onClick={active ? undefined : onActivate}
     >
       <div
         className={cn(
@@ -107,6 +108,7 @@ function BlockWrapper({
           'group-hover/block:pointer-events-auto group-hover/block:opacity-100',
           active && 'pointer-events-auto opacity-100',
         )}
+        onClick={(e) => e.stopPropagation()}
       >
         <Button
           type="button"
@@ -142,27 +144,6 @@ function BlockWrapper({
     </div>
   )
 }
-
-function HeadingLevelToggle({ level, onChange }: { level: UseCaseHeadingLevel; onChange: (level: UseCaseHeadingLevel) => void }) {
-  return (
-    <div className="inline-flex shrink-0 items-center rounded-md border border-border p-0.5 text-xs font-medium text-muted-foreground">
-      {([2, 3] as UseCaseHeadingLevel[]).map((l) => (
-        <button
-          key={l}
-          type="button"
-          onClick={() => onChange(l)}
-          className={cn('rounded px-1.5 py-0.5', l === level ? 'bg-primary text-primary-foreground' : 'hover:bg-muted')}
-        >
-          H{l}
-        </button>
-      ))}
-    </div>
-  )
-}
-
-/** Mirrors the published preview's rotation so the Builder canvas shows the
- * same color a Highlight block will actually render with. */
-const HIGHLIGHT_STYLES = ['bg-primary/5', 'bg-accent/20', 'bg-success/20']
 
 function stripHtml(html: string): string {
   return html.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim()
@@ -253,11 +234,6 @@ function UseCaseStep2Builder({ metadata, blocks, onBlocksChange }: UseCaseStep2B
 
   return (
     <div className="flex flex-col gap-6">
-      <div>
-        <h2 className="type-heading-2 text-primary">Builder</h2>
-        <p className="mt-1 text-sm text-muted-foreground">Tell the story using flexible content blocks.</p>
-      </div>
-
       <Card>
         <CardHeader>
           <CardTitle>Introduction</CardTitle>
@@ -297,38 +273,12 @@ function UseCaseStep2Builder({ metadata, blocks, onBlocksChange }: UseCaseStep2B
                     active,
                     isFirst: index === 0,
                     isLast: index === blocks.length - 1,
+                    onActivate: () => setActiveBlockId(block.id),
                     onToggleActive: () => setActiveBlockId((prev) => (prev === block.id ? null : block.id)),
                     onMoveUp: () => moveBlock(index, -1),
                     onMoveDown: () => moveBlock(index, 1),
                     onDuplicate: () => cloneBlock(index),
                     onDelete: () => removeBlock(block.id),
-                  }
-
-                  if (block.type === 'heading') {
-                    const Tag = block.level === 2 ? 'h2' : 'h3'
-                    return (
-                      <BlockWrapper key={block.id} {...shellProps}>
-                        {active ? (
-                          <div className="flex items-center gap-3">
-                            <input
-                              autoFocus
-                              value={block.text}
-                              onChange={(e) => updateBlock(block.id, { text: e.target.value })}
-                              placeholder="Untitled heading"
-                              className={cn(
-                                ghostField,
-                                block.level === 2 ? 'type-heading-2 text-primary' : 'type-heading-3 text-foreground',
-                              )}
-                            />
-                            <HeadingLevelToggle level={block.level} onChange={(level) => updateBlock(block.id, { level })} />
-                          </div>
-                        ) : (
-                          <Tag className={block.level === 2 ? 'type-heading-2 text-primary' : 'type-heading-3 text-foreground'}>
-                            {block.text || 'Untitled heading'}
-                          </Tag>
-                        )}
-                      </BlockWrapper>
-                    )
                   }
 
                   if (block.type === 'text') {
@@ -339,10 +289,11 @@ function UseCaseStep2Builder({ metadata, blocks, onBlocksChange }: UseCaseStep2B
                             value={block.html}
                             onChange={(html) => updateBlock(block.id, { html })}
                             placeholder="Write some text..."
+                            blockControls
                           />
                         ) : (
                           <div
-                            className="prose-sm text-sm text-foreground [&_a]:text-primary [&_a]:underline [&_ol]:list-decimal [&_ol]:pl-5 [&_ul]:list-disc [&_ul]:pl-5"
+                            className={richTextClassName}
                             dangerouslySetInnerHTML={{
                               __html: stripHtml(block.html) ? block.html : '<p class="text-muted-foreground">Empty text block</p>',
                             }}

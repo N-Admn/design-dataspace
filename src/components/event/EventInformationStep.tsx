@@ -182,7 +182,7 @@ function EventInformationStep({ metadata, errors, onChange }: EventInformationSt
           <div className="flex flex-col gap-5 sm:flex-row">
             <div className="flex-1">
               <Label htmlFor="event-type">
-                Event Type <span className="text-destructive">*</span>
+                Event Type
               </Label>
               <div className="mt-1.5">
                 <SearchableSelect
@@ -198,7 +198,7 @@ function EventInformationStep({ metadata, errors, onChange }: EventInformationSt
             </div>
             <div className="flex-1">
               <Label htmlFor="event-theme">
-                Theme/Sector <span className="text-destructive">*</span>
+                Theme/Sector
               </Label>
               <div className="mt-1.5">
                 <SearchableSelect

@@ -1,4 +1,4 @@
-import type { DatasetMetadata, DatasetResource } from '@/types/dataset'
+import type { DatasetFile, DatasetMetadata } from '@/types/dataset'
 
 export interface MiniDatasetBasicErrors {
   name?: string
@@ -18,8 +18,8 @@ export function isMiniDatasetBasicsValid(metadata: DatasetMetadata): boolean {
   return Object.keys(validateMiniDatasetBasics(metadata)).length === 0
 }
 
-export function validateMiniDatasetResources(resources: DatasetResource[]): string | undefined {
-  if (resources.length === 0) return 'Add at least one resource.'
+export function validateMiniDatasetFiles(files: DatasetFile[]): string | undefined {
+  if (files.length === 0) return 'Add at least one file — upload one or import from a public platform.'
   return undefined
 }
 

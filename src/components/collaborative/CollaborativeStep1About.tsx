@@ -23,13 +23,6 @@ interface CollaborativeStep1AboutProps {
 function CollaborativeStep1About({ metadata, errors, onChange }: CollaborativeStep1AboutProps) {
   return (
     <div className="flex flex-col gap-6">
-      <div>
-        <h2 className="type-heading-2 text-primary">About</h2>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Tell people what this Collaborative is, what it focuses on, and why it matters.
-        </p>
-      </div>
-
       <Card>
         <CardHeader>
           <CardTitle>Basic Information</CardTitle>

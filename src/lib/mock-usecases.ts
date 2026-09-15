@@ -26,7 +26,6 @@ const useCase1Form: UseCaseFormState = {
     geographies: ['india'],
   },
   blocks: [
-    { id: 'block-seed-1', type: 'heading', text: 'The Challenge', level: 2 },
     {
       id: 'block-seed-2',
       type: 'text',

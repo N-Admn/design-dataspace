@@ -89,7 +89,7 @@ function ForgotPasswordPage() {
       </form>
 
       <p className="mt-6 text-center text-sm">
-        <Link to="/auth/sign-in" className="font-medium text-primary underline underline-offset-4">
+        <Link to="/auth/sign-in" className="font-medium text-primary underline-offset-4 hover:underline focus-visible:underline">
           Back to Sign In
         </Link>
       </p>

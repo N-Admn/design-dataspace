@@ -25,6 +25,11 @@ export interface EventSpeaker {
   organisation: string
   bio: string
   image: UploadedAsset | null
+  /** How this speaker got onto the list. `'directory'` = picked from Search
+   * Contributors — a read-only reference to a CivicDataSpace profile, so it can
+   * only be removed. `'manual'` (or absent, for legacy/mock data) = entered via
+   * "+ Add Speaker" and fully editable. */
+  source?: 'directory' | 'manual'
 }
 
 export interface EventPublication {
@@ -32,13 +37,29 @@ export interface EventPublication {
   title: string
   description: string
   publicationType: string
-  file: UploadedAsset
+  /** Present for publications created via "+ Add Resource" (an uploaded file).
+   * Absent for publications connected as references to existing CivicDataSpace
+   * publications, which carry no local file. */
+  file?: UploadedAsset
+  /** Organisation / contributor behind an existing publication reference. */
+  organisation?: string
+  /** `'created'` = uploaded through this flow. `'reference'` (or absent, for
+   * legacy data) = connected from the CivicDataSpace publication directory and
+   * not editable here. */
+  source?: 'created' | 'reference'
 }
 
 export interface RelatedContentItem {
   id: string
   title: string
   type: RelatedContentType
+  /** Organisation / contributor behind the resource, shown in search results and
+   * the connected list where available. */
+  organisation?: string
+  /** `'created'` = built via "+ Add Resource" in the event flow and editable
+   * here. `'reference'` (or absent, for legacy/mock data) = connected from the
+   * CivicDataSpace directory via search and not editable, only removable. */
+  source?: 'created' | 'reference'
 }
 
 export interface EventMetadata {

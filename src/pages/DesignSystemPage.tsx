@@ -301,7 +301,7 @@ const SEMANTIC_STATES = [
   ['Focus (light)', 'ring — 2px solid, offset 2px', 'every focusable element'],
   ['Focus (dark chrome)', 'ring-on-dark', 'TopNav controls, via [data-chrome="dark"]'],
   ['Hover / active', 'control-hover / control-active', 'buttons, table rows, option rows'],
-  ['Link', 'primary + persistent underline', 'footer / nav / external-URL references'],
+  ['Link', 'primary; underline on hover / focus only', 'footer / nav / external-URL references'],
 ] as const
 
 const BUTTON_VARIANTS = [
@@ -586,7 +586,7 @@ export function DesignSystemPage() {
               <a
                 key={id}
                 href={`#${id}`}
-                className="type-caption text-primary underline underline-offset-4 hover:opacity-80"
+                className="type-caption text-primary underline-offset-4 hover:underline focus-visible:underline hover:opacity-80"
               >
                 {label}
               </a>

@@ -84,7 +84,7 @@ function EventPublishReview({ form, onEditSection, onPreview }: EventPublishRevi
             label="Registration"
             value={
               registration === 'not-required' ? (
-                <Badge variant="muted">Not Required</Badge>
+                <Badge variant="muted">None</Badge>
               ) : registration === 'open' ? (
                 <Badge variant="success">Open</Badge>
               ) : (
@@ -126,17 +126,21 @@ function EventPublishReview({ form, onEditSection, onPreview }: EventPublishRevi
                 <Badge variant="secondary">
                   {PUBLICATION_TYPE_OPTIONS.find((o) => o.value === p.publicationType)?.label ?? p.publicationType}
                 </Badge>
-                <span className="text-xs text-muted-foreground">{p.file.sizeLabel}</span>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  className="shrink-0"
-                  aria-label={`Preview ${p.title}`}
-                  onClick={() => setPreview(assetToPreviewResource(p.file, p.title))}
-                >
-                  <Eye className="size-4" />
-                </Button>
+                {p.file && (
+                  <>
+                    <span className="text-xs text-muted-foreground">{p.file.sizeLabel}</span>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="shrink-0"
+                      aria-label={`Preview ${p.title}`}
+                      onClick={() => setPreview(assetToPreviewResource(p.file!, p.title))}
+                    >
+                      <Eye className="size-4" />
+                    </Button>
+                  </>
+                )}
               </div>
             ))}
           </div>

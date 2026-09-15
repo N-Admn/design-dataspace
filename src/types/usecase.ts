@@ -33,18 +33,11 @@ export interface UseCaseMetadata {
   geographies: string[]
 }
 
-export type UseCaseHeadingLevel = 2 | 3
-
-export interface UseCaseHeadingBlock {
-  id: string
-  type: 'heading'
-  text: string
-  level: UseCaseHeadingLevel
-}
-
 export interface UseCaseTextBlock {
   id: string
   type: 'text'
+  /** Structured rich text: H2/H3, paragraphs, quote, bulleted/numbered lists,
+   * and links. Replaces the former standalone Heading block. */
   html: string
 }
 
@@ -78,10 +71,9 @@ export interface UseCaseLinkBlock {
   description: string
 }
 
-export type UseCaseBlockType = 'heading' | 'text' | 'image' | 'chart' | 'highlight' | 'link'
+export type UseCaseBlockType = 'text' | 'image' | 'chart' | 'highlight' | 'link'
 
 export type UseCaseBlock =
-  | UseCaseHeadingBlock
   | UseCaseTextBlock
   | UseCaseImageBlock
   | UseCaseChartBlock
@@ -97,6 +89,12 @@ export interface UseCaseContributor {
   id: string
   name: string
   role: string
+  /** Organisation the contributor is affiliated with, when known. */
+  organisation?: string
+  /** Short description / bio, when provided. */
+  bio?: string
+  /** Profile photo, when uploaded. */
+  image?: UploadedAsset | null
 }
 
 export interface UseCaseConnections {

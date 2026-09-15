@@ -95,10 +95,6 @@ function ChartStep2Create({ datasetId, form, errors, onSelectFile, onSelectChart
 
   return (
     <div className="flex flex-col gap-6">
-      <div>
-        <h2 className="type-heading-2 text-primary">Create your chart</h2>
-      </div>
-
       <Card>
         <CardHeader>
           <CardTitle>Configure Visualization</CardTitle>

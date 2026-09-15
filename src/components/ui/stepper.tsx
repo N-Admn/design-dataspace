@@ -142,7 +142,7 @@ function Stepper({ steps, currentStep, compact = false, interactive = false, onS
                   String(item.step).padStart(2, '0')
                 )}
               </div>
-              <div className="w-28">
+              <div className="w-32">
                 <p
                   className={cn(
                     'text-sm font-semibold',

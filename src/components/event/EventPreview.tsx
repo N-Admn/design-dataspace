@@ -64,7 +64,7 @@ function EventPreview({ form }: { form: EventFormState }) {
               <Badge variant="muted">Registration Closed</Badge>
             )}
             {metadata.registrationUrl && (
-              <a href={metadata.registrationUrl} target="_blank" rel="noreferrer" className="text-sm text-primary underline underline-offset-4">
+              <a href={metadata.registrationUrl} target="_blank" rel="noreferrer" className="text-sm text-primary underline-offset-4 hover:underline focus-visible:underline">
                 Register →
               </a>
             )}

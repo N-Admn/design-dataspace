@@ -23,7 +23,7 @@ interface PublicationFormProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   onAdd: (publication: EventPublication) => void
-  initial?: Pick<EventPublication, 'id' | 'title' | 'description' | 'publicationType'>
+  initial?: Pick<EventPublication, 'id' | 'title' | 'description' | 'publicationType' | 'file'>
 }
 
 let publicationIdCounter = 0
@@ -34,7 +34,7 @@ function PublicationForm({ open, onOpenChange, onAdd, initial }: PublicationForm
   const [description, setDescription] = React.useState(initial?.description ?? '')
   const [publicationType, setPublicationType] = React.useState(initial?.publicationType ?? '')
   const [errors, setErrors] = React.useState<{ title?: string; publicationType?: string; file?: string }>({})
-  const [pendingAsset, setPendingAsset] = React.useState<UploadedAsset | null>(null)
+  const [pendingAsset, setPendingAsset] = React.useState<UploadedAsset | null>(initial?.file ?? null)
   const titleTouched = React.useRef(Boolean(initial?.title))
   const typeTouched = React.useRef(Boolean(initial?.publicationType))
 
@@ -43,7 +43,7 @@ function PublicationForm({ open, onOpenChange, onAdd, initial }: PublicationForm
       setTitle(initial?.title ?? '')
       setDescription(initial?.description ?? '')
       setPublicationType(initial?.publicationType ?? '')
-      setPendingAsset(null)
+      setPendingAsset(initial?.file ?? null)
       setErrors({})
       titleTouched.current = Boolean(initial?.title)
       typeTouched.current = Boolean(initial?.publicationType)
@@ -65,7 +65,7 @@ function PublicationForm({ open, onOpenChange, onAdd, initial }: PublicationForm
     title.trim() !== (initial?.title ?? '') ||
     description.trim() !== (initial?.description ?? '') ||
     publicationType !== (initial?.publicationType ?? '') ||
-    pendingAsset !== null
+    pendingAsset !== (initial?.file ?? null)
 
   const requestClose = async () => {
     if (hasUnsavedChanges) {

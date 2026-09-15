@@ -214,7 +214,7 @@ Component variants are defined with \`class-variance-authority\` in \`src/compon
 ### Button — \`src/components/ui/button.tsx\`
 
 - **Base:** \`inline-flex items-center justify-center gap-2 rounded-md text-sm font-medium\`, \`disabled:opacity-50\`, focus ring \`focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2\` (full opacity). **No default \`whitespace-nowrap\`** — wrapping is allowed unless a specific instance is provably short.
-- **Variants:** \`default\` (\`bg-primary … active:bg-primary\`), \`destructive\` (\`bg-destructive\`), \`outline\` (\`border border-input bg-background hover:bg-control-hover active:bg-control-active\`), \`secondary\` (\`bg-secondary\`), \`ghost\` (\`hover:bg-control-hover active:bg-control-active\`), \`link\` (\`underline underline-offset-4 text-primary\` — persistent, not hover-only), \`successOutline\` (\`border-success text-success-text\`).
+- **Variants:** \`default\` (\`bg-primary … active:bg-primary\`), \`destructive\` (\`bg-destructive\`), \`outline\` (\`border border-input bg-background hover:bg-control-hover active:bg-control-active\`), \`secondary\` (\`bg-secondary\`), \`ghost\` (\`hover:bg-control-hover active:bg-control-active\`), \`link\` (\`text-primary underline-offset-4 hover:underline focus-visible:underline\` — no rest-state underline; it appears on hover and keyboard focus), \`successOutline\` (\`border-success text-success-text\`).
 - **Sizes:** \`default\` h-10 · \`sm\` h-9 · \`lg\` h-11 · \`icon\` size-9.
 
 ### Badge — \`src/components/ui/badge.tsx\`
@@ -231,7 +231,7 @@ Inputs, textareas and selects: \`h-10 rounded-md border border-input bg-backgrou
 
 ### Links
 
-Standalone text links (footer, nav, external-URL references) use a persistent underline (\`underline underline-offset-4\`), not a hover-only treatment.
+Standalone text links (footer, nav, external-URL references, the \`link\` button variant) carry **no rest-state underline** — colour (\`text-primary\`, or \`text-muted-foreground\` in the footer) is the only resting affordance, and the underline appears on \`hover\` and \`focus-visible\`. Links **inside body copy** (rich-text / \`prose\` blocks, \`[&_a]:underline\`) keep a persistent underline, since there they must be distinguishable from surrounding text without relying on colour (WCAG 1.4.1).
 
 ### Truncation
 
@@ -263,7 +263,7 @@ Table rows, chart values, and pie percentages apply \`tabular-nums\`. Chart / ma
 | Focus (light) | \`ring\` (full opacity, explicit width/style) | \`focus-visible:ring-ring\` on \`Button\`/\`Input\`; base \`:focus-visible\` outline |
 | Focus (dark chrome) | \`ring-on-dark\` | \`TopNav\` controls (via \`[data-chrome="dark"]\`) |
 | Hover / active | \`control-hover\` / \`control-active\` | buttons, table rows, dropdown option rows |
-| Link | persistent underline | footer/nav links, external-URL references |
+| Link | \`text-primary\`; underline on \`hover\` / \`focus-visible\` only (persistent underline kept only for links inside body copy) | footer/nav links, external-URL references, \`link\` button variant |
 | Title / heading | \`.type-heading-1/2/3\` | page, section, card, dialog titles |
 
 ---

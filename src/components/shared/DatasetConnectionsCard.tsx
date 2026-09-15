@@ -1,15 +1,17 @@
 import * as React from 'react'
-import { CheckCircle2, Database, Plus, Search, X } from 'lucide-react'
+import { CheckCircle2, Database, Plus, Search, Trash2 } from 'lucide-react'
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { Label } from '@/components/ui/label'
 import { SearchableSelect } from '@/components/ui/searchable-select'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { SearchInput, SearchResultList, SearchResultRow } from '@/components/shared/SearchResultList'
 import { StatusBadge } from '@/components/shared/StatusBadge'
 import { EmptyState } from '@/components/shared/EmptyState'
 import { DatasetCreationWizard } from '@/components/event/DatasetCreationWizard'
 import { useAppData } from '@/context/AppDataContext'
 import { formatShortDate } from '@/lib/format'
-import { cn } from '@/lib/utils'
 import { GEOGRAPHY_OPTIONS, SECTOR_OPTIONS } from '@/types/dataset'
 
 interface ConnectedDataset {
@@ -24,6 +26,13 @@ interface DatasetConnectionsCardProps {
   parentLabel: string
   description?: string
   emptyHint?: string
+  /** 'panel' (default) — the existing inline expanding search-and-filter panel,
+   * unchanged, used by Event and Collaborative. 'dropdown' — the standardized
+   * searchable dropdown used for Organisation/Contributor search: a full-width
+   * search field that opens a popover of results; selecting one connects it
+   * immediately and removes it from the candidate pool. Use Case → Connect is
+   * the only current 'dropdown' consumer. */
+  searchVariant?: 'panel' | 'dropdown'
 }
 
 function optionLabel(options: { value: string; label: string }[], value: string): string {
@@ -36,6 +45,7 @@ function DatasetConnectionsCard({
   parentLabel,
   description = `Connect datasets related to ${parentLabel}.`,
   emptyHint = `Connect an existing published dataset to ${parentLabel}.`,
+  searchVariant = 'panel',
 }: DatasetConnectionsCardProps) {
   const { datasets: allDatasets } = useAppData()
   const [showSearch, setShowSearch] = React.useState(false)
@@ -47,6 +57,7 @@ function DatasetConnectionsCard({
   const [previewId, setPreviewId] = React.useState<string | null>(null)
   const [justAddedMessage, setJustAddedMessage] = React.useState<string | null>(null)
 
+  const isDropdown = searchVariant === 'dropdown'
   const connectedIds = datasets.map((d) => d.id)
 
   const addItem = (item: ConnectedDataset) => onChange([...datasets, item])
@@ -70,6 +81,8 @@ function DatasetConnectionsCard({
     setShowSearch(true)
   }
 
+  // Connection logic — shared by both search presentations and by "Replace" on
+  // an unavailable dataset. Unchanged.
   const handleConnect = (dataset: ConnectedDataset) => {
     if (replacingId) {
       removeItem(replacingId)
@@ -102,6 +115,11 @@ function DatasetConnectionsCard({
     return true
   })
 
+  // The dropdown presentation has no filters and, like the standardized
+  // Organisation/Contributor dropdowns, drops an item from the candidate pool
+  // once it's connected rather than showing it dimmed with a badge.
+  const dropdownResults = results.filter((d) => !connectedIds.includes(d.id))
+
   return (
     <Card>
       <CardHeader className="flex-row items-center justify-between">
@@ -109,24 +127,31 @@ function DatasetConnectionsCard({
           <CardTitle>Datasets</CardTitle>
           <p className="mt-1 text-sm font-normal text-muted-foreground">{description}</p>
         </div>
-        <div className="flex flex-col items-end gap-1.5">
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => (showSearch && !replacingId ? setShowSearch(false) : openSearch())}
-          >
+        {isDropdown ? (
+          <Button type="button" variant="outline" size="sm" onClick={() => setCreateOpen(true)}>
             <Plus className="size-4" />
-            Connect Dataset
+            Create New Dataset
           </Button>
-          <button
-            type="button"
-            onClick={() => setCreateOpen(true)}
-            className="text-xs font-medium text-primary underline underline-offset-4"
-          >
-            + Create New Dataset
-          </button>
-        </div>
+        ) : (
+          <div className="flex flex-col items-end gap-1.5">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => (showSearch && !replacingId ? setShowSearch(false) : openSearch())}
+            >
+              <Plus className="size-4" />
+              Connect Dataset
+            </Button>
+            <button
+              type="button"
+              onClick={() => setCreateOpen(true)}
+              className="text-xs font-medium text-primary underline-offset-4 hover:underline focus-visible:underline"
+            >
+              + Create New Dataset
+            </button>
+          </div>
+        )}
       </CardHeader>
       <CardContent className="flex flex-col gap-3">
         {justAddedMessage && (
@@ -136,90 +161,130 @@ function DatasetConnectionsCard({
           </div>
         )}
 
-        {showSearch && (
-          <div className="flex flex-col gap-3 rounded-lg border border-border bg-muted/30 p-3">
-            {replacingId && (
-              <p className="text-xs font-medium text-muted-foreground">
-                Choose a replacement dataset for the unavailable one.
-              </p>
-            )}
-            <div className="flex items-center gap-2 rounded-md border border-input bg-background px-3 py-2">
-              <Search className="size-4 shrink-0 text-muted-foreground" />
-              <input
-                autoFocus
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search by name or keyword"
-                className="h-6 w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-2">
-              <SearchableSelect options={SECTOR_OPTIONS} value={sector} onChange={setSector} placeholder="Sector" />
-              <SearchableSelect
-                options={GEOGRAPHY_OPTIONS}
-                value={geography}
-                onChange={setGeography}
-                placeholder="Geography"
-              />
-            </div>
-
-            {results.length === 0 ? (
-              <div className="flex flex-col items-center gap-3 py-8 text-center">
-                <p className="text-sm font-medium text-foreground">No datasets found.</p>
-                {hasActiveFilters && (
-                  <Button type="button" variant="outline" size="sm" onClick={resetSearch}>
-                    Clear filters
-                  </Button>
+        {isDropdown ? (
+          <>
+            <Label className="sr-only">Search Datasets</Label>
+            <Popover open={showSearch} onOpenChange={(next) => (next ? openSearch() : setShowSearch(false))}>
+              <PopoverTrigger asChild>
+                <button
+                  type="button"
+                  className="flex h-10 w-full items-center gap-2 rounded-md border border-input bg-background px-3 text-sm text-muted-foreground transition-colors hover:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  <Search className="size-4 shrink-0" />
+                  Search published datasets...
+                </button>
+              </PopoverTrigger>
+              <PopoverContent className="flex flex-col gap-3 p-3" onOpenAutoFocus={(e) => e.preventDefault()}>
+                {replacingId && (
+                  <p className="text-xs font-medium text-muted-foreground">
+                    Choose a replacement dataset for the unavailable one.
+                  </p>
                 )}
+                <SearchInput autoFocus value={query} onChange={setQuery} placeholder="Search by name or keyword" />
+                <SearchResultList
+                  isEmpty={dropdownResults.length === 0}
+                  emptyLabel="No datasets found."
+                  className="max-h-72 overflow-y-auto"
+                >
+                  {dropdownResults.map((dataset) => {
+                    const name = dataset.form.metadata.name || 'Untitled dataset'
+                    return (
+                      <SearchResultRow
+                        key={dataset.id}
+                        icon={Database}
+                        primary={name}
+                        secondary={[
+                          dataset.form.metadata.sector ? optionLabel(SECTOR_OPTIONS, dataset.form.metadata.sector) : '—',
+                          dataset.form.metadata.geography ? optionLabel(GEOGRAPHY_OPTIONS, dataset.form.metadata.geography) : '—',
+                        ].join(' · ')}
+                        onSelect={() => handleConnect({ id: dataset.id, title: name })}
+                      />
+                    )
+                  })}
+                </SearchResultList>
+              </PopoverContent>
+            </Popover>
+          </>
+        ) : (
+          showSearch && (
+            <div className="flex flex-col gap-3 rounded-lg border border-border bg-muted/30 p-3">
+              {replacingId && (
+                <p className="text-xs font-medium text-muted-foreground">
+                  Choose a replacement dataset for the unavailable one.
+                </p>
+              )}
+              <SearchInput autoFocus value={query} onChange={setQuery} placeholder="Search by name or keyword" />
+              <div className="grid grid-cols-2 gap-2">
+                <SearchableSelect options={SECTOR_OPTIONS} value={sector} onChange={setSector} placeholder="Sector" />
+                <SearchableSelect
+                  options={GEOGRAPHY_OPTIONS}
+                  value={geography}
+                  onChange={setGeography}
+                  placeholder="Geography"
+                />
               </div>
-            ) : (
-              <div className="flex max-h-80 flex-col gap-2 overflow-y-auto">
-                {results.map((dataset) => {
-                  const isConnected = connectedIds.includes(dataset.id)
-                  const name = dataset.form.metadata.name || 'Untitled dataset'
 
-                  return (
-                    <div
-                      key={dataset.id}
-                      className={cn('flex items-center gap-3 rounded-lg border border-border bg-card p-3', isConnected && 'opacity-60')}
-                    >
-                      <div className="flex size-9 shrink-0 items-center justify-center rounded-md bg-muted text-muted-foreground">
-                        <Database className="size-4" />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <p className="truncate text-sm font-medium text-foreground">{name}</p>
-                        <p className="mt-0.5 text-xs text-muted-foreground">
-                          {dataset.form.metadata.sector ? optionLabel(SECTOR_OPTIONS, dataset.form.metadata.sector) : '—'}
-                          {' · '}
-                          {dataset.form.metadata.geography
-                            ? optionLabel(GEOGRAPHY_OPTIONS, dataset.form.metadata.geography)
-                            : '—'}
-                        </p>
-                      </div>
-                      {isConnected ? (
-                        <span className="shrink-0 rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium text-muted-foreground">
-                          Connected
-                        </span>
-                      ) : (
-                        <Button
-                          type="button"
-                          size="sm"
-                          className="shrink-0"
-                          onClick={() => handleConnect({ id: dataset.id, title: name })}
-                        >
-                          Connect
-                        </Button>
-                      )}
-                    </div>
-                  )
-                })}
-              </div>
-            )}
+              {results.length === 0 ? (
+                <div className="flex flex-col items-center gap-3 py-8 text-center">
+                  <p className="text-sm font-medium text-foreground">No datasets found.</p>
+                  {hasActiveFilters && (
+                    <Button type="button" variant="outline" size="sm" onClick={resetSearch}>
+                      Clear filters
+                    </Button>
+                  )}
+                </div>
+              ) : (
+                <div className="flex max-h-80 flex-col gap-2 overflow-y-auto">
+                  {results.map((dataset) => {
+                    const isConnected = connectedIds.includes(dataset.id)
+                    const name = dataset.form.metadata.name || 'Untitled dataset'
 
-            <Button type="button" variant="ghost" size="sm" className="self-start" onClick={() => setShowSearch(false)}>
-              Cancel
-            </Button>
-          </div>
+                    return (
+                      <div
+                        key={dataset.id}
+                        className={
+                          'flex items-center gap-3 rounded-lg border border-border bg-card p-3' +
+                          (isConnected ? ' opacity-60' : '')
+                        }
+                      >
+                        <div className="flex size-9 shrink-0 items-center justify-center rounded-md bg-muted text-muted-foreground">
+                          <Database className="size-4" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate text-sm font-medium text-foreground">{name}</p>
+                          <p className="mt-0.5 text-xs text-muted-foreground">
+                            {dataset.form.metadata.sector ? optionLabel(SECTOR_OPTIONS, dataset.form.metadata.sector) : '—'}
+                            {' · '}
+                            {dataset.form.metadata.geography
+                              ? optionLabel(GEOGRAPHY_OPTIONS, dataset.form.metadata.geography)
+                              : '—'}
+                          </p>
+                        </div>
+                        {isConnected ? (
+                          <span className="shrink-0 rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium text-muted-foreground">
+                            Connected
+                          </span>
+                        ) : (
+                          <Button
+                            type="button"
+                            size="sm"
+                            className="shrink-0"
+                            onClick={() => handleConnect({ id: dataset.id, title: name })}
+                          >
+                            Connect
+                          </Button>
+                        )}
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
+
+              <Button type="button" variant="ghost" size="sm" className="self-start" onClick={() => setShowSearch(false)}>
+                Cancel
+              </Button>
+            </div>
+          )
         )}
 
         {datasets.length === 0 ? (
@@ -283,12 +348,12 @@ function DatasetConnectionsCard({
                       <Button
                         type="button"
                         variant="ghost"
-                        size="sm"
+                        size="icon"
+                        aria-label={`Remove ${item.title}`}
                         onClick={() => removeItem(item.id)}
                         className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
                       >
-                        <X className="size-3.5" />
-                        Remove
+                        <Trash2 className="size-4" />
                       </Button>
                     </div>
                   </div>

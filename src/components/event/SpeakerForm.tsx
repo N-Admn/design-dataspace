@@ -80,6 +80,7 @@ function SpeakerForm({ open, onOpenChange, onSave, initial }: SpeakerFormProps) 
       organisation: organisation.trim(),
       bio: bio.trim(),
       image,
+      source: initial?.source ?? 'manual',
     })
   }
 

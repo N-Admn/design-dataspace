@@ -83,7 +83,7 @@ function buildColumns(onOpen: (event: EventRecord) => void): ManagementColumn<Ev
       const registration = getRegistrationStatus(e.form.metadata)
       if (registration === 'open') return <Badge variant="success">Open</Badge>
       if (registration === 'closed') return <Badge variant="muted">Closed</Badge>
-      return <Badge variant="muted">Not Required</Badge>
+      return <Badge variant="muted">None</Badge>
     },
   },
   {
@@ -117,7 +117,7 @@ const FILTERS: ManagementFilterDef<EventRecord>[] = [
     options: [
       { value: 'open', label: 'Open' },
       { value: 'closed', label: 'Closed' },
-      { value: 'not-required', label: 'Not Required' },
+      { value: 'not-required', label: 'None' },
     ],
     matches: (e, v) => getRegistrationStatus(e.form.metadata) === v,
   },

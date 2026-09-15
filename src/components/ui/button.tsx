@@ -14,7 +14,7 @@ const buttonVariants = cva(
         outline: 'border border-input bg-background hover:bg-control-hover active:bg-control-active',
         secondary: 'bg-secondary text-secondary-foreground hover:bg-secondary/80 active:bg-secondary',
         ghost: 'hover:bg-control-hover active:bg-control-active',
-        link: 'text-primary underline underline-offset-4',
+        link: 'text-primary underline-offset-4 hover:underline focus-visible:underline',
         successOutline:
           'border border-success text-success-text bg-background hover:bg-success/5 active:bg-success/10',
       },

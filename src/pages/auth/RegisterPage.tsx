@@ -127,7 +127,7 @@ function RegisterPage() {
           {errors.email === 'An account already exists with this email. Sign in instead.' ? (
             <p className="mt-1.5 text-xs font-medium text-destructive">
               An account already exists with this email.{' '}
-              <Link to="/auth/sign-in" state={{ email }} className="underline underline-offset-2">
+              <Link to="/auth/sign-in" state={{ email }} className="underline-offset-2 hover:underline focus-visible:underline">
                 Sign in instead.
               </Link>
             </p>
@@ -190,7 +190,7 @@ function RegisterPage() {
               <button
                 type="button"
                 onClick={() => setLegalDialog('terms')}
-                className="font-medium text-primary underline underline-offset-2"
+                className="font-medium text-primary underline-offset-2 hover:underline focus-visible:underline"
               >
                 Terms &amp; Conditions
               </button>{' '}
@@ -198,7 +198,7 @@ function RegisterPage() {
               <button
                 type="button"
                 onClick={() => setLegalDialog('privacy')}
-                className="font-medium text-primary underline underline-offset-2"
+                className="font-medium text-primary underline-offset-2 hover:underline focus-visible:underline"
               >
                 Privacy Policy
               </button>
@@ -223,7 +223,7 @@ function RegisterPage() {
 
       <p className="mt-6 text-center text-sm text-muted-foreground">
         Already have an account?{' '}
-        <Link to="/auth/sign-in" className="font-medium text-primary underline underline-offset-4">
+        <Link to="/auth/sign-in" className="font-medium text-primary underline-offset-4 hover:underline focus-visible:underline">
           Sign in
         </Link>
       </p>

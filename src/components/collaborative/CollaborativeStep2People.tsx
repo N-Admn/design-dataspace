@@ -1,4 +1,4 @@
-import { Building2, User, Users } from 'lucide-react'
+import { Building2, Trash2, User, Users } from 'lucide-react'
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -39,11 +39,6 @@ function CollaborativeStep2People({ connections, onChange }: CollaborativeStep2P
 
   return (
     <div className="flex flex-col gap-6">
-      <div>
-        <h2 className="type-heading-2 text-primary">People</h2>
-        <p className="mt-1 text-sm text-muted-foreground">Who is involved in this Collaborative?</p>
-      </div>
-
       <Card>
         <CardHeader>
           <CardTitle>People & Organisations</CardTitle>
@@ -91,11 +86,12 @@ function CollaborativeStep2People({ connections, onChange }: CollaborativeStep2P
                   <Button
                     type="button"
                     variant="ghost"
-                    size="sm"
+                    size="icon"
+                    aria-label={`Remove ${person.name}`}
                     onClick={() => removePerson(person.refId)}
                     className="shrink-0 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
                   >
-                    Remove
+                    <Trash2 className="size-4" />
                   </Button>
                 </div>
               ))}

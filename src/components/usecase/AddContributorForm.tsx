@@ -1,11 +1,16 @@
 import * as React from 'react'
+import { User } from 'lucide-react'
 
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
 import { FieldError } from '@/components/ui/field-error'
 import { useConfirm } from '@/components/ui/confirm-dialog'
+import { FileUploadField } from '@/components/shared/FileUploadField'
+import { MAX_IMAGE_BYTES, SUPPORTED_IMAGE_EXTENSIONS } from '@/types/event'
+import type { UploadedAsset } from '@/lib/generic-upload'
 import type { UseCaseContributor } from '@/types/usecase'
 
 interface AddContributorFormProps {
@@ -18,17 +23,24 @@ function AddContributorForm({ open, onOpenChange, onAdd }: AddContributorFormPro
   const confirm = useConfirm()
   const [name, setName] = React.useState('')
   const [role, setRole] = React.useState('')
+  const [organisation, setOrganisation] = React.useState('')
+  const [bio, setBio] = React.useState('')
+  const [image, setImage] = React.useState<UploadedAsset | null>(null)
   const [errors, setErrors] = React.useState<{ name?: string }>({})
 
   React.useEffect(() => {
     if (open) {
       setName('')
       setRole('')
+      setOrganisation('')
+      setBio('')
+      setImage(null)
       setErrors({})
     }
   }, [open])
 
-  const hasUnsavedChanges = name.trim() !== '' || role.trim() !== ''
+  const hasUnsavedChanges =
+    name.trim() !== '' || role.trim() !== '' || organisation.trim() !== '' || bio.trim() !== '' || image !== null
 
   const requestClose = async () => {
     if (hasUnsavedChanges) {
@@ -49,7 +61,7 @@ function AddContributorForm({ open, onOpenChange, onAdd }: AddContributorFormPro
       setErrors({ name: 'Enter a contributor name.' })
       return
     }
-    onAdd({ name: name.trim(), role: role.trim() })
+    onAdd({ name: name.trim(), role: role.trim(), organisation: organisation.trim(), bio: bio.trim(), image })
   }
 
   return (
@@ -71,6 +83,20 @@ function AddContributorForm({ open, onOpenChange, onAdd }: AddContributorFormPro
 
         <div className="min-h-0 flex-1 overflow-y-auto px-6 py-5">
           <div className="flex flex-col gap-5">
+            <FileUploadField
+              id="contributor-image"
+              label="Profile Image"
+              helperText="Upload a profile photo for this contributor."
+              value={image}
+              onChange={setImage}
+              extensions={SUPPORTED_IMAGE_EXTENSIONS}
+              maxBytes={MAX_IMAGE_BYTES}
+              fallbackIcon={User}
+              roundedFull
+              variant="dropzone"
+              dropzoneTitle="Drag and drop a photo here, or click to browse."
+            />
+
             <div>
               <Label htmlFor="contributor-name">
                 Name <span className="text-destructive">*</span>
@@ -80,7 +106,10 @@ function AddContributorForm({ open, onOpenChange, onAdd }: AddContributorFormPro
                 className="mt-1.5"
                 value={name}
                 aria-invalid={Boolean(errors.name)}
-                onChange={(e) => setName(e.target.value)}
+                onChange={(e) => {
+                  setName(e.target.value)
+                  if (errors.name) setErrors({})
+                }}
               />
               <FieldError message={errors.name} />
             </div>
@@ -93,6 +122,28 @@ function AddContributorForm({ open, onOpenChange, onAdd }: AddContributorFormPro
                 placeholder="e.g. Data Analyst"
                 value={role}
                 onChange={(e) => setRole(e.target.value)}
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="contributor-organisation">Organisation</Label>
+              <Input
+                id="contributor-organisation"
+                className="mt-1.5"
+                placeholder="e.g. CivicDataLab"
+                value={organisation}
+                onChange={(e) => setOrganisation(e.target.value)}
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="contributor-bio">Description / Bio</Label>
+              <Textarea
+                id="contributor-bio"
+                className="mt-1.5"
+                rows={3}
+                value={bio}
+                onChange={(e) => setBio(e.target.value)}
               />
             </div>
           </div>
