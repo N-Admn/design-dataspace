@@ -85,7 +85,7 @@ function UseCasePreviewPage() {
   }
 
   return (
-    <div className="mx-auto flex max-w-5xl flex-col gap-6 py-6">
+    <div className="mx-auto flex max-w-4xl flex-col gap-6 py-6">
       <PreviewActionBar>
         <div>
           <p className="text-sm font-semibold text-foreground">
@@ -142,7 +142,7 @@ function UseCasePreviewPage() {
         </p>
       )}
 
-      <UseCasePreview form={form} publishedAt={record?.updatedAt} />
+      <UseCasePreview form={form} />
     </div>
   )
 }
