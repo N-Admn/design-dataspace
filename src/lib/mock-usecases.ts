@@ -31,7 +31,13 @@ const useCase1Form: UseCaseFormState = {
       id: 'block-seed-2',
       type: 'text',
       html:
-        '<p>Maternal mortality in several rural districts remained above the national average despite a decade of health infrastructure investment. Facilities existed on paper, but frontline workers had no shared way to see which ones actually had staff, supplies, and functioning referral links on any given day.</p><p>A team of public health researchers and district officials set out to answer a simple question: was the gap about missing infrastructure, or about invisible infrastructure?</p>',
+        '<p>Maternal mortality in several rural districts remained above the national average despite a decade of health infrastructure investment. Facilities existed on paper, but frontline workers had no shared way to see which ones actually had staff, supplies, and functioning referral links on any given day.</p><p>A team of public health researchers and district officials set out to answer a simple question: was the gap about missing infrastructure, or about invisible infrastructure?</p><p>Over four months, the team combined facility registries, service-availability surveys and ambulance dispatch logs into a single, publicly queryable dataset — the first time anyone had lined these three sources up side by side for the region.</p>',
+    },
+    {
+      id: 'block-seed-11',
+      type: 'highlight',
+      highlight: '1 in 3 facilities under-staffed',
+      supportingText: 'Nearly a third of listed maternal care centres had no resident midwife on record.',
     },
     {
       id: 'block-seed-3',
@@ -44,7 +50,7 @@ const useCase1Form: UseCaseFormState = {
       id: 'block-seed-5',
       type: 'text',
       html:
-        '<p>Cross-referencing facility registries with service-availability surveys revealed that nearly a third of listed maternal care centres were operating below minimum staffing thresholds. Referral times between primary centres and district hospitals varied by as much as 4x across geographically similar blocks.</p><ul><li>28% of primary health centres lacked a resident midwife</li><li>Average referral time to emergency obstetric care: 96 minutes</li><li>Only 41% of facilities reported functioning blood-storage units</li></ul>',
+        '<p>Cross-referencing facility registries with service-availability surveys revealed that nearly a third of listed maternal care centres were operating below minimum staffing thresholds. Referral times between primary centres and district hospitals varied by as much as 4x across geographically similar blocks.</p><ul><li>28% of primary health centres lacked a resident midwife</li><li>Average referral time to emergency obstetric care: 96 minutes</li><li>Only 41% of facilities reported functioning blood-storage units</li></ul><p>None of this was visible in any single existing report. The infrastructure numbers looked fine in isolation — it was only once staffing, supply and transport data were layered together that the real bottlenecks emerged.</p>',
     },
     {
       id: 'block-seed-6',
@@ -57,7 +63,13 @@ const useCase1Form: UseCaseFormState = {
       id: 'block-seed-8',
       type: 'text',
       html:
-        '<p>District health officers used the published dataset to reroute mobile midwife deployments toward the lowest-staffed facilities and renegotiate ambulance contracts along the slowest referral corridors. Within six months, average referral time fell from 96 to 52 minutes.</p>',
+        '<p>District health officers used the published dataset to reroute mobile midwife deployments toward the lowest-staffed facilities and renegotiate ambulance contracts along the slowest referral corridors. Within six months, average referral time fell from 96 to 52 minutes.</p><p>Two adjacent districts that had never shared operational data before began pooling ambulance capacity during night shifts — a change the open dataset made easy to justify to both district administrations.</p>',
+    },
+    {
+      id: 'block-seed-12',
+      type: 'highlight',
+      highlight: '44 minutes saved per emergency referral',
+      supportingText: 'Average time from a facility calling for transport to a patient reaching district-level care.',
     },
     {
       id: 'block-seed-9',
@@ -65,6 +77,12 @@ const useCase1Form: UseCaseFormState = {
       chartId: 'chart-referral-time',
       chartTitle: 'Average obstetric referral time, before vs. after intervention',
       caption: 'District-level referral times narrowed sharply after mobile deployment was reprioritised using the open facility dataset.',
+    },
+    {
+      id: 'block-seed-13',
+      type: 'text',
+      html:
+        '<p>The dataset and the deployment model built on it are both open, so any district with comparable facility and dispatch records can reproduce the analysis rather than starting from scratch.</p>',
     },
     {
       id: 'block-seed-10',

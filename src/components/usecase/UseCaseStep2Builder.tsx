@@ -160,6 +160,10 @@ function HeadingLevelToggle({ level, onChange }: { level: UseCaseHeadingLevel; o
   )
 }
 
+/** Mirrors the published preview's rotation so the Builder canvas shows the
+ * same color a Highlight block will actually render with. */
+const HIGHLIGHT_STYLES = ['bg-primary/5', 'bg-accent/20', 'bg-success/20']
+
 function stripHtml(html: string): string {
   return html.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim()
 }
@@ -475,9 +479,11 @@ function UseCaseStep2Builder({ metadata, blocks, onBlocksChange }: UseCaseStep2B
                   }
 
                   if (block.type === 'highlight') {
+                    const highlightIndex = blocks.slice(0, index).filter((b) => b.type === 'highlight').length
+                    const highlightStyle = HIGHLIGHT_STYLES[highlightIndex % HIGHLIGHT_STYLES.length]
                     return (
                       <BlockWrapper key={block.id} {...shellProps}>
-                        <div className="rounded-lg border-l-4 border-primary bg-primary/5 px-4 py-3.5">
+                        <div className={cn('rounded-xl px-4 py-3.5', highlightStyle)}>
                           {active ? (
                             <>
                               <input

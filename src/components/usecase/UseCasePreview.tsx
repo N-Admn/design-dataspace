@@ -2,12 +2,17 @@ import { BarChart3, Building2, CalendarDays, Database, ExternalLink, MapPin, Tag
 
 import { Badge } from '@/components/ui/badge'
 import { formatShortDate } from '@/lib/format'
+import { cn } from '@/lib/utils'
 import { GEOGRAPHY_OPTIONS, SECTOR_OPTIONS } from '@/types/dataset'
 import { SDG_GOAL_OPTIONS, type UseCaseFormState } from '@/types/usecase'
 
 function optionLabel(options: { value: string; label: string }[], value: string): string {
   return options.find((o) => o.value === value)?.label ?? value
 }
+
+/** Highlight callouts rotate through this palette in order of appearance,
+ * so a story with several stats doesn't read as a wall of identical boxes. */
+const HIGHLIGHT_STYLES = ['bg-primary/5', 'bg-accent/20', 'bg-success/20']
 
 function initials(name: string): string {
   const parts = name.trim().split(/\s+/)
@@ -54,7 +59,9 @@ function UseCasePreview({ form, publishedAt }: { form: UseCaseFormState; publish
           {blocks.length === 0 && (
             <p className="text-sm text-muted-foreground">This use case doesn't have any content yet.</p>
           )}
-          {blocks.map((block) => {
+          {(() => {
+            let highlightCount = 0
+            return blocks.map((block) => {
             if (block.type === 'heading') {
               const Tag = block.level === 2 ? 'h2' : 'h3'
               return (
@@ -128,13 +135,16 @@ function UseCasePreview({ form, publishedAt }: { form: UseCaseFormState; publish
                 </a>
               )
             }
+            const style = HIGHLIGHT_STYLES[highlightCount % HIGHLIGHT_STYLES.length]
+            highlightCount += 1
             return (
-              <div key={block.id} className="border-l-4 border-primary bg-primary/5 py-5 pl-6 pr-4">
+              <div key={block.id} className={cn('rounded-xl px-6 py-5', style)}>
                 <p className="text-2xl font-bold leading-snug text-primary">{block.highlight || 'Key highlight'}</p>
                 {block.supportingText && <p className="mt-2 text-base text-muted-foreground">{block.supportingText}</p>}
               </div>
             )
-          })}
+            })
+          })()}
         </div>
 
         {/* Metadata sidebar */}
