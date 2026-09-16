@@ -145,6 +145,10 @@ function BlockWrapper({
   )
 }
 
+/** Mirrors the published preview's rotation so the Builder canvas shows the
+ * same color a Highlight block will actually render with. */
+const HIGHLIGHT_STYLES = ['bg-primary/5', 'bg-accent/20', 'bg-success/20']
+
 function stripHtml(html: string): string {
   return html.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim()
 }

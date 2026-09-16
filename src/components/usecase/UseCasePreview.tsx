@@ -62,26 +62,11 @@ function UseCasePreview({ form, publishedAt }: { form: UseCaseFormState; publish
           {(() => {
             let highlightCount = 0
             return blocks.map((block) => {
-            if (block.type === 'heading') {
-              const Tag = block.level === 2 ? 'h2' : 'h3'
-              return (
-                <Tag
-                  key={block.id}
-                  className={
-                    block.level === 2
-                      ? 'mt-2 text-2xl font-bold text-foreground'
-                      : 'mt-1 text-xl font-semibold text-foreground'
-                  }
-                >
-                  {block.text || 'Untitled heading'}
-                </Tag>
-              )
-            }
             if (block.type === 'text') {
               return (
                 <div
                   key={block.id}
-                  className="max-w-none text-base leading-7 text-foreground/90 sm:text-[17px] sm:leading-8 [&_a]:text-primary [&_a]:underline [&_ol]:list-decimal [&_ol]:pl-5 [&_p+p]:mt-4 [&_ul]:list-disc [&_ul]:pl-5"
+                  className="max-w-none text-base leading-7 text-foreground/90 sm:text-[17px] sm:leading-8 [&_a]:text-primary [&_a]:underline [&_ol]:list-decimal [&_ol]:pl-5 [&_p+p]:mt-4 [&_ul]:list-disc [&_ul]:pl-5 [&_h2]:mt-2 [&_h2]:text-2xl [&_h2]:font-bold [&_h2]:leading-tight [&_h2]:text-foreground [&_h2:first-child]:mt-0 [&_h3]:mt-1 [&_h3]:text-xl [&_h3]:font-semibold [&_h3]:leading-tight [&_h3]:text-foreground [&_h3:first-child]:mt-0"
                   dangerouslySetInnerHTML={{ __html: block.html || '<p class="text-muted-foreground">Empty text block</p>' }}
                 />
               )

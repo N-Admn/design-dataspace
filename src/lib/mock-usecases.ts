@@ -30,7 +30,7 @@ const useCase1Form: UseCaseFormState = {
       id: 'block-seed-2',
       type: 'text',
       html:
-        '<p>Maternal mortality in several rural districts remained above the national average despite a decade of health infrastructure investment. Facilities existed on paper, but frontline workers had no shared way to see which ones actually had staff, supplies, and functioning referral links on any given day.</p><p>A team of public health researchers and district officials set out to answer a simple question: was the gap about missing infrastructure, or about invisible infrastructure?</p><p>Over four months, the team combined facility registries, service-availability surveys and ambulance dispatch logs into a single, publicly queryable dataset — the first time anyone had lined these three sources up side by side for the region.</p>',
+        '<h2>The Challenge</h2><p>Maternal mortality in several rural districts remained above the national average despite a decade of health infrastructure investment. Facilities existed on paper, but frontline workers had no shared way to see which ones actually had staff, supplies, and functioning referral links on any given day.</p><p>A team of public health researchers and district officials set out to answer a simple question: was the gap about missing infrastructure, or about invisible infrastructure?</p><p>Over four months, the team combined facility registries, service-availability surveys and ambulance dispatch logs into a single, publicly queryable dataset — the first time anyone had lined these three sources up side by side for the region.</p>',
     },
     {
       id: 'block-seed-11',
@@ -44,12 +44,11 @@ const useCase1Form: UseCaseFormState = {
       asset: fakeAsset('https://picsum.photos/seed/health-worker/1000/650', 'field-visit.jpg'),
       caption: 'A community health worker records facility readiness data during a routine district visit.',
     },
-    { id: 'block-seed-4', type: 'heading', text: 'What the data showed', level: 2 },
     {
       id: 'block-seed-5',
       type: 'text',
       html:
-        '<p>Cross-referencing facility registries with service-availability surveys revealed that nearly a third of listed maternal care centres were operating below minimum staffing thresholds. Referral times between primary centres and district hospitals varied by as much as 4x across geographically similar blocks.</p><ul><li>28% of primary health centres lacked a resident midwife</li><li>Average referral time to emergency obstetric care: 96 minutes</li><li>Only 41% of facilities reported functioning blood-storage units</li></ul><p>None of this was visible in any single existing report. The infrastructure numbers looked fine in isolation — it was only once staffing, supply and transport data were layered together that the real bottlenecks emerged.</p>',
+        '<h2>What the data showed</h2><p>Cross-referencing facility registries with service-availability surveys revealed that nearly a third of listed maternal care centres were operating below minimum staffing thresholds. Referral times between primary centres and district hospitals varied by as much as 4x across geographically similar blocks.</p><ul><li>28% of primary health centres lacked a resident midwife</li><li>Average referral time to emergency obstetric care: 96 minutes</li><li>Only 41% of facilities reported functioning blood-storage units</li></ul><p>None of this was visible in any single existing report. The infrastructure numbers looked fine in isolation — it was only once staffing, supply and transport data were layered together that the real bottlenecks emerged.</p>',
     },
     {
       id: 'block-seed-6',
@@ -57,12 +56,11 @@ const useCase1Form: UseCaseFormState = {
       highlight: '32% reduction in maternal mortality',
       supportingText: 'Observed across the 12 pilot districts within 18 months of the outreach programme launch.',
     },
-    { id: 'block-seed-7', type: 'heading', text: 'From data to action', level: 3 },
     {
       id: 'block-seed-8',
       type: 'text',
       html:
-        '<p>District health officers used the published dataset to reroute mobile midwife deployments toward the lowest-staffed facilities and renegotiate ambulance contracts along the slowest referral corridors. Within six months, average referral time fell from 96 to 52 minutes.</p><p>Two adjacent districts that had never shared operational data before began pooling ambulance capacity during night shifts — a change the open dataset made easy to justify to both district administrations.</p>',
+        '<h3>From data to action</h3><p>District health officers used the published dataset to reroute mobile midwife deployments toward the lowest-staffed facilities and renegotiate ambulance contracts along the slowest referral corridors. Within six months, average referral time fell from 96 to 52 minutes.</p><p>Two adjacent districts that had never shared operational data before began pooling ambulance capacity during night shifts — a change the open dataset made easy to justify to both district administrations.</p>',
     },
     {
       id: 'block-seed-12',
