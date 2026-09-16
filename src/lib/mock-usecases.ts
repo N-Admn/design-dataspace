@@ -89,6 +89,8 @@ const useCase1Form: UseCaseFormState = {
       description: 'The full facility-level dataset used to identify staffing and referral gaps.',
     },
   ],
+  dashboardEmbedCode:
+    '<iframe src="https://superset.example.org/embedded/maternal-health-dashboard" width="100%" height="600" frameborder="0"></iframe>',
   connections: {
     datasets: [{ id: 'ds-2', title: 'District Health Infrastructure & Service Availability (2024)' }],
     contributors: [
@@ -110,6 +112,7 @@ const useCase2Form: UseCaseFormState = {
     geographies: [],
   },
   blocks: [],
+  dashboardEmbedCode: '',
   connections: {
     datasets: [],
     contributors: [],

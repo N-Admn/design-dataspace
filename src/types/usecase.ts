@@ -106,6 +106,10 @@ export interface UseCaseConnections {
 export interface UseCaseFormState {
   metadata: UseCaseMetadata
   blocks: UseCaseBlock[]
+  /** Raw iframe embed code for the single optional external dashboard, added in
+   * the Builder step (Embedded Dashboard section) and shown on the published
+   * page under "Explore the Data". Empty string = no dashboard added. */
+  dashboardEmbedCode: string
   connections: UseCaseConnections
 }
 
@@ -132,6 +136,7 @@ export const emptyUseCaseMetadata: UseCaseMetadata = {
 export const emptyUseCaseForm: UseCaseFormState = {
   metadata: emptyUseCaseMetadata,
   blocks: [],
+  dashboardEmbedCode: '',
   connections: {
     datasets: [],
     contributors: [],

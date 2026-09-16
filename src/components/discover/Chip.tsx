@@ -1,0 +1,35 @@
+import { cn } from '@/lib/utils'
+
+interface ChipProps {
+  label: string
+  pressed?: boolean
+  onClick: () => void
+  className?: string
+}
+
+/**
+ * Reuses the existing filter-chip visual language (see the type filters in
+ * ResourceSearchField) for both landing-page topic tags and results-page
+ * content-type filters — one chip pattern, two call sites, no new visual
+ * language. `aria-pressed` communicates the selected state beyond color/border.
+ */
+function Chip({ label, pressed = false, onClick, className }: ChipProps) {
+  return (
+    <button
+      type="button"
+      aria-pressed={pressed}
+      onClick={onClick}
+      className={cn(
+        'rounded-full border px-3 py-1.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+        pressed
+          ? 'border-primary bg-primary text-primary-foreground'
+          : 'border-border bg-background text-muted-foreground hover:border-primary/40 hover:text-foreground',
+        className,
+      )}
+    >
+      {label}
+    </button>
+  )
+}
+
+export { Chip }

@@ -33,6 +33,8 @@ import { PublicationPreviewPage } from '@/pages/PublicationPreviewPage'
 import { ProfilePage } from '@/pages/ProfilePage'
 import { DesignSystemPage } from '@/pages/DesignSystemPage'
 import { ComingSoonPage } from '@/pages/ComingSoonPage'
+import { DiscoverPage } from '@/pages/DiscoverPage'
+import { SearchResultsPage } from '@/pages/SearchResultsPage'
 import { UseCasesExplorePage } from '@/pages/explore/UseCasesExplorePage'
 import { UseCaseDetailPage } from '@/pages/explore/UseCaseDetailPage'
 import { SignInPage } from '@/pages/auth/SignInPage'
@@ -79,7 +81,9 @@ function AppLayout() {
   const isConsumerRoute =
     location.pathname.startsWith('/explore/') ||
     location.pathname === '/collaboratives' ||
-    location.pathname === '/forum'
+    location.pathname === '/forum' ||
+    location.pathname === '/discover' ||
+    location.pathname === '/search'
   const hideSidebar =
     isDashboard ||
     isUseCasePreview ||
@@ -142,6 +146,8 @@ function AppLayout() {
             <Route path="/dashboard/publications/:id/preview" element={<PublicationPreviewPage />} />
             <Route path="/dashboard/profile" element={<ProfilePage />} />
             <Route path="/design-system" element={<DesignSystemPage />} />
+            <Route path="/discover" element={<DiscoverPage />} />
+            <Route path="/search" element={<SearchResultsPage />} />
             <Route path="/explore/datasets" element={<ComingSoonPage title="Datasets" />} />
             <Route path="/explore/use-cases" element={<UseCasesExplorePage />} />
             <Route path="/explore/use-cases/:id" element={<UseCaseDetailPage />} />

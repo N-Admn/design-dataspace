@@ -11,7 +11,7 @@ function UseCasesPage() {
   const toast = useToast()
   const confirm = useConfirm()
 
-  const openUseCase = (id: string, initialStep: 1 | 4) => {
+  const openUseCase = (id: string, initialStep: 1 | 3) => {
     navigate('/dashboard/use-cases/new', { state: { useCaseId: id, initialStep } })
   }
 
@@ -49,7 +49,7 @@ function UseCasesPage() {
     <UseCaseListView
       useCases={useCases}
       onAddUseCase={() => navigate('/dashboard/use-cases/new')}
-      onViewUseCase={(id) => openUseCase(id, 4)}
+      onViewUseCase={(id) => openUseCase(id, 3)}
       onEditUseCase={(id) => openUseCase(id, 1)}
       onDeleteUseCase={handleDeleteUseCase}
       onUnpublishUseCase={handleUnpublishUseCase}

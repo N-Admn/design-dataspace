@@ -1,15 +1,14 @@
 import { useEffect, useRef, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { FileText, LayoutTemplate, ListChecks, Share2 } from 'lucide-react'
+import { LayoutTemplate, ListChecks, Share2 } from 'lucide-react'
 
 import { Card } from '@/components/ui/card'
 import { Stepper } from '@/components/ui/stepper'
 import { WorkspaceHeader } from '@/components/dataset/WorkspaceHeader'
 import { WizardFooter } from '@/components/dataset/WizardFooter'
-import { UseCaseStep1Metadata } from '@/components/usecase/UseCaseStep1Metadata'
-import { UseCaseStep2Builder } from '@/components/usecase/UseCaseStep2Builder'
-import { UseCaseStep3Connections } from '@/components/usecase/UseCaseStep3Connections'
-import { UseCaseStep4Review } from '@/components/usecase/UseCaseStep4Review'
+import { UseCaseStep1Builder } from '@/components/usecase/UseCaseStep1Builder'
+import { UseCaseStep2Connect } from '@/components/usecase/UseCaseStep2Connect'
+import { UseCaseStep3Review } from '@/components/usecase/UseCaseStep3Review'
 import { LeaveCreationDialog } from '@/components/shared/LeaveCreationDialog'
 import { useToast } from '@/components/ui/toast'
 import { useAppData } from '@/context/AppDataContext'
@@ -19,22 +18,38 @@ import { isUseCaseReadyToPublish } from '@/lib/usecase-validation'
 import { hasUnsavedEdits } from '@/lib/content-status'
 import { emptyUseCaseForm, type UseCaseFormState, type UseCaseMetadata } from '@/types/usecase'
 
-type UseCaseStep = 1 | 2 | 3 | 4
+// Three steps: Builder (basic info + content), Connect (classification, datasets,
+// contributors, organisations), Review (readiness + publish). The former
+// standalone "Start" step no longer exists — its fields now open the Builder
+// step (title/thumbnail) and the Connect step (classification).
+type UseCaseStep = 1 | 2 | 3
 
 const USE_CASE_STEPS = [
-  { step: 1, label: 'Start', description: 'Name & classify', icon: FileText },
-  { step: 2, label: 'Builder', description: 'Tell the story', icon: LayoutTemplate },
-  { step: 3, label: 'Connect', description: 'Datasets & people', icon: Share2 },
-  { step: 4, label: 'Review', description: 'Check readiness', icon: ListChecks },
+  { step: 1, label: 'Builder', description: 'Create and structure your Use Case', icon: LayoutTemplate },
+  { step: 2, label: 'Connect', description: 'Add context, datasets, and contributors', icon: Share2 },
+  { step: 3, label: 'Review', description: 'Check readiness and publish', icon: ListChecks },
 ]
 
 interface UseCaseNavState {
   useCaseId?: string
-  initialStep?: UseCaseStep
+  /** Any 1|4-style value from a caller that predates the 3-step flow is clamped
+   * safely below — see `resolveInitialStep`. */
+  initialStep?: number
   /** Set when this flow was launched from another module (e.g. Collaborative → Content →
    * Create New Use Case) so completion can hand the user back to that originating context. */
   returnTo?: string
   returnState?: Record<string, unknown>
+}
+
+/** Existing saved Use Cases never persisted a step number (the wizard's step is
+ * page-local UI state, not part of the record), so there's no stored step data
+ * to migrate. This only has to make sense of *nav-state* values passed in by a
+ * caller — clamping anything outside 1–3 (e.g. a stale "4" for the old Review
+ * step) into the new range rather than crashing or defaulting confusingly. */
+function resolveInitialStep(value: number | undefined): UseCaseStep {
+  if (value === 2 || value === 3) return value
+  if (value && value > 3) return 3
+  return 1
 }
 
 function UseCaseCreationPage() {
@@ -48,7 +63,7 @@ function UseCaseCreationPage() {
   const resumeRecord = navState?.useCaseId ? useCases.find((u) => u.id === navState.useCaseId) : undefined
 
   const [editingId, setEditingId] = useState<string | null>(resumeRecord?.id ?? null)
-  const [step, setStep] = useState<UseCaseStep>(navState?.initialStep ?? 1)
+  const [step, setStep] = useState<UseCaseStep>(resolveInitialStep(navState?.initialStep))
   const [form, setForm] = useState<UseCaseFormState>(resumeRecord?.form ?? emptyUseCaseForm)
   const [lastSavedForm, setLastSavedForm] = useState<UseCaseFormState>(resumeRecord?.form ?? emptyUseCaseForm)
   const [saved, setSaved] = useState(true)
@@ -56,7 +71,7 @@ function UseCaseCreationPage() {
   // Stepper is a progress indicator until Review is reached with every step valid.
   const [stepperUnlocked, setStepperUnlocked] = useState(false)
 
-  const stepLabel = USE_CASE_STEPS.find((s) => s.step === step)?.label ?? 'Start'
+  const stepLabel = USE_CASE_STEPS.find((s) => s.step === step)?.label ?? 'Builder'
   useEffect(() => {
     setContextLabel(`Use Cases → ${stepLabel}`)
   }, [stepLabel, setContextLabel])
@@ -106,7 +121,7 @@ function UseCaseCreationPage() {
 
   const allStepsValid = isUseCaseReadyToPublish(form)
   useEffect(() => {
-    if (step === 4 && allStepsValid) setStepperUnlocked(true)
+    if (step === 3 && allStepsValid) setStepperUnlocked(true)
   }, [step, allStepsValid])
 
   const editingRecord = editingId ? useCases.find((u) => u.id === editingId) : undefined
@@ -130,8 +145,6 @@ function UseCaseCreationPage() {
       navigate(navState.returnTo, { state: { ...navState.returnState, createdUseCaseId: id } })
     }
   }
-
-  /** Leave gate for an already-published use case. */
 
   const handlePreview = () => {
     let id = editingId
@@ -164,27 +177,30 @@ function UseCaseCreationPage() {
       </div>
       <div className="border-t border-border px-6 py-6">
         {step === 1 && (
-          <UseCaseStep1Metadata metadata={form.metadata} errors={{}} onChange={updateMetadata} />
-        )}
-        {step === 2 && (
-          <UseCaseStep2Builder
+          <UseCaseStep1Builder
             metadata={form.metadata}
+            basicInfoErrors={{}}
+            onMetadataChange={updateMetadata}
             blocks={form.blocks}
             onBlocksChange={(blocks) => setForm((prev) => ({ ...prev, blocks }))}
+            dashboardEmbedCode={form.dashboardEmbedCode}
+            onDashboardEmbedCodeChange={(dashboardEmbedCode) => setForm((prev) => ({ ...prev, dashboardEmbedCode }))}
           />
         )}
-        {step === 3 && (
-          <UseCaseStep3Connections
+        {step === 2 && (
+          <UseCaseStep2Connect
+            metadata={form.metadata}
+            onMetadataChange={updateMetadata}
             connections={form.connections}
             onChange={(connections) => setForm((prev) => ({ ...prev, connections }))}
           />
         )}
-        {step === 4 && <UseCaseStep4Review form={form} onEditStep={goToStep} onPreview={handlePreview} />}
+        {step === 3 && <UseCaseStep3Review form={form} onEditStep={goToStep} onPreview={handlePreview} />}
       </div>
       <div className="border-t border-border">
         <WizardFooter
           showPrevious={step > 1}
-          showContinue={step < 4}
+          showContinue={step < 3}
           onPrevious={handlePrevious}
           onContinue={() => goToStep((step + 1) as UseCaseStep)}
           onSaveDraft={handleSaveDraft}

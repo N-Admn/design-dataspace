@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { ChevronDown, LayoutDashboard, LogOut, Menu, Search } from 'lucide-react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 
 import { Button } from '@/components/ui/button'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
@@ -16,6 +16,7 @@ const EXPLORE_LINKS = [
 const NAV_LINKS = [
   { label: 'COLLABORATIVES', to: '/collaboratives' },
   { label: 'FORUM', to: '/forum' },
+  { label: 'CONTRIBUTE', to: '/' },
 ]
 
 const CURRENT_USER = {
@@ -32,7 +33,7 @@ function ExploreMenu() {
       <PopoverTrigger asChild>
         <button
           type="button"
-          className="hidden items-center gap-1 text-primary-foreground/90 transition-colors hover:text-primary-foreground md:flex"
+          className="hidden items-center gap-1 rounded-sm text-primary-foreground/90 transition-colors hover:text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 md:flex"
         >
           EXPLORE
           <ChevronDown className="size-4" />
@@ -129,7 +130,7 @@ function MobileNavMenu() {
         <button
           type="button"
           aria-label="Open menu"
-          className="flex size-9 items-center justify-center text-primary-foreground/80 transition-colors hover:text-primary-foreground md:hidden"
+          className="flex size-9 items-center justify-center rounded-full text-primary-foreground/80 transition-colors hover:text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 md:hidden"
         >
           <Menu className="size-5" />
         </button>
@@ -171,15 +172,16 @@ function TopNav() {
       data-chrome="dark"
       className="flex h-[88px] w-full items-center justify-between bg-header-background px-4 text-primary-foreground sm:px-8"
     >
-      <div className="flex items-center gap-2">
-        <img src="/brand/CDS-Logo.png" alt="CivicDataSpace" className="h-10 w-auto" />
-      </div>
+      <Link to="/discover" className="flex items-center gap-2 rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+        <img src="/brand/CDS-Logo.png" alt="CivicDataSpace — home" className="h-10 w-auto" />
+      </Link>
 
       <nav className="flex items-center gap-4 text-sm font-medium sm:gap-8">
         <button
           type="button"
-          aria-label="Search"
-          className="text-primary-foreground/80 transition-colors hover:text-primary-foreground"
+          aria-label="Search CivicDataSpace"
+          onClick={() => navigate('/search')}
+          className="rounded-full text-primary-foreground/80 transition-colors hover:text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
         >
           <Search className="size-5" />
         </button>
@@ -191,7 +193,7 @@ function TopNav() {
             key={link.label}
             type="button"
             onClick={() => navigate(link.to)}
-            className="hidden text-primary-foreground/90 transition-colors hover:text-primary-foreground md:block"
+            className="hidden rounded-sm text-primary-foreground/90 transition-colors hover:text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 md:block"
           >
             {link.label}
           </button>

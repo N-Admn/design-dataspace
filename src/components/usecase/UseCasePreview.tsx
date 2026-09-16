@@ -1,6 +1,7 @@
 import { BarChart3, Building2, CalendarDays, Database, ExternalLink, MapPin, Tags, User } from 'lucide-react'
 
 import { Badge } from '@/components/ui/badge'
+import { extractIframeSrc } from '@/lib/dashboard-embed'
 import { formatShortDate } from '@/lib/format'
 import { cn } from '@/lib/utils'
 import { GEOGRAPHY_OPTIONS, SECTOR_OPTIONS } from '@/types/dataset'
@@ -20,14 +21,16 @@ function initials(name: string): string {
 }
 
 function UseCasePreview({ form, publishedAt }: { form: UseCaseFormState; publishedAt?: string }) {
-  const { metadata, blocks, connections } = form
+  const { metadata, blocks, connections, dashboardEmbedCode } = form
+  const dashboardSrc = dashboardEmbedCode ? extractIframeSrc(dashboardEmbedCode) : null
   const hasSidebarContent =
     connections.contributors.length > 0 ||
     connections.organizations.length > 0 ||
     metadata.sectors.length > 0 ||
     metadata.geographies.length > 0 ||
     Boolean(publishedAt)
-  const hasFooterContent = connections.datasets.length > 0 || metadata.sdgGoals.length > 0 || metadata.tags.length > 0
+  const hasFooterContent =
+    connections.datasets.length > 0 || metadata.sdgGoals.length > 0 || metadata.tags.length > 0 || Boolean(dashboardSrc)
 
   return (
     <article className="flex flex-col gap-10">
@@ -225,6 +228,24 @@ function UseCasePreview({ form, publishedAt }: { form: UseCaseFormState; publish
                   </div>
                 ))}
               </div>
+            </div>
+          )}
+
+          {/* Embedded dashboard — always below the datasets, even though the embed
+              code is added in the Builder step alongside the content blocks. */}
+          {dashboardSrc && (
+            <div>
+              <p className="text-sm font-semibold text-foreground">Explore the Data</p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Explore the data in greater depth through the embedded dashboard.
+              </p>
+              <iframe
+                src={dashboardSrc}
+                title="Embedded dashboard"
+                loading="lazy"
+                sandbox="allow-scripts allow-same-origin allow-popups"
+                className="mt-3 h-[480px] w-full rounded-lg border border-border bg-card"
+              />
             </div>
           )}
 

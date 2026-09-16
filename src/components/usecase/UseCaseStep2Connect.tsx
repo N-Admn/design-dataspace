@@ -9,13 +9,16 @@ import { AddContributorForm } from '@/components/usecase/AddContributorForm'
 import { AddOrganisationForm } from '@/components/event/AddOrganisationForm'
 import { OrganisationSearchField } from '@/components/shared/OrganisationSearchField'
 import { SpeakerSearchField } from '@/components/event/SpeakerSearchField'
+import { UseCaseClassificationSection } from '@/components/usecase/UseCaseClassificationSection'
 import { useToast } from '@/components/ui/toast'
 import { useAppData } from '@/context/AppDataContext'
 import { MOCK_PEOPLE, type MockPerson } from '@/lib/mock-people'
-import type { UseCaseConnections } from '@/types/usecase'
+import type { UseCaseConnections, UseCaseMetadata } from '@/types/usecase'
 import type { Organisation } from '@/types/event'
 
-interface UseCaseStep3ConnectionsProps {
+interface UseCaseStep2ConnectProps {
+  metadata: UseCaseMetadata
+  onMetadataChange: <K extends keyof UseCaseMetadata>(field: K, value: UseCaseMetadata[K]) => void
   connections: UseCaseConnections
   onChange: (connections: UseCaseConnections) => void
 }
@@ -48,7 +51,7 @@ function OrganisationRow({ org, onRemove }: { org: Organisation; onRemove: () =>
   )
 }
 
-function UseCaseStep3Connections({ connections, onChange }: UseCaseStep3ConnectionsProps) {
+function UseCaseStep2Connect({ metadata, onMetadataChange, connections, onChange }: UseCaseStep2ConnectProps) {
   const { organisations, addOrganisation } = useAppData()
   const toast = useToast()
   const [showContributorForm, setShowContributorForm] = React.useState(false)
@@ -71,6 +74,8 @@ function UseCaseStep3Connections({ connections, onChange }: UseCaseStep3Connecti
 
   return (
     <div className="flex flex-col gap-6">
+      <UseCaseClassificationSection metadata={metadata} onChange={onMetadataChange} />
+
       <DatasetConnectionsCard
         datasets={connections.datasets}
         parentLabel="this Use Case"
@@ -204,4 +209,4 @@ function UseCaseStep3Connections({ connections, onChange }: UseCaseStep3Connecti
   )
 }
 
-export { UseCaseStep3Connections }
+export { UseCaseStep2Connect }

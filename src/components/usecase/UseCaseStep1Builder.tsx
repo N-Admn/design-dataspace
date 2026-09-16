@@ -23,6 +23,8 @@ import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { RichTextEditor, richTextClassName } from '@/components/ui/rich-text-editor'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { UseCaseBasicInfoSection } from '@/components/usecase/UseCaseBasicInfoSection'
+import { UseCaseDashboardSection } from '@/components/usecase/UseCaseDashboardSection'
 import { useAppData } from '@/context/AppDataContext'
 import { cn } from '@/lib/utils'
 import { validateAssetFile, buildUploadedAsset, formatUploadHint } from '@/lib/generic-upload'
@@ -30,6 +32,7 @@ import { FieldError } from '@/components/ui/field-error'
 import { SUPPORTED_IMAGE_EXTENSIONS, MAX_IMAGE_BYTES } from '@/types/event'
 import type { UploadedAsset } from '@/lib/generic-upload'
 import type { UseCaseBlock, UseCaseBlockType, UseCaseMetadata } from '@/types/usecase'
+import type { UseCaseBasicInfoErrors } from '@/lib/usecase-validation'
 
 let blockIdCounter = 0
 
@@ -153,13 +156,25 @@ function stripHtml(html: string): string {
   return html.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim()
 }
 
-interface UseCaseStep2BuilderProps {
+interface UseCaseStep1BuilderProps {
   metadata: UseCaseMetadata
+  basicInfoErrors: UseCaseBasicInfoErrors
+  onMetadataChange: <K extends keyof UseCaseMetadata>(field: K, value: UseCaseMetadata[K]) => void
   blocks: UseCaseBlock[]
   onBlocksChange: (blocks: UseCaseBlock[]) => void
+  dashboardEmbedCode: string
+  onDashboardEmbedCodeChange: (embedCode: string) => void
 }
 
-function UseCaseStep2Builder({ metadata, blocks, onBlocksChange }: UseCaseStep2BuilderProps) {
+function UseCaseStep1Builder({
+  metadata,
+  basicInfoErrors,
+  onMetadataChange,
+  blocks,
+  onBlocksChange,
+  dashboardEmbedCode,
+  onDashboardEmbedCodeChange,
+}: UseCaseStep1BuilderProps) {
   const { charts, datasets } = useAppData()
   const [addMenuOpen, setAddMenuOpen] = React.useState(false)
   const [chartSearchBlockId, setChartSearchBlockId] = React.useState<string | null>(null)
@@ -238,31 +253,18 @@ function UseCaseStep2Builder({ metadata, blocks, onBlocksChange }: UseCaseStep2B
 
   return (
     <div className="flex flex-col gap-6">
+      <UseCaseBasicInfoSection metadata={metadata} errors={basicInfoErrors} onChange={onMetadataChange} />
+
       <Card>
         <CardHeader>
-          <CardTitle>Introduction</CardTitle>
+          <CardTitle>Build Your Content</CardTitle>
           <p className="mt-1 text-sm font-normal text-muted-foreground">
-            Sourced from Start. Edit the thumbnail, title or subtitle from the Start step.
+            Tell the story behind your Use Case and add relevant content.
           </p>
         </CardHeader>
-        <CardContent>
-          <div className="overflow-hidden rounded-lg border border-border">
-            {metadata.thumbnail?.dataUrl && (
-              <img src={metadata.thumbnail.dataUrl} alt="" className="h-40 w-full object-cover" />
-            )}
-            <div className="px-4 py-4">
-              <p className="text-base font-semibold text-primary">{metadata.title || 'Untitled Use Case'}</p>
-              {metadata.subtitle && <p className="mt-1 text-sm text-muted-foreground">{metadata.subtitle}</p>}
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      <div className="flex flex-col gap-3">
-        <p className="text-sm font-semibold text-foreground">Build your content</p>
-
-        {/* Live canvas — every block renders in its actual published appearance. Click Edit to make a block editable. */}
-        <div className="overflow-hidden rounded-xl border border-border bg-card">
+        <CardContent className="flex flex-col gap-5">
+          {/* Live canvas — every block renders in its actual published appearance. Click Edit to make a block editable. */}
+          <div className="overflow-hidden rounded-xl border border-border bg-card">
           {blocks.length === 0 ? (
             <div className="flex flex-col items-center gap-3 px-6 py-14 text-center">
               <p className="text-sm text-muted-foreground">Your Use Case is ready to be built.</p>
@@ -511,8 +513,11 @@ function UseCaseStep2Builder({ metadata, blocks, onBlocksChange }: UseCaseStep2B
               <div className="border-t border-border px-6 py-4">{addContentTrigger}</div>
             </>
           )}
-        </div>
-      </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <UseCaseDashboardSection embedCode={dashboardEmbedCode} onChange={onDashboardEmbedCodeChange} />
     </div>
   )
 }
@@ -590,4 +595,4 @@ function ImageBlockCanvas({
   )
 }
 
-export { UseCaseStep2Builder }
+export { UseCaseStep1Builder }
