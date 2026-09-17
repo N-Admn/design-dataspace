@@ -45,7 +45,7 @@ function WorkspaceHeader({
           type="button"
           aria-label="Close"
           onClick={onClose}
-          className="flex size-8 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+          className="flex size-8 shrink-0 items-center justify-center rounded-md text-text-subdued transition-colors hover:bg-surface-subdued hover:text-text-default"
         >
           <X className="size-4" />
         </button>
@@ -65,11 +65,11 @@ function WorkspaceHeader({
                 setIsEditing(false)
               }
             }}
-            className="min-w-0 flex-1 rounded-md border border-input bg-background px-2 py-1 type-heading-2 text-primary outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="min-w-0 flex-1 rounded-md border border-border-input bg-surface-default px-2 py-1 type-heading-2 text-text-brand outline-none focus-visible:ring-2 focus-visible:ring-border-focus"
           />
         ) : (
           <div className="flex min-w-0 items-center gap-1.5">
-            <h1 className="truncate type-heading-2 text-primary">{title}</h1>
+            <h1 className="truncate type-heading-2 text-text-brand">{title}</h1>
             {onTitleChange && (
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -93,11 +93,11 @@ function WorkspaceHeader({
 
       <div className="flex shrink-0 items-center gap-2">
         {unsavedChanges ? (
-          <span className="rounded-full bg-warning/20 px-3 py-1.5 text-xs font-medium text-warning-foreground">
+          <span className="rounded-full bg-surface-warning/20 px-3 py-1.5 text-xs font-medium text-text-warning">
             Unsaved changes
           </span>
         ) : (
-          <div className="flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary">
+          <div className="flex items-center gap-1.5 rounded-full bg-action-primary-default/10 px-3 py-1.5 text-xs font-medium text-text-brand">
             <Check className="size-3.5" />
             {saved ? 'All changes saved' : 'Saving…'}
           </div>

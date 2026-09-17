@@ -31,7 +31,7 @@ function Step1Metadata({ metadata, errors, onChange }: Step1MetadataProps) {
         <CardContent className="flex flex-col gap-5">
           <div>
             <Label htmlFor="dataset-name">
-              Dataset name <span className="text-destructive">*</span>
+              Dataset name <span className="text-text-critical-strong">*</span>
             </Label>
             <Input
               id="dataset-name"
@@ -46,7 +46,7 @@ function Step1Metadata({ metadata, errors, onChange }: Step1MetadataProps) {
 
           <div>
             <Label htmlFor="dataset-description">
-              Description <span className="text-destructive">*</span>
+              Description <span className="text-text-critical-strong">*</span>
             </Label>
             <Textarea
               id="dataset-description"
@@ -69,7 +69,7 @@ function Step1Metadata({ metadata, errors, onChange }: Step1MetadataProps) {
         <CardContent className="flex flex-col gap-5">
           <div>
             <Label htmlFor="dataset-sector">
-              Sector <span className="text-destructive">*</span>
+              Sector <span className="text-text-critical-strong">*</span>
             </Label>
             <div className="mt-1.5">
               <SearchableSelect
@@ -107,7 +107,7 @@ function Step1Metadata({ metadata, errors, onChange }: Step1MetadataProps) {
                 placeholder="Type a tag and press Enter..."
               />
             </div>
-            <p className="mt-1.5 text-xs text-muted-foreground">
+            <p className="mt-1.5 text-xs text-text-subdued">
               Press Enter to add. Tags improve discoverability.
             </p>
           </div>
@@ -150,7 +150,7 @@ function Step1Metadata({ metadata, errors, onChange }: Step1MetadataProps) {
         <CardContent className="flex flex-col gap-5">
           <div>
             <Label>
-              Access type <span className="text-destructive">*</span>
+              Access type <span className="text-text-critical-strong">*</span>
             </Label>
             <RadioGroup
               className="mt-1.5 grid grid-cols-1 gap-3 sm:grid-cols-2"
@@ -161,16 +161,16 @@ function Step1Metadata({ metadata, errors, onChange }: Step1MetadataProps) {
               <Label
                 htmlFor="access-open"
                 className={cn(
-                  'flex cursor-pointer items-start gap-3 rounded-lg border border-input p-4 transition-colors',
+                  'flex cursor-pointer items-start gap-3 rounded-lg border border-border-input p-4 transition-colors',
                   metadata.accessType === 'open'
-                    ? 'border-primary bg-primary/5'
-                    : 'hover:border-primary/40',
+                    ? 'border-border-brand bg-action-primary-default/5'
+                    : 'hover:border-border-brand/40',
                 )}
               >
                 <RadioGroupItem value="open" id="access-open" className="mt-0.5" />
                 <span>
-                  <span className="block text-sm font-semibold text-foreground">Open Access</span>
-                  <span className="block text-xs text-muted-foreground">
+                  <span className="block text-sm font-semibold text-text-default">Open Access</span>
+                  <span className="block text-xs text-text-subdued">
                     Anyone can browse and download
                   </span>
                 </span>
@@ -179,18 +179,18 @@ function Step1Metadata({ metadata, errors, onChange }: Step1MetadataProps) {
               <Label
                 htmlFor="access-restricted"
                 className={cn(
-                  'flex cursor-pointer items-start gap-3 rounded-lg border border-input p-4 transition-colors',
+                  'flex cursor-pointer items-start gap-3 rounded-lg border border-border-input p-4 transition-colors',
                   metadata.accessType === 'restricted'
-                    ? 'border-primary bg-primary/5'
-                    : 'hover:border-primary/40',
+                    ? 'border-border-brand bg-action-primary-default/5'
+                    : 'hover:border-border-brand/40',
                 )}
               >
                 <RadioGroupItem value="restricted" id="access-restricted" className="mt-0.5" />
                 <span>
-                  <span className="block text-sm font-semibold text-foreground">
+                  <span className="block text-sm font-semibold text-text-default">
                     Restricted Access
                   </span>
-                  <span className="block text-xs text-muted-foreground">
+                  <span className="block text-xs text-text-subdued">
                     Requires approval to access
                   </span>
                 </span>
@@ -201,7 +201,7 @@ function Step1Metadata({ metadata, errors, onChange }: Step1MetadataProps) {
 
           <div>
             <Label htmlFor="dataset-license">
-              License <span className="text-destructive">*</span>
+              License <span className="text-text-critical-strong">*</span>
             </Label>
             <div className="mt-1.5">
               <SearchableSelect
@@ -215,7 +215,7 @@ function Step1Metadata({ metadata, errors, onChange }: Step1MetadataProps) {
             </div>
             <FieldError message={errors.license} />
             {!errors.license && (
-              <p className="mt-1.5 text-xs text-muted-foreground">
+              <p className="mt-1.5 text-xs text-text-subdued">
                 CC BY 4.0 is recommended for open government data.
               </p>
             )}
