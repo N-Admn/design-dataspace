@@ -48,7 +48,7 @@ function StepControl({
         aria-current={isCurrent ? 'step' : undefined}
         className={cn(
           className,
-          'cursor-pointer rounded-xl transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+          'cursor-pointer rounded-xl transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-focus focus-visible:ring-offset-2',
         )}
       >
         {children}
@@ -81,8 +81,8 @@ function Stepper({ steps, currentStep, compact = false, interactive = false, onS
                 <div
                   className={cn(
                     'flex size-6 shrink-0 items-center justify-center rounded-full text-xs font-semibold transition-colors',
-                    (isCompleted || isCurrent) && 'bg-primary text-primary-foreground',
-                    !isCompleted && !isCurrent && 'bg-muted text-muted-foreground',
+                    (isCompleted || isCurrent) && 'bg-action-primary-default text-action-primary-text',
+                    !isCompleted && !isCurrent && 'bg-surface-subdued text-text-subdued',
                   )}
                 >
                   {isCompleted ? <Check className="size-3.5" /> : item.step}
@@ -90,7 +90,7 @@ function Stepper({ steps, currentStep, compact = false, interactive = false, onS
                 <span
                   className={cn(
                     'whitespace-nowrap text-xs font-medium',
-                    isCompleted || isCurrent ? 'text-primary' : 'text-muted-foreground',
+                    isCompleted || isCurrent ? 'text-text-brand' : 'text-text-subdued',
                   )}
                 >
                   {item.label}
@@ -100,7 +100,7 @@ function Stepper({ steps, currentStep, compact = false, interactive = false, onS
                 <div
                   className={cn(
                     'mx-2 h-0.5 flex-1 rounded-full transition-colors',
-                    item.step < currentStep ? 'bg-primary' : 'bg-muted',
+                    item.step < currentStep ? 'bg-action-primary-default' : 'bg-surface-subdued',
                   )}
                 />
               )}
@@ -130,8 +130,8 @@ function Stepper({ steps, currentStep, compact = false, interactive = false, onS
               <div
                 className={cn(
                   'flex size-11 shrink-0 items-center justify-center rounded-full text-sm font-semibold transition-colors',
-                  (isCompleted || isCurrent) && 'bg-primary text-primary-foreground',
-                  !isCompleted && !isCurrent && 'bg-muted text-muted-foreground',
+                  (isCompleted || isCurrent) && 'bg-action-primary-default text-action-primary-text',
+                  !isCompleted && !isCurrent && 'bg-surface-subdued text-text-subdued',
                 )}
               >
                 {isCompleted ? (
@@ -146,12 +146,12 @@ function Stepper({ steps, currentStep, compact = false, interactive = false, onS
                 <p
                   className={cn(
                     'text-sm font-semibold',
-                    isCompleted || isCurrent ? 'text-primary' : 'text-muted-foreground',
+                    isCompleted || isCurrent ? 'text-text-brand' : 'text-text-subdued',
                   )}
                 >
                   {item.label}
                 </p>
-                {item.description && <p className="text-xs text-muted-foreground">{item.description}</p>}
+                {item.description && <p className="text-xs text-text-subdued">{item.description}</p>}
               </div>
             </StepControl>
 
@@ -159,7 +159,7 @@ function Stepper({ steps, currentStep, compact = false, interactive = false, onS
               <div
                 className={cn(
                   'mx-2 mt-5 h-0.5 flex-1 rounded-full transition-colors',
-                  item.step < currentStep ? 'bg-primary' : 'bg-muted',
+                  item.step < currentStep ? 'bg-action-primary-default' : 'bg-surface-subdued',
                 )}
               />
             )}

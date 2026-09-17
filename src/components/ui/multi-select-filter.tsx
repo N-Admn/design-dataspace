@@ -69,30 +69,30 @@ function MultiSelectFilter({
           id={id}
           type="button"
           className={cn(
-            'flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors',
-            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:border-ring',
+            'flex h-10 w-full items-center justify-between rounded-md border border-border-input bg-surface-default px-3 py-2 text-sm transition-colors',
+            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-focus focus-visible:border-border-focus',
           )}
         >
-          <span className={cn('truncate text-left', selectedOptions.length === 0 && 'text-muted-foreground')}>
+          <span className={cn('truncate text-left', selectedOptions.length === 0 && 'text-text-subdued')}>
             {selectedOptions.length === 0 ? placeholder : selectedOptions.map((o) => o.label).join(', ')}
           </span>
-          <ChevronDown className="size-4 shrink-0 text-muted-foreground" />
+          <ChevronDown className="size-4 shrink-0 text-text-subdued" />
         </button>
       </PopoverTrigger>
       <PopoverContent className="p-0" onOpenAutoFocus={(e) => e.preventDefault()}>
-        <div className="flex items-center gap-2 border-b border-border px-3 py-2">
-          <Search className="size-4 shrink-0 text-muted-foreground" />
+        <div className="flex items-center gap-2 border-b border-border-default px-3 py-2">
+          <Search className="size-4 shrink-0 text-text-subdued" />
           <input
             autoFocus
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder={searchPlaceholder ?? placeholder}
-            className="h-6 w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+            className="h-6 w-full bg-transparent text-sm outline-none placeholder:text-text-subdued"
           />
         </div>
         <div className="max-h-60 overflow-y-auto p-1">
           {filtered.length === 0 && (
-            <p className="px-2 py-4 text-center text-sm text-muted-foreground">{emptyText}</p>
+            <p className="px-2 py-4 text-center text-sm text-text-subdued">{emptyText}</p>
           )}
           {filtered.map((option) => {
             const isSelected = selectedSet.has(option.value)
@@ -101,12 +101,12 @@ function MultiSelectFilter({
                 <button
                   type="button"
                   onClick={() => onToggle(option.value)}
-                  className="flex w-full items-center justify-between rounded-sm px-2 py-2 text-left text-sm hover:bg-control-hover focus-visible:bg-control-hover focus-visible:outline-none"
+                  className="flex w-full items-center justify-between rounded-sm px-2 py-2 text-left text-sm hover:bg-surface-hovered focus-visible:bg-surface-hovered focus-visible:outline-none"
                 >
                   <span>{option.label}</span>
-                  {isSelected && <Check className="size-4 text-primary" />}
+                  {isSelected && <Check className="size-4 text-text-brand" />}
                 </button>
-                {dividerAfterValue === option.value && <div className="my-1 border-t border-border" />}
+                {dividerAfterValue === option.value && <div className="my-1 border-t border-border-default" />}
               </React.Fragment>
             )
           })}

@@ -84,6 +84,7 @@
   --border-input: var(--base-gray-solid-7);
   --border-focus: var(--base-navy-solid-9);
   --border-brand: var(--base-navy-solid-9);
+  --border-critical: var(--base-red-solid-9);
 
   /* DataSpace token reconciliation — UI surfaces */
   --surface-default: var(--background);
@@ -190,6 +191,7 @@
   --color-border-input: var(--border-input);
   --color-border-focus: var(--border-focus);
   --color-border-brand: var(--border-brand);
+  --color-border-critical: var(--border-critical);
 
   /* DataSpace token reconciliation — UI surfaces */
   --color-surface-default: var(--surface-default);

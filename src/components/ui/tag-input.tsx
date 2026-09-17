@@ -25,20 +25,20 @@ function TagInput({ value, onChange, placeholder, id }: TagInputProps) {
   return (
     <div
       className={cn(
-        'flex min-h-10 w-full flex-wrap items-center gap-1.5 rounded-md border border-input bg-background px-2 py-1.5 text-sm',
-        'focus-within:ring-2 focus-within:ring-ring focus-within:border-ring',
+        'flex min-h-10 w-full flex-wrap items-center gap-1.5 rounded-md border border-border-input bg-surface-default px-2 py-1.5 text-sm',
+        'focus-within:ring-2 focus-within:ring-border-focus focus-within:border-border-focus',
       )}
     >
       {value.map((tag) => (
         <span
           key={tag}
-          className="inline-flex items-center gap-1 rounded-full bg-accent/20 px-2.5 py-0.5 text-xs font-medium text-accent-foreground"
+          className="inline-flex items-center gap-1 rounded-full bg-surface-accent/20 px-2.5 py-0.5 text-xs font-medium text-text-on-accent"
         >
           {tag}
           <button
             type="button"
             onClick={() => onChange(value.filter((t) => t !== tag))}
-            className="rounded-full text-accent-foreground/70 hover:text-accent-foreground"
+            className="rounded-full text-text-on-accent/70 hover:text-text-on-accent"
             aria-label={`Remove tag ${tag}`}
           >
             <X className="size-3" />
@@ -59,7 +59,7 @@ function TagInput({ value, onChange, placeholder, id }: TagInputProps) {
         }}
         onBlur={commit}
         placeholder={value.length === 0 ? placeholder : ''}
-        className="min-w-32 flex-1 bg-transparent px-1 py-1 outline-none placeholder:text-muted-foreground"
+        className="min-w-32 flex-1 bg-transparent px-1 py-1 outline-none placeholder:text-text-subdued"
       />
     </div>
   )

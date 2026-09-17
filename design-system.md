@@ -103,6 +103,7 @@ A parallel semantic naming layer, reconciling this app's tokens with the naming 
 | `border.input` | `--border-input` | `--color-border-input` | `var(--base-gray-solid-7)` |
 | `border.focus` | `--border-focus` | `--color-border-focus` | `var(--base-navy-solid-9)` |
 | `border.brand` | `--border-brand` | `--color-border-brand` | `var(--base-navy-solid-9)` |
+| `border.critical` | `--border-critical` | `--color-border-critical` | `var(--base-red-solid-9)` |
 
 **UI surfaces** — usable as e.g. `bg-surface-default` (distinct from the app-chrome `surface` group further down, which covers page/header/breadcrumb/hero-gradient/sidebar):
 

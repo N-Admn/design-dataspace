@@ -54,31 +54,31 @@ function SearchableSelect({
           type="button"
           aria-invalid={invalid || undefined}
           className={cn(
-            'flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors',
-            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:border-ring',
-            'aria-invalid:border-destructive aria-invalid:ring-destructive/20',
+            'flex h-10 w-full items-center justify-between rounded-md border border-border-input bg-surface-default px-3 py-2 text-sm transition-colors',
+            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-focus focus-visible:border-border-focus',
+            'aria-invalid:border-border-critical aria-invalid:ring-border-critical/20',
           )}
         >
-          <span className={cn('truncate text-left', !selected && 'text-muted-foreground')}>
+          <span className={cn('truncate text-left', !selected && 'text-text-subdued')}>
             {selected ? selected.label : placeholder}
           </span>
-          <ChevronDown className="size-4 shrink-0 text-muted-foreground" />
+          <ChevronDown className="size-4 shrink-0 text-text-subdued" />
         </button>
       </PopoverTrigger>
       <PopoverContent className="p-0" onOpenAutoFocus={(e) => e.preventDefault()}>
-        <div className="flex items-center gap-2 border-b border-border px-3 py-2">
-          <Search className="size-4 shrink-0 text-muted-foreground" />
+        <div className="flex items-center gap-2 border-b border-border-default px-3 py-2">
+          <Search className="size-4 shrink-0 text-text-subdued" />
           <input
             autoFocus
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder={searchPlaceholder ?? placeholder}
-            className="h-6 w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+            className="h-6 w-full bg-transparent text-sm outline-none placeholder:text-text-subdued"
           />
         </div>
         <div className="max-h-60 overflow-y-auto p-1">
           {filtered.length === 0 && (
-            <p className="px-2 py-4 text-center text-sm text-muted-foreground">{emptyText}</p>
+            <p className="px-2 py-4 text-center text-sm text-text-subdued">{emptyText}</p>
           )}
           {filtered.map((option) => (
             <button
@@ -90,12 +90,12 @@ function SearchableSelect({
                 setQuery('')
               }}
               className={cn(
-                'flex w-full items-center justify-between rounded-sm px-2 py-2 text-left text-sm hover:bg-control-hover',
-                option.value === value && 'bg-muted',
+                'flex w-full items-center justify-between rounded-sm px-2 py-2 text-left text-sm hover:bg-surface-hovered',
+                option.value === value && 'bg-surface-subdued',
               )}
             >
               <span>{option.label}</span>
-              {option.value === value && <Check className="size-4 text-primary" />}
+              {option.value === value && <Check className="size-4 text-text-brand" />}
             </button>
           ))}
         </div>
