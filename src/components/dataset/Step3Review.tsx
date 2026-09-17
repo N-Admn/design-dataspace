@@ -62,7 +62,7 @@ function UsedInSection({ datasetId }: { datasetId: string }) {
     <Card>
       <CardHeader>
         <CardTitle>Used in</CardTitle>
-        <p className="mt-1 text-sm font-normal text-muted-foreground">
+        <p className="mt-1 text-sm font-normal text-text-subdued">
           Explore published CivicDataSpace content that uses this dataset.
         </p>
       </CardHeader>
@@ -70,20 +70,20 @@ function UsedInSection({ datasetId }: { datasetId: string }) {
         {visible.map((item) => (
           <div
             key={`${item.type}-${item.id}`}
-            className="flex items-center gap-3 border-b border-border px-5 py-3 last:border-b-0"
+            className="flex items-center gap-3 border-b border-border-default px-5 py-3 last:border-b-0"
           >
             {item.type === 'Event' ? (
-              <CalendarDays className="size-4 shrink-0 text-muted-foreground" />
+              <CalendarDays className="size-4 shrink-0 text-text-subdued" />
             ) : (
-              <FolderKanban className="size-4 shrink-0 text-muted-foreground" />
+              <FolderKanban className="size-4 shrink-0 text-text-subdued" />
             )}
-            <span className="min-w-0 flex-1 truncate text-sm font-medium text-foreground">{item.title}</span>
+            <span className="min-w-0 flex-1 truncate text-sm font-medium text-text-default">{item.title}</span>
             <Badge variant="secondary">{item.type}</Badge>
-            <ArrowRight className="size-4 shrink-0 text-muted-foreground" />
+            <ArrowRight className="size-4 shrink-0 text-text-subdued" />
           </div>
         ))}
         {remaining > 0 && (
-          <p className="px-5 py-3 text-xs text-muted-foreground">+{remaining} more</p>
+          <p className="px-5 py-3 text-xs text-text-subdued">+{remaining} more</p>
         )}
       </CardContent>
     </Card>
@@ -109,20 +109,20 @@ function ChartsSection({ datasetId }: { datasetId: string }) {
     <Card>
       <CardHeader>
         <CardTitle>Charts</CardTitle>
-        <p className="mt-1 text-sm font-normal text-muted-foreground">Visualizations published for this dataset.</p>
+        <p className="mt-1 text-sm font-normal text-text-subdued">Visualizations published for this dataset.</p>
       </CardHeader>
       <CardContent className="flex flex-col gap-1 p-0">
         {datasetCharts.map((chart) => {
           const Icon = chart.form.chartType ? CHART_TYPE_ICONS[chart.form.chartType] : BarChart3
           const typeLabel = chart.form.chartType ? CHART_TYPE_OPTIONS.find((o) => o.value === chart.form.chartType)?.label : '—'
           return (
-            <div key={chart.id} className="flex items-center gap-3 border-b border-border px-5 py-3 last:border-b-0">
-              <Icon className="size-4 shrink-0 text-muted-foreground" />
-              <span className="min-w-0 flex-1 truncate text-sm font-medium text-foreground">
+            <div key={chart.id} className="flex items-center gap-3 border-b border-border-default px-5 py-3 last:border-b-0">
+              <Icon className="size-4 shrink-0 text-text-subdued" />
+              <span className="min-w-0 flex-1 truncate text-sm font-medium text-text-default">
                 {chart.form.name || 'Untitled chart'}
               </span>
               <Badge variant="secondary">{typeLabel}</Badge>
-              <ArrowRight className="size-4 shrink-0 text-muted-foreground" />
+              <ArrowRight className="size-4 shrink-0 text-text-subdued" />
             </div>
           )
         })}
@@ -138,8 +138,8 @@ function optionLabel(options: { value: string; label: string }[], value: string)
 function ReviewField({ label, value }: { label: string; value: ReactNode }) {
   return (
     <div>
-      <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{label}</p>
-      <div className="mt-1 text-sm text-foreground">{value}</div>
+      <p className="text-xs font-medium uppercase tracking-wide text-text-subdued">{label}</p>
+      <div className="mt-1 text-sm text-text-default">{value}</div>
     </div>
   )
 }
@@ -209,19 +209,19 @@ function Step3Review({ form, datasetId, canPublish, hasLiveVersion, onEditStep, 
       <ReviewSection title="Uploaded Files" defaultOpen onEdit={() => onEditStep(1)}>
         <div className="flex flex-col gap-3">
           {files.length === 0 && (
-            <p className="text-sm text-muted-foreground">No files uploaded.</p>
+            <p className="text-sm text-text-subdued">No files uploaded.</p>
           )}
           {files.map((file) => (
             <div
               key={file.id}
-              className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg border border-border px-4 py-3"
+              className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg border border-border-default px-4 py-3"
             >
-              <CheckCircle2 className="size-5 shrink-0 text-success-text" />
-              <span className="text-sm font-medium text-foreground">{getResourceTitle(file)}</span>
+              <CheckCircle2 className="size-5 shrink-0 text-text-success" />
+              <span className="text-sm font-medium text-text-default">{getResourceTitle(file)}</span>
               <Badge variant="secondary">{file.extension}</Badge>
-              <span className="text-xs text-muted-foreground">{file.sizeLabel}</span>
-              <span className="text-xs text-muted-foreground">{file.uploadedAt}</span>
-              <span className="text-xs text-muted-foreground">Original: {file.name}</span>
+              <span className="text-xs text-text-subdued">{file.sizeLabel}</span>
+              <span className="text-xs text-text-subdued">{file.uploadedAt}</span>
+              <span className="text-xs text-text-subdued">Original: {file.name}</span>
               <Button
                 type="button"
                 variant="ghost"
@@ -242,7 +242,7 @@ function Step3Review({ form, datasetId, canPublish, hasLiveVersion, onEditStep, 
             </div>
           ))}
           {files.length > 0 && (
-            <p className="pt-1 text-right text-sm font-medium text-foreground">
+            <p className="pt-1 text-right text-sm font-medium text-text-default">
               Total file size: {formatFileSize(totalBytes)}
             </p>
           )}
@@ -256,7 +256,7 @@ function Step3Review({ form, datasetId, canPublish, hasLiveVersion, onEditStep, 
       <PublicVisibilityNotice hasLiveVersion={hasLiveVersion} />
 
       <ReviewPublishPanel>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-text-subdued">
           {hasLiveVersion
             ? 'Publishing will replace the current public version of this dataset immediately.'
             : 'Your dataset will be publicly available immediately after publishing.'}
@@ -272,7 +272,7 @@ function Step3Review({ form, datasetId, canPublish, hasLiveVersion, onEditStep, 
           <Send className="size-4" />
         </Button>
         {!canPublish && (
-          <p className="text-xs font-medium text-destructive">
+          <p className="text-xs font-medium text-text-critical-strong">
             Complete the required fields in Metadata before publishing.
           </p>
         )}

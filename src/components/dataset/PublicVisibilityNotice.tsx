@@ -8,7 +8,7 @@ interface PublicVisibilityBadgeProps {
 /** Compact indicator shown once near the Dataset Creation header — not repeated on every step. */
 function PublicVisibilityBadge({ isLive }: PublicVisibilityBadgeProps) {
   return (
-    <div className="inline-flex items-center gap-1.5 rounded-full border border-border bg-muted/40 px-2.5 py-1 text-xs font-medium text-muted-foreground">
+    <div className="inline-flex items-center gap-1.5 rounded-full border border-border-default bg-surface-subdued/40 px-2.5 py-1 text-xs font-medium text-text-subdued">
       <Globe className="size-3.5" />
       {isLive ? 'Public visibility · Live on CivicDataSpace' : 'Public visibility · Public once published'}
     </div>
@@ -23,21 +23,21 @@ interface PublicVisibilityNoticeProps {
 /** Fuller informational notice shown in Review, immediately before the publishing action. */
 function PublicVisibilityNotice({ hasLiveVersion }: PublicVisibilityNoticeProps) {
   return (
-    <div className="flex gap-3 rounded-lg border border-border bg-muted/40 p-4">
-      <Info className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
+    <div className="flex gap-3 rounded-lg border border-border-default bg-surface-subdued/40 p-4">
+      <Info className="mt-0.5 size-4 shrink-0 text-text-subdued" />
       <div className="text-sm">
-        <p className="font-medium text-foreground">Public dataset</p>
+        <p className="font-medium text-text-default">Public dataset</p>
         {hasLiveVersion ? (
-          <p className="mt-1 text-muted-foreground">
+          <p className="mt-1 text-text-subdued">
             This dataset is already public. Changes you publish will replace the current public version immediately.
           </p>
         ) : (
           <>
-            <p className="mt-1 text-muted-foreground">
+            <p className="mt-1 text-text-subdued">
               Once published, this dataset will be publicly available on CivicDataSpace. Anyone can discover and
               access its published resources.
             </p>
-            <p className="mt-1.5 text-muted-foreground">
+            <p className="mt-1.5 text-text-subdued">
               Before publishing, make sure you have permission to share all included information and that it does
               not contain private or restricted content.
             </p>

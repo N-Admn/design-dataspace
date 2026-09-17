@@ -76,8 +76,8 @@ function FileRow({
   }
 
   return (
-    <div className="flex flex-wrap items-center gap-3 rounded-lg border border-border px-4 py-3">
-      <CheckCircle2 className="size-5 shrink-0 text-success-text" />
+    <div className="flex flex-wrap items-center gap-3 rounded-lg border border-border-default px-4 py-3">
+      <CheckCircle2 className="size-5 shrink-0 text-text-success" />
       <div className="min-w-0 flex-1">
         {isEditing ? (
           <Input
@@ -97,7 +97,7 @@ function FileRow({
           />
         ) : (
           <div className="flex min-w-0 items-center gap-1">
-            <p className="truncate text-sm font-medium text-foreground">{title}</p>
+            <p className="truncate text-sm font-medium text-text-default">{title}</p>
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
@@ -115,7 +115,7 @@ function FileRow({
             </Tooltip>
           </div>
         )}
-        <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
+        <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-text-subdued">
           <Badge variant="secondary">{file.extension}</Badge>
           <span>Size: {file.sizeLabel}</span>
           <span>•</span>
@@ -148,7 +148,7 @@ function FileRow({
             size="icon"
             aria-label={`Delete ${file.name}`}
             onClick={onRemove}
-            className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+            className="text-text-critical-strong hover:bg-action-critical-default/10 hover:text-text-critical-strong"
           >
             <Trash2 className="size-4" />
           </Button>
@@ -293,7 +293,7 @@ function Step2DataFiles({
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex gap-1 rounded-lg border border-border bg-muted/40 p-1">
+      <div className="flex gap-1 rounded-lg border border-border-default bg-surface-subdued/40 p-1">
         {UPLOAD_METHODS.map((option) => {
           const Icon = option.icon
           const isActive = option.value === method
@@ -304,7 +304,7 @@ function Step2DataFiles({
               onClick={() => handleMethodChange(option.value)}
               className={cn(
                 'flex flex-1 items-center justify-center gap-1.5 rounded-md py-2 text-sm font-medium transition-colors',
-                isActive ? 'bg-card text-primary shadow-sm' : 'text-muted-foreground hover:text-foreground',
+                isActive ? 'bg-surface-default text-text-brand shadow-sm' : 'text-text-subdued hover:text-text-default',
               )}
             >
               <Icon className="size-4" />
@@ -330,9 +330,9 @@ function Step2DataFiles({
             />
 
             {uploadErrors.length > 0 && (
-              <div className="rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2">
+              <div className="rounded-md border border-action-critical-default/30 bg-action-critical-default/5 px-3 py-2">
                 {uploadErrors.map((message) => (
-                  <p key={message} className="text-xs font-medium text-destructive">
+                  <p key={message} className="text-xs font-medium text-text-critical-strong">
                     {message}
                   </p>
                 ))}
@@ -346,14 +346,14 @@ function Step2DataFiles({
         <Card>
           <CardHeader>
             <CardTitle>Import from a public platform</CardTitle>
-            <p className="mt-1 text-sm font-normal text-muted-foreground">
+            <p className="mt-1 text-sm font-normal text-text-subdued">
               Select a platform, paste the dataset URL, then extract its files into this dataset.
             </p>
           </CardHeader>
           <CardContent className="flex flex-col gap-5">
             <div>
               <Label htmlFor="platform-select">
-                Select Platform <span className="text-destructive">*</span>
+                Select Platform <span className="text-text-critical-strong">*</span>
               </Label>
               <div className="mt-1.5">
                 <SearchableSelect
@@ -369,7 +369,7 @@ function Step2DataFiles({
             {platform !== '' && (
               <div>
                 <Label htmlFor="platform-url">
-                  Dataset URL <span className="text-destructive">*</span>
+                  Dataset URL <span className="text-text-critical-strong">*</span>
                 </Label>
                 <Input
                   id="platform-url"
@@ -385,7 +385,7 @@ function Step2DataFiles({
                     }
                   }}
                 />
-                <p className="mt-1.5 text-xs text-muted-foreground">{platformOption(platform).urlHelp}</p>
+                <p className="mt-1.5 text-xs text-text-subdued">{platformOption(platform).urlHelp}</p>
                 {platformUrlTouched && urlError && (
                   <FieldError message={platformUrlErrorMessage(urlError, platform)} />
                 )}
@@ -393,7 +393,7 @@ function Step2DataFiles({
             )}
 
             {platform !== '' && urlError === null && (
-              <div className="flex flex-col gap-2 border-t border-border pt-5">
+              <div className="flex flex-col gap-2 border-t border-border-default pt-5">
                 <Button
                   type="button"
                   className="self-start"
@@ -414,7 +414,7 @@ function Step2DataFiles({
                 </Button>
 
                 {extractStatus === 'error' && extractError && (
-                  <div className="flex items-start gap-2 rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2.5 text-sm text-destructive-text">
+                  <div className="flex items-start gap-2 rounded-md border border-action-critical-default/30 bg-action-critical-default/5 px-3 py-2.5 text-sm text-text-critical">
                     <AlertCircle className="mt-0.5 size-4 shrink-0" />
                     <p className="font-medium">{extractError}</p>
                   </div>
@@ -429,7 +429,7 @@ function Step2DataFiles({
         <CardHeader className="flex-row items-center justify-between">
           <CardTitle>Uploaded Files ({files.length})</CardTitle>
           {files.length > 0 && (
-            <div className="flex items-center gap-1.5 text-sm font-medium text-success-text">
+            <div className="flex items-center gap-1.5 text-sm font-medium text-text-success">
               <CheckCircle2 className="size-4" />
               {files.length} File{files.length === 1 ? '' : 's'} Ready
             </div>
@@ -437,19 +437,19 @@ function Step2DataFiles({
         </CardHeader>
         <CardContent className="flex flex-col gap-3">
           {files.length === 0 && (
-            <p className="py-6 text-center text-sm text-muted-foreground">No files uploaded yet.</p>
+            <p className="py-6 text-center text-sm text-text-subdued">No files uploaded yet.</p>
           )}
 
           {hasFolders
             ? grouped.map(([key, groupFiles]) => (
                 <div key={key || 'root'} className="flex flex-col gap-3">
                   {key !== '' && (
-                    <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+                    <div className="flex items-center gap-1.5 text-xs font-medium text-text-subdued">
                       <Folder className="size-3.5" />
                       {key}/
                     </div>
                   )}
-                  <div className={cn('flex flex-col gap-3', key !== '' && 'border-l border-border pl-3')}>
+                  <div className={cn('flex flex-col gap-3', key !== '' && 'border-l border-border-default pl-3')}>
                     {groupFiles.map((file) => (
                       <FileRow
                         key={file.id}

@@ -56,10 +56,10 @@ function buildColumns(onOpen: (dataset: DatasetRecord) => void): ManagementColum
       <button
         type="button"
         onClick={() => onOpen(d)}
-        className="flex min-w-0 w-full items-center gap-2 text-left hover:text-primary"
+        className="flex min-w-0 w-full items-center gap-2 text-left hover:text-text-brand"
       >
-        <FileText className="size-4 shrink-0 text-muted-foreground" />
-        <TruncatedText className="min-w-0 flex-1 font-medium text-foreground">{d.form.metadata.name || 'Untitled dataset'}</TruncatedText>
+        <FileText className="size-4 shrink-0 text-text-subdued" />
+        <TruncatedText className="min-w-0 flex-1 font-medium text-text-default">{d.form.metadata.name || 'Untitled dataset'}</TruncatedText>
       </button>
     ),
   },

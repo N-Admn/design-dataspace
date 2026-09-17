@@ -37,13 +37,13 @@ function InferredField({
   const hasValue = value !== undefined && value !== null && value !== ''
   return (
     <div>
-      <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{label}</p>
+      <p className="text-xs font-medium uppercase tracking-wide text-text-subdued">{label}</p>
       {hasValue ? (
-        <div className="mt-1 break-words text-sm text-foreground">{value}</div>
+        <div className="mt-1 break-words text-sm text-text-default">{value}</div>
       ) : (
         <>
-          <p className="mt-1 text-sm text-muted-foreground">{fallback}</p>
-          <p className="mt-0.5 text-xs text-muted-foreground">{fallbackHint}</p>
+          <p className="mt-1 text-sm text-text-subdued">{fallback}</p>
+          <p className="mt-0.5 text-xs text-text-subdued">{fallbackHint}</p>
         </>
       )}
     </div>
@@ -121,14 +121,14 @@ function FileDetailsSheet({ file, onOpenChange, onTitleChange, onDescriptionChan
                     onChange={(e) => setDescriptionDraft(e.target.value)}
                     onBlur={commitDescription}
                   />
-                  <p className="mt-1 text-xs text-muted-foreground">
+                  <p className="mt-1 text-xs text-text-subdued">
                     Starts from a system-generated summary — edit it to add context.
                   </p>
                 </div>
 
                 {/* --- System-inferred, read-only --- */}
-                <div className="border-t border-border pt-5">
-                  <div className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                <div className="border-t border-border-default pt-5">
+                  <div className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-text-subdued">
                     <Lock className="size-3" />
                     Read from the file — not editable
                   </div>
@@ -167,7 +167,7 @@ function FileDetailsSheet({ file, onOpenChange, onTitleChange, onDescriptionChan
                             href={file.importUrl}
                             target="_blank"
                             rel="noreferrer"
-                            className="text-primary underline-offset-2 hover:underline focus-visible:underline"
+                            className="text-text-brand underline-offset-2 hover:underline focus-visible:underline"
                           >
                             {file.importUrl}
                           </a>

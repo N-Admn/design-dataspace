@@ -74,12 +74,12 @@ function DrawerSuccessPanel({
 
   return (
     <div className="flex flex-col items-center gap-3 px-6 py-12 text-center">
-      <div className="flex size-12 items-center justify-center rounded-full bg-success/5 text-success-text">
+      <div className="flex size-12 items-center justify-center rounded-full bg-surface-success/5 text-text-success">
         <CheckCircle2 className="size-6" />
       </div>
       <div>
-        <p className="text-base font-semibold text-primary">{isPublished ? 'Dataset published' : message.title}</p>
-        <p className="mt-1 text-sm text-muted-foreground">
+        <p className="text-base font-semibold text-text-brand">{isPublished ? 'Dataset published' : message.title}</p>
+        <p className="mt-1 text-sm text-text-subdued">
           {isPublished ? 'Your Dataset is now publicly available on CivicDataSpace.' : message.description}
         </p>
       </div>
@@ -362,7 +362,7 @@ function DatasetCreationFlow({
           <DialogHeader className="shrink-0">
             <DialogTitle>Create Dataset</DialogTitle>
             {contextLabel && (
-              <p className="text-xs font-medium text-muted-foreground">Context: {contextLabel}</p>
+              <p className="text-xs font-medium text-text-subdued">Context: {contextLabel}</p>
             )}
             <DialogDescription>Add a new dataset to CivicDataSpace.</DialogDescription>
             {!drawerSuccess && (
