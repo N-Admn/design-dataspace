@@ -32,7 +32,24 @@ function flatten() {
 
   for (const [k, v] of Object.entries(tokens.font ?? {})) {
     if (k.startsWith('$')) continue
-    add('font', k, v, `--font-${k}`, `--font-${k}`)
+    // cssVar carries the new DataSpace-reconciled name; themeVar stays --font-K so the
+    // live font-sans/font-mono Tailwind utility classes are unaffected.
+    add('font', k, v, `--font-family-${k}`, `--font-${k}`)
+  }
+  for (const [k, v] of Object.entries(tokens.fontSize ?? {})) {
+    if (k.startsWith('$')) continue
+    add('fontSize', k, v, `--font-size-${kebab(k)}`, null)
+  }
+  for (const [k, v] of Object.entries(tokens.fontWeight ?? {})) {
+    if (k.startsWith('$')) continue
+    // NOT --font-weight-<k>: that exact namespace is reserved by Tailwind's own theme
+    // (font-medium/font-semibold/font-bold) -- colliding would silently override those
+    // utilities app-wide. See tokens.json's fontWeight.$description.
+    add('fontWeight', k, v, `--type-font-weight-${kebab(k)}`, null)
+  }
+  for (const [k, v] of Object.entries(tokens.lineHeight ?? {})) {
+    if (k.startsWith('$')) continue
+    add('lineHeight', k, v, `--line-height-${kebab(k)}`, null)
   }
   for (const [k, v] of Object.entries(tokens.radius ?? {})) {
     if (k.startsWith('$')) continue
@@ -95,12 +112,30 @@ const groupTitles = {
   text: 'DataSpace token reconciliation — text colors',
   border: 'DataSpace token reconciliation — border colors',
   action: 'DataSpace token reconciliation — action colors',
+  fontSize: 'DataSpace token reconciliation — font sizes (internal, backs .type-*)',
+  fontWeight: 'DataSpace token reconciliation — font weights (internal, backs .type-*)',
+  lineHeight: 'DataSpace token reconciliation — line heights (internal, backs .type-*)',
   chart: 'Chart palette',
   sidebar: 'Sidebar',
   surface: 'App-chrome surfaces',
   uiSurface: 'DataSpace token reconciliation — UI surfaces',
 }
-const groupOrder = ['font', 'radius', 'color', 'base', 'text', 'border', 'uiSurface', 'action', 'chart', 'sidebar', 'surface']
+const groupOrder = [
+  'font',
+  'fontSize',
+  'fontWeight',
+  'lineHeight',
+  'radius',
+  'color',
+  'base',
+  'text',
+  'border',
+  'uiSurface',
+  'action',
+  'chart',
+  'sidebar',
+  'surface',
+]
 
 /* ------------------------------------------------------------------ CSS ---- */
 function buildCss() {
@@ -233,6 +268,20 @@ ${mdTable(rowsFor('font'))}
 **Weight roles:** \`weight.regular\` 400 (body) · \`weight.medium\` 500 (labels/buttons/emphasis) · \`weight.semibold\` 600 (headings) · \`weight.bold\` 700 (large display numerals only). Nothing lighter than regular on essential text.
 
 **Letter-spacing:** \`tracking.emphasis\` 0.025em, reserved for short uppercase field-group labels; everything else native.
+
+### DataSpace token reconciliation — typography (in progress)
+
+The seven \`.type-*\` role classes above are hand-written CSS in \`src/index.css\` (Tailwind's \`@theme\` can't hold a bundled size+line-height+weight value), so reconciling their naming doesn't mean new classes for components to adopt — components keep using \`.type-heading-2\` etc. exactly as before. Instead, the values *inside* those seven rules now come from named, DataSpace-reconciled variables, root-only (never exposed as a Tailwind utility, so nothing invites picking an ad hoc size/weight/line-height outside the seven roles):
+
+${mdTable(rowsFor('fontSize'))}
+
+${mdTable(rowsFor('fontWeight'))}
+
+${mdTable(rowsFor('lineHeight'))}
+
+\`font.sans\`/\`font.mono\` now also produce \`--font-family-sans\`/\`--font-family-mono\` alongside the unchanged \`--font-sans\`/\`--font-mono\` Tailwind keys, so the live \`font-sans\` utility class is unaffected.
+
+Note the font-weight variables are named \`--type-font-weight-*\`, not \`--font-weight-*\` — that exact namespace is reserved by Tailwind's own theme for its \`font-medium\`/\`font-semibold\`/\`font-bold\` utilities, and colliding with it would silently override those utilities app-wide.
 
 ### Border radius
 
