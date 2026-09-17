@@ -78,6 +78,7 @@
   --text-success: var(--base-green-solid-11);
   --text-warning: var(--base-navy-solid-9);
   --text-brand: var(--base-navy-solid-9);
+  --text-critical-strong: var(--base-red-solid-9);
 
   /* DataSpace token reconciliation — border colors */
   --border-default: var(--base-gray-solid-4);
@@ -185,6 +186,7 @@
   --color-text-success: var(--text-success);
   --color-text-warning: var(--text-warning);
   --color-text-brand: var(--text-brand);
+  --color-text-critical-strong: var(--text-critical-strong);
 
   /* DataSpace token reconciliation — border colors */
   --color-border-default: var(--border-default);

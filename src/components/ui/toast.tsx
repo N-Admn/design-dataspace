@@ -49,7 +49,7 @@ function ToastProvider({ children }: { children: React.ReactNode }) {
             className="flex items-start gap-2.5 rounded-lg border border-border-default bg-surface-default px-4 py-3 shadow-lg animate-in fade-in-0 slide-in-from-top-2"
           >
             {t.variant === 'error' ? (
-              <AlertCircle className="mt-0.5 size-4 shrink-0 text-destructive" />
+              <AlertCircle className="mt-0.5 size-4 shrink-0 text-text-critical-strong" />
             ) : (
               <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-text-success" />
             )}

@@ -94,6 +94,7 @@ A parallel semantic naming layer, reconciling this app's tokens with the naming 
 | `text.success` | `--text-success` | `--color-text-success` | `var(--base-green-solid-11)` |
 | `text.warning` | `--text-warning` | `--color-text-warning` | `var(--base-navy-solid-9)` |
 | `text.brand` | `--text-brand` | `--color-text-brand` | `var(--base-navy-solid-9)` |
+| `text.criticalStrong` | `--text-critical-strong` | `--color-text-critical-strong` | `var(--base-red-solid-9)` |
 
 **Border colors** — usable as e.g. `border-border-default`:
 
