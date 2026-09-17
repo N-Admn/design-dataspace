@@ -69,7 +69,7 @@ const TABULAR_ROWS = [
 function HeaderIcon({ kind }: { kind: PreviewKind }) {
   const Icon = kind === 'tabular' ? Table2 : kind === 'image' ? ImageIcon : FileText
   return (
-    <div className="flex size-10 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary">
+    <div className="flex size-10 shrink-0 items-center justify-center rounded-md bg-action-primary-default/10 text-text-brand">
       <Icon className="size-5" />
     </div>
   )
@@ -82,12 +82,12 @@ function CenteredState({ children }: { children: React.ReactNode }) {
 function MetadataList({ resource }: { resource: PreviewResource }) {
   return (
     <dl className="mt-1 grid w-full max-w-sm grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-left text-xs">
-      <dt className="text-muted-foreground">File type</dt>
-      <dd className="font-medium text-foreground">{resource.extension || '—'}</dd>
-      <dt className="text-muted-foreground">Size</dt>
-      <dd className="font-medium text-foreground">{resource.sizeLabel || '—'}</dd>
-      <dt className="text-muted-foreground">Original file</dt>
-      <dd className="truncate font-medium text-foreground">{resource.fileName}</dd>
+      <dt className="text-text-subdued">File type</dt>
+      <dd className="font-medium text-text-default">{resource.extension || '—'}</dd>
+      <dt className="text-text-subdued">Size</dt>
+      <dd className="font-medium text-text-default">{resource.sizeLabel || '—'}</dd>
+      <dt className="text-text-subdued">Original file</dt>
+      <dd className="truncate font-medium text-text-default">{resource.fileName}</dd>
     </dl>
   )
 }
@@ -128,7 +128,7 @@ function ResourcePreviewDialog({ resource, onOpenChange }: ResourcePreviewDialog
           <HeaderIcon kind={kind} />
           <div className="min-w-0 flex-1">
             <DialogTitle className="truncate">{resource?.title ?? 'Preview'}</DialogTitle>
-            <p className="truncate text-xs text-muted-foreground">
+            <p className="truncate text-xs text-text-subdued">
               File Type: {resource?.extension || '—'} • Size: {resource?.sizeLabel || '—'} • Original:{' '}
               {resource?.fileName ?? '—'}
             </p>
@@ -138,9 +138,9 @@ function ResourcePreviewDialog({ resource, onOpenChange }: ResourcePreviewDialog
         <div className="min-h-0 flex-1 overflow-y-auto px-6 py-5">
           {!resource ? null : status === 'error' ? (
             <CenteredState>
-              <FileText className="size-8 text-muted-foreground" />
-              <p className="text-sm font-medium text-foreground">Preview couldn’t be loaded.</p>
-              <p className="max-w-sm text-xs text-muted-foreground">
+              <FileText className="size-8 text-text-subdued" />
+              <p className="text-sm font-medium text-text-default">Preview couldn’t be loaded.</p>
+              <p className="max-w-sm text-xs text-text-subdued">
                 The file itself is unaffected and will be available after publishing.
               </p>
               <MetadataList resource={resource} />
@@ -148,20 +148,20 @@ function ResourcePreviewDialog({ resource, onOpenChange }: ResourcePreviewDialog
           ) : kind === 'tabular' ? (
             status === 'loading' ? (
               <CenteredState>
-                <Loader2 className="size-6 animate-spin text-muted-foreground" />
-                <p className="text-sm text-muted-foreground">Loading preview…</p>
+                <Loader2 className="size-6 animate-spin text-text-subdued" />
+                <p className="text-sm text-text-subdued">Loading preview…</p>
               </CenteredState>
             ) : (
               <>
                 <div className="mb-3 flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
-                  <p className="text-sm font-semibold text-foreground">Tabular data — first {TABULAR_ROWS.length} rows</p>
-                  <p className="text-xs text-muted-foreground">Showing {TABULAR_COLUMNS.length} columns</p>
+                  <p className="text-sm font-semibold text-text-default">Tabular data — first {TABULAR_ROWS.length} rows</p>
+                  <p className="text-xs text-text-subdued">Showing {TABULAR_COLUMNS.length} columns</p>
                 </div>
-                <div className="overflow-x-auto rounded-lg border border-border">
+                <div className="overflow-x-auto rounded-lg border border-border-default">
                   <table className="w-full min-w-[720px] border-collapse text-sm">
                     <caption className="sr-only">Read-only preview of representative rows from {resource.title}</caption>
                     <thead>
-                      <tr className="border-b border-border bg-muted/40 text-left text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                      <tr className="border-b border-border-default bg-surface-subdued/40 text-left text-xs font-medium uppercase tracking-wide text-text-subdued">
                         {TABULAR_COLUMNS.map((col) => (
                           <th key={col} scope="col" className="px-4 py-2.5 font-medium">
                             {col}
@@ -171,9 +171,9 @@ function ResourcePreviewDialog({ resource, onOpenChange }: ResourcePreviewDialog
                     </thead>
                     <tbody>
                       {TABULAR_ROWS.map((row, i) => (
-                        <tr key={i} className="border-b border-border last:border-b-0 hover:bg-muted/30">
+                        <tr key={i} className="border-b border-border-default last:border-b-0 hover:bg-surface-subdued/30">
                           {row.map((cell, j) => (
-                            <td key={j} className="whitespace-nowrap px-4 py-2.5 text-foreground">
+                            <td key={j} className="whitespace-nowrap px-4 py-2.5 text-text-default">
                               {cell}
                             </td>
                           ))}
@@ -182,7 +182,7 @@ function ResourcePreviewDialog({ resource, onOpenChange }: ResourcePreviewDialog
                     </tbody>
                   </table>
                 </div>
-                <p className="mt-2.5 text-xs text-muted-foreground">
+                <p className="mt-2.5 text-xs text-text-subdued">
                   Read-only preview. Representative rows shown to verify structure and content.
                 </p>
               </>
@@ -191,42 +191,42 @@ function ResourcePreviewDialog({ resource, onOpenChange }: ResourcePreviewDialog
             <div className="flex flex-col items-center gap-2.5">
               {status === 'loading' && (
                 <CenteredState>
-                  <Loader2 className="size-6 animate-spin text-muted-foreground" />
-                  <p className="text-sm text-muted-foreground">Loading preview…</p>
+                  <Loader2 className="size-6 animate-spin text-text-subdued" />
+                  <p className="text-sm text-text-subdued">Loading preview…</p>
                 </CenteredState>
               )}
               <img
                 src={resource.dataUrl}
                 alt={`Preview of ${resource.title}`}
-                className={`max-h-[60vh] w-auto max-w-full rounded-lg border border-border object-contain ${status === 'loading' ? 'hidden' : ''}`}
+                className={`max-h-[60vh] w-auto max-w-full rounded-lg border border-border-default object-contain ${status === 'loading' ? 'hidden' : ''}`}
                 onLoad={() => setStatus('ready')}
                 onError={() => setStatus('error')}
               />
-              {status === 'ready' && <p className="text-xs text-muted-foreground">Read-only preview.</p>}
+              {status === 'ready' && <p className="text-xs text-text-subdued">Read-only preview.</p>}
             </div>
           ) : kind === 'pdf' ? (
             <div className="flex flex-col gap-2.5">
               {status === 'loading' && (
                 <CenteredState>
-                  <Loader2 className="size-6 animate-spin text-muted-foreground" />
-                  <p className="text-sm text-muted-foreground">Loading preview…</p>
+                  <Loader2 className="size-6 animate-spin text-text-subdued" />
+                  <p className="text-sm text-text-subdued">Loading preview…</p>
                 </CenteredState>
               )}
               <iframe
                 src={resource.dataUrl}
                 title={`Preview of ${resource.title}`}
-                className={`h-[60vh] w-full rounded-lg border border-border bg-card ${status === 'loading' ? 'hidden' : ''}`}
+                className={`h-[60vh] w-full rounded-lg border border-border-default bg-surface-default ${status === 'loading' ? 'hidden' : ''}`}
                 onLoad={() => setStatus('ready')}
               />
-              {status === 'ready' && <p className="text-xs text-muted-foreground">Read-only preview.</p>}
+              {status === 'ready' && <p className="text-xs text-text-subdued">Read-only preview.</p>}
             </div>
           ) : (
             <CenteredState>
-              <FileText className="size-8 text-muted-foreground" />
-              <p className="text-sm font-medium text-foreground">
+              <FileText className="size-8 text-text-subdued" />
+              <p className="text-sm font-medium text-text-default">
                 Preview unavailable for {resource.extension || 'this'} files.
               </p>
-              <p className="max-w-sm text-xs text-muted-foreground">
+              <p className="max-w-sm text-xs text-text-subdued">
                 The file will be available to download after publishing.
               </p>
               <MetadataList resource={resource} />
@@ -234,7 +234,7 @@ function ResourcePreviewDialog({ resource, onOpenChange }: ResourcePreviewDialog
           )}
         </div>
 
-        <div className="flex shrink-0 items-center justify-end border-t border-border px-6 py-4">
+        <div className="flex shrink-0 items-center justify-end border-t border-border-default px-6 py-4">
           <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
             Close Preview
           </Button>

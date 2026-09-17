@@ -19,13 +19,13 @@ interface RichTextEditorProps {
  * editable surface and by every read-only view that prints saved HTML, so the
  * draft and the published block look identical. */
 export const richTextClassName =
-  'prose-sm text-sm text-foreground ' +
-  '[&_a]:text-primary [&_a]:underline ' +
+  'prose-sm text-sm text-text-default ' +
+  '[&_a]:text-text-brand [&_a]:underline ' +
   '[&_ol]:list-decimal [&_ol]:pl-5 [&_ul]:list-disc [&_ul]:pl-5 ' +
   '[&_p+p]:mt-2 ' +
-  '[&_h2]:mt-3 [&_h2]:text-xl [&_h2]:font-semibold [&_h2]:leading-tight [&_h2]:text-primary [&_h2:first-child]:mt-0 ' +
-  '[&_h3]:mt-3 [&_h3]:text-base [&_h3]:font-semibold [&_h3]:text-foreground [&_h3:first-child]:mt-0 ' +
-  '[&_blockquote]:border-l-2 [&_blockquote]:border-border [&_blockquote]:pl-3 [&_blockquote]:text-muted-foreground [&_blockquote]:italic'
+  '[&_h2]:mt-3 [&_h2]:text-xl [&_h2]:font-semibold [&_h2]:leading-tight [&_h2]:text-text-brand [&_h2:first-child]:mt-0 ' +
+  '[&_h3]:mt-3 [&_h3]:text-base [&_h3]:font-semibold [&_h3]:text-text-default [&_h3:first-child]:mt-0 ' +
+  '[&_blockquote]:border-l-2 [&_blockquote]:border-border-default [&_blockquote]:pl-3 [&_blockquote]:text-text-subdued [&_blockquote]:italic'
 
 type ToolbarAction = {
   command: string
@@ -94,7 +94,7 @@ function RichTextEditor({
         aria-label={action.label}
         onMouseDown={(e) => e.preventDefault()}
         onClick={() => runCommand(action)}
-        className="flex size-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+        className="flex size-7 items-center justify-center rounded-md text-text-subdued transition-colors hover:bg-surface-subdued hover:text-text-default"
       >
         <Icon className="size-3.5" />
       </button>
@@ -102,19 +102,19 @@ function RichTextEditor({
   }
 
   return (
-    <div className={cn('rounded-md border border-input bg-background', 'focus-within:ring-2 focus-within:ring-ring focus-within:border-ring')}>
-      <div className="flex flex-wrap items-center gap-0.5 border-b border-border px-1.5 py-1">
+    <div className={cn('rounded-md border border-border-input bg-surface-default', 'focus-within:ring-2 focus-within:ring-border-focus focus-within:border-border-focus')}>
+      <div className="flex flex-wrap items-center gap-0.5 border-b border-border-default px-1.5 py-1">
         {blockControls && (
           <>
             {BLOCK_ACTIONS.map(renderButton)}
-            <span className="mx-1 h-4 w-px shrink-0 bg-border" />
+            <span className="mx-1 h-4 w-px shrink-0 bg-border-default" />
           </>
         )}
         {INLINE_ACTIONS.map(renderButton)}
       </div>
       <div className="relative">
         {isEmpty && placeholder && (
-          <p className="pointer-events-none absolute left-3 top-2 text-sm text-muted-foreground">{placeholder}</p>
+          <p className="pointer-events-none absolute left-3 top-2 text-sm text-text-subdued">{placeholder}</p>
         )}
         <div
           id={id}

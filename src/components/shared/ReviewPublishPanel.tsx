@@ -9,7 +9,7 @@ function ReviewPublishPanel({ children, className }: { children: ReactNode; clas
   return (
     <div
       className={cn(
-        'flex flex-col items-center gap-2.5 rounded-xl border border-border bg-card px-5 py-8 text-center',
+        'flex flex-col items-center gap-2.5 rounded-xl border border-border-default bg-surface-default px-5 py-8 text-center',
         className,
       )}
     >

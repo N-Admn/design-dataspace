@@ -80,25 +80,25 @@ function FileUploadField({
     <div>
       {label && (
         <Label htmlFor={id}>
-          {label} {required && <span className="text-destructive">*</span>}
+          {label} {required && <span className="text-text-critical-strong">*</span>}
         </Label>
       )}
-      {helperText && <p className="mt-0.5 text-xs text-muted-foreground">{helperText}</p>}
+      {helperText && <p className="mt-0.5 text-xs text-text-subdued">{helperText}</p>}
 
       <div className="mt-1.5">
         {value ? (
-          <div className="flex items-center gap-3 rounded-lg border border-border p-3">
+          <div className="flex items-center gap-3 rounded-lg border border-border-default p-3">
             {value.dataUrl ? (
               <img
                 src={value.dataUrl}
                 alt=""
-                className={cn('shrink-0 border border-border object-cover', previewSizeClassName, roundedFull ? 'rounded-full' : 'rounded-md')}
+                className={cn('shrink-0 border border-border-default object-cover', previewSizeClassName, roundedFull ? 'rounded-full' : 'rounded-md')}
               />
             ) : (
               FallbackIcon && (
                 <div
                   className={cn(
-                    'flex shrink-0 items-center justify-center bg-muted text-muted-foreground',
+                    'flex shrink-0 items-center justify-center bg-surface-subdued text-text-subdued',
                     previewSizeClassName,
                     roundedFull ? 'rounded-full' : 'rounded-md',
                   )}
@@ -108,8 +108,8 @@ function FileUploadField({
               )
             )}
             <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-medium text-foreground">{value.name}</p>
-              {value.sizeLabel && <p className="text-xs text-muted-foreground">{value.sizeLabel}</p>}
+              <p className="truncate text-sm font-medium text-text-default">{value.name}</p>
+              {value.sizeLabel && <p className="text-xs text-text-subdued">{value.sizeLabel}</p>}
             </div>
             <Button type="button" variant="outline" size="sm" disabled={disabled} onClick={() => inputRef.current?.click()}>
               Replace
@@ -158,7 +158,7 @@ function FileUploadField({
       </div>
       <FieldError message={shownError} />
       {/* The dropzone box already shows its own hint inline — avoid showing it twice. */}
-      {!isEmptyDropzone && <p className="mt-1.5 text-xs text-muted-foreground">{formatHint ?? formatUploadHint(extensions, maxBytes)}</p>}
+      {!isEmptyDropzone && <p className="mt-1.5 text-xs text-text-subdued">{formatHint ?? formatUploadHint(extensions, maxBytes)}</p>}
     </div>
   )
 }

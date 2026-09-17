@@ -25,7 +25,7 @@ function ReviewSection({ title, defaultOpen, onEdit, children }: ReviewSectionPr
     <Card>
       <CardHeader className={cn('flex-row items-center justify-between', !open && 'border-b-0')}>
         <button type="button" onClick={() => setOpen((o) => !o)} className="flex items-center gap-2 text-left">
-          <ChevronDown className={cn('size-4 text-muted-foreground transition-transform', !open && '-rotate-90')} />
+          <ChevronDown className={cn('size-4 text-text-subdued transition-transform', !open && '-rotate-90')} />
           <CardTitle>{title}</CardTitle>
         </button>
         {onEdit && (

@@ -46,6 +46,70 @@
   --control-active: #d8d8db;
   --border-strong: #727272;
 
+  /* DataSpace token reconciliation — base color ramps (internal, no Tailwind utility) */
+  --base-navy-solid-9: var(--primary);
+  --base-navy-solid-12: var(--header-background);
+  --base-amber-solid-9: var(--accent);
+  --base-gold-solid-9: var(--warning);
+  --base-red-solid-9: var(--destructive);
+  --base-red-solid-11: var(--destructive-text);
+  --base-green-solid-9: var(--success);
+  --base-green-solid-11: var(--success-text);
+  --base-gray-solid-1: var(--background);
+  --base-gray-solid-2: var(--muted);
+  --base-gray-solid-3: var(--secondary);
+  --base-gray-solid-4: var(--border);
+  --base-gray-solid-5: var(--control-hover);
+  --base-gray-solid-6: var(--control-active);
+  --base-gray-solid-7: var(--input);
+  --base-gray-solid-8: var(--border-strong);
+  --base-gray-solid-9: var(--muted-foreground);
+  --base-gray-solid-10: var(--secondary-foreground);
+  --base-gray-solid-11: var(--foreground);
+  --base-pure-white: var(--background);
+
+  /* DataSpace token reconciliation — text colors */
+  --text-default: var(--base-gray-solid-11);
+  --text-secondary: var(--base-gray-solid-10);
+  --text-subdued: var(--base-gray-solid-9);
+  --text-on-brand: var(--base-pure-white);
+  --text-on-accent: var(--base-navy-solid-9);
+  --text-critical: var(--base-red-solid-11);
+  --text-success: var(--base-green-solid-11);
+  --text-warning: var(--base-navy-solid-9);
+  --text-brand: var(--base-navy-solid-9);
+  --text-critical-strong: var(--base-red-solid-9);
+
+  /* DataSpace token reconciliation — border colors */
+  --border-default: var(--base-gray-solid-4);
+  --border-input: var(--base-gray-solid-7);
+  --border-focus: var(--base-navy-solid-9);
+  --border-brand: var(--base-navy-solid-9);
+  --border-critical: var(--base-red-solid-9);
+
+  /* DataSpace token reconciliation — UI surfaces */
+  --surface-default: var(--background);
+  --surface-subdued: var(--muted);
+  --surface-secondary: var(--secondary);
+  --surface-hovered: var(--control-hover);
+  --surface-pressed: var(--control-active);
+  --surface-accent: var(--accent);
+  --surface-warning: var(--warning);
+  --surface-critical: var(--destructive);
+  --surface-success: var(--success);
+
+  /* DataSpace token reconciliation — action colors */
+  --action-primary-default: var(--base-navy-solid-9);
+  --action-primary-text: var(--text-on-brand);
+  --action-secondary-default: var(--surface-secondary);
+  --action-secondary-text: var(--text-secondary);
+  --action-critical-default: var(--surface-critical);
+  --action-critical-text: var(--text-on-brand);
+  --action-success-outline-border: var(--surface-success);
+  --action-success-outline-text: var(--text-success);
+  --action-ghost-hovered: var(--surface-hovered);
+  --action-ghost-pressed: var(--surface-pressed);
+
   /* Chart palette */
   --chart-1: #d27802;
   --chart-2: #b46702;
@@ -110,6 +174,49 @@
   --color-ring: var(--ring);
   --color-control-hover: var(--control-hover);
   --color-control-active: var(--control-active);
+  --color-border-strong: var(--border-strong);
+
+  /* DataSpace token reconciliation — text colors */
+  --color-text-default: var(--text-default);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-subdued: var(--text-subdued);
+  --color-text-on-brand: var(--text-on-brand);
+  --color-text-on-accent: var(--text-on-accent);
+  --color-text-critical: var(--text-critical);
+  --color-text-success: var(--text-success);
+  --color-text-warning: var(--text-warning);
+  --color-text-brand: var(--text-brand);
+  --color-text-critical-strong: var(--text-critical-strong);
+
+  /* DataSpace token reconciliation — border colors */
+  --color-border-default: var(--border-default);
+  --color-border-input: var(--border-input);
+  --color-border-focus: var(--border-focus);
+  --color-border-brand: var(--border-brand);
+  --color-border-critical: var(--border-critical);
+
+  /* DataSpace token reconciliation — UI surfaces */
+  --color-surface-default: var(--surface-default);
+  --color-surface-subdued: var(--surface-subdued);
+  --color-surface-secondary: var(--surface-secondary);
+  --color-surface-hovered: var(--surface-hovered);
+  --color-surface-pressed: var(--surface-pressed);
+  --color-surface-accent: var(--surface-accent);
+  --color-surface-warning: var(--surface-warning);
+  --color-surface-critical: var(--surface-critical);
+  --color-surface-success: var(--surface-success);
+
+  /* DataSpace token reconciliation — action colors */
+  --color-action-primary-default: var(--action-primary-default);
+  --color-action-primary-text: var(--action-primary-text);
+  --color-action-secondary-default: var(--action-secondary-default);
+  --color-action-secondary-text: var(--action-secondary-text);
+  --color-action-critical-default: var(--action-critical-default);
+  --color-action-critical-text: var(--action-critical-text);
+  --color-action-success-outline-border: var(--action-success-outline-border);
+  --color-action-success-outline-text: var(--action-success-outline-text);
+  --color-action-ghost-hovered: var(--action-ghost-hovered);
+  --color-action-ghost-pressed: var(--action-ghost-pressed);
 
   /* Chart palette */
   --color-chart-1: var(--chart-1);

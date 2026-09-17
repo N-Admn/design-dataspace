@@ -24,7 +24,7 @@ function CircleArrow({ size = 'lg', className }: CircleArrowProps) {
     <span
       aria-hidden
       className={cn(
-        'flex shrink-0 items-center justify-center rounded-full border-[5px] border-primary text-primary',
+        'flex shrink-0 items-center justify-center rounded-full border-[5px] border-border-brand text-text-brand',
         SIZES[size],
         className,
       )}

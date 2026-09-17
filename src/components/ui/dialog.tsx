@@ -31,7 +31,7 @@ function DialogContent({
       <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/40 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
       <DialogPrimitive.Content
         className={cn(
-          'z-50 border border-border bg-card shadow-lg outline-none',
+          'z-50 border border-border-default bg-surface-default shadow-lg outline-none',
           'data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0',
           DIALOG_VARIANT_CLASSES[variant],
           className,
@@ -40,7 +40,7 @@ function DialogContent({
       >
         {children}
         {showClose && (
-          <DialogPrimitive.Close className="absolute right-4 top-4 flex size-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground">
+          <DialogPrimitive.Close className="absolute right-4 top-4 flex size-8 items-center justify-center rounded-md text-text-subdued transition-colors hover:bg-surface-subdued hover:text-text-default">
             <X className="size-4" />
             <span className="sr-only">Close</span>
           </DialogPrimitive.Close>
@@ -53,7 +53,7 @@ function DialogContent({
 function DialogHeader({ className, ...props }: React.ComponentProps<'div'>) {
   return (
     <div
-      className={cn('flex flex-col gap-1 border-b border-border px-6 py-4', className)}
+      className={cn('flex flex-col gap-1 border-b border-border-default px-6 py-4', className)}
       {...props}
     />
   )
@@ -62,7 +62,7 @@ function DialogHeader({ className, ...props }: React.ComponentProps<'div'>) {
 function DialogTitle({ className, ...props }: React.ComponentProps<typeof DialogPrimitive.Title>) {
   return (
     <DialogPrimitive.Title
-      className={cn('text-base font-semibold text-primary', className)}
+      className={cn('text-base font-semibold text-text-brand', className)}
       {...props}
     />
   )
@@ -74,7 +74,7 @@ function DialogDescription({
 }: React.ComponentProps<typeof DialogPrimitive.Description>) {
   return (
     <DialogPrimitive.Description
-      className={cn('text-sm text-muted-foreground', className)}
+      className={cn('text-sm text-text-subdued', className)}
       {...props}
     />
   )

@@ -58,31 +58,31 @@ function MultiSelect({
             type="button"
             aria-invalid={invalid || undefined}
             className={cn(
-              'flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm transition-colors',
-              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:border-ring',
-              'aria-invalid:border-destructive aria-invalid:ring-destructive/20',
+              'flex h-10 w-full items-center justify-between rounded-md border border-border-input bg-surface-default px-3 py-2 text-sm transition-colors',
+              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-focus focus-visible:border-border-focus',
+              'aria-invalid:border-border-critical aria-invalid:ring-border-critical/20',
             )}
           >
-            <span className={cn('truncate text-left', values.length === 0 && 'text-muted-foreground')}>
+            <span className={cn('truncate text-left', values.length === 0 && 'text-text-subdued')}>
               {values.length === 0 ? placeholder : `${values.length} selected`}
             </span>
-            <ChevronDown className="size-4 shrink-0 text-muted-foreground" />
+            <ChevronDown className="size-4 shrink-0 text-text-subdued" />
           </button>
         </PopoverTrigger>
         <PopoverContent className="p-0" onOpenAutoFocus={(e) => e.preventDefault()}>
-          <div className="flex items-center gap-2 border-b border-border px-3 py-2">
-            <Search className="size-4 shrink-0 text-muted-foreground" />
+          <div className="flex items-center gap-2 border-b border-border-default px-3 py-2">
+            <Search className="size-4 shrink-0 text-text-subdued" />
             <input
               autoFocus
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder={searchPlaceholder ?? placeholder}
-              className="h-6 w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+              className="h-6 w-full bg-transparent text-sm outline-none placeholder:text-text-subdued"
             />
           </div>
           <div className="max-h-60 overflow-y-auto p-1">
             {filtered.length === 0 && (
-              <p className="px-2 py-4 text-center text-sm text-muted-foreground">{emptyText}</p>
+              <p className="px-2 py-4 text-center text-sm text-text-subdued">{emptyText}</p>
             )}
             {filtered.map((option) => {
               const isSelected = values.includes(option.value)
@@ -92,12 +92,12 @@ function MultiSelect({
                   type="button"
                   onClick={() => toggle(option.value)}
                   className={cn(
-                    'flex w-full items-center justify-between rounded-sm px-2 py-2 text-left text-sm hover:bg-control-hover',
-                    isSelected && 'bg-muted',
+                    'flex w-full items-center justify-between rounded-sm px-2 py-2 text-left text-sm hover:bg-surface-hovered',
+                    isSelected && 'bg-surface-subdued',
                   )}
                 >
                   <span>{option.label}</span>
-                  {isSelected && <Check className="size-4 text-primary" />}
+                  {isSelected && <Check className="size-4 text-text-brand" />}
                 </button>
               )
             })}
@@ -112,13 +112,13 @@ function MultiSelect({
             return (
               <span
                 key={value}
-                className="inline-flex items-center gap-1 rounded-full bg-accent/20 px-2.5 py-0.5 text-xs font-medium text-accent-foreground"
+                className="inline-flex items-center gap-1 rounded-full bg-surface-accent/20 px-2.5 py-0.5 text-xs font-medium text-text-on-accent"
               >
                 {option?.label ?? value}
                 <button
                   type="button"
                   onClick={() => toggle(value)}
-                  className="rounded-full text-accent-foreground/70 hover:text-accent-foreground"
+                  className="rounded-full text-text-on-accent/70 hover:text-text-on-accent"
                   aria-label={`Remove ${option?.label ?? value}`}
                 >
                   <X className="size-3" />

@@ -55,16 +55,16 @@ function DropzoneUploadField({
       }}
       className={cn(
         'flex flex-col items-center justify-center gap-3 rounded-lg border-2 border-dashed px-6 py-8 text-center transition-colors',
-        isDragging ? 'border-primary bg-primary/5' : 'border-border bg-muted/40',
+        isDragging ? 'border-border-brand bg-action-primary-default/5' : 'border-border-default bg-surface-subdued/40',
         disabled && 'pointer-events-none opacity-60',
       )}
     >
-      <Icon className="size-9 text-muted-foreground" />
-      <p className="text-sm text-foreground">{resolvedTitle}</p>
+      <Icon className="size-9 text-text-subdued" />
+      <p className="text-sm text-text-default">{resolvedTitle}</p>
 
       {showExtensionBadges ? (
-        <div className="mt-1 text-xs text-muted-foreground">
-          <p className="font-medium text-foreground">Supported file types:</p>
+        <div className="mt-1 text-xs text-text-subdued">
+          <p className="font-medium text-text-default">Supported file types:</p>
           <div className="mt-1.5 flex flex-wrap items-center justify-center gap-1.5">
             {extensions.map((ext) => (
               <Badge key={ext} variant="muted">
@@ -91,7 +91,7 @@ function DropzoneUploadField({
         {browseLabel}
       </Button>
 
-      <p className="text-xs text-muted-foreground">{formatHint ?? formatUploadHint(extensions, maxBytes)}</p>
+      <p className="text-xs text-text-subdued">{formatHint ?? formatUploadHint(extensions, maxBytes)}</p>
     </div>
   )
 }

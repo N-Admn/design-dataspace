@@ -10,7 +10,7 @@ function PreviewActionBar({ children, className }: { children: ReactNode; classN
   return (
     <div
       className={cn(
-        'sticky top-4 z-10 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-card px-5 py-4 shadow-sm',
+        'sticky top-4 z-10 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border-default bg-surface-default px-5 py-4 shadow-sm',
         className,
       )}
     >

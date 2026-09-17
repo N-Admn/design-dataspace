@@ -1,0 +1,220 @@
+/**
+ * DataSpace design tokens — reorganized into a Radix-style
+ * base/semantic naming convention, for porting into
+ * https://github.com/CivicDataLab/DataSpaceFrontend
+ *
+ * SCOPE & RULES FOLLOWED WHILE BUILDING THIS FILE
+ * ------------------------------------------------
+ * - No color value has been changed. Every hex below is copied
+ *   verbatim from this app's canonical token source, tokens.json
+ *   (see also the generated src/generated/tokens.css).
+ * - Base color "ramps" (--base-{hue}-solid-{n}) are only as deep
+ *   as this app actually defines. Where the app has just one real
+ *   shade of a hue, only one step is provided (numbered "9",
+ *   matching this convention's use of step 9 as the solid/
+ *   interactive brand color — never a guessed intermediate tint).
+ *   Where the app happens to already define several real shades
+ *   of the same hue (the neutral grays, the two navy shades, the
+ *   5-step chart ramp), those are placed in lightness order.
+ *   No step has been invented or interpolated.
+ * - Sections this app doesn't currently tokenize (shadows beyond
+ *   Tailwind defaults, easing curves, a full duration scale) are
+ *   either left out or explicitly noted as "not tokenized today"
+ *   rather than fabricated.
+ * - This file is NOT imported anywhere in this app. It's a
+ *   reference/staging artifact for review before it's adapted
+ *   into DataSpaceFrontend's own token file.
+ *
+ * Source of truth for values: /tokens.json (this repo)
+ */
+
+:root {
+  /* ============================================================
+     BASE COLOR RAMPS
+     ============================================================ */
+
+  /* Navy — brand primary */
+  --base-navy-solid-9: #0b3865; /* primary, ring, sidebar-primary, sidebar-ring, accent-foreground, warning-foreground */
+  --base-navy-solid-12: #0b2540; /* header-background — darkest navy in use */
+
+  /* Amber — brand accent */
+  --base-amber-solid-9: #fdb557; /* accent, sidebar-accent, breadcrumb-background */
+
+  /* Gold — warning */
+  --base-gold-solid-9: #ffc53d; /* warning */
+
+  /* Red — destructive / critical */
+  --base-red-solid-9: #e7000b; /* destructive */
+  --base-red-solid-11: #d12222; /* destructive-text — accessible-contrast step */
+
+  /* Green — success */
+  --base-green-solid-9: #46a758; /* success */
+  --base-green-solid-11: #317f37; /* success-text — accessible-contrast step */
+
+  /* Gray — neutrals, ordered lightest → darkest. 11 real, distinct
+     values already exist in this app's token set (no gaps filled). */
+  --base-gray-solid-1: #ffffff; /* background, card, popover */
+  --base-gray-solid-2: #f5f5f5; /* muted */
+  --base-gray-solid-3: #f4f4f5; /* secondary */
+  --base-gray-solid-4: #e5e5e5; /* border, sidebar-border */
+  --base-gray-solid-5: #e4e4e6; /* control-hover */
+  --base-gray-solid-6: #d8d8db; /* control-active */
+  --base-gray-solid-7: #8c8c8c; /* input */
+  --base-gray-solid-8: #727272; /* border-strong */
+  --base-gray-solid-9: #6b6b6b; /* muted-foreground */
+  --base-gray-solid-10: #18181b; /* secondary-foreground */
+  --base-gray-solid-11: #0a0a0a; /* foreground, card-foreground, popover-foreground, sidebar-foreground */
+
+  --base-pure-white: #ffffff;
+
+  /* Data-visualization ramp — same 5 steps as this app's existing
+     --chart-1..--chart-5, just renamed to fit this file's convention. */
+  --chart-solid-1: #d27802;
+  --chart-solid-2: #b46702;
+  --chart-solid-3: #a05b02;
+  --chart-solid-4: #8b5002;
+  --chart-solid-5: #7c4701;
+
+  /* ============================================================
+     SEMANTIC TOKENS
+     Same roles this app already exposes — renamed to the
+     text- / border- / surface- / action- convention.
+     ============================================================ */
+
+  /* Text */
+  --text-default: var(--base-gray-solid-11); /* foreground */
+  --text-secondary: var(--base-gray-solid-10); /* secondary-foreground */
+  --text-subdued: var(--base-gray-solid-9); /* muted-foreground */
+  --text-on-brand: var(--base-pure-white); /* primary-foreground, destructive-foreground, success-foreground */
+  --text-on-accent: var(--base-navy-solid-9); /* accent-foreground */
+  --text-critical: var(--base-red-solid-11); /* destructive-text */
+  --text-success: var(--base-green-solid-11); /* success-text */
+  --text-warning: var(--base-navy-solid-9); /* warning-foreground */
+
+  /* Borders */
+  --border-default: var(--base-gray-solid-4); /* border, sidebar-border */
+  --border-strong: var(--base-gray-solid-8); /* border-strong */
+  --border-input: var(--base-gray-solid-7); /* input */
+  --border-focus: var(--base-navy-solid-9); /* ring */
+  --border-focus-on-dark: var(--base-pure-white); /* ring-on-dark — used on the dark top-nav chrome */
+
+  /* Surfaces / backgrounds */
+  --surface-default: var(--base-pure-white); /* background, card, popover */
+  --surface-subdued: var(--base-gray-solid-2); /* muted */
+  --surface-secondary: var(--base-gray-solid-3); /* secondary */
+  --surface-hovered: var(--base-gray-solid-5); /* control-hover */
+  --surface-pressed: var(--base-gray-solid-6); /* control-active */
+  --surface-accent: var(--base-amber-solid-9); /* accent */
+  --surface-warning: var(--base-gold-solid-9); /* warning */
+  --surface-critical: var(--base-red-solid-9); /* destructive */
+  --surface-success: var(--base-green-solid-9); /* success */
+
+  /* Actions — Button / Badge interactive states */
+  --action-primary-default: var(--base-navy-solid-9);
+  --action-primary-text: var(--text-on-brand);
+  --action-secondary-default: var(--surface-secondary);
+  --action-secondary-text: var(--text-secondary);
+  --action-critical-default: var(--surface-critical);
+  --action-critical-text: var(--text-on-brand);
+  --action-success-outline-border: var(--surface-success);
+  --action-success-outline-text: var(--text-success);
+  --action-ghost-hovered: var(--surface-hovered);
+  --action-ghost-pressed: var(--surface-pressed);
+  /* Note: this app also layers Tailwind opacity modifiers on top of
+     these (e.g. bg-primary/90 on hover, bg-success/5 for a badge
+     fill) rather than storing every tint as its own token — those
+     are computed at render time, not separate stored values, so
+     they aren't listed here as additional tokens. */
+
+  /* App-chrome surfaces — kept distinct from the neutral gray ramp
+     above because these carry a faint blue tint rather than being
+     true grays. */
+  --surface-page: #f3f5f8; /* page-background */
+  --surface-header: #0b2540; /* header-background (= --base-navy-solid-12) */
+  --surface-breadcrumb: #fdb557; /* breadcrumb-background (= --base-amber-solid-9) */
+  --surface-hero-gradient-from: #f4f5f8; /* workspace-hero-from */
+  --surface-hero-gradient-to: #d3e9ff; /* workspace-hero-to */
+  --surface-sidebar: #fafafa; /* sidebar */
+
+  /* ============================================================
+     SPACING
+     This app has no bespoke spacing tokens — every component
+     spaces itself with Tailwind's stock scale (p-4, gap-6, m-2…).
+     Listed here only for structural parity with the reference
+     format; these are Tailwind's default values, not app-authored ones.
+     ============================================================ */
+  --space-0: 0px;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-20: 80px;
+  --space-24: 96px;
+  --space-32: 128px;
+
+  /* ============================================================
+     RADIUS
+     Real values, derived directly from this app's --radius family
+     (src/generated/tokens.css: --radius: 0.625rem, with sm/lg/xl
+     computed as radius ∓ a fixed px offset).
+     ============================================================ */
+  --border-radius-sm: 0.5rem; /* 8px  — --radius-sm  (radius - 2px) */
+  --border-radius-md: 0.625rem; /* 10px — --radius     (base)        */
+  --border-radius-lg: 0.875rem; /* 14px — --radius-lg  (radius + 4px) */
+  --border-radius-xl: 1.125rem; /* 18px — --radius-xl  (radius + 8px) */
+  --border-radius-full: 9999px; /* rounded-full — pills, avatars, badges */
+
+  /* ============================================================
+     TYPOGRAPHY
+     Font family tokens are real app tokens. Size/weight/line-height
+     values are drawn from this app's named type roles
+     (src/index.css: .type-display, .type-heading-1 … .type-caption)
+     — not a fabricated full type scale.
+     ============================================================ */
+  --font-family-sans: 'Inter', system-ui, sans-serif;
+  --font-family-mono: 'JetBrains Mono', monospace;
+
+  --font-size-caption: 0.75rem; /* 12px — .type-caption */
+  --font-size-body: 0.875rem; /* 14px — .type-body / .type-label */
+  --font-size-heading-3: 1rem; /* 16px — .type-heading-3 */
+  --font-size-heading-2: 1.25rem; /* 20px — .type-heading-2 */
+  --font-size-heading-1: 1.5rem; /* 24px — .type-heading-1 */
+  --font-size-display: 3rem; /* 48px — .type-display (3.75rem/60px at md breakpoint) */
+
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700; /* used ad hoc, e.g. bold headings in article-style previews */
+
+  --line-height-caption: 1.333; /* .type-caption */
+  --line-height-body: 1.5; /* .type-body */
+  --line-height-label: 1.25; /* .type-label */
+  --line-height-heading-3: 1.25; /* .type-heading-3 */
+  --line-height-heading-2: 1.3; /* .type-heading-2 */
+  --line-height-heading-1: 1.25; /* .type-heading-1 */
+  --line-height-display: 1.1; /* .type-display */
+
+  /* ============================================================
+     Z-INDEX
+     Real stacking values found in this app's components today —
+     not a pre-designed scale, just what's actually in use.
+     ============================================================ */
+  --z-sticky: 10; /* PreviewActionBar, block-hover toolbars */
+  --z-help-button: 40; /* floating Help & Support button */
+  --z-overlay: 50; /* dialogs, popovers, tooltips */
+  --z-toast: 100; /* toast notifications */
+
+  /* ============================================================
+     MOTION
+     This app relies on Tailwind's default 150ms transition
+     duration via transition-colors / transition-opacity utilities.
+     No custom easing curves or duration scale are defined today.
+     ============================================================ */
+  --duration-default: 150ms;
+}

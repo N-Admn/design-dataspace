@@ -25,7 +25,7 @@ function OrganisationSearchField({ organisations, excludeIds, onSelect, placehol
       <PopoverTrigger asChild>
         <button
           type="button"
-          className="flex h-10 w-full items-center gap-2 rounded-md border border-input bg-background px-3 text-sm text-muted-foreground transition-colors hover:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="flex h-10 w-full items-center gap-2 rounded-md border border-border-input bg-surface-default px-3 text-sm text-text-subdued transition-colors hover:border-border-brand/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-focus"
         >
           <Search className="size-4 shrink-0" />
           {placeholder}

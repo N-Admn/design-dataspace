@@ -46,23 +46,23 @@ function ToastProvider({ children }: { children: React.ReactNode }) {
           <div
             key={t.id}
             role="status"
-            className="flex items-start gap-2.5 rounded-lg border border-border bg-card px-4 py-3 shadow-lg animate-in fade-in-0 slide-in-from-top-2"
+            className="flex items-start gap-2.5 rounded-lg border border-border-default bg-surface-default px-4 py-3 shadow-lg animate-in fade-in-0 slide-in-from-top-2"
           >
             {t.variant === 'error' ? (
-              <AlertCircle className="mt-0.5 size-4 shrink-0 text-destructive" />
+              <AlertCircle className="mt-0.5 size-4 shrink-0 text-text-critical-strong" />
             ) : (
-              <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-success-text" />
+              <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-text-success" />
             )}
             <div className="min-w-0 flex-1">
-              <p className="text-sm font-medium text-foreground">{t.title}</p>
-              {t.description && <p className="mt-0.5 text-xs text-muted-foreground">{t.description}</p>}
+              <p className="text-sm font-medium text-text-default">{t.title}</p>
+              {t.description && <p className="mt-0.5 text-xs text-text-subdued">{t.description}</p>}
             </div>
             <button
               type="button"
               aria-label="Dismiss"
               onClick={() => dismiss(t.id)}
               className={cn(
-                'shrink-0 rounded-md p-0.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground',
+                'shrink-0 rounded-md p-0.5 text-text-subdued transition-colors hover:bg-surface-subdued hover:text-text-default',
               )}
             >
               <X className="size-3.5" />
