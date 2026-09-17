@@ -25,17 +25,17 @@ function SearchInput({ value, onChange, placeholder, autoFocus, className }: Sea
   return (
     <div
       className={cn(
-        'flex items-center gap-2 rounded-md border border-input bg-background px-3 py-2',
+        'flex items-center gap-2 rounded-md border border-border-input bg-surface-default px-3 py-2',
         className,
       )}
     >
-      <Search className="size-4 shrink-0 text-muted-foreground" />
+      <Search className="size-4 shrink-0 text-text-subdued" />
       <input
         autoFocus={autoFocus}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="h-6 w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+        className="h-6 w-full bg-transparent text-sm outline-none placeholder:text-text-subdued"
       />
     </div>
   )
@@ -51,9 +51,9 @@ interface SearchResultListProps {
 /** Bordered results container with a centered empty state. */
 function SearchResultList({ isEmpty, emptyLabel, children, className }: SearchResultListProps) {
   return (
-    <div className={cn('rounded-lg border border-border', className)}>
+    <div className={cn('rounded-lg border border-border-default', className)}>
       {isEmpty ? (
-        <p className="px-4 py-6 text-center text-sm text-muted-foreground">{emptyLabel}</p>
+        <p className="px-4 py-6 text-center text-sm text-text-subdued">{emptyLabel}</p>
       ) : (
         children
       )}
@@ -74,14 +74,14 @@ function SearchResultRow({ icon: Icon, primary, secondary, onSelect }: SearchRes
     <button
       type="button"
       onClick={onSelect}
-      className="flex w-full items-center gap-3 border-b border-border px-4 py-3 text-left last:border-b-0 hover:bg-muted/50"
+      className="flex w-full items-center gap-3 border-b border-border-default px-4 py-3 text-left last:border-b-0 hover:bg-surface-subdued/50"
     >
-      <div className="flex size-9 shrink-0 items-center justify-center rounded-md bg-muted text-muted-foreground">
+      <div className="flex size-9 shrink-0 items-center justify-center rounded-md bg-surface-subdued text-text-subdued">
         <Icon className="size-4" />
       </div>
       <span className="min-w-0 flex-1">
-        <span className="block truncate text-sm font-medium text-foreground">{primary}</span>
-        {secondary && <span className="block truncate text-xs text-muted-foreground">{secondary}</span>}
+        <span className="block truncate text-sm font-medium text-text-default">{primary}</span>
+        {secondary && <span className="block truncate text-xs text-text-subdued">{secondary}</span>}
       </span>
     </button>
   )

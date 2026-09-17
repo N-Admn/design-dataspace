@@ -125,7 +125,7 @@ function DatasetConnectionsCard({
       <CardHeader className="flex-row items-center justify-between">
         <div>
           <CardTitle>Datasets</CardTitle>
-          <p className="mt-1 text-sm font-normal text-muted-foreground">{description}</p>
+          <p className="mt-1 text-sm font-normal text-text-subdued">{description}</p>
         </div>
         {isDropdown ? (
           <Button type="button" variant="outline" size="sm" onClick={() => setCreateOpen(true)}>
@@ -146,7 +146,7 @@ function DatasetConnectionsCard({
             <button
               type="button"
               onClick={() => setCreateOpen(true)}
-              className="text-xs font-medium text-primary underline-offset-4 hover:underline focus-visible:underline"
+              className="text-xs font-medium text-text-brand underline-offset-4 hover:underline focus-visible:underline"
             >
               + Create New Dataset
             </button>
@@ -155,7 +155,7 @@ function DatasetConnectionsCard({
       </CardHeader>
       <CardContent className="flex flex-col gap-3">
         {justAddedMessage && (
-          <div className="flex items-center gap-2 rounded-md border border-success/30 bg-success/5 px-3 py-2.5 text-sm font-medium text-success-text">
+          <div className="flex items-center gap-2 rounded-md border border-surface-success/30 bg-surface-success/5 px-3 py-2.5 text-sm font-medium text-text-success">
             <CheckCircle2 className="size-4 shrink-0" />
             {justAddedMessage}
           </div>
@@ -168,7 +168,7 @@ function DatasetConnectionsCard({
               <PopoverTrigger asChild>
                 <button
                   type="button"
-                  className="flex h-10 w-full items-center gap-2 rounded-md border border-input bg-background px-3 text-sm text-muted-foreground transition-colors hover:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  className="flex h-10 w-full items-center gap-2 rounded-md border border-border-input bg-surface-default px-3 text-sm text-text-subdued transition-colors hover:border-border-brand/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-focus"
                 >
                   <Search className="size-4 shrink-0" />
                   Search published datasets...
@@ -176,7 +176,7 @@ function DatasetConnectionsCard({
               </PopoverTrigger>
               <PopoverContent className="flex flex-col gap-3 p-3" onOpenAutoFocus={(e) => e.preventDefault()}>
                 {replacingId && (
-                  <p className="text-xs font-medium text-muted-foreground">
+                  <p className="text-xs font-medium text-text-subdued">
                     Choose a replacement dataset for the unavailable one.
                   </p>
                 )}
@@ -207,9 +207,9 @@ function DatasetConnectionsCard({
           </>
         ) : (
           showSearch && (
-            <div className="flex flex-col gap-3 rounded-lg border border-border bg-muted/30 p-3">
+            <div className="flex flex-col gap-3 rounded-lg border border-border-default bg-surface-subdued/30 p-3">
               {replacingId && (
-                <p className="text-xs font-medium text-muted-foreground">
+                <p className="text-xs font-medium text-text-subdued">
                   Choose a replacement dataset for the unavailable one.
                 </p>
               )}
@@ -226,7 +226,7 @@ function DatasetConnectionsCard({
 
               {results.length === 0 ? (
                 <div className="flex flex-col items-center gap-3 py-8 text-center">
-                  <p className="text-sm font-medium text-foreground">No datasets found.</p>
+                  <p className="text-sm font-medium text-text-default">No datasets found.</p>
                   {hasActiveFilters && (
                     <Button type="button" variant="outline" size="sm" onClick={resetSearch}>
                       Clear filters
@@ -243,16 +243,16 @@ function DatasetConnectionsCard({
                       <div
                         key={dataset.id}
                         className={
-                          'flex items-center gap-3 rounded-lg border border-border bg-card p-3' +
+                          'flex items-center gap-3 rounded-lg border border-border-default bg-surface-default p-3' +
                           (isConnected ? ' opacity-60' : '')
                         }
                       >
-                        <div className="flex size-9 shrink-0 items-center justify-center rounded-md bg-muted text-muted-foreground">
+                        <div className="flex size-9 shrink-0 items-center justify-center rounded-md bg-surface-subdued text-text-subdued">
                           <Database className="size-4" />
                         </div>
                         <div className="min-w-0 flex-1">
-                          <p className="truncate text-sm font-medium text-foreground">{name}</p>
-                          <p className="mt-0.5 text-xs text-muted-foreground">
+                          <p className="truncate text-sm font-medium text-text-default">{name}</p>
+                          <p className="mt-0.5 text-xs text-text-subdued">
                             {dataset.form.metadata.sector ? optionLabel(SECTOR_OPTIONS, dataset.form.metadata.sector) : '—'}
                             {' · '}
                             {dataset.form.metadata.geography
@@ -261,7 +261,7 @@ function DatasetConnectionsCard({
                           </p>
                         </div>
                         {isConnected ? (
-                          <span className="shrink-0 rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium text-muted-foreground">
+                          <span className="shrink-0 rounded-full bg-surface-subdued px-2.5 py-0.5 text-xs font-medium text-text-subdued">
                             Connected
                           </span>
                         ) : (
@@ -301,24 +301,24 @@ function DatasetConnectionsCard({
               const isPreviewing = previewId === item.id
 
               return (
-                <div key={item.id} className="rounded-lg border border-border p-3">
+                <div key={item.id} className="rounded-lg border border-border-default p-3">
                   <div className="flex items-center gap-3">
-                    <div className="flex size-9 shrink-0 items-center justify-center rounded-md bg-muted text-muted-foreground">
+                    <div className="flex size-9 shrink-0 items-center justify-center rounded-md bg-surface-subdued text-text-subdued">
                       <Database className="size-4" />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-medium text-foreground">{item.title}</p>
+                      <p className="truncate text-sm font-medium text-text-default">{item.title}</p>
                       {isMissing ? (
-                        <p className="mt-0.5 text-xs font-medium text-destructive">
+                        <p className="mt-0.5 text-xs font-medium text-text-critical-strong">
                           Dataset unavailable — this dataset is no longer published.
                         </p>
                       ) : (
                         <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1">
                           <StatusBadge status={liveDataset.status} />
                           {isNotYetPublic && (
-                            <span className="text-xs text-muted-foreground">Not yet publicly available.</span>
+                            <span className="text-xs text-text-subdued">Not yet publicly available.</span>
                           )}
-                          <span className="text-xs text-muted-foreground">
+                          <span className="text-xs text-text-subdued">
                             {liveDataset.form.metadata.sector
                               ? optionLabel(SECTOR_OPTIONS, liveDataset.form.metadata.sector)
                               : '—'}
@@ -351,7 +351,7 @@ function DatasetConnectionsCard({
                         size="icon"
                         aria-label={`Remove ${item.title}`}
                         onClick={() => removeItem(item.id)}
-                        className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+                        className="text-text-subdued hover:bg-action-critical-default/10 hover:text-text-critical-strong"
                       >
                         <Trash2 className="size-4" />
                       </Button>
@@ -359,7 +359,7 @@ function DatasetConnectionsCard({
                   </div>
 
                   {isPreviewing && liveDataset && (
-                    <div className="mt-2 rounded-md bg-muted/50 p-3 text-xs text-muted-foreground">
+                    <div className="mt-2 rounded-md bg-surface-subdued/50 p-3 text-xs text-text-subdued">
                       <p>{liveDataset.form.metadata.description || 'No description provided.'}</p>
                       <p className="mt-1.5">
                         {liveDataset.form.files.length + (liveDataset.form.resources?.length ?? 0)} file(s) ·

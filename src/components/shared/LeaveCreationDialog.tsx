@@ -19,13 +19,13 @@ function LeaveCreationDialog({ open, itemLabel, onSave, onDiscard, onCancel }: L
     <Dialog open={open} onOpenChange={(next) => !next && onCancel()}>
       <DialogContent variant="center" className="flex max-w-md flex-col gap-0 p-0" showClose={false}>
         <div className="min-h-0 flex-1 overflow-y-auto px-6 pb-2 pt-6">
-          <h2 className="text-base font-semibold text-primary">You have unsaved changes</h2>
-          <p className="mt-2 text-sm text-muted-foreground">
+          <h2 className="text-base font-semibold text-text-brand">You have unsaved changes</h2>
+          <p className="mt-2 text-sm text-text-subdued">
             Save your changes to this {itemLabel} before leaving, or discard them to return to the last saved
             state.
           </p>
         </div>
-        <div className="flex shrink-0 flex-col gap-2 border-t border-border px-6 py-4">
+        <div className="flex shrink-0 flex-col gap-2 border-t border-border-default px-6 py-4">
           <Button type="button" onClick={onSave}>
             Save changes
           </Button>
@@ -33,7 +33,7 @@ function LeaveCreationDialog({ open, itemLabel, onSave, onDiscard, onCancel }: L
             type="button"
             variant="outline"
             onClick={onDiscard}
-            className="border-destructive/40 text-destructive hover:bg-destructive/10"
+            className="border-action-critical-default/40 text-text-critical-strong hover:bg-action-critical-default/10"
           >
             Discard changes
           </Button>
