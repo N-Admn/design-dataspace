@@ -14,7 +14,11 @@ import { fileURLToPath } from 'node:url'
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const tokens = JSON.parse(readFileSync(resolve(root, 'tokens.json'), 'utf8'))
 
-const kebab = (s) => s.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase()
+const kebab = (s) =>
+  s
+    .replace(/([a-z0-9])([A-Z])/g, '$1-$2')
+    .replace(/([a-zA-Z])(\d)/g, '$1-$2')
+    .toLowerCase()
 
 /**
  * Flatten tokens.json into an ordered list of:
@@ -36,12 +40,35 @@ function flatten() {
     else add('radius', k, v, `--radius-${k}`, `--radius-${k}`)
   }
   // Emitted as a :root var but NOT as a Tailwind @theme color key — consumed via
-  // var() in arbitrary-value utilities, to avoid doubled utility names
-  // (ring-ring-on-dark, border-border-strong).
-  const COLOR_ROOT_ONLY = new Set(['ringOnDark', 'borderStrong'])
+  // var() in arbitrary-value utilities, to avoid a doubled utility name
+  // (ring-ring-on-dark). borderStrong now DOES get a theme key (border-border-strong)
+  // as part of the DataSpace token reconciliation — see tokens.json's `border` group.
+  const COLOR_ROOT_ONLY = new Set(['ringOnDark'])
   for (const [k, v] of Object.entries(tokens.color ?? {})) {
     if (k.startsWith('$')) continue
     add('color', k, v, `--${kebab(k)}`, COLOR_ROOT_ONLY.has(k) ? null : `--color-${kebab(k)}`)
+  }
+  // Base color ramps — root-only by design (see tokens.json's `base.$description`):
+  // components consume the semantic layer below, never these directly.
+  for (const [k, v] of Object.entries(tokens.base ?? {})) {
+    if (k.startsWith('$')) continue
+    add('base', k, v, `--base-${kebab(k)}`, null)
+  }
+  for (const [k, v] of Object.entries(tokens.text ?? {})) {
+    if (k.startsWith('$')) continue
+    add('text', k, v, `--text-${kebab(k)}`, `--color-text-${kebab(k)}`)
+  }
+  for (const [k, v] of Object.entries(tokens.border ?? {})) {
+    if (k.startsWith('$')) continue
+    add('border', k, v, `--border-${kebab(k)}`, `--color-border-${kebab(k)}`)
+  }
+  for (const [k, v] of Object.entries(tokens.uiSurface ?? {})) {
+    if (k.startsWith('$')) continue
+    add('uiSurface', k, v, `--surface-${kebab(k)}`, `--color-surface-${kebab(k)}`)
+  }
+  for (const [k, v] of Object.entries(tokens.action ?? {})) {
+    if (k.startsWith('$')) continue
+    add('action', k, v, `--action-${kebab(k)}`, `--color-action-${kebab(k)}`)
   }
   for (const [k, v] of Object.entries(tokens.chart ?? {})) {
     if (k.startsWith('$')) continue
@@ -64,11 +91,16 @@ const groupTitles = {
   font: 'Typography',
   radius: 'Border radius',
   color: 'Base, brand & semantic colors',
+  base: 'DataSpace token reconciliation — base color ramps (internal, no Tailwind utility)',
+  text: 'DataSpace token reconciliation — text colors',
+  border: 'DataSpace token reconciliation — border colors',
+  action: 'DataSpace token reconciliation — action colors',
   chart: 'Chart palette',
   sidebar: 'Sidebar',
   surface: 'App-chrome surfaces',
+  uiSurface: 'DataSpace token reconciliation — UI surfaces',
 }
-const groupOrder = ['font', 'radius', 'color', 'chart', 'sidebar', 'surface']
+const groupOrder = ['font', 'radius', 'color', 'base', 'text', 'border', 'uiSurface', 'action', 'chart', 'sidebar', 'surface']
 
 /* ------------------------------------------------------------------ CSS ---- */
 function buildCss() {
@@ -137,6 +169,30 @@ ${meta.description ?? ''}
 ${mdTable(rowsFor('color'))}
 
 Semantic roles: \`primary\` (primary actions, focus ring, links), \`destructive\` (delete/irreversible — solid fills/icons only), \`destructiveText\` (destructive text on tinted backgrounds), \`success\` (fills/borders only), \`successText\` (published / positive text), \`warning\` (draft / attention / unsaved), \`muted\` (secondary text & fills), \`border\` (decorative hairlines), \`input\` (meaningful control boundaries — distinct from \`border\`, satisfies 3:1 non-text contrast), \`accent\` (amber highlight), \`ringOnDark\` (focus indicator on dark surfaces), \`controlHover\` / \`controlActive\` (interaction states), \`borderStrong\` (boundaries against tinted/colored fills, e.g. choropleth outlines). \`ringOnDark\` and \`borderStrong\` are :root vars only (no Tailwind color key) — consume via \`var()\`.
+
+### DataSpace token reconciliation (in progress)
+
+A parallel semantic naming layer, reconciling this app's tokens with the naming convention used by [DataSpaceFrontend](https://github.com/CivicDataLab/DataSpaceFrontend). Every value below is a \`var()\` alias back to the tokens in the section above — no color value is duplicated or changed. This layer is additive: existing classes (\`bg-primary\`, \`text-muted-foreground\`, etc.) still work unchanged while components migrate to the new names module by module.
+
+**Base ramps** (root-only — never a Tailwind utility; components consume the semantic tables below instead):
+
+${mdTable(rowsFor('base'))}
+
+**Text colors** — usable as e.g. \`text-text-default\`. The doubled "text" is an accepted consequence of Tailwind's \`text-\` utility prefix matching this family's own name (the existing \`border-border\` / \`ring-ring\` tokens already do the same thing):
+
+${mdTable(rowsFor('text'))}
+
+**Border colors** — usable as e.g. \`border-border-default\`:
+
+${mdTable(rowsFor('border'))}
+
+**UI surfaces** — usable as e.g. \`bg-surface-default\` (distinct from the app-chrome \`surface\` group further down, which covers page/header/breadcrumb/hero-gradient/sidebar):
+
+${mdTable(rowsFor('uiSurface'))}
+
+**Action colors** — composite tokens for Button/Badge, usable as e.g. \`bg-action-primary-default\`:
+
+${mdTable(rowsFor('action'))}
 
 ### Chart palette
 

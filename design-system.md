@@ -48,9 +48,90 @@ Canonical, machine-readable source of truth for CivicDataSpace design tokens. Va
 | `color.ringOnDark` | `--ring-on-dark` | — | `#ffffff` |
 | `color.controlHover` | `--control-hover` | `--color-control-hover` | `#e4e4e6` |
 | `color.controlActive` | `--control-active` | `--color-control-active` | `#d8d8db` |
-| `color.borderStrong` | `--border-strong` | — | `#727272` |
+| `color.borderStrong` | `--border-strong` | `--color-border-strong` | `#727272` |
 
 Semantic roles: `primary` (primary actions, focus ring, links), `destructive` (delete/irreversible — solid fills/icons only), `destructiveText` (destructive text on tinted backgrounds), `success` (fills/borders only), `successText` (published / positive text), `warning` (draft / attention / unsaved), `muted` (secondary text & fills), `border` (decorative hairlines), `input` (meaningful control boundaries — distinct from `border`, satisfies 3:1 non-text contrast), `accent` (amber highlight), `ringOnDark` (focus indicator on dark surfaces), `controlHover` / `controlActive` (interaction states), `borderStrong` (boundaries against tinted/colored fills, e.g. choropleth outlines). `ringOnDark` and `borderStrong` are :root vars only (no Tailwind color key) — consume via `var()`.
+
+### DataSpace token reconciliation (in progress)
+
+A parallel semantic naming layer, reconciling this app's tokens with the naming convention used by [DataSpaceFrontend](https://github.com/CivicDataLab/DataSpaceFrontend). Every value below is a `var()` alias back to the tokens in the section above — no color value is duplicated or changed. This layer is additive: existing classes (`bg-primary`, `text-muted-foreground`, etc.) still work unchanged while components migrate to the new names module by module.
+
+**Base ramps** (root-only — never a Tailwind utility; components consume the semantic tables below instead):
+
+| Token | CSS variable | Tailwind key | Value |
+|---|---|---|---|
+| `base.navySolid9` | `--base-navy-solid-9` | — | `var(--primary)` |
+| `base.navySolid12` | `--base-navy-solid-12` | — | `var(--header-background)` |
+| `base.amberSolid9` | `--base-amber-solid-9` | — | `var(--accent)` |
+| `base.goldSolid9` | `--base-gold-solid-9` | — | `var(--warning)` |
+| `base.redSolid9` | `--base-red-solid-9` | — | `var(--destructive)` |
+| `base.redSolid11` | `--base-red-solid-11` | — | `var(--destructive-text)` |
+| `base.greenSolid9` | `--base-green-solid-9` | — | `var(--success)` |
+| `base.greenSolid11` | `--base-green-solid-11` | — | `var(--success-text)` |
+| `base.graySolid1` | `--base-gray-solid-1` | — | `var(--background)` |
+| `base.graySolid2` | `--base-gray-solid-2` | — | `var(--muted)` |
+| `base.graySolid3` | `--base-gray-solid-3` | — | `var(--secondary)` |
+| `base.graySolid4` | `--base-gray-solid-4` | — | `var(--border)` |
+| `base.graySolid5` | `--base-gray-solid-5` | — | `var(--control-hover)` |
+| `base.graySolid6` | `--base-gray-solid-6` | — | `var(--control-active)` |
+| `base.graySolid7` | `--base-gray-solid-7` | — | `var(--input)` |
+| `base.graySolid8` | `--base-gray-solid-8` | — | `var(--border-strong)` |
+| `base.graySolid9` | `--base-gray-solid-9` | — | `var(--muted-foreground)` |
+| `base.graySolid10` | `--base-gray-solid-10` | — | `var(--secondary-foreground)` |
+| `base.graySolid11` | `--base-gray-solid-11` | — | `var(--foreground)` |
+| `base.pureWhite` | `--base-pure-white` | — | `var(--background)` |
+
+**Text colors** — usable as e.g. `text-text-default`. The doubled "text" is an accepted consequence of Tailwind's `text-` utility prefix matching this family's own name (the existing `border-border` / `ring-ring` tokens already do the same thing):
+
+| Token | CSS variable | Tailwind key | Value |
+|---|---|---|---|
+| `text.default` | `--text-default` | `--color-text-default` | `var(--base-gray-solid-11)` |
+| `text.secondary` | `--text-secondary` | `--color-text-secondary` | `var(--base-gray-solid-10)` |
+| `text.subdued` | `--text-subdued` | `--color-text-subdued` | `var(--base-gray-solid-9)` |
+| `text.onBrand` | `--text-on-brand` | `--color-text-on-brand` | `var(--base-pure-white)` |
+| `text.onAccent` | `--text-on-accent` | `--color-text-on-accent` | `var(--base-navy-solid-9)` |
+| `text.critical` | `--text-critical` | `--color-text-critical` | `var(--base-red-solid-11)` |
+| `text.success` | `--text-success` | `--color-text-success` | `var(--base-green-solid-11)` |
+| `text.warning` | `--text-warning` | `--color-text-warning` | `var(--base-navy-solid-9)` |
+| `text.brand` | `--text-brand` | `--color-text-brand` | `var(--base-navy-solid-9)` |
+
+**Border colors** — usable as e.g. `border-border-default`:
+
+| Token | CSS variable | Tailwind key | Value |
+|---|---|---|---|
+| `border.default` | `--border-default` | `--color-border-default` | `var(--base-gray-solid-4)` |
+| `border.input` | `--border-input` | `--color-border-input` | `var(--base-gray-solid-7)` |
+| `border.focus` | `--border-focus` | `--color-border-focus` | `var(--base-navy-solid-9)` |
+| `border.brand` | `--border-brand` | `--color-border-brand` | `var(--base-navy-solid-9)` |
+
+**UI surfaces** — usable as e.g. `bg-surface-default` (distinct from the app-chrome `surface` group further down, which covers page/header/breadcrumb/hero-gradient/sidebar):
+
+| Token | CSS variable | Tailwind key | Value |
+|---|---|---|---|
+| `uiSurface.default` | `--surface-default` | `--color-surface-default` | `var(--background)` |
+| `uiSurface.subdued` | `--surface-subdued` | `--color-surface-subdued` | `var(--muted)` |
+| `uiSurface.secondary` | `--surface-secondary` | `--color-surface-secondary` | `var(--secondary)` |
+| `uiSurface.hovered` | `--surface-hovered` | `--color-surface-hovered` | `var(--control-hover)` |
+| `uiSurface.pressed` | `--surface-pressed` | `--color-surface-pressed` | `var(--control-active)` |
+| `uiSurface.accent` | `--surface-accent` | `--color-surface-accent` | `var(--accent)` |
+| `uiSurface.warning` | `--surface-warning` | `--color-surface-warning` | `var(--warning)` |
+| `uiSurface.critical` | `--surface-critical` | `--color-surface-critical` | `var(--destructive)` |
+| `uiSurface.success` | `--surface-success` | `--color-surface-success` | `var(--success)` |
+
+**Action colors** — composite tokens for Button/Badge, usable as e.g. `bg-action-primary-default`:
+
+| Token | CSS variable | Tailwind key | Value |
+|---|---|---|---|
+| `action.primaryDefault` | `--action-primary-default` | `--color-action-primary-default` | `var(--base-navy-solid-9)` |
+| `action.primaryText` | `--action-primary-text` | `--color-action-primary-text` | `var(--text-on-brand)` |
+| `action.secondaryDefault` | `--action-secondary-default` | `--color-action-secondary-default` | `var(--surface-secondary)` |
+| `action.secondaryText` | `--action-secondary-text` | `--color-action-secondary-text` | `var(--text-secondary)` |
+| `action.criticalDefault` | `--action-critical-default` | `--color-action-critical-default` | `var(--surface-critical)` |
+| `action.criticalText` | `--action-critical-text` | `--color-action-critical-text` | `var(--text-on-brand)` |
+| `action.successOutlineBorder` | `--action-success-outline-border` | `--color-action-success-outline-border` | `var(--surface-success)` |
+| `action.successOutlineText` | `--action-success-outline-text` | `--color-action-success-outline-text` | `var(--text-success)` |
+| `action.ghostHovered` | `--action-ghost-hovered` | `--color-action-ghost-hovered` | `var(--surface-hovered)` |
+| `action.ghostPressed` | `--action-ghost-pressed` | `--color-action-ghost-pressed` | `var(--surface-pressed)` |
 
 ### Chart palette
 
