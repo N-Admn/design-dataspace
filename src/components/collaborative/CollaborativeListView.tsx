@@ -144,8 +144,8 @@ function CollaborativeListView({
   return (
     <ManagementTable<CollaborativeRecord, CollaborativeStatus>
       title="Collaboratives"
-      subtitle={() => 'Create, manage and publish Collaboratives that bring people, data and Use Cases together.'}
-      addLabel="Add Collaborative"
+      subtitle={() => 'Explore collaborative initiatives working with civic data.'}
+      addLabel="Create Collaborative"
       onAdd={onAddCollaborative}
       items={collaboratives}
       getId={(c) => c.id}
@@ -159,7 +159,7 @@ function CollaborativeListView({
       searchMatch={matchesSearch}
       getActions={getActions}
       emptyTitle="No collaboratives yet"
-      emptyDescription="Create your first Collaborative to bring people, data and Use Cases together."
+      emptyDescription="Create your first collaborative to bring people, data and use cases together."
       tabEmptyMessage={(status) => TAB_EMPTY_MESSAGE[status]}
       loading={loading}
       loadError={loadError}

@@ -14,6 +14,7 @@ import { Step3Review } from '@/components/dataset/Step3Review'
 import { PublishSuccessModal } from '@/components/dataset/PublishSuccessModal'
 import { PublicVisibilityBadge } from '@/components/dataset/PublicVisibilityNotice'
 import { LeaveCreationDialog } from '@/components/shared/LeaveCreationDialog'
+import { OrganisationContextBanner } from '@/components/organisation/OrganisationContextBanner'
 import { useToast } from '@/components/ui/toast'
 import { useConfirm } from '@/components/ui/confirm-dialog'
 import { useAppData } from '@/context/AppDataContext'
@@ -29,7 +30,7 @@ type WizardStep = 1 | 2 | 3
 const DATASET_STEPS = [
   { step: 1, label: 'Data Files', description: 'Upload dataset files', icon: UploadCloud },
   { step: 2, label: 'Metadata', description: 'Name, description & settings', icon: FileText },
-  { step: 3, label: 'Review & Publish', description: 'Final review & publish', icon: ListChecks },
+  { step: 3, label: 'Review & Publish', description: 'Check readiness', icon: ListChecks },
 ]
 
 interface DatasetCreatedResult {
@@ -51,6 +52,13 @@ interface DatasetCreationFlowProps {
   contextLabel?: string
   /** Label for the "return to origin" action after creation, e.g. "Return to Use Case". Drawer only. */
   returnLabel?: string
+  /** Set when this dataset is being created/edited from an Organisation Workspace —
+   *  every save/publish attributes the record to this organisation (Section 14). */
+  organisationId?: string
+  organisationName?: string
+  /** False when the current user's organisation role can't create/edit content
+   *  (e.g. Auditor) — renders a permission notice instead of the flow. */
+  canCreateContent?: boolean
   onClose: () => void
   /** Drawer only — fired when the user chooses to return to (or view from) the origin after a successful save. */
   onCreated?: (result: DatasetCreatedResult) => void
@@ -108,6 +116,9 @@ function DatasetCreationFlow({
   initialStep = 1,
   contextLabel,
   returnLabel = 'Return',
+  organisationId,
+  organisationName,
+  canCreateContent = true,
   onClose,
   onCreated,
 }: DatasetCreationFlowProps) {
@@ -203,7 +214,7 @@ function DatasetCreationFlow({
   /** Persist the working copy. For an already-published dataset this never changes
    * its status or its live version — the edits sit as "unsaved changes". */
   const saveWorkingCopy = () => {
-    const id = upsertDataset(editingId, 'draft', form)
+    const id = upsertDataset(editingId, 'draft', form, organisationId)
     if (!editingId) setEditingId(id)
     setLastSavedForm(form)
     return id
@@ -231,7 +242,7 @@ function DatasetCreationFlow({
   }
 
   const publishNow = () => {
-    const id = upsertDataset(editingId, 'published', form)
+    const id = upsertDataset(editingId, 'published', form, organisationId)
     if (!editingId) setEditingId(id)
     setLastSavedForm(form)
     return id
@@ -401,6 +412,20 @@ function DatasetCreationFlow({
     )
   }
 
+  if (organisationId && !canCreateContent) {
+    return (
+      <Card className="flex flex-col items-center gap-2 px-6 py-16 text-center">
+        <p className="text-base font-semibold text-text-default">You don’t have permission to create content here</p>
+        <p className="max-w-md text-sm text-text-subdued">
+          Your role in {organisationName ?? 'this organisation'} doesn’t allow creating or editing datasets.
+        </p>
+        <Button type="button" variant="outline" className="mt-2" onClick={onClose}>
+          Back
+        </Button>
+      </Card>
+    )
+  }
+
   return (
     <Card>
       <WorkspaceHeader
@@ -409,6 +434,7 @@ function DatasetCreationFlow({
         title={editingId ? form.metadata.name || 'Untitled Dataset' : 'New Dataset'}
         unsavedChanges={showUnsavedIndicator}
       />
+      {organisationId && organisationName && <OrganisationContextBanner organisationName={organisationName} />}
       <div className="flex items-center justify-between border-t border-border px-6 py-2.5">
         <PublicVisibilityBadge isLive={hasLiveVersion} />
       </div>

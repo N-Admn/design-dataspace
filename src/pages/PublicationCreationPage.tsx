@@ -23,7 +23,7 @@ type PublicationStep = 1 | 2 | 3
 const PUBLICATION_STEPS = [
   { step: 1, label: 'Details', description: 'Name, describe & classify', icon: FileText },
   { step: 2, label: 'Files', description: 'Upload files & videos', icon: FileStack },
-  { step: 3, label: 'Review', description: 'Check readiness', icon: ListChecks },
+  { step: 3, label: 'Review & Publish', description: 'Check readiness', icon: ListChecks },
 ]
 
 interface PublicationNavState {

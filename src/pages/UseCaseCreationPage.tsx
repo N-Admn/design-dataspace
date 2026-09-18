@@ -10,6 +10,7 @@ import { UseCaseStep1Builder } from '@/components/usecase/UseCaseStep1Builder'
 import { UseCaseStep2Connect } from '@/components/usecase/UseCaseStep2Connect'
 import { UseCaseStep3Review } from '@/components/usecase/UseCaseStep3Review'
 import { LeaveCreationDialog } from '@/components/shared/LeaveCreationDialog'
+import { OrganisationContextBanner } from '@/components/organisation/OrganisationContextBanner'
 import { useToast } from '@/components/ui/toast'
 import { useAppData } from '@/context/AppDataContext'
 import { useHelpContext } from '@/context/HelpContext'
@@ -27,7 +28,7 @@ type UseCaseStep = 1 | 2 | 3
 const USE_CASE_STEPS = [
   { step: 1, label: 'Builder', description: 'Create and structure your Use Case', icon: LayoutTemplate },
   { step: 2, label: 'Connect', description: 'Add context, datasets, and contributors', icon: Share2 },
-  { step: 3, label: 'Review', description: 'Check readiness and publish', icon: ListChecks },
+  { step: 3, label: 'Review & Publish', description: 'Check readiness', icon: ListChecks },
 ]
 
 interface UseCaseNavState {
@@ -39,6 +40,12 @@ interface UseCaseNavState {
    * Create New Use Case) so completion can hand the user back to that originating context. */
   returnTo?: string
   returnState?: Record<string, unknown>
+  organisationId?: string
+  /** Where Close/Discard should return to when launched from an Organisation
+   *  Workspace module page — unlike `returnTo`, does NOT trigger the
+   *  save-draft auto-return used by other modules' contextual "create and
+   *  reference" flows (e.g. Collaborative → Content). */
+  organisationReturnTo?: string
 }
 
 /** Existing saved Use Cases never persisted a step number (the wizard's step is
@@ -55,12 +62,14 @@ function resolveInitialStep(value: number | undefined): UseCaseStep {
 function UseCaseCreationPage() {
   const navigate = useNavigate()
   const location = useLocation()
-  const { useCases, upsertUseCase } = useAppData()
+  const { useCases, upsertUseCase, organisationWorkspaces } = useAppData()
   const { setContextLabel } = useHelpContext()
   const toast = useToast()
 
   const navState = (location.state as UseCaseNavState | null) ?? null
   const resumeRecord = navState?.useCaseId ? useCases.find((u) => u.id === navState.useCaseId) : undefined
+  const organisationId = navState?.organisationId
+  const organisation = organisationId ? organisationWorkspaces.find((o) => o.id === organisationId) : undefined
 
   const [editingId, setEditingId] = useState<string | null>(resumeRecord?.id ?? null)
   const [step, setStep] = useState<UseCaseStep>(resolveInitialStep(navState?.initialStep))
@@ -98,7 +107,7 @@ function UseCaseCreationPage() {
       navigate(navState.returnTo, { state: { ...navState.returnState, createdUseCaseId: editingId ?? undefined } })
       return
     }
-    navigate('/dashboard/use-cases')
+    navigate(navState?.organisationReturnTo ?? '/dashboard/use-cases')
   }
 
   const handleClose = () => {
@@ -130,7 +139,7 @@ function UseCaseCreationPage() {
 
   const handleSaveDraft = () => {
     setSaved(false)
-    const id = upsertUseCase(editingId, 'draft', form)
+    const id = upsertUseCase(editingId, 'draft', form, organisationId)
     if (!editingId) setEditingId(id)
     setLastSavedForm(form)
     setTimeout(() => setSaved(true), 500)
@@ -149,7 +158,7 @@ function UseCaseCreationPage() {
   const handlePreview = () => {
     let id = editingId
     if (!id) {
-      id = upsertUseCase(null, 'draft', form)
+      id = upsertUseCase(null, 'draft', form, organisationId)
       setEditingId(id)
       setLastSavedForm(form)
     }
@@ -167,6 +176,7 @@ function UseCaseCreationPage() {
         editablePlaceholder="Untitled Use Case"
         unsavedChanges={showUnsavedIndicator}
       />
+      {organisation && <OrganisationContextBanner organisationName={organisation.metadata.name} />}
       <div className="border-t border-border px-6 py-6">
         <Stepper
           steps={USE_CASE_STEPS}

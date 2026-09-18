@@ -27,6 +27,11 @@ export interface NavItem {
   badge?: NavBadge
   /** Reserved for permission-gated modules. Items without a permission key are always visible. */
   permission?: string
+  /** When true, only an exact pathname match counts as active — needed when this
+   *  item's path is itself a prefix of a sibling's (e.g. an org dashboard at
+   *  `/organisations/:id` vs. `/organisations/:id/datasets`). Defaults to false
+   *  (prefix match), matching every existing My Workspace nav item's behaviour. */
+  exactMatch?: boolean
 }
 
 export interface NavGroup {
@@ -73,5 +78,6 @@ export function visibleNavGroups(groups: NavGroup[], grantedPermissions: string[
 
 export function isNavItemActive(item: NavItem, pathname: string): boolean {
   if (!item.path) return false
+  if (item.exactMatch) return pathname === item.path
   return pathname === item.path || pathname.startsWith(`${item.path}/`)
 }

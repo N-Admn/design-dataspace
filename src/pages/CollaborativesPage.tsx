@@ -20,7 +20,7 @@ function CollaborativesPage() {
     if (!record) return
     const name = record.form.metadata.name || 'this Collaborative'
     const ok = await confirm({
-      title: 'Delete Collaborative?',
+      title: 'Delete Collaborative',
       description: `Deleting "${name}" will permanently remove it from My Workspace. This action cannot be undone.`,
       confirmLabel: 'Delete Collaborative',
       variant: 'destructive',

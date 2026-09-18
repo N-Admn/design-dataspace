@@ -10,6 +10,7 @@ import { AIModelStep1Details } from '@/components/ai-model/AIModelStep1Details'
 import { AIModelVersionsStep } from '@/components/ai-model/AIModelVersionsStep'
 import { AIModelStep3Review } from '@/components/ai-model/AIModelStep3Review'
 import { LeaveCreationDialog } from '@/components/shared/LeaveCreationDialog'
+import { OrganisationContextBanner } from '@/components/organisation/OrganisationContextBanner'
 import { useToast } from '@/components/ui/toast'
 import { useAppData } from '@/context/AppDataContext'
 import { useHelpContext } from '@/context/HelpContext'
@@ -23,23 +24,28 @@ type AIModelStep = 1 | 2 | 3
 const AI_MODEL_STEPS = [
   { step: 1, label: 'Versions', description: 'Configure releases and access', icon: Server },
   { step: 2, label: 'Model Information', description: 'Describe the model', icon: FileText },
-  { step: 3, label: 'Review', description: 'Check readiness', icon: ListChecks },
+  { step: 3, label: 'Review & Publish', description: 'Check readiness', icon: ListChecks },
 ]
 
 interface AIModelNavState {
   aiModelId?: string
   initialStep?: AIModelStep
+  organisationId?: string
+  returnTo?: string
 }
 
 function AIModelCreationPage() {
   const navigate = useNavigate()
   const location = useLocation()
-  const { aiModels, upsertAIModel } = useAppData()
+  const { aiModels, upsertAIModel, organisationWorkspaces } = useAppData()
   const { setContextLabel } = useHelpContext()
   const toast = useToast()
 
   const navState = (location.state as AIModelNavState | null) ?? null
   const resumeRecord = navState?.aiModelId ? aiModels.find((m) => m.id === navState.aiModelId) : undefined
+  const organisationId = navState?.organisationId
+  const returnTo = navState?.returnTo ?? '/dashboard/ai-models'
+  const organisation = organisationId ? organisationWorkspaces.find((o) => o.id === organisationId) : undefined
 
   const [editingId, setEditingId] = useState<string | null>(resumeRecord?.id ?? null)
   const [step, setStep] = useState<AIModelStep>(navState?.initialStep ?? 1)
@@ -80,7 +86,7 @@ function AIModelCreationPage() {
       setShowLeaveConfirm(true)
       return
     }
-    navigate('/dashboard/ai-models')
+    navigate(returnTo)
   }
 
   const goToStep = (next: AIModelStep, versionId?: string) => {
@@ -105,7 +111,7 @@ function AIModelCreationPage() {
 
   const handleSaveDraft = () => {
     setSaved(false)
-    const id = upsertAIModel(editingId, 'draft', form)
+    const id = upsertAIModel(editingId, 'draft', form, organisationId)
     if (!editingId) setEditingId(id)
     setLastSavedForm(form)
     setTimeout(() => setSaved(true), 500)
@@ -123,7 +129,7 @@ function AIModelCreationPage() {
   const handlePreview = () => {
     let id = editingId
     if (!id) {
-      id = upsertAIModel(null, 'draft', form)
+      id = upsertAIModel(null, 'draft', form, organisationId)
       setEditingId(id)
       setLastSavedForm(form)
     }
@@ -141,6 +147,7 @@ function AIModelCreationPage() {
         editablePlaceholder="Untitled AI Model"
         unsavedChanges={showUnsavedIndicator}
       />
+      {organisation && <OrganisationContextBanner organisationName={organisation.metadata.name} />}
       <div className="border-t border-border px-6 py-6">
         <Stepper
           steps={AI_MODEL_STEPS}
@@ -182,11 +189,11 @@ function AIModelCreationPage() {
         onSave={() => {
           setShowLeaveConfirm(false)
           handleSaveDraft()
-          navigate('/dashboard/ai-models')
+          navigate(returnTo)
         }}
         onDiscard={() => {
           setShowLeaveConfirm(false)
-          navigate('/dashboard/ai-models')
+          navigate(returnTo)
         }}
       />
     </Card>

@@ -6,7 +6,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { HelpSupportPanel } from '@/components/layout/HelpSupportPanel'
 import { cn } from '@/lib/utils'
 import { WORKSPACE_HEIGHT_CLASS } from '@/lib/layout'
-import { NAV_GROUPS, isNavItemActive, visibleNavGroups, type NavItem } from '@/components/layout/nav-config'
+import { NAV_GROUPS, isNavItemActive, visibleNavGroups, type NavGroup, type NavItem } from '@/components/layout/nav-config'
 
 const COLLAPSE_STORAGE_KEY = 'cds-sidebar-collapsed'
 
@@ -65,7 +65,38 @@ function NavRow({ item, isActive, collapsed, onClick }: NavRowProps) {
   )
 }
 
-function ContributorSidebar({ className }: { className?: string }) {
+export interface SidebarIdentity {
+  /** Initials or short label shown in the avatar circle. */
+  avatarLabel: string
+  /** Primary identity line (person name, or organisation name). */
+  name: string
+  /** Optional secondary line shown under the name when expanded (e.g. a role badge). */
+  subtitle?: string
+  /** Tooltip text when collapsed — defaults to `name`. */
+  tooltip?: string
+}
+
+interface ContributorSidebarProps {
+  className?: string
+  /** Defaults to the individual My Workspace nav groups. Pass a different set
+   *  (e.g. organisation-scoped paths) to reuse this same sidebar shell elsewhere. */
+  groups?: NavGroup[]
+  identity?: SidebarIdentity
+  /** Defaults to "Dashboard" / "/" — pass a different destination (e.g. "Switch
+   *  organisation" / "/organisations") to reuse this shell for other contexts. */
+  backLabel?: string
+  backTo?: string
+}
+
+const DEFAULT_IDENTITY: SidebarIdentity = { avatarLabel: 'JD', name: 'John Doe' }
+
+function ContributorSidebar({
+  className,
+  groups: groupsProp,
+  identity = DEFAULT_IDENTITY,
+  backLabel = 'Dashboard',
+  backTo = '/',
+}: ContributorSidebarProps) {
   const location = useLocation()
   const [collapsed, setCollapsed] = React.useState(readStoredCollapsed)
   const [helpOpen, setHelpOpen] = React.useState(false)
@@ -74,11 +105,11 @@ function ContributorSidebar({ className }: { className?: string }) {
     window.localStorage.setItem(COLLAPSE_STORAGE_KEY, collapsed ? '1' : '0')
   }, [collapsed])
 
-  const groups = visibleNavGroups(NAV_GROUPS)
+  const groups = visibleNavGroups(groupsProp ?? NAV_GROUPS)
 
   const avatar = (
     <div className="flex size-12 shrink-0 items-center justify-center rounded-full bg-muted text-sm font-semibold text-muted-foreground">
-      JD
+      {identity.avatarLabel}
     </div>
   )
 
@@ -98,12 +129,15 @@ function ContributorSidebar({ className }: { className?: string }) {
             <TooltipTrigger asChild>
               <div>{avatar}</div>
             </TooltipTrigger>
-            <TooltipContent>John Doe</TooltipContent>
+            <TooltipContent>{identity.tooltip ?? identity.name}</TooltipContent>
           </Tooltip>
         ) : (
           <>
             {avatar}
-            <p className="min-w-0 flex-1 truncate text-sm font-semibold text-foreground">John Doe</p>
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-semibold text-foreground">{identity.name}</p>
+              {identity.subtitle && <p className="truncate text-xs text-muted-foreground">{identity.subtitle}</p>}
+            </div>
           </>
         )}
       </div>
@@ -138,18 +172,18 @@ function ContributorSidebar({ className }: { className?: string }) {
         <Tooltip>
           <TooltipTrigger asChild>
             <Link
-              to="/"
-              aria-label="Dashboard"
+              to={backTo}
+              aria-label={backLabel}
               className={cn(
                 'flex items-center gap-1.5 rounded-md text-sm font-medium text-primary transition-colors hover:bg-muted',
                 collapsed ? 'size-8 justify-center' : 'px-2 py-1.5',
               )}
             >
               <ArrowLeft className="size-3.5 shrink-0" />
-              {!collapsed && 'Dashboard'}
+              {!collapsed && backLabel}
             </Link>
           </TooltipTrigger>
-          <TooltipContent side={collapsed ? 'right' : 'top'}>Dashboard</TooltipContent>
+          <TooltipContent side={collapsed ? 'right' : 'top'}>{backLabel}</TooltipContent>
         </Tooltip>
 
         <Tooltip>

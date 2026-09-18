@@ -308,7 +308,9 @@ function EventResourcesStep({ form, onChange }: EventResourcesStepProps) {
         <CardHeader className="flex-row items-center justify-between">
           <div>
             <CardTitle>Resources</CardTitle>
-            <p className="mt-1 text-sm font-normal text-muted-foreground">Add related content and resources.</p>
+            <p className="mt-1 text-sm font-normal text-muted-foreground">
+              Upload or connect the files and data sources associated with this content.
+            </p>
           </div>
           <Button type="button" variant="outline" size="sm" onClick={() => setAddDrawerOpen(true)}>
             <Plus className="size-4" />

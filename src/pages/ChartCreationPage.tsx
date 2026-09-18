@@ -11,6 +11,7 @@ import { ChartStep2Create } from '@/components/chart/ChartStep2Create'
 import { ChartStep3Review } from '@/components/chart/ChartStep3Review'
 import { ChartPublishSuccessModal } from '@/components/chart/ChartPublishSuccessModal'
 import { LeaveCreationDialog } from '@/components/shared/LeaveCreationDialog'
+import { OrganisationContextBanner } from '@/components/organisation/OrganisationContextBanner'
 import { useToast } from '@/components/ui/toast'
 import { useConfirm } from '@/components/ui/confirm-dialog'
 import { useAppData } from '@/context/AppDataContext'
@@ -26,24 +27,29 @@ type ChartStep = 1 | 2 | 3
 const CHART_STEPS = [
   { step: 1, label: 'Dataset', description: 'Choose a dataset', icon: Database },
   { step: 2, label: 'Create', description: 'Build your chart', icon: Sparkles },
-  { step: 3, label: 'Review', description: 'Check and publish', icon: ListChecks },
+  { step: 3, label: 'Review & Publish', description: 'Check readiness', icon: ListChecks },
 ]
 
 interface ChartNavState {
   chartId?: string
   initialStep?: ChartStep
+  organisationId?: string
+  returnTo?: string
 }
 
 function ChartCreationPage() {
   const navigate = useNavigate()
   const location = useLocation()
-  const { charts, upsertChart } = useAppData()
+  const { charts, upsertChart, organisationWorkspaces } = useAppData()
   const { setContextLabel } = useHelpContext()
   const toast = useToast()
   const confirm = useConfirm()
 
   const navState = (location.state as ChartNavState | null) ?? null
   const resumeRecord = navState?.chartId ? charts.find((c) => c.id === navState.chartId) : undefined
+  const organisationId = navState?.organisationId
+  const returnTo = navState?.returnTo ?? '/dashboard/charts'
+  const organisation = organisationId ? organisationWorkspaces.find((o) => o.id === organisationId) : undefined
 
   const [editingId, setEditingId] = useState<string | null>(resumeRecord?.id ?? null)
   const [step, setStep] = useState<ChartStep>(navState?.initialStep ?? 1)
@@ -86,7 +92,7 @@ function ChartCreationPage() {
       setShowLeaveConfirm(true)
       return
     }
-    navigate('/dashboard/charts')
+    navigate(returnTo)
   }
 
   const goToStep = (next: ChartStep) => {
@@ -137,7 +143,7 @@ function ChartCreationPage() {
 
   const handleSaveDraft = () => {
     setSaved(false)
-    const id = upsertChart(editingId, 'draft', form)
+    const id = upsertChart(editingId, 'draft', form, organisationId)
     if (!editingId) setEditingId(id)
     setLastSavedForm(form)
     setTimeout(() => setSaved(true), 500)
@@ -194,7 +200,7 @@ function ChartCreationPage() {
     window.setTimeout(() => {
       setPublishState('publishing')
       window.setTimeout(() => {
-        const id = upsertChart(editingId, 'published', form)
+        const id = upsertChart(editingId, 'published', form, organisationId)
         if (!editingId) setEditingId(id)
         setLastSavedForm(form)
         setPublishState('idle')
@@ -208,7 +214,7 @@ function ChartCreationPage() {
   }
 
   const handleBackToCharts = () => {
-    navigate('/dashboard/charts')
+    navigate(returnTo)
   }
 
   return (
@@ -221,6 +227,7 @@ function ChartCreationPage() {
         editablePlaceholder="Untitled Chart"
         unsavedChanges={showUnsavedIndicator}
       />
+      {organisation && <OrganisationContextBanner organisationName={organisation.metadata.name} />}
       <div className="border-t border-border px-6 py-6">
         <Stepper
           steps={CHART_STEPS}
@@ -278,11 +285,11 @@ function ChartCreationPage() {
         onSave={() => {
           setShowLeaveConfirm(false)
           handleSaveDraft()
-          navigate('/dashboard/charts')
+          navigate(returnTo)
         }}
         onDiscard={() => {
           setShowLeaveConfirm(false)
-          navigate('/dashboard/charts')
+          navigate(returnTo)
         }}
       />
 

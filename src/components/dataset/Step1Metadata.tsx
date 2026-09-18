@@ -27,6 +27,9 @@ function Step1Metadata({ metadata, errors, onChange }: Step1MetadataProps) {
       <Card>
         <CardHeader>
           <CardTitle>Basic Information</CardTitle>
+          <p className="mt-1 text-sm font-normal text-text-subdued">
+            Name and describe this content so people can find and understand it.
+          </p>
         </CardHeader>
         <CardContent className="flex flex-col gap-5">
           <div>
@@ -65,6 +68,9 @@ function Step1Metadata({ metadata, errors, onChange }: Step1MetadataProps) {
       <Card>
         <CardHeader>
           <CardTitle>Classification</CardTitle>
+          <p className="mt-1 text-sm font-normal text-text-subdued">
+            Add sectors and topics to help people discover this content.
+          </p>
         </CardHeader>
         <CardContent className="flex flex-col gap-5">
           <div>

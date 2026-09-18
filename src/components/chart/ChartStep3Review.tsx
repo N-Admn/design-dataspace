@@ -9,6 +9,7 @@ import { FieldError } from '@/components/ui/field-error'
 import { ReviewSection } from '@/components/shared/ReviewSection'
 import { ResourcePreviewDialog, assetToPreviewResource, type PreviewResource } from '@/components/shared/ResourcePreviewDialog'
 import { ReviewPublishPanel } from '@/components/shared/ReviewPublishPanel'
+import { SectionHeader } from '@/components/shared/SectionHeader'
 import { ChartPreviewCanvas } from '@/components/chart/ChartPreviewCanvas'
 import { categoryFieldLabel, valueFieldLabel } from '@/components/chart/ChartStep2Create'
 import { useAppData } from '@/context/AppDataContext'
@@ -43,6 +44,12 @@ function ChartStep3Review({ form, otherCharts, onNameChange, onEditStep, onPubli
 
   return (
     <div className="flex flex-col gap-6">
+      <SectionHeader
+        as="h2"
+        title="Review & Publish"
+        description="Check your information before making this content available publicly."
+      />
+
       <ReviewSection title="Dataset & Source" defaultOpen onEdit={() => onEditStep(1)}>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>

@@ -18,6 +18,14 @@ import type { CollaborativeFormState, CollaborativeRecord, CollaborativeStatus }
 import type { AIModelFormState, AIModelRecord, AIModelStatus } from '@/types/ai-model'
 import type { PublicationFormState, PublicationRecord, PublicationStatus } from '@/types/publication'
 import type { ChartFormState, ChartRecord, ChartStatus } from '@/types/chart'
+import { MOCK_ORGANISATION_WORKSPACES } from '@/lib/mock-organisation-workspaces'
+import {
+  CURRENT_USER_PERSON_ID,
+  type OrganisationMember,
+  type OrganisationMetadata,
+  type OrganisationRecord,
+  type OrganisationRole,
+} from '@/types/organisation-workspace'
 
 /** Migrate any records persisted before the lifecycle was simplified to two
  * statuses: a legacy 'pending' record always had a live published version, so it
@@ -25,6 +33,11 @@ import type { ChartFormState, ChartRecord, ChartStatus } from '@/types/chart'
 function normalizeStoredRecords<T extends { status: string }>(records: T[]): T[] {
   return records.map((r) => ((r.status as string) === 'pending' ? { ...r, status: 'published' } : r))
 }
+
+/** Display name attributed to organisation content — there is no real
+ * multi-account auth in this prototype, so every "current user" reference
+ * resolves to the single mock profile. */
+const currentUserDisplayName = `${MOCK_PROFILE.firstName} ${MOCK_PROFILE.lastName}`
 
 let datasetIdCounter = 0
 let eventIdCounter = 0
@@ -34,6 +47,8 @@ let collaborativeIdCounter = 0
 let aiModelIdCounter = 0
 let publicationIdCounter = 0
 let chartIdCounter = 0
+let organisationWorkspaceIdCounter = 0
+let organisationMemberIdCounter = 0
 
 /** Use cases are persisted to localStorage (and synced across tabs) so a Use Case
  * previewed/published from a separate preview tab is reflected back in the
@@ -116,14 +131,48 @@ function bumpPublicationIdCounter(records: PublicationRecord[]) {
   }
 }
 
+/** Organisation Workspaces follow the same cross-tab persistence pattern as Use
+ * Cases — members added/roles changed from one tab should reflect in another. */
+const ORGANISATION_WORKSPACES_STORAGE_KEY = 'civicdataspace:organisation-workspaces'
+
+function loadStoredOrganisationWorkspaces(): OrganisationRecord[] | null {
+  try {
+    const raw = window.localStorage.getItem(ORGANISATION_WORKSPACES_STORAGE_KEY)
+    return raw ? (JSON.parse(raw) as OrganisationRecord[]) : null
+  } catch {
+    return null
+  }
+}
+
+function bumpOrganisationWorkspaceIdCounter(records: OrganisationRecord[]) {
+  for (const record of records) {
+    const match = /^org-workspace-(\d+)$/.exec(record.id)
+    if (match) organisationWorkspaceIdCounter = Math.max(organisationWorkspaceIdCounter, Number(match[1]))
+  }
+}
+
+/** Member ids are minted from the same shared counter across every organisation
+ * (`createOrganisationWorkspace`'s founding admin and every `addOrganisationMember`
+ * call), so this must scan every organisation's members — reconciling only the
+ * just-created one's members would leave the counter behind and produce colliding
+ * ids for a later organisation. */
+function bumpOrganisationMemberIdCounter(records: OrganisationRecord[]) {
+  for (const record of records) {
+    for (const member of record.members) {
+      const match = /^org-member-(\d+)$/.exec(member.id)
+      if (match) organisationMemberIdCounter = Math.max(organisationMemberIdCounter, Number(match[1]))
+    }
+  }
+}
+
 interface AppDataContextValue {
   datasets: DatasetRecord[]
-  upsertDataset: (id: string | null, status: DatasetStatus, form: DatasetFormState) => string
+  upsertDataset: (id: string | null, status: DatasetStatus, form: DatasetFormState, organisationId?: string) => string
   unpublishDataset: (id: string) => void
   deleteDataset: (id: string) => void
 
   events: EventRecord[]
-  upsertEvent: (id: string | null, status: EventStatus, form: EventFormState) => string
+  upsertEvent: (id: string | null, status: EventStatus, form: EventFormState, organisationId?: string) => string
   unpublishEvent: (id: string) => void
   deleteEvent: (id: string) => void
 
@@ -131,22 +180,22 @@ interface AppDataContextValue {
   addOrganisation: (org: Omit<Organisation, 'id'>) => Organisation
 
   useCases: UseCaseRecord[]
-  upsertUseCase: (id: string | null, status: UseCaseStatus, form: UseCaseFormState) => string
+  upsertUseCase: (id: string | null, status: UseCaseStatus, form: UseCaseFormState, organisationId?: string) => string
   unpublishUseCase: (id: string) => void
   deleteUseCase: (id: string) => void
 
   collaboratives: CollaborativeRecord[]
-  upsertCollaborative: (id: string | null, status: CollaborativeStatus, form: CollaborativeFormState) => string
+  upsertCollaborative: (id: string | null, status: CollaborativeStatus, form: CollaborativeFormState, organisationId?: string) => string
   unpublishCollaborative: (id: string) => void
   deleteCollaborative: (id: string) => void
 
   aiModels: AIModelRecord[]
-  upsertAIModel: (id: string | null, status: AIModelStatus, form: AIModelFormState) => string
+  upsertAIModel: (id: string | null, status: AIModelStatus, form: AIModelFormState, organisationId?: string) => string
   unpublishAIModel: (id: string) => void
   deleteAIModel: (id: string) => void
 
   charts: ChartRecord[]
-  upsertChart: (id: string | null, status: ChartStatus, form: ChartFormState) => string
+  upsertChart: (id: string | null, status: ChartStatus, form: ChartFormState, organisationId?: string) => string
   unpublishChart: (id: string) => void
   deleteChart: (id: string) => void
 
@@ -157,6 +206,16 @@ interface AppDataContextValue {
 
   profile: ContributorProfile
   updateProfile: (profile: ContributorProfile) => void
+
+  /** Organisation *Workspaces* (shared, multi-member) — distinct from the
+   *  lightweight `organisations` list above, which is only used to tag content
+   *  with an affiliated org name. See `types/organisation-workspace.ts`. */
+  organisationWorkspaces: OrganisationRecord[]
+  createOrganisationWorkspace: (metadata: OrganisationMetadata) => OrganisationRecord
+  updateOrganisationWorkspaceMetadata: (organisationId: string, metadata: OrganisationMetadata) => void
+  addOrganisationMember: (organisationId: string, member: { personId: string; name: string; email?: string; role: OrganisationRole }) => void
+  updateOrganisationMemberRole: (organisationId: string, memberId: string, role: OrganisationRole) => void
+  removeOrganisationMember: (organisationId: string, memberId: string) => void
 }
 
 const AppDataContext = React.createContext<AppDataContextValue | null>(null)
@@ -191,6 +250,13 @@ function AppDataProvider({ children }: { children: React.ReactNode }) {
     return initial
   })
   const [profile, setProfile] = React.useState<ContributorProfile>(MOCK_PROFILE)
+  const [organisationWorkspaces, setOrganisationWorkspaces] = React.useState<OrganisationRecord[]>(() => {
+    const stored = loadStoredOrganisationWorkspaces()
+    const initial = stored ?? MOCK_ORGANISATION_WORKSPACES
+    bumpOrganisationWorkspaceIdCounter(initial)
+    bumpOrganisationMemberIdCounter(initial)
+    return initial
+  })
 
   React.useEffect(() => {
     try {
@@ -284,8 +350,31 @@ function AppDataProvider({ children }: { children: React.ReactNode }) {
     return () => window.removeEventListener('storage', handleStorage)
   }, [])
 
+  React.useEffect(() => {
+    try {
+      window.localStorage.setItem(ORGANISATION_WORKSPACES_STORAGE_KEY, JSON.stringify(organisationWorkspaces))
+    } catch {
+      // Ignore storage write failures (e.g. private browsing quota).
+    }
+  }, [organisationWorkspaces])
+
+  React.useEffect(() => {
+    const handleStorage = (event: StorageEvent) => {
+      if (event.key !== ORGANISATION_WORKSPACES_STORAGE_KEY || !event.newValue) return
+      try {
+        const next = JSON.parse(event.newValue) as OrganisationRecord[]
+        bumpOrganisationWorkspaceIdCounter(next)
+        setOrganisationWorkspaces(next)
+      } catch {
+        // Ignore malformed payloads from other tabs.
+      }
+    }
+    window.addEventListener('storage', handleStorage)
+    return () => window.removeEventListener('storage', handleStorage)
+  }, [])
+
   const upsertDataset = React.useCallback(
-    (id: string | null, status: DatasetStatus, form: DatasetFormState) => {
+    (id: string | null, status: DatasetStatus, form: DatasetFormState, organisationId?: string) => {
       const updatedAt = formatTimestamp(new Date())
       const recordId = id ?? `dataset-${(datasetIdCounter += 1)}`
       setDatasets((prev) => {
@@ -294,7 +383,18 @@ function AppDataProvider({ children }: { children: React.ReactNode }) {
         if (existing) {
           return prev.map((d) => (d.id === recordId ? { ...d, status: nextStatus, updatedAt, form, publishedForm } : d))
         }
-        return [{ id: recordId, status: nextStatus, updatedAt, form, publishedForm }, ...prev]
+        return [
+          {
+            id: recordId,
+            status: nextStatus,
+            updatedAt,
+            form,
+            publishedForm,
+            organisationId,
+            createdBy: organisationId ? currentUserDisplayName : undefined,
+          },
+          ...prev,
+        ]
       })
       return recordId
     },
@@ -311,7 +411,7 @@ function AppDataProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   const upsertEvent = React.useCallback(
-    (id: string | null, status: EventStatus, form: EventFormState) => {
+    (id: string | null, status: EventStatus, form: EventFormState, organisationId?: string) => {
       const timestamp = formatTimestamp(new Date())
       const recordId = id ?? `event-${(eventIdCounter += 1)}`
       setEvents((prev) => {
@@ -322,7 +422,19 @@ function AppDataProvider({ children }: { children: React.ReactNode }) {
             e.id === recordId ? { ...e, status: nextStatus, updatedAt: timestamp, form, publishedForm } : e,
           )
         }
-        return [{ id: recordId, status: nextStatus, createdAt: timestamp, updatedAt: timestamp, form, publishedForm }, ...prev]
+        return [
+          {
+            id: recordId,
+            status: nextStatus,
+            createdAt: timestamp,
+            updatedAt: timestamp,
+            form,
+            publishedForm,
+            organisationId,
+            createdBy: organisationId ? currentUserDisplayName : undefined,
+          },
+          ...prev,
+        ]
       })
       return recordId
     },
@@ -346,7 +458,7 @@ function AppDataProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   const upsertUseCase = React.useCallback(
-    (id: string | null, status: UseCaseStatus, form: UseCaseFormState) => {
+    (id: string | null, status: UseCaseStatus, form: UseCaseFormState, organisationId?: string) => {
       const updatedAt = formatTimestamp(new Date())
       const recordId = id ?? `usecase-${(useCaseIdCounter += 1)}`
       setUseCases((prev) => {
@@ -355,7 +467,18 @@ function AppDataProvider({ children }: { children: React.ReactNode }) {
         if (existing) {
           return prev.map((u) => (u.id === recordId ? { ...u, status: nextStatus, updatedAt, form, publishedForm } : u))
         }
-        return [{ id: recordId, status: nextStatus, updatedAt, form, publishedForm }, ...prev]
+        return [
+          {
+            id: recordId,
+            status: nextStatus,
+            updatedAt,
+            form,
+            publishedForm,
+            organisationId,
+            createdBy: organisationId ? currentUserDisplayName : undefined,
+          },
+          ...prev,
+        ]
       })
       return recordId
     },
@@ -372,7 +495,7 @@ function AppDataProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   const upsertCollaborative = React.useCallback(
-    (id: string | null, status: CollaborativeStatus, form: CollaborativeFormState) => {
+    (id: string | null, status: CollaborativeStatus, form: CollaborativeFormState, organisationId?: string) => {
       const updatedAt = formatTimestamp(new Date())
       const recordId = id ?? `collaborative-${(collaborativeIdCounter += 1)}`
       setCollaboratives((prev) => {
@@ -381,7 +504,18 @@ function AppDataProvider({ children }: { children: React.ReactNode }) {
         if (existing) {
           return prev.map((c) => (c.id === recordId ? { ...c, status: nextStatus, updatedAt, form, publishedForm } : c))
         }
-        return [{ id: recordId, status: nextStatus, updatedAt, form, publishedForm }, ...prev]
+        return [
+          {
+            id: recordId,
+            status: nextStatus,
+            updatedAt,
+            form,
+            publishedForm,
+            organisationId,
+            createdBy: organisationId ? currentUserDisplayName : undefined,
+          },
+          ...prev,
+        ]
       })
       return recordId
     },
@@ -398,7 +532,7 @@ function AppDataProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   const upsertAIModel = React.useCallback(
-    (id: string | null, status: AIModelStatus, form: AIModelFormState) => {
+    (id: string | null, status: AIModelStatus, form: AIModelFormState, organisationId?: string) => {
       const updatedAt = formatTimestamp(new Date())
       const recordId = id ?? `ai-model-${(aiModelIdCounter += 1)}`
       setAIModels((prev) => {
@@ -407,7 +541,18 @@ function AppDataProvider({ children }: { children: React.ReactNode }) {
         if (existing) {
           return prev.map((m) => (m.id === recordId ? { ...m, status: nextStatus, updatedAt, form, publishedForm } : m))
         }
-        return [{ id: recordId, status: nextStatus, updatedAt, form, publishedForm }, ...prev]
+        return [
+          {
+            id: recordId,
+            status: nextStatus,
+            updatedAt,
+            form,
+            publishedForm,
+            organisationId,
+            createdBy: organisationId ? currentUserDisplayName : undefined,
+          },
+          ...prev,
+        ]
       })
       return recordId
     },
@@ -423,7 +568,7 @@ function AppDataProvider({ children }: { children: React.ReactNode }) {
     setAIModels((prev) => prev.filter((m) => m.id !== id))
   }, [])
 
-  const upsertChart = React.useCallback((id: string | null, status: ChartStatus, form: ChartFormState) => {
+  const upsertChart = React.useCallback((id: string | null, status: ChartStatus, form: ChartFormState, organisationId?: string) => {
     const updatedAt = formatTimestamp(new Date())
     const recordId = id ?? `chart-${(chartIdCounter += 1)}`
     setCharts((prev) => {
@@ -432,7 +577,18 @@ function AppDataProvider({ children }: { children: React.ReactNode }) {
       if (existing) {
         return prev.map((c) => (c.id === recordId ? { ...c, status: nextStatus, updatedAt, form, publishedForm } : c))
       }
-      return [{ id: recordId, status: nextStatus, updatedAt, form, publishedForm }, ...prev]
+      return [
+        {
+          id: recordId,
+          status: nextStatus,
+          updatedAt,
+          form,
+          publishedForm,
+          organisationId,
+          createdBy: organisationId ? currentUserDisplayName : undefined,
+        },
+        ...prev,
+      ]
     })
     return recordId
   }, [])
@@ -472,6 +628,83 @@ function AppDataProvider({ children }: { children: React.ReactNode }) {
     setPublications((prev) => prev.filter((p) => p.id !== id))
   }, [])
 
+  const createOrganisationWorkspace = React.useCallback((metadata: OrganisationMetadata): OrganisationRecord => {
+    const timestamp = formatTimestamp(new Date())
+    organisationWorkspaceIdCounter += 1
+    organisationMemberIdCounter += 1
+    const record: OrganisationRecord = {
+      id: `org-workspace-${organisationWorkspaceIdCounter}`,
+      metadata,
+      members: [
+        {
+          id: `org-member-${organisationMemberIdCounter}`,
+          personId: CURRENT_USER_PERSON_ID,
+          name: currentUserDisplayName,
+          email: MOCK_PROFILE.email,
+          role: 'admin',
+          joinedAt: timestamp,
+          updatedAt: timestamp,
+        },
+      ],
+      createdAt: timestamp,
+      updatedAt: timestamp,
+    }
+    setOrganisationWorkspaces((prev) => [record, ...prev])
+    return record
+  }, [])
+
+  const updateOrganisationWorkspaceMetadata = React.useCallback((organisationId: string, metadata: OrganisationMetadata) => {
+    const updatedAt = formatTimestamp(new Date())
+    setOrganisationWorkspaces((prev) =>
+      prev.map((org) => (org.id === organisationId ? { ...org, metadata, updatedAt } : org)),
+    )
+  }, [])
+
+  const addOrganisationMember = React.useCallback(
+    (organisationId: string, member: { personId: string; name: string; email?: string; role: OrganisationRole }) => {
+      const timestamp = formatTimestamp(new Date())
+      organisationMemberIdCounter += 1
+      const newMember: OrganisationMember = {
+        id: `org-member-${organisationMemberIdCounter}`,
+        ...member,
+        joinedAt: timestamp,
+        updatedAt: timestamp,
+      }
+      setOrganisationWorkspaces((prev) =>
+        prev.map((org) =>
+          org.id === organisationId ? { ...org, members: [...org.members, newMember], updatedAt: timestamp } : org,
+        ),
+      )
+    },
+    [],
+  )
+
+  const updateOrganisationMemberRole = React.useCallback((organisationId: string, memberId: string, role: OrganisationRole) => {
+    const updatedAt = formatTimestamp(new Date())
+    setOrganisationWorkspaces((prev) =>
+      prev.map((org) =>
+        org.id === organisationId
+          ? {
+              ...org,
+              updatedAt,
+              members: org.members.map((m) => (m.id === memberId ? { ...m, role, updatedAt } : m)),
+            }
+          : org,
+      ),
+    )
+  }, [])
+
+  const removeOrganisationMember = React.useCallback((organisationId: string, memberId: string) => {
+    const updatedAt = formatTimestamp(new Date())
+    setOrganisationWorkspaces((prev) =>
+      prev.map((org) =>
+        org.id === organisationId
+          ? { ...org, updatedAt, members: org.members.filter((m) => m.id !== memberId) }
+          : org,
+      ),
+    )
+  }, [])
+
   const value = React.useMemo<AppDataContextValue>(
     () => ({
       datasets,
@@ -506,6 +739,12 @@ function AppDataProvider({ children }: { children: React.ReactNode }) {
       deletePublication,
       profile,
       updateProfile: setProfile,
+      organisationWorkspaces,
+      createOrganisationWorkspace,
+      updateOrganisationWorkspaceMetadata,
+      addOrganisationMember,
+      updateOrganisationMemberRole,
+      removeOrganisationMember,
     }),
     [
       datasets,
@@ -539,6 +778,12 @@ function AppDataProvider({ children }: { children: React.ReactNode }) {
       unpublishPublication,
       deletePublication,
       profile,
+      organisationWorkspaces,
+      createOrganisationWorkspace,
+      updateOrganisationWorkspaceMetadata,
+      addOrganisationMember,
+      updateOrganisationMemberRole,
+      removeOrganisationMember,
     ],
   )
 

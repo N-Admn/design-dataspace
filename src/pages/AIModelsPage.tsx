@@ -20,7 +20,7 @@ function AIModelsPage() {
     if (!record) return
     const name = record.form.metadata.name || 'this AI Model'
     const ok = await confirm({
-      title: 'Delete AI Model?',
+      title: 'Delete AI Model',
       description: `Deleting "${name}" will permanently remove it from My Workspace. This action cannot be undone.`,
       confirmLabel: 'Delete AI Model',
       variant: 'destructive',

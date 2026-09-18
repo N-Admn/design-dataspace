@@ -150,7 +150,10 @@ function EventInformationStep({ metadata, errors, onChange }: EventInformationSt
 
       <Card>
         <CardHeader>
-          <CardTitle>Event Identity</CardTitle>
+          <CardTitle>Basic Information</CardTitle>
+          <p className="mt-1 text-sm font-normal text-muted-foreground">
+            Name and describe this content so people can find and understand it.
+          </p>
         </CardHeader>
         <CardContent className="flex flex-col gap-5">
           <div>

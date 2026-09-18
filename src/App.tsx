@@ -4,6 +4,7 @@ import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import { TopNav } from '@/components/layout/TopNav'
 import { BreadcrumbBar } from '@/components/layout/BreadcrumbBar'
 import { ContributorSidebar } from '@/components/layout/ContributorSidebar'
+import { OrganisationSidebar } from '@/components/layout/OrganisationSidebar'
 import { Footer } from '@/components/layout/Footer'
 import { HelpButton } from '@/components/layout/HelpButton'
 import { ToastProvider } from '@/components/ui/toast'
@@ -31,6 +32,16 @@ import { PublicationsPage } from '@/pages/PublicationsPage'
 import { PublicationCreationPage } from '@/pages/PublicationCreationPage'
 import { PublicationPreviewPage } from '@/pages/PublicationPreviewPage'
 import { ProfilePage } from '@/pages/ProfilePage'
+import { OrganisationsPage } from '@/pages/OrganisationsPage'
+import { OrganisationDashboardPage } from '@/pages/organisation/OrganisationDashboardPage'
+import { OrganisationDatasetsPage } from '@/pages/organisation/OrganisationDatasetsPage'
+import { OrganisationUseCasesPage } from '@/pages/organisation/OrganisationUseCasesPage'
+import { OrganisationAIModelsPage } from '@/pages/organisation/OrganisationAIModelsPage'
+import { OrganisationCollaborativesPage } from '@/pages/organisation/OrganisationCollaborativesPage'
+import { OrganisationChartsPage } from '@/pages/organisation/OrganisationChartsPage'
+import { OrganisationEventsPage } from '@/pages/organisation/OrganisationEventsPage'
+import { OrganisationMembersPage } from '@/pages/organisation/OrganisationMembersPage'
+import { OrganisationProfilePage } from '@/pages/organisation/OrganisationProfilePage'
 import { DesignSystemPage } from '@/pages/DesignSystemPage'
 import { ComingSoonPage } from '@/pages/ComingSoonPage'
 import { DiscoverPage } from '@/pages/DiscoverPage'
@@ -84,6 +95,9 @@ function AppLayout() {
     location.pathname === '/forum' ||
     location.pathname === '/discover' ||
     location.pathname === '/search'
+  const isOrganisationSelector = location.pathname === '/organisations'
+  const organisationWorkspaceMatch = /^\/organisations\/([^/]+)/.exec(location.pathname)
+  const organisationWorkspaceId = organisationWorkspaceMatch?.[1]
   const hideSidebar =
     isDashboard ||
     isUseCasePreview ||
@@ -92,7 +106,8 @@ function AppLayout() {
     isEventPreview ||
     isPublicationPreview ||
     isDesignSystem ||
-    isConsumerRoute
+    isConsumerRoute ||
+    isOrganisationSelector
   const isAuthRoute = location.pathname.startsWith('/auth/')
 
   if (isAuthRoute) {
@@ -121,7 +136,10 @@ function AppLayout() {
           !hideSidebar && 'md:flex-row',
         )}
       >
-        {!hideSidebar && <ContributorSidebar className="order-2 md:order-1" />}
+        {!hideSidebar && organisationWorkspaceId && (
+          <OrganisationSidebar organisationId={organisationWorkspaceId} className="order-2 md:order-1" />
+        )}
+        {!hideSidebar && !organisationWorkspaceId && <ContributorSidebar className="order-2 md:order-1" />}
 
         <div className="order-1 min-w-0 flex-1 md:order-2">
           <Routes>
@@ -145,6 +163,16 @@ function AppLayout() {
             <Route path="/dashboard/publications/new" element={<PublicationCreationPage />} />
             <Route path="/dashboard/publications/:id/preview" element={<PublicationPreviewPage />} />
             <Route path="/dashboard/profile" element={<ProfilePage />} />
+            <Route path="/organisations" element={<OrganisationsPage />} />
+            <Route path="/organisations/:organisationId" element={<OrganisationDashboardPage />} />
+            <Route path="/organisations/:organisationId/datasets" element={<OrganisationDatasetsPage />} />
+            <Route path="/organisations/:organisationId/use-cases" element={<OrganisationUseCasesPage />} />
+            <Route path="/organisations/:organisationId/ai-models" element={<OrganisationAIModelsPage />} />
+            <Route path="/organisations/:organisationId/collaboratives" element={<OrganisationCollaborativesPage />} />
+            <Route path="/organisations/:organisationId/charts" element={<OrganisationChartsPage />} />
+            <Route path="/organisations/:organisationId/events" element={<OrganisationEventsPage />} />
+            <Route path="/organisations/:organisationId/members" element={<OrganisationMembersPage />} />
+            <Route path="/organisations/:organisationId/profile" element={<OrganisationProfilePage />} />
             <Route path="/design-system" element={<DesignSystemPage />} />
             <Route path="/discover" element={<DiscoverPage />} />
             <Route path="/search" element={<SearchResultsPage />} />

@@ -85,7 +85,10 @@ function AIModelStep1Details({ form, otherNames, onChange }: AIModelStep1Details
     <div className="flex flex-col gap-6">
       <Card>
         <CardHeader>
-          <CardTitle>About the Model</CardTitle>
+          <CardTitle>Basic Information</CardTitle>
+          <p className="mt-1 text-sm font-normal text-muted-foreground">
+            Name and describe this content so people can find and understand it.
+          </p>
         </CardHeader>
         <CardContent className="flex flex-col gap-5">
           <div>
@@ -199,7 +202,7 @@ function AIModelStep1Details({ form, otherNames, onChange }: AIModelStep1Details
         <CardHeader>
           <CardTitle>Classification</CardTitle>
           <p className="mt-1 text-sm font-normal text-muted-foreground">
-            Add information that helps people discover and understand this model.
+            Add sectors and topics to help people discover this content.
           </p>
         </CardHeader>
         <CardContent className="flex flex-col gap-5">
