@@ -20,6 +20,7 @@ import {
 } from '@/lib/mini-dataset-validation'
 import {
   emptyDatasetForm,
+  emptyPromptDatasetMetadata,
   type DatasetFile,
   type DatasetFormState,
   type DatasetMetadata,
@@ -115,6 +116,8 @@ function DatasetCreationWizard({ open, onOpenChange, onCreated, initial }: Datas
     setIsSubmitting(true)
     window.setTimeout(() => {
       const form: DatasetFormState = {
+        datasetType: 'dataset',
+        promptDatasetMetadata: emptyPromptDatasetMetadata,
         metadata: {
           ...emptyDatasetForm.metadata,
           name: metadata.name,
@@ -152,6 +155,7 @@ function DatasetCreationWizard({ open, onOpenChange, onCreated, initial }: Datas
           <div className="flex flex-col gap-5">
             <div className="flex flex-col gap-2">
               <Step2DataFiles
+                datasetType="dataset"
                 files={files}
                 onFilesAdd={handleFilesAdd}
                 onFileRemove={(id) => setFiles((prev) => prev.filter((f) => f.id !== id))}
@@ -161,6 +165,10 @@ function DatasetCreationWizard({ open, onOpenChange, onCreated, initial }: Datas
                 onFileDescriptionChange={(id, description) =>
                   setFiles((prev) => prev.map((f) => (f.id === id ? { ...f, description } : f)))
                 }
+                onFileReplace={(id, replacement) =>
+                  setFiles((prev) => prev.map((f) => (f.id === id ? replacement : f)))
+                }
+                onPromptFileMetadataChange={() => {}}
               />
               {showErrors && <FieldError message={filesError} />}
             </div>
