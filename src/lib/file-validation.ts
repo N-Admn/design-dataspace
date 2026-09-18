@@ -73,6 +73,30 @@ export async function inferCsvShape(
   }
 }
 
+const TABULAR_SCHEMA_EXTENSIONS = ['csv', 'tsv']
+
+/** Detects field (column) names from a prompt file's header row — used to
+ * pre-populate a Prompt File's "File Fields" section (Section 9.6) without asking
+ * contributors to type field names by hand. Only CSV/TSV are parsed client-side;
+ * everything else (including files without a readable header) returns `null`,
+ * which the caller surfaces as the "schema unavailable" state rather than an
+ * empty-but-successful field list. */
+export async function detectFileFields(file: File): Promise<string[] | null> {
+  const ext = getExtension(file.name)
+  if (!TABULAR_SCHEMA_EXTENSIONS.includes(ext)) return null
+  if (file.size > 5 * 1024 * 1024) return null
+  try {
+    const text = await file.text()
+    const firstLine = text.split(/\r?\n/).find((line) => line.trim().length > 0)
+    if (!firstLine) return null
+    const delimiter = ext === 'tsv' ? '\t' : ','
+    const names = firstLine.split(delimiter).map((name) => name.trim().replace(/^"|"$/g, '')).filter(Boolean)
+    return names.length > 0 ? names : null
+  } catch {
+    return null
+  }
+}
+
 let fileIdCounter = 0
 
 export function validateIncomingFiles(

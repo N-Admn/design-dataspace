@@ -12,9 +12,18 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { ResourcePreviewDialog, type PreviewResource } from '@/components/shared/ResourcePreviewDialog'
 import { DropzoneUploadField } from '@/components/shared/DropzoneUploadField'
 import { FileDetailsSheet } from '@/components/dataset/FileDetailsSheet'
+import { PromptFileSideSheet } from '@/components/dataset/PromptFileSideSheet'
 import { useToast } from '@/components/ui/toast'
+import { useConfirm } from '@/components/ui/confirm-dialog'
 import { cn } from '@/lib/utils'
-import { deriveDefaultResourceTitle, getResourceTitle, inferCsvShape, validateIncomingFiles } from '@/lib/file-validation'
+import {
+  deriveDefaultResourceTitle,
+  detectFileFields,
+  getResourceTitle,
+  inferCsvShape,
+  validateIncomingFiles,
+} from '@/lib/file-validation'
+import { promptFileMetadataStatus } from '@/lib/prompt-file-validation'
 import { formatUploadLimit } from '@/lib/generic-upload'
 import { formatTimestamp } from '@/lib/format'
 import {
@@ -26,9 +35,28 @@ import {
   validatePlatformUrl,
   type ImportPlatform,
 } from '@/lib/platform-import'
-import { MAX_FILE_SIZE_BYTES, SUPPORTED_FILE_EXTENSIONS, type DatasetFile } from '@/types/dataset'
+import {
+  MAX_FILE_SIZE_BYTES,
+  PROMPT_FORMAT_OPTIONS,
+  SUPPORTED_FILE_EXTENSIONS,
+  emptyPromptFileMetadata,
+  type DatasetFile,
+  type DatasetType,
+  type PromptFileMetadata,
+} from '@/types/dataset'
 
 type UploadMethod = 'file' | 'platform'
+
+const PROMPT_FORMAT_LABEL: Record<string, string> = Object.fromEntries(
+  PROMPT_FORMAT_OPTIONS.map((o) => [o.value, o.label]),
+)
+
+/** Whether a file came in through direct upload vs. a public-platform import —
+ * derived from the existing `source` field rather than adding new state, so the
+ * upload-method restriction (Section 8) works for records saved before it existed. */
+function isManualUpload(file: DatasetFile): boolean {
+  return !file.source || file.source === 'File upload'
+}
 
 const UPLOAD_METHODS: { value: UploadMethod; label: string; icon: typeof UploadCloud }[] = [
   { value: 'file', label: 'File Upload', icon: UploadCloud },
@@ -38,20 +66,31 @@ const UPLOAD_METHODS: { value: UploadMethod; label: string; icon: typeof UploadC
 let importIdCounter = 0
 
 interface Step2DataFilesProps {
+  datasetType: DatasetType
   files: DatasetFile[]
   onFilesAdd: (files: DatasetFile[]) => void
   onFileRemove: (id: string) => void
   onFileTitleChange: (id: string, title: string) => void
   onFileDescriptionChange: (id: string, description: string) => void
+  onFileReplace: (id: string, replacement: DatasetFile) => void
+  onPromptFileMetadataChange: (id: string, patch: Partial<PromptFileMetadata>) => void
+}
+
+const PROMPT_STATUS_BADGE: Record<ReturnType<typeof promptFileMetadataStatus>, { label: string; variant: 'success' | 'warning' | 'destructive' }> = {
+  ready: { label: 'Ready', variant: 'success' },
+  incomplete: { label: 'Metadata incomplete', variant: 'warning' },
+  error: { label: 'Error', variant: 'destructive' },
 }
 
 function FileRow({
   file,
+  isPromptDataset,
   onTitleChange,
   onOpenDetails,
   onRemove,
 }: {
   file: DatasetFile
+  isPromptDataset: boolean
   onTitleChange: (id: string, title: string) => void
   onOpenDetails: () => void
   onRemove: () => void
@@ -129,9 +168,31 @@ function FileRow({
             </>
           )}
         </div>
+        {isPromptDataset && (
+          <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+            {file.promptFileMetadata?.promptFormat && (
+              <Badge variant="outline">
+                {PROMPT_FORMAT_LABEL[file.promptFileMetadata.promptFormat] ?? file.promptFileMetadata.promptFormat}
+              </Badge>
+            )}
+            {file.promptFileMetadata?.hasSystemPrompt && <Badge variant="muted">System prompt</Badge>}
+            {file.promptFileMetadata?.hasExampleResponses && <Badge variant="muted">Example responses</Badge>}
+            {file.promptFileMetadata && file.promptFileMetadata.fields.length > 0 && (
+              <Badge variant="muted">
+                {file.promptFileMetadata.fields.length} field{file.promptFileMetadata.fields.length === 1 ? '' : 's'}
+              </Badge>
+            )}
+          </div>
+        )}
       </div>
       <div className="flex shrink-0 items-center gap-2">
-        <Badge variant="success">Ready</Badge>
+        {isPromptDataset ? (
+          <Badge variant={PROMPT_STATUS_BADGE[promptFileMetadataStatus(file)].variant}>
+            {PROMPT_STATUS_BADGE[promptFileMetadataStatus(file)].label}
+          </Badge>
+        ) : (
+          <Badge variant="success">Ready</Badge>
+        )}
         <div className="flex items-center gap-1">
           <Button
             type="button"
@@ -158,19 +219,43 @@ function FileRow({
   )
 }
 
+/** Attaches initial Prompt File metadata (Section 9) to a freshly-added file when
+ * the dataset is a Prompt Dataset. `detectedFields` is `null` when the schema
+ * couldn't be read (non-tabular file, or a platform import with no parseable
+ * schema) — surfaced later as the "schema unavailable" state, not silently as an
+ * empty field list. */
+function withPromptFileMetadata(file: DatasetFile, detectedFields: string[] | null): DatasetFile {
+  const base = emptyPromptFileMetadata(getResourceTitle(file))
+  return {
+    ...file,
+    promptFileMetadata: {
+      ...base,
+      fields: detectedFields ? detectedFields.map((name) => ({ name })) : [],
+      fieldsUnavailable: detectedFields === null,
+    },
+  }
+}
+
 function Step2DataFiles({
+  datasetType,
   files,
   onFilesAdd,
   onFileRemove,
   onFileTitleChange,
   onFileDescriptionChange,
+  onFileReplace,
+  onPromptFileMetadataChange,
 }: Step2DataFilesProps) {
+  const isPromptDataset = datasetType === 'prompt_dataset'
   const toast = useToast()
+  const confirm = useConfirm()
   const [method, setMethod] = React.useState<UploadMethod>('file')
 
   const [uploadErrors, setUploadErrors] = React.useState<string[]>([])
   const [detailsId, setDetailsId] = React.useState<string | null>(null)
   const [previewResource, setPreviewResource] = React.useState<PreviewResource | null>(null)
+  const [replacingFileId, setReplacingFileId] = React.useState<string | null>(null)
+  const replaceInputRef = React.useRef<HTMLInputElement>(null)
 
   // Public Platform import flow
   const [platform, setPlatform] = React.useState<ImportPlatform | ''>('')
@@ -197,7 +282,10 @@ function Step2DataFiles({
       accepted.map(async (df) => {
         const original = raw.find((f) => f.name === df.name)
         const shape = original ? await inferCsvShape(original) : {}
-        return { ...df, source: 'File upload', ...shape }
+        const withShape = { ...df, source: 'File upload', ...shape }
+        if (!isPromptDataset || !original) return withShape
+        const fields = await detectFileFields(original)
+        return withPromptFileMetadata(withShape, fields)
       }),
     )
     onFilesAdd(enriched)
@@ -208,8 +296,23 @@ function Step2DataFiles({
     )
   }
 
-  const handleMethodChange = (next: UploadMethod) => {
+  const handleMethodChange = async (next: UploadMethod) => {
     if (next === method) return
+    const blockingFiles = next === 'platform' ? files.filter(isManualUpload) : files.filter((f) => !isManualUpload(f))
+    if (blockingFiles.length > 0) {
+      const alreadyUsed = next === 'platform' ? 'manually' : 'from the public platform'
+      const switchingTo = next === 'platform' ? 'importing files from the public platform' : 'uploading files manually'
+      const ok = await confirm({
+        title: 'Change upload method?',
+        description: `You have already uploaded files ${alreadyUsed}. Clear these files before ${switchingTo}.`,
+        confirmLabel: 'Clear Files and Switch',
+        cancelLabel: 'Cancel',
+        variant: 'destructive',
+      })
+      if (!ok) return
+      blockingFiles.forEach((f) => onFileRemove(f.id))
+      toast({ title: 'Files cleared', description: 'Upload method switched.', variant: 'success' })
+    }
     setMethod(next)
     setUploadErrors([])
   }
@@ -237,20 +340,25 @@ function Step2DataFiles({
       const known = new Set(files.map((f) => `${f.path ?? ''}/${f.name}`.toLowerCase()))
       const imported: DatasetFile[] = result.files
         .filter((f) => !known.has(`${f.path ?? ''}/${f.name}`.toLowerCase()))
-        .map((f) => ({
-          id: `import-${(importIdCounter += 1)}-${f.name}`,
-          name: f.name,
-          title: deriveDefaultResourceTitle(f.name),
-          extension: f.extension.toUpperCase(),
-          sizeLabel: f.sizeLabel,
-          sizeBytes: f.sizeBytes,
-          uploadedAt: formatTimestamp(new Date()),
-          source: PLATFORM_LABELS[platform],
-          path: f.path,
-          importUrl: importedUrl,
-          rowCount: f.rowCount,
-          columnCount: f.columnCount,
-        }))
+        .map((f) => {
+          const base: DatasetFile = {
+            id: `import-${(importIdCounter += 1)}-${f.name}`,
+            name: f.name,
+            title: deriveDefaultResourceTitle(f.name),
+            extension: f.extension.toUpperCase(),
+            sizeLabel: f.sizeLabel,
+            sizeBytes: f.sizeBytes,
+            uploadedAt: formatTimestamp(new Date()),
+            source: PLATFORM_LABELS[platform],
+            path: f.path,
+            importUrl: importedUrl,
+            rowCount: f.rowCount,
+            columnCount: f.columnCount,
+          }
+          // Platform imports don't return a real file to parse a schema from —
+          // fields are unavailable until the file is replaced with a real upload.
+          return isPromptDataset ? withPromptFileMetadata(base, null) : base
+        })
       setExtractStatus('idle')
       setPlatformUrl('')
       setPlatformUrlTouched(false)
@@ -269,6 +377,54 @@ function Step2DataFiles({
       setExtractError(result.error)
       toast({ title: 'Extraction failed', description: result.error, variant: 'error' })
     }
+  }
+
+  const handleReplaceFileClick = (file: DatasetFile) => {
+    setReplacingFileId(file.id)
+    replaceInputRef.current?.click()
+  }
+
+  const handleReplaceFileSelected = async (fileList: FileList | null) => {
+    const id = replacingFileId
+    setReplacingFileId(null)
+    if (!fileList || fileList.length === 0 || !id) return
+    const original = fileList[0]
+    const current = files.find((f) => f.id === id)
+    if (!current) return
+
+    const { accepted, errors } = validateIncomingFiles([original], files.filter((f) => f.id !== id))
+    if (errors.length > 0) {
+      toast({ title: 'File replacement failed', description: errors[0], variant: 'error' })
+      return
+    }
+    const [replacementBase] = accepted
+    const shape = await inferCsvShape(original)
+    const fields = isPromptDataset ? await detectFileFields(original) : null
+
+    const previousFields = current.promptFileMetadata?.fields ?? []
+    const nextFields = fields ? fields.map((name) => {
+      const previous = previousFields.find((f) => f.name === name)
+      return { name, description: previous?.description }
+    }) : []
+    const fieldsChanged = isPromptDataset && JSON.stringify(nextFields.map((f) => f.name)) !== JSON.stringify(previousFields.map((f) => f.name))
+
+    const replacement: DatasetFile = {
+      ...replacementBase,
+      id,
+      source: 'File upload',
+      ...shape,
+      promptFileMetadata: isPromptDataset
+        ? { ...(current.promptFileMetadata ?? emptyPromptFileMetadata(getResourceTitle(current))), fields: nextFields, fieldsUnavailable: fields === null }
+        : undefined,
+    }
+    onFileReplace(id, replacement)
+    toast({
+      title: 'File replaced',
+      description: fieldsChanged
+        ? 'The new file has different fields — review the field descriptions.'
+        : `${replacement.name} has replaced the previous file.`,
+      variant: 'success',
+    })
   }
 
   const openPreview = (file: DatasetFile) => {
@@ -454,6 +610,7 @@ function Step2DataFiles({
                       <FileRow
                         key={file.id}
                         file={file}
+                        isPromptDataset={isPromptDataset}
                         onTitleChange={onFileTitleChange}
                         onOpenDetails={() => setDetailsId(file.id)}
                         onRemove={() => {
@@ -469,6 +626,7 @@ function Step2DataFiles({
                 <FileRow
                   key={file.id}
                   file={file}
+                  isPromptDataset={isPromptDataset}
                   onTitleChange={onFileTitleChange}
                   onOpenDetails={() => setDetailsId(file.id)}
                   onRemove={() => {
@@ -480,12 +638,34 @@ function Step2DataFiles({
         </CardContent>
       </Card>
 
-      <FileDetailsSheet
-        file={detailsFile}
-        onOpenChange={(open) => !open && setDetailsId(null)}
-        onTitleChange={onFileTitleChange}
-        onDescriptionChange={onFileDescriptionChange}
-        onPreview={openPreview}
+      {isPromptDataset ? (
+        <PromptFileSideSheet
+          file={detailsFile}
+          onOpenChange={(open) => !open && setDetailsId(null)}
+          onDescriptionChange={onFileDescriptionChange}
+          onPromptFileMetadataChange={onPromptFileMetadataChange}
+          onPreview={openPreview}
+          onReplaceFileClick={handleReplaceFileClick}
+        />
+      ) : (
+        <FileDetailsSheet
+          file={detailsFile}
+          onOpenChange={(open) => !open && setDetailsId(null)}
+          onTitleChange={onFileTitleChange}
+          onDescriptionChange={onFileDescriptionChange}
+          onPreview={openPreview}
+        />
+      )}
+
+      <input
+        ref={replaceInputRef}
+        type="file"
+        className="hidden"
+        accept={SUPPORTED_FILE_EXTENSIONS.map((ext) => `.${ext}`).join(',')}
+        onChange={(e) => {
+          void handleReplaceFileSelected(e.target.files)
+          e.target.value = ''
+        }}
       />
 
       <ResourcePreviewDialog resource={previewResource} onOpenChange={(open) => !open && setPreviewResource(null)} />

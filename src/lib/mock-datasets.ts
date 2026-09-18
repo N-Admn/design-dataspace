@@ -1,4 +1,4 @@
-import type { DatasetFormState, DatasetRecord } from '@/types/dataset'
+import { emptyPromptDatasetMetadata, type DatasetFormState, type DatasetRecord } from '@/types/dataset'
 
 function mb(value: number) {
   return Math.round(value * 1024 * 1024)
@@ -44,6 +44,8 @@ const ds1Form: DatasetFormState = {
     },
   ],
   resources: [],
+  datasetType: 'dataset',
+  promptDatasetMetadata: emptyPromptDatasetMetadata,
 }
 
 const ds2Form: DatasetFormState = {
@@ -86,6 +88,8 @@ const ds2Form: DatasetFormState = {
     },
   ],
   resources: [],
+  datasetType: 'dataset',
+  promptDatasetMetadata: emptyPromptDatasetMetadata,
 }
 
 const ds3Form: DatasetFormState = {
@@ -120,6 +124,8 @@ const ds3Form: DatasetFormState = {
     },
   ],
   resources: [],
+  datasetType: 'dataset',
+  promptDatasetMetadata: emptyPromptDatasetMetadata,
 }
 
 const ds4Form: DatasetFormState = {
@@ -162,6 +168,8 @@ const ds4Form: DatasetFormState = {
     },
   ],
   resources: [],
+  datasetType: 'dataset',
+  promptDatasetMetadata: emptyPromptDatasetMetadata,
 }
 
 const ds5Form: DatasetFormState = {
@@ -196,6 +204,8 @@ const ds5Form: DatasetFormState = {
     },
   ],
   resources: [],
+  datasetType: 'dataset',
+  promptDatasetMetadata: emptyPromptDatasetMetadata,
 }
 
 const ds6Form: DatasetFormState = {
@@ -230,6 +240,8 @@ const ds6Form: DatasetFormState = {
     },
   ],
   resources: [],
+  datasetType: 'dataset',
+  promptDatasetMetadata: emptyPromptDatasetMetadata,
 }
 
 const ds7Form: DatasetFormState = {
@@ -256,6 +268,8 @@ const ds7Form: DatasetFormState = {
     },
   ],
   resources: [],
+  datasetType: 'dataset',
+  promptDatasetMetadata: emptyPromptDatasetMetadata,
 }
 
 const ds8Form: DatasetFormState = {
@@ -273,6 +287,8 @@ const ds8Form: DatasetFormState = {
   },
   files: [],
   resources: [],
+  datasetType: 'dataset',
+  promptDatasetMetadata: emptyPromptDatasetMetadata,
 }
 
 // ds-5 is published and live, but the contributor has a saved working copy with
@@ -285,6 +301,53 @@ const ds5WorkingForm: DatasetFormState = {
   },
 }
 
+const ds9Form: DatasetFormState = {
+  datasetType: 'prompt_dataset',
+  metadata: {
+    name: 'Civic Grievance Redressal Instruction Prompts (2025)',
+    description:
+      'Instruction/response prompt pairs modelled on citizen grievance redressal conversations, for training and evaluating civic-service assistant models.',
+    sector: 'urban-development',
+    geography: 'india',
+    tags: ['Prompts', 'Governance', 'Instruction Tuning', 'Civic Assistant'],
+    sourceWebsite: 'https://data.gov.in',
+    createDate: '2026-08-20',
+    accessType: 'open',
+    license: 'cc-by-4.0',
+  },
+  promptDatasetMetadata: {
+    taskType: 'conversational',
+    domain: 'governance',
+    targetLanguages: ['en', 'hi'],
+    targetModelTypes: ['gpt', 'claude', 'indic-llm'],
+  },
+  files: [
+    {
+      id: 'ds9-file-1',
+      name: 'grievance_instruction_pairs_train.csv',
+      extension: 'CSV',
+      sizeLabel: '1.6MB',
+      sizeBytes: mb(1.6),
+      uploadedAt: '20/08/2026 10:05:00',
+      source: 'File upload',
+      rowCount: 3200,
+      columnCount: 3,
+      promptFileMetadata: {
+        promptFileName: 'Grievance Instruction Pairs — Train',
+        promptFormat: 'instruction',
+        hasSystemPrompt: true,
+        hasExampleResponses: true,
+        fields: [
+          { name: 'instruction', description: 'The citizen grievance or request given to the model.' },
+          { name: 'input', description: 'Additional context supplied with the grievance, when available.' },
+          { name: 'output', description: 'The expected redressal response from the model.' },
+        ],
+      },
+    },
+  ],
+  resources: [],
+}
+
 export const MOCK_DATASETS: DatasetRecord[] = [
   { id: 'ds-1', status: 'published', updatedAt: '05/08/2026 09:14:22', form: ds1Form, publishedForm: ds1Form },
   { id: 'ds-2', status: 'published', updatedAt: '18/07/2026 14:02:10', form: ds2Form, publishedForm: ds2Form },
@@ -294,4 +357,5 @@ export const MOCK_DATASETS: DatasetRecord[] = [
   { id: 'ds-6', status: 'draft', updatedAt: '10/08/2026 17:30:00', form: ds6Form, publishedForm: null },
   { id: 'ds-7', status: 'draft', updatedAt: '09/08/2026 12:10:00', form: ds7Form, publishedForm: null },
   { id: 'ds-8', status: 'draft', updatedAt: '08/08/2026 09:05:00', form: ds8Form, publishedForm: null },
+  { id: 'ds-9', status: 'published', updatedAt: '20/08/2026 10:05:00', form: ds9Form, publishedForm: ds9Form },
 ]

@@ -1,6 +1,6 @@
 import * as React from 'react'
 import type { ReactNode } from 'react'
-import { ArrowRight, BarChart3, CalendarDays, CheckCircle2, Eye, FolderKanban, Gauge, ImagePlus, LineChart, MapPin, PieChart, Send } from 'lucide-react'
+import { AlertTriangle, ArrowRight, BarChart3, CalendarDays, CheckCircle2, Circle, Eye, FolderKanban, Gauge, ImagePlus, LineChart, MapPin, PieChart, Send } from 'lucide-react'
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -11,12 +11,20 @@ import { ReviewPublishPanel } from '@/components/shared/ReviewPublishPanel'
 import { PublicVisibilityNotice } from '@/components/dataset/PublicVisibilityNotice'
 import { formatFileSize } from '@/lib/format'
 import { getResourceTitle } from '@/lib/file-validation'
+import { isMetadataValid, isPromptDatasetMetadataValid } from '@/lib/validation'
+import { promptFileMetadataStatus } from '@/lib/prompt-file-validation'
 import { useAppData } from '@/context/AppDataContext'
 import { CHART_TYPE_OPTIONS, type ChartType } from '@/types/chart'
 import {
   GEOGRAPHY_OPTIONS,
   LICENSE_OPTIONS,
   SECTOR_OPTIONS,
+  TASK_TYPE_OPTIONS,
+  PROMPT_DOMAIN_OPTIONS,
+  TARGET_LANGUAGE_OPTIONS,
+  TARGET_MODEL_TYPE_OPTIONS,
+  PROMPT_FORMAT_OPTIONS,
+  datasetTypeLabel,
   type DatasetFormState,
 } from '@/types/dataset'
 
@@ -144,13 +152,154 @@ function ReviewField({ label, value }: { label: string; value: ReactNode }) {
   )
 }
 
+function labelsFor(options: { value: string; label: string }[], values: string[]): string {
+  if (values.length === 0) return '—'
+  return values.map((v) => optionLabel(options, v)).join(', ')
+}
+
+function PromptDatasetMetadataReview({ form, onEditStep }: { form: DatasetFormState; onEditStep: (step: 1 | 2) => void }) {
+  const { promptDatasetMetadata } = form
+  return (
+    <ReviewSection title="Prompt Dataset Metadata" defaultOpen onEdit={() => onEditStep(2)}>
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+        <ReviewField
+          label="Task Type"
+          value={promptDatasetMetadata.taskType ? optionLabel(TASK_TYPE_OPTIONS, promptDatasetMetadata.taskType) : '—'}
+        />
+        <ReviewField
+          label="Domain"
+          value={promptDatasetMetadata.domain ? optionLabel(PROMPT_DOMAIN_OPTIONS, promptDatasetMetadata.domain) : '—'}
+        />
+        <ReviewField label="Target Languages" value={labelsFor(TARGET_LANGUAGE_OPTIONS, promptDatasetMetadata.targetLanguages)} />
+        <ReviewField label="Target Model Types" value={labelsFor(TARGET_MODEL_TYPE_OPTIONS, promptDatasetMetadata.targetModelTypes)} />
+      </div>
+    </ReviewSection>
+  )
+}
+
+const PROMPT_FILE_STATUS_LABEL: Record<ReturnType<typeof promptFileMetadataStatus>, string> = {
+  ready: 'Ready',
+  incomplete: 'Metadata incomplete',
+  error: 'Error',
+}
+const PROMPT_FILE_STATUS_VARIANT: Record<ReturnType<typeof promptFileMetadataStatus>, 'success' | 'warning' | 'destructive'> = {
+  ready: 'success',
+  incomplete: 'warning',
+  error: 'destructive',
+}
+
+function PromptFilesReview({ form, onEditStep }: { form: DatasetFormState; onEditStep: (step: 1 | 2) => void }) {
+  const { files } = form
+  return (
+    <ReviewSection title="Prompt Files" defaultOpen onEdit={() => onEditStep(1)}>
+      <div className="flex flex-col gap-3">
+        {files.length === 0 && <p className="text-sm text-text-subdued">No prompt files uploaded.</p>}
+        {files.map((file) => {
+          const status = promptFileMetadataStatus(file)
+          const meta = file.promptFileMetadata
+          return (
+            <div key={file.id} className="flex flex-col gap-2 rounded-lg border border-border-default px-4 py-3">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-sm font-medium text-text-default">{meta?.promptFileName || getResourceTitle(file)}</span>
+                <Badge variant="secondary">{file.extension}</Badge>
+                <Badge variant={PROMPT_FILE_STATUS_VARIANT[status]}>{PROMPT_FILE_STATUS_LABEL[status]}</Badge>
+              </div>
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-text-subdued">
+                <span>Associated file: {file.name}</span>
+                <span>•</span>
+                <span>Prompt format: {meta?.promptFormat ? optionLabel(PROMPT_FORMAT_OPTIONS, meta.promptFormat) : '—'}</span>
+                <span>•</span>
+                <span>System prompt: {meta?.hasSystemPrompt ? 'Yes' : 'No'}</span>
+                <span>•</span>
+                <span>Example responses: {meta?.hasExampleResponses ? 'Yes' : 'No'}</span>
+                <span>•</span>
+                <span>
+                  Fields: {meta?.fieldsUnavailable ? 'Unavailable' : (meta?.fields.length ?? 0)}
+                  {meta && meta.fields.length > 0
+                    ? ` (${meta.fields.filter((f) => f.description?.trim()).length}/${meta.fields.length} described)`
+                    : ''}
+                </span>
+              </div>
+            </div>
+          )
+        })}
+      </div>
+    </ReviewSection>
+  )
+}
+
+interface ReadinessItem {
+  label: string
+  ok: boolean
+  onFix?: () => void
+}
+
+function ReadinessChecklist({ items }: { items: ReadinessItem[] }) {
+  const allReady = items.every((item) => item.ok)
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Publish Readiness</CardTitle>
+      </CardHeader>
+      <CardContent className="flex flex-col gap-2">
+        {items.map((item) => (
+          <div key={item.label} className="flex items-center justify-between gap-3 py-1">
+            <div className="flex items-center gap-2">
+              {item.ok ? (
+                <CheckCircle2 className="size-4 shrink-0 text-text-success" />
+              ) : (
+                <Circle className="size-4 shrink-0 text-text-critical-strong" />
+              )}
+              <span className="text-sm text-text-default">{item.label}</span>
+            </div>
+            {!item.ok && item.onFix && (
+              <Button type="button" variant="ghost" size="sm" onClick={item.onFix}>
+                Fix
+              </Button>
+            )}
+          </div>
+        ))}
+        {!allReady && (
+          <div className="mt-2 flex items-start gap-2 rounded-md border border-action-critical-default/30 bg-action-critical-default/5 px-3 py-2.5 text-sm text-text-critical">
+            <AlertTriangle className="mt-0.5 size-4 shrink-0" />
+            <p className="font-medium">Resolve the items above before publishing.</p>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  )
+}
+
 function Step3Review({ form, datasetId, canPublish, hasLiveVersion, onEditStep, onPublish }: Step3ReviewProps) {
-  const { metadata, files } = form
+  const { metadata, files, datasetType } = form
+  const isPromptDataset = datasetType === 'prompt_dataset'
   const totalBytes = files.reduce((sum, f) => sum + f.sizeBytes, 0)
   const [preview, setPreview] = React.useState<PreviewResource | null>(null)
 
+  const readinessItems: ReadinessItem[] = isPromptDataset
+    ? [
+        { label: 'Required dataset metadata is complete', ok: isMetadataValid(metadata), onFix: () => onEditStep(2) },
+        {
+          label: 'Required Prompt Dataset metadata is complete',
+          ok: isPromptDatasetMetadataValid(form.promptDatasetMetadata),
+          onFix: () => onEditStep(2),
+        },
+        { label: 'At least one prompt file has been added', ok: files.length > 0, onFix: () => onEditStep(1) },
+        {
+          label: 'Every prompt file has required metadata',
+          ok: files.length > 0 && files.every((f) => promptFileMetadataStatus(f) === 'ready'),
+          onFix: () => onEditStep(1),
+        },
+      ]
+    : []
+
   return (
     <div className="flex flex-col gap-6">
+      <div className="flex items-center gap-2">
+        <span className="text-xs font-medium uppercase tracking-wide text-text-subdued">Dataset Type</span>
+        <Badge variant="accent">{datasetTypeLabel(datasetType)}</Badge>
+      </div>
+
       <ReviewSection title="Metadata" defaultOpen onEdit={() => onEditStep(2)}>
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
           <div className="sm:col-span-2">
@@ -206,48 +355,56 @@ function Step3Review({ form, datasetId, canPublish, hasLiveVersion, onEditStep, 
         </div>
       </ReviewSection>
 
-      <ReviewSection title="Uploaded Files" defaultOpen onEdit={() => onEditStep(1)}>
-        <div className="flex flex-col gap-3">
-          {files.length === 0 && (
-            <p className="text-sm text-text-subdued">No files uploaded.</p>
-          )}
-          {files.map((file) => (
-            <div
-              key={file.id}
-              className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg border border-border-default px-4 py-3"
-            >
-              <CheckCircle2 className="size-5 shrink-0 text-text-success" />
-              <span className="text-sm font-medium text-text-default">{getResourceTitle(file)}</span>
-              <Badge variant="secondary">{file.extension}</Badge>
-              <span className="text-xs text-text-subdued">{file.sizeLabel}</span>
-              <span className="text-xs text-text-subdued">{file.uploadedAt}</span>
-              <span className="text-xs text-text-subdued">Original: {file.name}</span>
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                className="ml-auto shrink-0"
-                aria-label={`Preview ${getResourceTitle(file)}`}
-                onClick={() =>
-                  setPreview({
-                    title: getResourceTitle(file),
-                    fileName: file.name,
-                    extension: file.extension.toUpperCase(),
-                    sizeLabel: file.sizeLabel,
-                  })
-                }
+      {isPromptDataset && <PromptDatasetMetadataReview form={form} onEditStep={onEditStep} />}
+
+      {isPromptDataset ? (
+        <PromptFilesReview form={form} onEditStep={onEditStep} />
+      ) : (
+        <ReviewSection title="Uploaded Files" defaultOpen onEdit={() => onEditStep(1)}>
+          <div className="flex flex-col gap-3">
+            {files.length === 0 && (
+              <p className="text-sm text-text-subdued">No files uploaded.</p>
+            )}
+            {files.map((file) => (
+              <div
+                key={file.id}
+                className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg border border-border-default px-4 py-3"
               >
-                <Eye className="size-4" />
-              </Button>
-            </div>
-          ))}
-          {files.length > 0 && (
-            <p className="pt-1 text-right text-sm font-medium text-text-default">
-              Total file size: {formatFileSize(totalBytes)}
-            </p>
-          )}
-        </div>
-      </ReviewSection>
+                <CheckCircle2 className="size-5 shrink-0 text-text-success" />
+                <span className="text-sm font-medium text-text-default">{getResourceTitle(file)}</span>
+                <Badge variant="secondary">{file.extension}</Badge>
+                <span className="text-xs text-text-subdued">{file.sizeLabel}</span>
+                <span className="text-xs text-text-subdued">{file.uploadedAt}</span>
+                <span className="text-xs text-text-subdued">Original: {file.name}</span>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="ml-auto shrink-0"
+                  aria-label={`Preview ${getResourceTitle(file)}`}
+                  onClick={() =>
+                    setPreview({
+                      title: getResourceTitle(file),
+                      fileName: file.name,
+                      extension: file.extension.toUpperCase(),
+                      sizeLabel: file.sizeLabel,
+                    })
+                  }
+                >
+                  <Eye className="size-4" />
+                </Button>
+              </div>
+            ))}
+            {files.length > 0 && (
+              <p className="pt-1 text-right text-sm font-medium text-text-default">
+                Total file size: {formatFileSize(totalBytes)}
+              </p>
+            )}
+          </div>
+        </ReviewSection>
+      )}
+
+      {isPromptDataset && <ReadinessChecklist items={readinessItems} />}
 
       {datasetId && <ChartsSection datasetId={datasetId} />}
 
@@ -273,7 +430,9 @@ function Step3Review({ form, datasetId, canPublish, hasLiveVersion, onEditStep, 
         </Button>
         {!canPublish && (
           <p className="text-xs font-medium text-text-critical-strong">
-            Complete the required fields in Metadata before publishing.
+            {isPromptDataset
+              ? 'Complete the required Dataset and Prompt Dataset metadata, and every prompt file, before publishing.'
+              : 'Complete the required fields in Metadata before publishing.'}
           </p>
         )}
       </ReviewPublishPanel>
