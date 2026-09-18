@@ -80,9 +80,9 @@
  * Utilities still win for one-off overrides (same specificity, later in cascade). */
 @layer components {
   .type-display {
-    font-size: 3rem;
-    line-height: 1.1;
-    font-weight: 600;
+    font-size: var(--font-size-display);
+    line-height: var(--line-height-display);
+    font-weight: var(--type-font-weight-semibold);
   }
   @media (min-width: 768px) {
     .type-display {
@@ -90,33 +90,33 @@
     }
   }
   .type-heading-1 {
-    font-size: 1.5rem;
-    line-height: 1.25;
-    font-weight: 600;
+    font-size: var(--font-size-heading-one);
+    line-height: var(--line-height-heading-one);
+    font-weight: var(--type-font-weight-semibold);
   }
   .type-heading-2 {
-    font-size: 1.25rem;
-    line-height: 1.3;
-    font-weight: 600;
+    font-size: var(--font-size-heading-two);
+    line-height: var(--line-height-heading-two);
+    font-weight: var(--type-font-weight-semibold);
   }
   .type-heading-3 {
-    font-size: 1rem;
-    line-height: 1.25;
-    font-weight: 600;
+    font-size: var(--font-size-heading-three);
+    line-height: var(--line-height-heading-three);
+    font-weight: var(--type-font-weight-semibold);
   }
   .type-body {
-    font-size: 0.875rem;
-    line-height: 1.5;
-    font-weight: 400;
+    font-size: var(--font-size-body);
+    line-height: var(--line-height-body);
+    font-weight: var(--type-font-weight-regular);
   }
   .type-label {
-    font-size: 0.875rem;
-    line-height: 1.25;
-    font-weight: 500;
+    font-size: var(--font-size-body);
+    line-height: var(--line-height-label);
+    font-weight: var(--type-font-weight-medium);
   }
   .type-caption {
-    font-size: 0.75rem;
-    line-height: 1.333;
-    font-weight: 400;
+    font-size: var(--font-size-caption);
+    line-height: var(--line-height-caption);
+    font-weight: var(--type-font-weight-regular);
   }
 }

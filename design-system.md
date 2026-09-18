@@ -176,8 +176,8 @@ Categorical series colors for data visualizations — an amber-to-brown ramp cal
 
 | Token | CSS variable | Tailwind key | Value |
 |---|---|---|---|
-| `font.sans` | `--font-sans` | `--font-sans` | `'Inter', system-ui, sans-serif` |
-| `font.mono` | `--font-mono` | `--font-mono` | `'JetBrains Mono', monospace` |
+| `font.sans` | `--font-family-sans` | `--font-sans` | `'Inter', system-ui, sans-serif` |
+| `font.mono` | `--font-family-mono` | `--font-mono` | `'JetBrains Mono', monospace` |
 
 `Inter` (weights 400–700 — 300 dropped, previously fetched but never applied) and `JetBrains Mono` (400–500) are loaded from Google Fonts in `index.html`.
 
@@ -198,6 +198,40 @@ Categorical series colors for data visualizations — an amber-to-brown ramp cal
 **Weight roles:** `weight.regular` 400 (body) · `weight.medium` 500 (labels/buttons/emphasis) · `weight.semibold` 600 (headings) · `weight.bold` 700 (large display numerals only). Nothing lighter than regular on essential text.
 
 **Letter-spacing:** `tracking.emphasis` 0.025em, reserved for short uppercase field-group labels; everything else native.
+
+### DataSpace token reconciliation — typography (in progress)
+
+The seven `.type-*` role classes above are hand-written CSS in `src/index.css` (Tailwind's `@theme` can't hold a bundled size+line-height+weight value), so reconciling their naming doesn't mean new classes for components to adopt — components keep using `.type-heading-2` etc. exactly as before. Instead, the values *inside* those seven rules now come from named, DataSpace-reconciled variables, root-only (never exposed as a Tailwind utility, so nothing invites picking an ad hoc size/weight/line-height outside the seven roles):
+
+| Token | CSS variable | Tailwind key | Value |
+|---|---|---|---|
+| `fontSize.caption` | `--font-size-caption` | — | `0.75rem` |
+| `fontSize.body` | `--font-size-body` | — | `0.875rem` |
+| `fontSize.headingThree` | `--font-size-heading-three` | — | `1rem` |
+| `fontSize.headingTwo` | `--font-size-heading-two` | — | `1.25rem` |
+| `fontSize.headingOne` | `--font-size-heading-one` | — | `1.5rem` |
+| `fontSize.display` | `--font-size-display` | — | `3rem` |
+
+| Token | CSS variable | Tailwind key | Value |
+|---|---|---|---|
+| `fontWeight.regular` | `--type-font-weight-regular` | — | `400` |
+| `fontWeight.medium` | `--type-font-weight-medium` | — | `500` |
+| `fontWeight.semibold` | `--type-font-weight-semibold` | — | `600` |
+| `fontWeight.bold` | `--type-font-weight-bold` | — | `700` |
+
+| Token | CSS variable | Tailwind key | Value |
+|---|---|---|---|
+| `lineHeight.caption` | `--line-height-caption` | — | `1.333` |
+| `lineHeight.body` | `--line-height-body` | — | `1.5` |
+| `lineHeight.label` | `--line-height-label` | — | `1.25` |
+| `lineHeight.headingThree` | `--line-height-heading-three` | — | `1.25` |
+| `lineHeight.headingTwo` | `--line-height-heading-two` | — | `1.3` |
+| `lineHeight.headingOne` | `--line-height-heading-one` | — | `1.25` |
+| `lineHeight.display` | `--line-height-display` | — | `1.1` |
+
+`font.sans`/`font.mono` now also produce `--font-family-sans`/`--font-family-mono` alongside the unchanged `--font-sans`/`--font-mono` Tailwind keys, so the live `font-sans` utility class is unaffected.
+
+Note the font-weight variables are named `--type-font-weight-*`, not `--font-weight-*` — that exact namespace is reserved by Tailwind's own theme for its `font-medium`/`font-semibold`/`font-bold` utilities, and colliding with it would silently override those utilities app-wide.
 
 ### Border radius
 
