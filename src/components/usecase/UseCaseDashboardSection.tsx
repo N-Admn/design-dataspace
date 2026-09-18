@@ -85,7 +85,7 @@ function UseCaseDashboardSection({ embedCode, onChange }: UseCaseDashboardSectio
       <CardHeader>
         <CardTitle>Embedded Dashboard</CardTitle>
         <p className="mt-1 text-sm font-normal text-muted-foreground">
-          Add one external dashboard to help users explore the data behind this Use Case.
+          Add one external dashboard to help users explore the data behind this content.
         </p>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">

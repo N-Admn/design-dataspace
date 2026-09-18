@@ -2,6 +2,7 @@ import { AlertTriangle, CheckCircle2, ExternalLink } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { ReviewPublishPanel } from '@/components/shared/ReviewPublishPanel'
+import { SectionHeader } from '@/components/shared/SectionHeader'
 import { validateCollaborativeAbout, validateCollaborativeContent, isCollaborativeReadyToPublish } from '@/lib/collaborative-validation'
 import type { CollaborativeFormState } from '@/types/collaborative'
 
@@ -75,6 +76,12 @@ function CollaborativeStep4Review({ form, onEditStep, onPreview }: Collaborative
 
   return (
     <div className="flex flex-col gap-6">
+      <SectionHeader
+        as="h2"
+        title="Review & Publish"
+        description="Check your information before making this content available publicly."
+      />
+
       <div className="rounded-xl border border-border bg-card p-5">
         <p className={ready ? 'text-sm font-semibold text-success-text' : 'text-sm font-semibold text-warning-foreground'}>
           {ready ? 'Ready to publish' : 'Needs attention'}

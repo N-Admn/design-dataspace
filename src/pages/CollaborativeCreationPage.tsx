@@ -11,6 +11,7 @@ import { CollaborativeStep2People } from '@/components/collaborative/Collaborati
 import { CollaborativeStep3Content } from '@/components/collaborative/CollaborativeStep3Content'
 import { CollaborativeStep4Review } from '@/components/collaborative/CollaborativeStep4Review'
 import { LeaveCreationDialog } from '@/components/shared/LeaveCreationDialog'
+import { OrganisationContextBanner } from '@/components/organisation/OrganisationContextBanner'
 import { useToast } from '@/components/ui/toast'
 import { useAppData } from '@/context/AppDataContext'
 import { useHelpContext } from '@/context/HelpContext'
@@ -25,7 +26,7 @@ const COLLABORATIVE_STEPS = [
   { step: 1, label: 'About', description: 'What is this?', icon: FileText },
   { step: 2, label: 'People', description: 'Who is involved?', icon: Users },
   { step: 3, label: 'Content', description: 'What is connected?', icon: Share2 },
-  { step: 4, label: 'Review', description: 'Check readiness', icon: ListChecks },
+  { step: 4, label: 'Review & Publish', description: 'Check readiness', icon: ListChecks },
 ]
 
 interface CollaborativeNavState {
@@ -33,17 +34,22 @@ interface CollaborativeNavState {
   initialStep?: CollaborativeStep
   /** Set by the Use Case creation flow when it returns here after "Create New Use Case". */
   createdUseCaseId?: string
+  organisationId?: string
+  returnTo?: string
 }
 
 function CollaborativeCreationPage() {
   const navigate = useNavigate()
   const location = useLocation()
-  const { collaboratives, useCases, upsertCollaborative } = useAppData()
+  const { collaboratives, useCases, upsertCollaborative, organisationWorkspaces } = useAppData()
   const { setContextLabel } = useHelpContext()
   const toast = useToast()
 
   const navState = (location.state as CollaborativeNavState | null) ?? null
   const resumeRecord = navState?.collaborativeId ? collaboratives.find((c) => c.id === navState.collaborativeId) : undefined
+  const organisationId = navState?.organisationId
+  const returnTo = navState?.returnTo ?? '/dashboard/collaboratives'
+  const organisation = organisationId ? organisationWorkspaces.find((o) => o.id === organisationId) : undefined
 
   const [editingId, setEditingId] = useState<string | null>(resumeRecord?.id ?? null)
   const [step, setStep] = useState<CollaborativeStep>(navState?.initialStep ?? 1)
@@ -99,7 +105,7 @@ function CollaborativeCreationPage() {
       setShowLeaveConfirm(true)
       return
     }
-    navigate('/dashboard/collaboratives')
+    navigate(returnTo)
   }
 
   const goToStep = (next: CollaborativeStep) => {
@@ -123,7 +129,7 @@ function CollaborativeCreationPage() {
 
   const handleSaveDraft = () => {
     setSaved(false)
-    const id = upsertCollaborative(editingId, 'draft', form)
+    const id = upsertCollaborative(editingId, 'draft', form, organisationId)
     if (!editingId) setEditingId(id)
     setLastSavedForm(form)
     setTimeout(() => setSaved(true), 500)
@@ -141,7 +147,7 @@ function CollaborativeCreationPage() {
   const handlePreview = () => {
     let id = editingId
     if (!id) {
-      id = upsertCollaborative(null, 'draft', form)
+      id = upsertCollaborative(null, 'draft', form, organisationId)
       setEditingId(id)
       setLastSavedForm(form)
     }
@@ -152,7 +158,7 @@ function CollaborativeCreationPage() {
   const handleCreateUseCase = () => {
     let id = editingId
     if (!id) {
-      id = upsertCollaborative(null, 'draft', form)
+      id = upsertCollaborative(null, 'draft', form, organisationId)
       setEditingId(id)
       setLastSavedForm(form)
     }
@@ -171,6 +177,7 @@ function CollaborativeCreationPage() {
         editablePlaceholder="Untitled Collaborative"
         unsavedChanges={showUnsavedIndicator}
       />
+      {organisation && <OrganisationContextBanner organisationName={organisation.metadata.name} />}
       <div className="border-t border-border px-6 py-6">
         <Stepper
           steps={COLLABORATIVE_STEPS}
@@ -214,11 +221,11 @@ function CollaborativeCreationPage() {
         onSave={() => {
           setShowLeaveConfirm(false)
           handleSaveDraft()
-          navigate('/dashboard/collaboratives')
+          navigate(returnTo)
         }}
         onDiscard={() => {
           setShowLeaveConfirm(false)
-          navigate('/dashboard/collaboratives')
+          navigate(returnTo)
         }}
       />
     </Card>

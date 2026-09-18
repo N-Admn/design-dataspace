@@ -20,8 +20,8 @@ function ChartsPage() {
     if (!record) return
     const name = record.form.name || 'this chart'
     const ok = await confirm({
-      title: 'Delete chart?',
-      description: `Deleting "${name}" will permanently remove it. This action cannot be undone.`,
+      title: 'Delete Chart',
+      description: `Deleting "${name}" will permanently remove it from My Workspace. This action cannot be undone.`,
       confirmLabel: 'Delete Chart',
       variant: 'destructive',
     })

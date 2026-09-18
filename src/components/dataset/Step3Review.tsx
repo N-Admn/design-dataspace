@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { ReviewSection } from '@/components/shared/ReviewSection'
 import { ResourcePreviewDialog, type PreviewResource } from '@/components/shared/ResourcePreviewDialog'
 import { ReviewPublishPanel } from '@/components/shared/ReviewPublishPanel'
+import { SectionHeader } from '@/components/shared/SectionHeader'
 import { PublicVisibilityNotice } from '@/components/dataset/PublicVisibilityNotice'
 import { formatFileSize } from '@/lib/format'
 import { getResourceTitle } from '@/lib/file-validation'
@@ -151,6 +152,12 @@ function Step3Review({ form, datasetId, canPublish, hasLiveVersion, onEditStep, 
 
   return (
     <div className="flex flex-col gap-6">
+      <SectionHeader
+        as="h2"
+        title="Review & Publish"
+        description="Check your information before making this content available publicly."
+      />
+
       <ReviewSection title="Metadata" defaultOpen onEdit={() => onEditStep(2)}>
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
           <div className="sm:col-span-2">

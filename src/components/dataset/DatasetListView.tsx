@@ -151,9 +151,9 @@ function DatasetListView({
 
   return (
     <ManagementTable<DatasetRecord, DatasetStatus>
-      title="My Datasets"
-      subtitle={(count) => `${count} dataset${count === 1 ? '' : 's'} · manage published datasets and continue drafts`}
-      addLabel="Add Dataset"
+      title="Datasets"
+      subtitle={() => 'Discover, create and manage datasets on CivicDataSpace.'}
+      addLabel="Create Dataset"
       onAdd={onAddDataset}
       items={datasets}
       getId={(d) => d.id}

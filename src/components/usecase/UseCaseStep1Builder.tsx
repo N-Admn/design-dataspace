@@ -257,9 +257,9 @@ function UseCaseStep1Builder({
 
       <Card>
         <CardHeader>
-          <CardTitle>Build Your Content</CardTitle>
+          <CardTitle>Content</CardTitle>
           <p className="mt-1 text-sm font-normal text-muted-foreground">
-            Tell the story behind your Use Case and add relevant content.
+            Add the main information that explains this content.
           </p>
         </CardHeader>
         <CardContent className="flex flex-col gap-5">

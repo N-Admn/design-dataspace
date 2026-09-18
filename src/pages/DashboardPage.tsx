@@ -147,7 +147,7 @@ function DashboardPage() {
         <div className="flex flex-col gap-6">
           <button
             type="button"
-            onClick={() => comingSoon('Organization Workspace')}
+            onClick={() => navigate('/organisations')}
             className={cn('bg-card p-8 text-left transition-shadow hover:shadow-md md:p-10', PANEL_RADIUS)}
           >
             <div className="flex items-center justify-between gap-4">

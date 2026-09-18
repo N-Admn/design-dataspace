@@ -121,6 +121,11 @@ export interface UseCaseRecord {
   /** Snapshot of `form` from the moment this record was last published — untouched
    * while a working copy has unpublished edits, so Discard can restore the live version. */
   publishedForm: UseCaseFormState | null
+  /** Present only for content created within an Organisation Workspace — absent
+   *  (undefined) means it belongs to the individual's My Workspace. */
+  organisationId?: string
+  /** Display name of the member who created this record. */
+  createdBy?: string
 }
 
 export const emptyUseCaseMetadata: UseCaseMetadata = {
