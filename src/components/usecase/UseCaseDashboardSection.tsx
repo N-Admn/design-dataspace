@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { FieldError } from '@/components/ui/field-error'
-import { EmptyState } from '@/components/shared/EmptyState'
 import { useConfirm } from '@/components/ui/confirm-dialog'
 import { extractIframeSrc } from '@/lib/dashboard-embed'
 
@@ -23,12 +22,9 @@ function UseCaseDashboardSection({ embedCode, onChange }: UseCaseDashboardSectio
   const [isValidating, setIsValidating] = React.useState(false)
 
   const savedSrc = embedCode ? extractIframeSrc(embedCode) : null
-
-  const startAdd = () => {
-    setDraft('')
-    setError(undefined)
-    setIsEditing(true)
-  }
+  // With no saved dashboard the embed field is shown straight away; `isEditing` only
+  // matters when replacing one that already exists.
+  const showForm = isEditing || !embedCode
 
   const startReplace = async () => {
     const ok = await confirm({
@@ -89,7 +85,7 @@ function UseCaseDashboardSection({ embedCode, onChange }: UseCaseDashboardSectio
         </p>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
-        {isEditing ? (
+        {showForm ? (
           <div className="flex flex-col gap-3">
             <div>
               <Label htmlFor="usecase-dashboard-embed">Dashboard embed code</Label>
@@ -122,13 +118,15 @@ function UseCaseDashboardSection({ embedCode, onChange }: UseCaseDashboardSectio
                   'Save Dashboard'
                 )}
               </Button>
-              <Button type="button" variant="ghost" size="sm" onClick={handleCancel} disabled={isValidating}>
-                Cancel
-              </Button>
+              {embedCode && (
+                <Button type="button" variant="ghost" size="sm" onClick={handleCancel} disabled={isValidating}>
+                  Cancel
+                </Button>
+              )}
             </div>
             <p className="text-xs text-muted-foreground">You can add one external dashboard to this Use Case.</p>
           </div>
-        ) : embedCode ? (
+        ) : (
           <div className="flex flex-col gap-3">
             <div className="flex items-center justify-between gap-3">
               <span className="inline-flex items-center gap-1.5 rounded-full bg-success/5 px-2.5 py-1 text-xs font-medium text-success-text">
@@ -167,20 +165,6 @@ function UseCaseDashboardSection({ embedCode, onChange }: UseCaseDashboardSectio
                 Preview unavailable for this embed code.
               </div>
             )}
-          </div>
-        ) : (
-          <div className="flex flex-col gap-2">
-            <EmptyState
-              icon={LayoutDashboard}
-              title="No dashboard added yet"
-              description="Add an external dashboard to help users explore the data in greater depth."
-              action={
-                <Button type="button" variant="outline" size="sm" onClick={startAdd}>
-                  Add Dashboard
-                </Button>
-              }
-            />
-            <p className="text-center text-xs text-muted-foreground">You can add one external dashboard to this Use Case.</p>
           </div>
         )}
       </CardContent>
