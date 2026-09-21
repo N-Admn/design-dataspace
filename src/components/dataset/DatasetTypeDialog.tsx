@@ -72,8 +72,7 @@ function DatasetTypeDialog({ open, onOpenChange, onContinue }: DatasetTypeDialog
             )
           })}
           <p className="mt-1 text-xs text-text-subdued">
-            Dataset type is selected when the dataset is created and determines the metadata and file
-            configuration required later. It can't be changed after the draft is created.
+            You can't change this after the draft is created.
           </p>
         </div>
 
