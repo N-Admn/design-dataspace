@@ -174,6 +174,7 @@ function PromptFileSideSheet({
             <div className="flex items-start gap-3 rounded-lg border border-border-default p-3">
               <Checkbox
                 id="prompt-has-system-prompt"
+                className="mt-0.5"
                 checked={meta.hasSystemPrompt}
                 disabled={readOnly}
                 onCheckedChange={(checked) =>
@@ -191,6 +192,7 @@ function PromptFileSideSheet({
             <div className="flex items-start gap-3 rounded-lg border border-border-default p-3">
               <Checkbox
                 id="prompt-has-example-responses"
+                className="mt-0.5"
                 checked={meta.hasExampleResponses}
                 disabled={readOnly}
                 onCheckedChange={(checked) =>
