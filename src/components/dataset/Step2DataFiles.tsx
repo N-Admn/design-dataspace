@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { AlertCircle, CheckCircle2, Eye, Folder, Globe, Loader2, Pencil, Sparkles, Trash2, UploadCloud } from 'lucide-react'
+import { AlertCircle, CheckCircle2, Folder, Globe, Loader2, Pencil, Sparkles, Trash2, UploadCloud } from 'lucide-react'
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -8,7 +8,6 @@ import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { FieldError } from '@/components/ui/field-error'
 import { SearchableSelect } from '@/components/ui/searchable-select'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { ResourcePreviewDialog, type PreviewResource } from '@/components/shared/ResourcePreviewDialog'
 import { DropzoneUploadField } from '@/components/shared/DropzoneUploadField'
 import { FileDetailsSheet } from '@/components/dataset/FileDetailsSheet'
@@ -85,75 +84,22 @@ const PROMPT_STATUS_BADGE: Record<ReturnType<typeof promptFileMetadataStatus>, {
 function FileRow({
   file,
   isPromptDataset,
-  onTitleChange,
   onOpenDetails,
   onRemove,
 }: {
   file: DatasetFile
   isPromptDataset: boolean
-  onTitleChange: (id: string, title: string) => void
   onOpenDetails: () => void
   onRemove: () => void
 }) {
   const title = getResourceTitle(file)
-  const [isEditing, setIsEditing] = React.useState(false)
-  const [draft, setDraft] = React.useState(title)
   const isPlatformImport = Boolean(file.source && file.source !== 'File upload')
-
-  React.useEffect(() => {
-    if (!isEditing) setDraft(title)
-  }, [title, isEditing])
-
-  const commit = () => {
-    setIsEditing(false)
-    const next = draft.trim()
-    if (next) {
-      onTitleChange(file.id, next)
-    } else {
-      setDraft(title)
-    }
-  }
 
   return (
     <div className="flex flex-wrap items-center gap-3 rounded-lg border border-border-default px-4 py-3">
       <CheckCircle2 className="size-5 shrink-0 text-text-success" />
       <div className="min-w-0 flex-1">
-        {isEditing ? (
-          <Input
-            autoFocus
-            value={draft}
-            aria-label={`Resource title for ${file.name}`}
-            onChange={(e) => setDraft(e.target.value)}
-            onBlur={commit}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') commit()
-              if (e.key === 'Escape') {
-                setDraft(title)
-                setIsEditing(false)
-              }
-            }}
-            className="h-8 max-w-xs text-sm font-medium"
-          />
-        ) : (
-          <div className="flex min-w-0 items-center gap-1">
-            <p className="truncate text-sm font-medium text-text-default">{title}</p>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  aria-label={`Edit title for ${file.name}`}
-                  onClick={() => setIsEditing(true)}
-                  className="size-6 shrink-0"
-                >
-                  <Pencil className="size-3.5" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent side="top">Edit title</TooltipContent>
-            </Tooltip>
-          </div>
-        )}
+        <p className="truncate text-sm font-medium text-text-default">{title}</p>
         <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-text-subdued">
           <Badge variant="secondary">{file.extension}</Badge>
           <span>Size: {file.sizeLabel}</span>
@@ -198,10 +144,10 @@ function FileRow({
             type="button"
             variant="ghost"
             size="icon"
-            aria-label={`View details for ${file.name}`}
+            aria-label={`Edit details for ${file.name}`}
             onClick={onOpenDetails}
           >
-            <Eye className="size-4" />
+            <Pencil className="size-4" />
           </Button>
           <Button
             type="button"
@@ -611,7 +557,6 @@ function Step2DataFiles({
                         key={file.id}
                         file={file}
                         isPromptDataset={isPromptDataset}
-                        onTitleChange={onFileTitleChange}
                         onOpenDetails={() => setDetailsId(file.id)}
                         onRemove={() => {
                           onFileRemove(file.id)
@@ -627,7 +572,6 @@ function Step2DataFiles({
                   key={file.id}
                   file={file}
                   isPromptDataset={isPromptDataset}
-                  onTitleChange={onFileTitleChange}
                   onOpenDetails={() => setDetailsId(file.id)}
                   onRemove={() => {
                     onFileRemove(file.id)
