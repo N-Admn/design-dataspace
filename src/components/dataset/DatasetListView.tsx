@@ -80,9 +80,7 @@ function buildColumns(onOpen: (dataset: DatasetRecord) => void): ManagementColum
     sortable: true,
     compare: (a, b) => datasetTypeLabel(a.form.datasetType).localeCompare(datasetTypeLabel(b.form.datasetType)),
     render: (d) => (
-      <Badge variant={d.form.datasetType === 'prompt_dataset' ? 'accent' : 'outline'}>
-        {datasetTypeLabel(d.form.datasetType)}
-      </Badge>
+      <Badge variant="outline">{datasetTypeLabel(d.form.datasetType)}</Badge>
     ),
   },
   {
