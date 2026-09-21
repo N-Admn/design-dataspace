@@ -18,10 +18,13 @@ interface SearchInputProps {
   placeholder: string
   autoFocus?: boolean
   className?: string
+  /** Connects an external `<Label htmlFor>` to this field — omit for searches
+   *  that only have the placeholder as their accessible name. */
+  id?: string
 }
 
 /** Search field: leading magnifier + borderless text input in a rounded border box. */
-function SearchInput({ value, onChange, placeholder, autoFocus, className }: SearchInputProps) {
+function SearchInput({ value, onChange, placeholder, autoFocus, className, id }: SearchInputProps) {
   return (
     <div
       className={cn(
@@ -31,6 +34,7 @@ function SearchInput({ value, onChange, placeholder, autoFocus, className }: Sea
     >
       <Search className="size-4 shrink-0 text-text-subdued" />
       <input
+        id={id}
         autoFocus={autoFocus}
         value={value}
         onChange={(e) => onChange(e.target.value)}

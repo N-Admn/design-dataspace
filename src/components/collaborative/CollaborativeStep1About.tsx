@@ -26,6 +26,9 @@ function CollaborativeStep1About({ metadata, errors, onChange }: CollaborativeSt
       <Card>
         <CardHeader>
           <CardTitle>Basic Information</CardTitle>
+          <p className="mt-1 text-sm font-normal text-muted-foreground">
+            Introduce this content with a title, summary and image.
+          </p>
         </CardHeader>
         <CardContent className="flex flex-col gap-5">
           <FileUploadField
@@ -96,7 +99,9 @@ function CollaborativeStep1About({ metadata, errors, onChange }: CollaborativeSt
       <Card>
         <CardHeader>
           <CardTitle>Classification</CardTitle>
-          <p className="mt-1 text-sm font-normal text-muted-foreground">Optional. Helps people discover this Collaborative.</p>
+          <p className="mt-1 text-sm font-normal text-muted-foreground">
+            Add sectors and topics to help people discover this content.
+          </p>
         </CardHeader>
         <CardContent className="flex flex-col gap-5">
           <div>

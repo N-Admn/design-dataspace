@@ -143,8 +143,8 @@ function UseCaseListView({
   return (
     <ManagementTable<UseCaseRecord, UseCaseStatus>
       title="Use Cases"
-      subtitle={() => 'Create, manage and publish Use Cases that demonstrate how civic data is being used.'}
-      addLabel="Add Use Case"
+      subtitle={() => 'Explore how civic data is used to solve real-world problems.'}
+      addLabel="Create Use Case"
       onAdd={onAddUseCase}
       items={useCases}
       getId={(u) => u.id}
@@ -158,7 +158,7 @@ function UseCaseListView({
       searchMatch={matchesSearch}
       getActions={getActions}
       emptyTitle="No use cases yet"
-      emptyDescription="Create your first Use Case to show how civic data is being used."
+      emptyDescription="Create your first use case to show how civic data is being used."
       tabEmptyMessage={(status) => TAB_EMPTY_MESSAGE[status]}
       loading={loading}
       loadError={loadError}

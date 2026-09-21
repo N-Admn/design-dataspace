@@ -20,7 +20,7 @@ function EventsPage() {
     if (!record) return
     const name = record.form.metadata.title || 'this event'
     const ok = await confirm({
-      title: 'Delete event?',
+      title: 'Delete Event',
       description: `Deleting "${name}" will permanently remove it from My Workspace. This action cannot be undone.`,
       confirmLabel: 'Delete Event',
       variant: 'destructive',

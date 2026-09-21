@@ -65,7 +65,7 @@ function DatasetsPage() {
         : `Deleting "${name}" will permanently remove it from My Workspace. This action cannot be undone.`
 
     const ok = await confirm({
-      title: 'Delete dataset?',
+      title: 'Delete Dataset',
       description,
       confirmLabel: 'Delete Dataset',
       variant: 'destructive',

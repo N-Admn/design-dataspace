@@ -57,8 +57,10 @@ export interface ManagementRowAction<T> {
 export interface ManagementTableProps<T, S extends string> {
   title: string
   subtitle: (count: number) => string
-  addLabel: string
-  onAdd: () => void
+  /** Omit both (or pass `onAdd` as undefined) to hide the Add action entirely —
+   *  e.g. a member without permission to add organisation members. */
+  addLabel?: string
+  onAdd?: () => void
   items: T[]
   getId: (row: T) => string
   columns: ManagementColumn<T>[]
@@ -316,10 +318,12 @@ function ManagementTable<T, S extends string>({
       <CenteredBodyMessage>
         <p className="text-sm font-medium text-foreground">{emptyTitle}</p>
         <p className="text-sm text-muted-foreground">{emptyDescription}</p>
-        <Button type="button" size="sm" className="mt-1" onClick={onAdd}>
-          <Plus className="size-4" />
-          {addLabel}
-        </Button>
+        {onAdd && addLabel && (
+          <Button type="button" size="sm" className="mt-1" onClick={onAdd}>
+            <Plus className="size-4" />
+            {addLabel}
+          </Button>
+        )}
       </CenteredBodyMessage>
     )
   } else if (tabFiltered.length === 0) {
@@ -538,10 +542,12 @@ function ManagementTable<T, S extends string>({
           <CardTitle>{title}</CardTitle>
           <p className="mt-1 text-sm font-normal text-muted-foreground">{subtitle(items.length)}</p>
         </div>
-        <Button type="button" onClick={onAdd}>
-          <Plus className="size-4" />
-          {addLabel}
-        </Button>
+        {onAdd && addLabel && (
+          <Button type="button" onClick={onAdd}>
+            <Plus className="size-4" />
+            {addLabel}
+          </Button>
+        )}
       </CardHeader>
 
       {searchFilterRow}

@@ -156,8 +156,8 @@ function AIModelListView({
   return (
     <ManagementTable<AIModelRecord, AIModelStatus>
       title="AI Models"
-      subtitle={() => 'Create, manage and publish AI Models so people can discover and access them.'}
-      addLabel="Add New AI Model"
+      subtitle={() => 'Discover and manage AI models built for civic data applications.'}
+      addLabel="Create AI Model"
       onAdd={onAddAIModel}
       items={aiModels}
       getId={(m) => m.id}
@@ -170,8 +170,8 @@ function AIModelListView({
       searchPlaceholder="Search AI models..."
       searchMatch={matchesSearch}
       getActions={getActions}
-      emptyTitle="No AI Models yet"
-      emptyDescription="Create your first AI Model to make it discoverable on CivicDataSpace."
+      emptyTitle="No AI models yet"
+      emptyDescription="Create your first AI model to make it discoverable on CivicDataSpace."
       tabEmptyMessage={(status) => TAB_EMPTY_MESSAGE[status]}
       loading={loading}
       loadError={loadError}

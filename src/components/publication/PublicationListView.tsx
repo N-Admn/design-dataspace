@@ -141,7 +141,7 @@ function PublicationListView({
     <ManagementTable<PublicationRecord, PublicationStatus>
       title="Publications"
       subtitle={() => 'Create, manage and publish reports, findings and other content so people can discover them.'}
-      addLabel="Add New Publication"
+      addLabel="Create Publication"
       onAdd={onAddPublication}
       items={publications}
       getId={(r) => r.id}
@@ -154,8 +154,8 @@ function PublicationListView({
       searchPlaceholder="Search publications..."
       searchMatch={matchesSearch}
       getActions={getActions}
-      emptyTitle="No Publications yet"
-      emptyDescription="Create your first Publication to make it discoverable on CivicDataSpace."
+      emptyTitle="No publications yet"
+      emptyDescription="Create your first publication to make it discoverable on CivicDataSpace."
       tabEmptyMessage={(status) => TAB_EMPTY_MESSAGE[status]}
     />
   )

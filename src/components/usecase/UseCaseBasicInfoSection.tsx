@@ -22,7 +22,7 @@ function UseCaseBasicInfoSection({ metadata, errors, onChange }: UseCaseBasicInf
       <CardHeader>
         <CardTitle>Basic Information</CardTitle>
         <p className="mt-1 text-sm font-normal text-muted-foreground">
-          Introduce your Use Case with a title, short summary, and image.
+          Introduce your use case with a title, short summary and image.
         </p>
       </CardHeader>
       <CardContent className="flex flex-col gap-5">

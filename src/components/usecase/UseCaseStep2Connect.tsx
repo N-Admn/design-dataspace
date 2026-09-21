@@ -88,7 +88,7 @@ function UseCaseStep2Connect({ metadata, onMetadataChange, connections, onChange
           <div>
             <CardTitle>Contributors</CardTitle>
             <p className="mt-1 text-sm font-normal text-muted-foreground">
-              Add people who contributed to this Use Case.
+              Add the people and organisations involved in creating this content.
             </p>
           </div>
           <Button type="button" variant="outline" size="sm" onClick={() => setShowContributorForm(true)}>
@@ -145,9 +145,9 @@ function UseCaseStep2Connect({ metadata, onMetadataChange, connections, onChange
       <Card>
         <CardHeader className="flex-row items-center justify-between">
           <div>
-            <CardTitle>Organizations</CardTitle>
+            <CardTitle>Organisations</CardTitle>
             <p className="mt-1 text-sm font-normal text-muted-foreground">
-              Add organizations connected to this Use Case.
+              Connect the organisations involved in this content.
             </p>
           </div>
           <Button type="button" variant="outline" size="sm" onClick={() => setShowAddOrgForm(true)}>

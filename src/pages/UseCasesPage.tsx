@@ -20,7 +20,7 @@ function UseCasesPage() {
     if (!record) return
     const name = record.form.metadata.title || 'this use case'
     const ok = await confirm({
-      title: 'Delete use case?',
+      title: 'Delete Use Case',
       description: `Deleting "${name}" will permanently remove it from My Workspace. This action cannot be undone.`,
       confirmLabel: 'Delete Use Case',
       variant: 'destructive',

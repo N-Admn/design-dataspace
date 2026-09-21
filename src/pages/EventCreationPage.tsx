@@ -11,6 +11,7 @@ import { EventConnectionsStep } from '@/components/event/EventConnectionsStep'
 import { EventResourcesStep } from '@/components/event/EventResourcesStep'
 import { EventPublishReview } from '@/components/event/EventPublishReview'
 import { LeaveCreationDialog } from '@/components/shared/LeaveCreationDialog'
+import { OrganisationContextBanner } from '@/components/organisation/OrganisationContextBanner'
 import { useToast } from '@/components/ui/toast'
 import { useAppData } from '@/context/AppDataContext'
 import { useHelpContext } from '@/context/HelpContext'
@@ -25,12 +26,14 @@ const EVENT_STEPS = [
   { step: 1, label: 'Details', description: 'Add event details and information', icon: FileText },
   { step: 2, label: 'Connections', description: 'Add organisations, people and partners', icon: Link2 },
   { step: 3, label: 'Resources', description: 'Add related content and resources', icon: Newspaper },
-  { step: 4, label: 'Publish', description: 'Review details and publish event', icon: ListChecks },
+  { step: 4, label: 'Review & Publish', description: 'Check details before publishing', icon: ListChecks },
 ]
 
 interface EventNavState {
   eventId?: string
   initialStep?: EventStep
+  organisationId?: string
+  returnTo?: string
 }
 
 function resolveInitialForm(events: ReturnType<typeof useAppData>['events'], navState: EventNavState | null) {
@@ -44,11 +47,14 @@ function resolveInitialForm(events: ReturnType<typeof useAppData>['events'], nav
 function EventCreationPage() {
   const navigate = useNavigate()
   const location = useLocation()
-  const { events, upsertEvent } = useAppData()
+  const { events, upsertEvent, organisationWorkspaces } = useAppData()
   const { setContextLabel } = useHelpContext()
   const toast = useToast()
 
   const navState = (location.state as EventNavState | null) ?? null
+  const organisationId = navState?.organisationId
+  const returnTo = navState?.returnTo ?? '/dashboard/events'
+  const organisation = organisationId ? organisationWorkspaces.find((o) => o.id === organisationId) : undefined
 
   const [editingId, setEditingId] = useState<string | null>(navState?.eventId ?? null)
   const [step, setStep] = useState<EventStep>(navState?.initialStep ?? 1)
@@ -86,7 +92,7 @@ function EventCreationPage() {
       setShowLeaveConfirm(true)
       return
     }
-    navigate('/dashboard/events')
+    navigate(returnTo)
   }
 
   const handleContinueFromInformation = () => {
@@ -125,7 +131,7 @@ function EventCreationPage() {
 
   const handleSaveDraft = () => {
     setSaved(false)
-    const id = upsertEvent(editingId, 'draft', form)
+    const id = upsertEvent(editingId, 'draft', form, organisationId)
     if (!editingId) setEditingId(id)
     setLastSavedForm(form)
     setTimeout(() => setSaved(true), 500)
@@ -142,7 +148,7 @@ function EventCreationPage() {
   const handlePreview = () => {
     let id = editingId
     if (!id) {
-      id = upsertEvent(null, 'draft', form)
+      id = upsertEvent(null, 'draft', form, organisationId)
       setEditingId(id)
       setLastSavedForm(form)
     }
@@ -161,6 +167,7 @@ function EventCreationPage() {
         title={editingId ? form.metadata.title || 'Untitled Event' : 'New Event'}
         unsavedChanges={showUnsavedIndicator}
       />
+      {organisation && <OrganisationContextBanner organisationName={organisation.metadata.name} />}
       <div className="border-t border-border px-6 py-6">
         <Stepper
           steps={EVENT_STEPS}
@@ -201,11 +208,11 @@ function EventCreationPage() {
         onSave={() => {
           setShowLeaveConfirm(false)
           handleSaveDraft()
-          navigate('/dashboard/events')
+          navigate(returnTo)
         }}
         onDiscard={() => {
           setShowLeaveConfirm(false)
-          navigate('/dashboard/events')
+          navigate(returnTo)
         }}
       />
     </Card>

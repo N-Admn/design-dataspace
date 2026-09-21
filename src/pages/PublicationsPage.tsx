@@ -20,7 +20,7 @@ function PublicationsPage() {
     if (!record) return
     const name = record.form.metadata.name || 'this Publication'
     const ok = await confirm({
-      title: 'Delete Publication?',
+      title: 'Delete Publication',
       description: `Deleting "${name}" will permanently remove it from My Workspace. This action cannot be undone.`,
       confirmLabel: 'Delete Publication',
       variant: 'destructive',

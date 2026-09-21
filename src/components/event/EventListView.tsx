@@ -159,8 +159,8 @@ function EventListView({
   return (
     <ManagementTable<EventRecord, EventStatus>
       title="Events"
-      subtitle={() => 'Create, manage, maintain, and publish events under your stewardship.'}
-      addLabel="Add Event"
+      subtitle={() => 'Discover upcoming and past events from the civic data community.'}
+      addLabel="Create Event"
       onAdd={onAddEvent}
       items={events}
       getId={(e) => e.id}

@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { ReviewSection } from '@/components/shared/ReviewSection'
 import { ReviewPublishPanel } from '@/components/shared/ReviewPublishPanel'
+import { SectionHeader } from '@/components/shared/SectionHeader'
 import { GEOGRAPHY_OPTIONS, LICENSE_OPTIONS, SECTOR_OPTIONS } from '@/types/dataset'
 import { RESOURCE_TYPE_OPTIONS, type PublicationFormState } from '@/types/publication'
 import { getPublicationReadinessIssues, isPublicationReadyToPublish } from '@/lib/publication-validation'
@@ -37,6 +38,12 @@ function PublicationStep3Review({ form, onEditStep, onPreview }: PublicationStep
 
   return (
     <div className="flex flex-col gap-6">
+      <SectionHeader
+        as="h2"
+        title="Review & Publish"
+        description="Check your information before making this content available publicly."
+      />
+
       <div className="rounded-xl border border-border bg-card p-5">
         <p className={ready ? 'text-sm font-semibold text-success-text' : 'text-sm font-semibold text-warning-foreground'}>
           {ready ? 'Ready to publish' : 'Needs attention'}

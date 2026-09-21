@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { ReviewSection } from '@/components/shared/ReviewSection'
 import { ReviewPublishPanel } from '@/components/shared/ReviewPublishPanel'
+import { SectionHeader } from '@/components/shared/SectionHeader'
 import { LICENSE_OPTIONS, SECTOR_OPTIONS, GEOGRAPHY_OPTIONS } from '@/types/dataset'
 import {
   DOMAIN_OPTIONS,
@@ -46,12 +47,11 @@ function AIModelStep3Review({ form, otherNames, onEditStep, onPreview }: AIModel
 
   return (
     <div className="flex flex-col gap-6">
-      <div>
-        <h2 className="type-heading-2 text-primary">Review AI Model</h2>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Check the model information, versions and access configuration before publishing.
-        </p>
-      </div>
+      <SectionHeader
+        as="h2"
+        title="Review & Publish"
+        description="Check your information before making this content available publicly."
+      />
 
       <div className="rounded-xl border border-border bg-card p-5">
         <p className={ready ? 'text-sm font-semibold text-success-text' : 'text-sm font-semibold text-warning-foreground'}>

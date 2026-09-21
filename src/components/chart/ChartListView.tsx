@@ -152,8 +152,8 @@ function ChartListView({
   return (
     <ManagementTable<ChartRecord, ChartStatus>
       title="Charts"
-      subtitle={() => 'Create and manage visualizations for your datasets.'}
-      addLabel="Add Chart"
+      subtitle={() => 'Create and manage visualisations associated with datasets.'}
+      addLabel="Create Chart"
       onAdd={onAddChart}
       items={charts}
       getId={(c) => c.id}
@@ -167,7 +167,7 @@ function ChartListView({
       searchMatch={matchesSearch}
       getActions={getActions}
       emptyTitle="No charts yet"
-      emptyDescription="Create a chart to help people understand your datasets visually."
+      emptyDescription="Create your first chart to help people understand your datasets visually."
       tabEmptyMessage={(status) => TAB_EMPTY_MESSAGE[status]}
       loading={loading}
       loadError={loadError}

@@ -22,6 +22,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { ReviewSection } from '@/components/shared/ReviewSection'
 import { ReviewPublishPanel } from '@/components/shared/ReviewPublishPanel'
+import { SectionHeader } from '@/components/shared/SectionHeader'
 import { GEOGRAPHY_OPTIONS, SECTOR_OPTIONS } from '@/types/dataset'
 import { SDG_GOAL_OPTIONS, type UseCaseBlockType, type UseCaseFormState } from '@/types/usecase'
 import { validateUseCaseBasicInfo, isUseCaseReadyToPublish } from '@/lib/usecase-validation'
@@ -138,6 +139,12 @@ function UseCaseStep3Review({ form, onEditStep, onPreview }: UseCaseStep3ReviewP
 
   return (
     <div className="flex flex-col gap-6">
+      <SectionHeader
+        as="h2"
+        title="Review & Publish"
+        description="Check your information before making this content available publicly."
+      />
+
       <div className="rounded-xl border border-border bg-card p-5">
         <p className={ready ? 'text-sm font-semibold text-success-text' : 'text-sm font-semibold text-warning-foreground'}>
           {ready ? 'Ready to publish' : 'Not ready to publish'}
