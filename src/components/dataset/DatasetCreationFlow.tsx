@@ -19,11 +19,19 @@ import { useToast } from '@/components/ui/toast'
 import { useConfirm } from '@/components/ui/confirm-dialog'
 import { useAppData } from '@/context/AppDataContext'
 import { useHelpContext } from '@/context/HelpContext'
-import { validateMetadata, isMetadataValid } from '@/lib/validation'
+import { validateMetadata, isMetadataValid, isDatasetFormPublishable, validatePromptDatasetMetadata, isPromptDatasetMetadataValid } from '@/lib/validation'
 import { getResourceTitle } from '@/lib/file-validation'
 import { datasetLifecycleMessage } from '@/lib/dataset-lifecycle-messages'
 import { hasUnsavedEdits, type ContentStatus } from '@/lib/content-status'
-import { emptyDatasetForm, type DatasetFormState, type DatasetMetadata } from '@/types/dataset'
+import {
+  createEmptyDatasetForm,
+  datasetTypeLabel,
+  emptyPromptFileMetadata,
+  type DatasetFormState,
+  type DatasetMetadata,
+  type DatasetType,
+  type PromptDatasetMetadata,
+} from '@/types/dataset'
 
 type WizardStep = 1 | 2 | 3
 
@@ -48,6 +56,9 @@ interface DatasetCreationFlowProps {
   /** Resume editing an existing dataset. Contextual "Create New Dataset" entry points always pass null. */
   datasetId?: string | null
   initialStep?: WizardStep
+  /** Type for a brand-new dataset (datasetId === null). Ignored when resuming an
+   *  existing draft/published dataset, whose stored type always wins. */
+  initialDatasetType?: DatasetType
   /** Shown as read-only context under the drawer title, e.g. "Use Case → Connections". */
   contextLabel?: string
   /** Label for the "return to origin" action after creation, e.g. "Return to Use Case". Drawer only. */
@@ -114,6 +125,7 @@ function DatasetCreationFlow({
   open = true,
   datasetId = null,
   initialStep = 1,
+  initialDatasetType = 'dataset',
   contextLabel,
   returnLabel = 'Return',
   organisationId,
@@ -129,7 +141,9 @@ function DatasetCreationFlow({
   const confirm = useConfirm()
 
   const resolveInitialForm = () =>
-    datasetId ? (datasets.find((d) => d.id === datasetId)?.form ?? emptyDatasetForm) : emptyDatasetForm
+    datasetId
+      ? (datasets.find((d) => d.id === datasetId)?.form ?? createEmptyDatasetForm(initialDatasetType))
+      : createEmptyDatasetForm(initialDatasetType)
 
   const [editingId, setEditingId] = React.useState<string | null>(datasetId)
   const [step, setStep] = React.useState<WizardStep>(initialStep)
@@ -148,10 +162,11 @@ function DatasetCreationFlow({
   React.useEffect(() => {
     if (variant !== 'drawer' || !open) return
     const record = datasetId ? datasets.find((d) => d.id === datasetId) : undefined
+    const initialForm = record?.form ?? createEmptyDatasetForm(initialDatasetType)
     setEditingId(record?.id ?? null)
     setStep(initialStep)
-    setForm(record?.form ?? emptyDatasetForm)
-    setLastSavedForm(record?.form ?? emptyDatasetForm)
+    setForm(initialForm)
+    setLastSavedForm(initialForm)
     setShowMetadataErrors(false)
     setDrawerSuccess(null)
     setSaved(true)
@@ -159,7 +174,7 @@ function DatasetCreationFlow({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open])
 
-  const allStepsValid = isMetadataValid(form.metadata)
+  const allStepsValid = isDatasetFormPublishable(form)
   React.useEffect(() => {
     if (step === 3 && allStepsValid) setStepperUnlocked(true)
   }, [step, allStepsValid])
@@ -187,9 +202,15 @@ function DatasetCreationFlow({
 
   const metadataErrors = validateMetadata(form.metadata)
   const visibleMetadataErrors = showMetadataErrors ? metadataErrors : {}
+  const promptMetadataErrors = validatePromptDatasetMetadata(form.promptDatasetMetadata)
+  const visiblePromptMetadataErrors = showMetadataErrors ? promptMetadataErrors : {}
 
   const updateMetadata = <K extends keyof DatasetMetadata>(field: K, value: DatasetMetadata[K]) => {
     setForm((prev) => ({ ...prev, metadata: { ...prev.metadata, [field]: value } }))
+  }
+
+  const updatePromptMetadata = <K extends keyof PromptDatasetMetadata>(field: K, value: PromptDatasetMetadata[K]) => {
+    setForm((prev) => ({ ...prev, promptDatasetMetadata: { ...prev.promptDatasetMetadata, [field]: value } }))
   }
 
   const requestClose = async () => {
@@ -249,9 +270,22 @@ function DatasetCreationFlow({
   }
 
   const handlePublish = async () => {
-    if (!isMetadataValid(form.metadata)) {
+    const promptMetadataOk = form.datasetType !== 'prompt_dataset' || isPromptDatasetMetadataValid(form.promptDatasetMetadata)
+    if (!isMetadataValid(form.metadata) || !promptMetadataOk) {
       setShowMetadataErrors(true)
       setStep(2)
+      return
+    }
+    if (!isDatasetFormPublishable(form)) {
+      setStep(1)
+      toast({
+        title: 'Prompt files incomplete',
+        description:
+          form.files.length === 0
+            ? 'Upload at least one prompt file before publishing this prompt dataset.'
+            : 'Add the required metadata for every prompt file before publishing.',
+        variant: 'error',
+      })
       return
     }
     const ok = await confirm({
@@ -294,6 +328,7 @@ function DatasetCreationFlow({
     <>
       {step === 1 && (
         <Step2DataFiles
+          datasetType={form.datasetType}
           files={form.files}
           onFilesAdd={(newFiles) =>
             setForm((prev) => {
@@ -320,16 +355,37 @@ function DatasetCreationFlow({
               files: prev.files.map((f) => (f.id === id ? { ...f, description } : f)),
             }))
           }
+          onFileReplace={(id, replacement) =>
+            setForm((prev) => ({ ...prev, files: prev.files.map((f) => (f.id === id ? replacement : f)) }))
+          }
+          onPromptFileMetadataChange={(id, patch) =>
+            setForm((prev) => ({
+              ...prev,
+              files: prev.files.map((f) =>
+                f.id === id
+                  ? { ...f, promptFileMetadata: { ...(f.promptFileMetadata ?? emptyPromptFileMetadata(getResourceTitle(f))), ...patch } }
+                  : f,
+              ),
+            }))
+          }
         />
       )}
       {step === 2 && (
-        <Step1Metadata metadata={form.metadata} errors={visibleMetadataErrors} onChange={updateMetadata} />
+        <Step1Metadata
+          datasetType={form.datasetType}
+          metadata={form.metadata}
+          errors={visibleMetadataErrors}
+          onChange={updateMetadata}
+          promptMetadata={form.promptDatasetMetadata}
+          promptErrors={visiblePromptMetadataErrors}
+          onPromptChange={updatePromptMetadata}
+        />
       )}
       {step === 3 && (
         <Step3Review
           form={form}
           datasetId={editingId}
-          canPublish={isMetadataValid(form.metadata)}
+          canPublish={isDatasetFormPublishable(form)}
           hasLiveVersion={hasLiveVersion}
           onEditStep={(targetStep) => setStep(targetStep)}
           onPublish={handlePublish}
@@ -436,7 +492,12 @@ function DatasetCreationFlow({
       />
       {organisationId && organisationName && <OrganisationContextBanner organisationName={organisationName} />}
       <div className="flex items-center justify-between border-t border-border px-6 py-2.5">
-        <PublicVisibilityBadge isLive={hasLiveVersion} />
+        <div className="flex items-center gap-2">
+          <PublicVisibilityBadge isLive={hasLiveVersion} />
+          <span className="rounded-full bg-surface-subdued px-2.5 py-0.5 text-xs font-medium text-text-subdued">
+            {datasetTypeLabel(form.datasetType)}
+          </span>
+        </div>
       </div>
       <div className="border-t border-border px-6 py-6">
         <Stepper
@@ -456,8 +517,8 @@ function DatasetCreationFlow({
           setPublishSuccess(null)
           setEditingId(null)
           setStep(1)
-          setForm(emptyDatasetForm)
-          setLastSavedForm(emptyDatasetForm)
+          setForm(createEmptyDatasetForm(initialDatasetType))
+          setLastSavedForm(createEmptyDatasetForm(initialDatasetType))
           setShowMetadataErrors(false)
           setStepperUnlocked(false)
         }}

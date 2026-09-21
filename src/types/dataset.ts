@@ -1,4 +1,25 @@
 import { MAX_DOCUMENT_BYTES } from '@/lib/generic-upload'
+import {
+  emptyPromptDatasetMetadata,
+  type DatasetType,
+  type PromptDatasetMetadata,
+  type PromptFileMetadata,
+} from '@/types/prompt-dataset'
+
+export type { DatasetType }
+export {
+  DATASET_TYPE_OPTIONS,
+  datasetTypeLabel,
+  TASK_TYPE_OPTIONS,
+  PROMPT_DOMAIN_OPTIONS,
+  TARGET_LANGUAGE_OPTIONS,
+  TARGET_MODEL_TYPE_OPTIONS,
+  PROMPT_FORMAT_OPTIONS,
+  PROMPT_FILE_NAME_MAX_LENGTH,
+  emptyPromptDatasetMetadata,
+  emptyPromptFileMetadata,
+} from '@/types/prompt-dataset'
+export type { PromptDatasetMetadata, PromptFileMetadata, PromptFileField } from '@/types/prompt-dataset'
 
 export type AccessType = 'open' | 'restricted'
 
@@ -28,6 +49,9 @@ export interface DatasetFile {
    *  header/lines). Contributor-editable in the File Details side sheet. */
   rowCount?: number
   columnCount?: number
+  /** Prompt Dataset-only. Absent for standard Dataset files and for prompt files
+   *  before their metadata has been configured in the side sheet. */
+  promptFileMetadata?: PromptFileMetadata
 }
 
 export interface DatasetMetadata {
@@ -93,7 +117,15 @@ export const API_RESPONSE_FORMAT_OPTIONS: { value: ApiResponseFormat; label: str
 ]
 
 export interface DatasetFormState {
+  /** Fixed at creation — see `createEmptyDatasetForm`. Not user-editable afterwards
+   *  without an explicit migration/reset flow (not currently supported). */
+  datasetType: DatasetType
   metadata: DatasetMetadata
+  /** Prompt Dataset-only dataset-level metadata. Always present (defaults to
+   *  `emptyPromptDatasetMetadata`) so a dataset can be converted-in-place later if
+   *  the product ever supports that; ignored/hidden whenever `datasetType !==
+   *  'prompt_dataset'`. */
+  promptDatasetMetadata: PromptDatasetMetadata
   files: DatasetFile[]
   /** Vestigial: the Data Files stage now offers only File Upload and Public Platform
    *  import — both produce `files`. Kept for backward-compatibility with saved
@@ -119,20 +151,36 @@ export interface DatasetRecord {
   createdBy?: string
 }
 
+const emptyDatasetMetadata: DatasetMetadata = {
+  name: '',
+  description: '',
+  sector: '',
+  geography: '',
+  tags: [],
+  sourceWebsite: '',
+  createDate: '',
+  accessType: '',
+  license: '',
+}
+
+/** Backward-compatible default — always a standard Dataset. Use
+ *  `createEmptyDatasetForm(type)` when the caller knows which type is being created. */
 export const emptyDatasetForm: DatasetFormState = {
-  metadata: {
-    name: '',
-    description: '',
-    sector: '',
-    geography: '',
-    tags: [],
-    sourceWebsite: '',
-    createDate: '',
-    accessType: '',
-    license: '',
-  },
+  datasetType: 'dataset',
+  metadata: emptyDatasetMetadata,
+  promptDatasetMetadata: emptyPromptDatasetMetadata,
   files: [],
   resources: [],
+}
+
+export function createEmptyDatasetForm(datasetType: DatasetType): DatasetFormState {
+  return {
+    datasetType,
+    metadata: { ...emptyDatasetMetadata },
+    promptDatasetMetadata: { ...emptyPromptDatasetMetadata },
+    files: [],
+    resources: [],
+  }
 }
 
 export const SUPPORTED_FILE_EXTENSIONS = ['pdf', 'csv', 'xls', 'xlsx', 'txt']

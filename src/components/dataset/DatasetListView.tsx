@@ -3,8 +3,16 @@ import { Archive, FileText, Pencil, Trash2 } from 'lucide-react'
 import { ManagementTable, type ManagementColumn, type ManagementFilterDef, type ManagementRowAction } from '@/components/shared/management-table/ManagementTable'
 import { TruncatedText } from '@/components/shared/TruncatedText'
 import { StatusBadge } from '@/components/shared/StatusBadge'
+import { Badge } from '@/components/ui/badge'
 import { formatShortDate, parseAppTimestamp } from '@/lib/format'
-import { GEOGRAPHY_OPTIONS, SECTOR_OPTIONS, type DatasetRecord, type DatasetStatus } from '@/types/dataset'
+import {
+  DATASET_TYPE_OPTIONS,
+  GEOGRAPHY_OPTIONS,
+  SECTOR_OPTIONS,
+  datasetTypeLabel,
+  type DatasetRecord,
+  type DatasetStatus,
+} from '@/types/dataset'
 
 interface DatasetListViewProps {
   datasets: DatasetRecord[]
@@ -34,6 +42,7 @@ function matchesSearch(dataset: DatasetRecord, query: string): boolean {
     metadata.tags.join(' '),
     metadata.sector ? optionLabel(SECTOR_OPTIONS, metadata.sector) : '',
     metadata.geography ? optionLabel(GEOGRAPHY_OPTIONS, metadata.geography) : '',
+    datasetTypeLabel(dataset.form.datasetType),
   ]
     .join(' ')
     .toLowerCase()
@@ -61,6 +70,19 @@ function buildColumns(onOpen: (dataset: DatasetRecord) => void): ManagementColum
         <FileText className="size-4 shrink-0 text-text-subdued" />
         <TruncatedText className="min-w-0 flex-1 font-medium text-text-default">{d.form.metadata.name || 'Untitled dataset'}</TruncatedText>
       </button>
+    ),
+  },
+  {
+    key: 'type',
+    label: 'Dataset Type',
+    widthRem: '9rem',
+    optional: true,
+    sortable: true,
+    compare: (a, b) => datasetTypeLabel(a.form.datasetType).localeCompare(datasetTypeLabel(b.form.datasetType)),
+    render: (d) => (
+      <Badge variant={d.form.datasetType === 'prompt_dataset' ? 'accent' : 'outline'}>
+        {datasetTypeLabel(d.form.datasetType)}
+      </Badge>
     ),
   },
   {
@@ -112,6 +134,13 @@ function buildColumns(onOpen: (dataset: DatasetRecord) => void): ManagementColum
 }
 
 const FILTERS: ManagementFilterDef<DatasetRecord>[] = [
+  {
+    key: 'type',
+    label: 'Dataset Type',
+    placeholder: 'Any type',
+    options: DATASET_TYPE_OPTIONS,
+    matches: (d, v) => d.form.datasetType === v,
+  },
   { key: 'sector', label: 'Sector', placeholder: 'Any sector', options: SECTOR_OPTIONS, matches: (d, v) => d.form.metadata.sector === v },
   { key: 'geography', label: 'Geography', placeholder: 'Any geography', options: GEOGRAPHY_OPTIONS, matches: (d, v) => d.form.metadata.geography === v },
 ]

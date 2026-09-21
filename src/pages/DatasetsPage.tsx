@@ -3,9 +3,11 @@ import { useLocation } from 'react-router-dom'
 
 import { DatasetCreationFlow } from '@/components/dataset/DatasetCreationFlow'
 import { DatasetListView } from '@/components/dataset/DatasetListView'
+import { DatasetTypeDialog } from '@/components/dataset/DatasetTypeDialog'
 import { useToast } from '@/components/ui/toast'
 import { useConfirm } from '@/components/ui/confirm-dialog'
 import { useAppData } from '@/context/AppDataContext'
+import type { DatasetType } from '@/types/dataset'
 
 type View = 'list' | 'create'
 
@@ -24,6 +26,8 @@ function DatasetsPage() {
   const [view, setView] = useState<View>(navState?.datasetId ? 'create' : 'list')
   const [activeDatasetId, setActiveDatasetId] = useState<string | null>(navState?.datasetId ?? null)
   const [activeInitialStep, setActiveInitialStep] = useState<1 | 2 | 3>(3)
+  const [pendingDatasetType, setPendingDatasetType] = useState<DatasetType>('dataset')
+  const [showTypeDialog, setShowTypeDialog] = useState(false)
 
   const openDataset = (id: string, initialStep: 1 | 2 | 3) => {
     setActiveDatasetId(id)
@@ -32,6 +36,12 @@ function DatasetsPage() {
   }
 
   const handleAddDataset = () => {
+    setShowTypeDialog(true)
+  }
+
+  const handleTypeSelected = (type: DatasetType) => {
+    setShowTypeDialog(false)
+    setPendingDatasetType(type)
     setActiveDatasetId(null)
     setActiveInitialStep(1)
     setView('create')
@@ -82,14 +92,17 @@ function DatasetsPage() {
 
   if (view === 'list') {
     return (
-      <DatasetListView
-        datasets={datasets}
-        onAddDataset={handleAddDataset}
-        onViewDataset={handleViewDataset}
-        onEditDataset={handleEditDataset}
-        onDeleteDataset={handleDeleteDataset}
-        onUnpublishDataset={handleUnpublishDataset}
-      />
+      <>
+        <DatasetListView
+          datasets={datasets}
+          onAddDataset={handleAddDataset}
+          onViewDataset={handleViewDataset}
+          onEditDataset={handleEditDataset}
+          onDeleteDataset={handleDeleteDataset}
+          onUnpublishDataset={handleUnpublishDataset}
+        />
+        <DatasetTypeDialog open={showTypeDialog} onOpenChange={setShowTypeDialog} onContinue={handleTypeSelected} />
+      </>
     )
   }
 
@@ -98,6 +111,7 @@ function DatasetsPage() {
       variant="page"
       datasetId={activeDatasetId}
       initialStep={activeInitialStep}
+      initialDatasetType={pendingDatasetType}
       onClose={() => setView('list')}
     />
   )
