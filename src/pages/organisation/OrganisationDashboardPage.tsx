@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom'
-import { CalendarDays, Database, FolderKanban, LineChart, Sparkles, Users } from 'lucide-react'
+import { CalendarDays, Database, FileStack, FolderKanban, LineChart, Sparkles, Users } from 'lucide-react'
 
 import { useOrganisation } from '@/hooks/use-organisation'
 import { useAppData } from '@/context/AppDataContext'
@@ -23,11 +23,12 @@ function orgScoped<T extends { organisationId?: string }>(records: T[], organisa
 function OrganisationDashboardPage() {
   const navigate = useNavigate()
   const { organisationId, organisation } = useOrganisation()
-  const { datasets, useCases, aiModels, collaboratives, charts, events } = useAppData()
+  const { datasets, publications, useCases, aiModels, collaboratives, charts, events } = useAppData()
 
   if (!organisation) return <OrganisationNotFound />
 
   const orgDatasets = orgScoped(datasets, organisationId)
+  const orgPublications = orgScoped(publications, organisationId)
   const orgUseCases = orgScoped(useCases, organisationId)
   const orgAIModels = orgScoped(aiModels, organisationId)
   const orgCollaboratives = orgScoped(collaboratives, organisationId)
@@ -37,8 +38,9 @@ function OrganisationDashboardPage() {
   const summary: SummaryCard[] = [
     { key: 'datasets', label: 'Datasets', count: orgDatasets.length, icon: Database, path: `/organisations/${organisationId}/datasets` },
     { key: 'use-cases', label: 'Use Cases', count: orgUseCases.length, icon: FolderKanban, path: `/organisations/${organisationId}/use-cases` },
-    { key: 'ai-models', label: 'AI Models', count: orgAIModels.length, icon: Sparkles, path: `/organisations/${organisationId}/ai-models` },
     { key: 'collaboratives', label: 'Collaboratives', count: orgCollaboratives.length, icon: Users, path: `/organisations/${organisationId}/collaboratives` },
+    { key: 'ai-models', label: 'AI Models', count: orgAIModels.length, icon: Sparkles, path: `/organisations/${organisationId}/ai-models` },
+    { key: 'publications', label: 'Publications', count: orgPublications.length, icon: FileStack, path: `/organisations/${organisationId}/publications` },
     { key: 'charts', label: 'Charts', count: orgCharts.length, icon: LineChart, path: `/organisations/${organisationId}/charts` },
     { key: 'events', label: 'Events', count: orgEvents.length, icon: CalendarDays, path: `/organisations/${organisationId}/events` },
   ]
@@ -85,6 +87,14 @@ function OrganisationDashboardPage() {
       updatedAt: m.updatedAt,
       onOpen: () => navigate(`/organisations/${organisationId}/ai-models`),
     })),
+    ...orgPublications.map((p) => ({
+      id: `publication-${p.id}`,
+      description: `Publication "${p.form.metadata.name || 'Untitled Publication'}" ${p.status === 'published' ? 'published' : 'updated'}`,
+      contributor: p.createdBy,
+      module: 'Publication',
+      updatedAt: p.updatedAt,
+      onOpen: () => navigate(`/organisations/${organisationId}/publications`),
+    })),
   ]
     .sort((a, b) => parseAppTimestamp(b.updatedAt).getTime() - parseAppTimestamp(a.updatedAt).getTime())
     .slice(0, 6)
@@ -119,7 +129,7 @@ function OrganisationDashboardPage() {
         description="Manage datasets, events, use cases and other contributions on behalf of this organisation."
       />
 
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-7">
         {summary.map((card) => {
           const Icon = card.icon
           return (

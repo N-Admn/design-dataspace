@@ -35,6 +35,7 @@ import { ProfilePage } from '@/pages/ProfilePage'
 import { OrganisationsPage } from '@/pages/OrganisationsPage'
 import { OrganisationDashboardPage } from '@/pages/organisation/OrganisationDashboardPage'
 import { OrganisationDatasetsPage } from '@/pages/organisation/OrganisationDatasetsPage'
+import { OrganisationPublicationsPage } from '@/pages/organisation/OrganisationPublicationsPage'
 import { OrganisationUseCasesPage } from '@/pages/organisation/OrganisationUseCasesPage'
 import { OrganisationAIModelsPage } from '@/pages/organisation/OrganisationAIModelsPage'
 import { OrganisationCollaborativesPage } from '@/pages/organisation/OrganisationCollaborativesPage'
@@ -168,6 +169,7 @@ function AppLayout() {
             <Route path="/organisations" element={<OrganisationsPage />} />
             <Route path="/organisations/:organisationId" element={<OrganisationDashboardPage />} />
             <Route path="/organisations/:organisationId/datasets" element={<OrganisationDatasetsPage />} />
+            <Route path="/organisations/:organisationId/publications" element={<OrganisationPublicationsPage />} />
             <Route path="/organisations/:organisationId/use-cases" element={<OrganisationUseCasesPage />} />
             <Route path="/organisations/:organisationId/ai-models" element={<OrganisationAIModelsPage />} />
             <Route path="/organisations/:organisationId/collaboratives" element={<OrganisationCollaborativesPage />} />
