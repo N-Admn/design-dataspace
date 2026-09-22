@@ -2,6 +2,7 @@ import * as React from 'react'
 import { Building2, Plus, Trash2, User } from 'lucide-react'
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { DatasetConnectionsCard } from '@/components/shared/DatasetConnectionsCard'
@@ -72,6 +73,10 @@ function UseCaseStep2Connect({ metadata, onMetadataChange, connections, onChange
     toast({ title: 'Contributor added', description: `"${person.name}" added and connected.`, variant: 'success' })
   }
 
+  const updateContributorRole = (id: string, role: string) => {
+    onChange({ ...connections, contributors: connections.contributors.map((c) => (c.id === id ? { ...c, role } : c)) })
+  }
+
   return (
     <div className="flex flex-col gap-6">
       <UseCaseClassificationSection metadata={metadata} onChange={onMetadataChange} />
@@ -118,11 +123,16 @@ function UseCaseStep2Connect({ metadata, onMetadataChange, connections, onChange
                 )}
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-medium text-foreground">{c.name}</p>
-                  {[c.role, c.organisation].filter(Boolean).length > 0 && (
-                    <p className="truncate text-xs text-muted-foreground">
-                      {[c.role, c.organisation].filter(Boolean).join(' · ')}
-                    </p>
-                  )}
+                  <div className="mt-1 flex items-center gap-1.5">
+                    <Input
+                      value={c.role}
+                      onChange={(e) => updateContributorRole(c.id, e.target.value)}
+                      placeholder="e.g. Data Analyst"
+                      aria-label={`Role for ${c.name}`}
+                      className="h-7 max-w-48 text-xs"
+                    />
+                    {c.organisation && <span className="truncate text-xs text-muted-foreground">· {c.organisation}</span>}
+                  </div>
                 </div>
                 <Button
                   type="button"
