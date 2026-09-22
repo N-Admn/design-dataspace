@@ -1,4 +1,5 @@
 import { MAX_DOCUMENT_BYTES, type UploadedAsset } from '@/lib/generic-upload'
+import { MOCK_PROFILE } from '@/types/profile'
 
 export type PublicationStatus = 'draft' | 'published'
 
@@ -19,11 +20,24 @@ export const PUBLICATION_FILE_EXTENSIONS = ['pdf', 'doc', 'docx', 'ppt', 'pptx']
 /** Publication content files share the platform-wide 500 MB document ceiling. */
 export const MAX_PUBLICATION_FILE_BYTES = MAX_DOCUMENT_BYTES
 
+export interface PublicationContributor {
+  id: string
+  name: string
+  role: string
+  /** Organisation the contributor is affiliated with, when known. */
+  organisation?: string
+  /** Short description / bio, when provided. */
+  bio?: string
+  /** Profile photo, when uploaded. */
+  image?: UploadedAsset | null
+}
+
 export interface PublicationMetadata {
   name: string
   description: string
-  /** Named author(s) of the content — may differ from the account/org that owns the Publication. */
-  authors: string[]
+  /** People and organisations involved in creating this content — may differ
+   *  from the account/org that owns the Publication. */
+  contributors: PublicationContributor[]
   date: string
   sector: string
   geography: string
@@ -68,10 +82,14 @@ export interface PublicationRecord {
   publishedForm: PublicationFormState | null
 }
 
+/** The account creating a new Publication is automatically its first
+ *  contributor — they can edit or remove this entry like any other. */
 export const emptyPublicationMetadata: PublicationMetadata = {
   name: '',
   description: '',
-  authors: [],
+  contributors: [
+    { id: 'contributor-uploader', name: `${MOCK_PROFILE.firstName} ${MOCK_PROFILE.lastName}`, role: 'Uploader' },
+  ],
   date: '',
   sector: '',
   geography: '',

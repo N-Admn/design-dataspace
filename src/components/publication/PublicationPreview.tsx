@@ -28,10 +28,10 @@ function PublicationPreview({ form, publishedAt }: { form: PublicationFormState;
         {metadata.description && <p className="mt-2 text-base text-muted-foreground">{metadata.description}</p>}
 
         <div className="mt-4 flex flex-col gap-2.5 rounded-lg border border-border bg-muted/40 p-4 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-6 sm:gap-y-2">
-          {metadata.authors.length > 0 && (
+          {metadata.contributors.length > 0 && (
             <div className="flex items-center gap-1.5 text-sm text-foreground">
               <User className="size-3.5 shrink-0 text-muted-foreground" />
-              {metadata.authors.join(', ')}
+              {metadata.contributors.map((c) => c.name).join(', ')}
             </div>
           )}
           {(metadata.date || publishedAt) && (

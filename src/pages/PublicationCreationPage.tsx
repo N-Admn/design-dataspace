@@ -16,13 +16,19 @@ import { useHelpContext } from '@/context/HelpContext'
 import { savePublicationDraftSnapshot } from '@/lib/publication-draft-storage'
 import { isPublicationReadyToPublish, validatePublicationDetails } from '@/lib/publication-validation'
 import { hasUnsavedEdits } from '@/lib/content-status'
-import { emptyPublicationForm, type PublicationFormState, type PublicationMetadata } from '@/types/publication'
+import { getPublicationFileTitle } from '@/lib/publication-file'
+import {
+  emptyPublicationForm,
+  type PublicationFileBlock,
+  type PublicationFormState,
+  type PublicationMetadata,
+} from '@/types/publication'
 
 type PublicationStep = 1 | 2 | 3
 
 const PUBLICATION_STEPS = [
-  { step: 1, label: 'Details', description: 'Name, describe & classify', icon: FileText },
-  { step: 2, label: 'Files', description: 'Upload files & videos', icon: FileStack },
+  { step: 1, label: 'Files', description: 'Upload files & videos', icon: FileStack },
+  { step: 2, label: 'Details', description: 'Name, describe & classify', icon: FileText },
   { step: 3, label: 'Review & Publish', description: 'Check readiness', icon: ListChecks },
 ]
 
@@ -121,7 +127,7 @@ function PublicationCreationPage() {
   const handlePreview = () => {
     if (!isPublicationReadyToPublish(form)) {
       setShowDetailsErrors(true)
-      setStep(1)
+      setStep(2)
       return
     }
     let id = editingId
@@ -154,10 +160,27 @@ function PublicationCreationPage() {
       </div>
       <div className="border-t border-border px-6 py-6">
         {step === 1 && (
-          <PublicationStep1Details metadata={form.metadata} errors={visibleDetailsErrors} onChange={updateMetadata} />
+          <PublicationStep2Content
+            blocks={form.blocks}
+            onBlocksChange={(blocks) =>
+              setForm((prev) => {
+                const suggestName =
+                  prev.blocks.length === 0 && !prev.metadata.name.trim()
+                    ? (blocks.find((b): b is PublicationFileBlock => b.type === 'file') ?? null)
+                    : null
+                return {
+                  ...prev,
+                  blocks,
+                  metadata: suggestName
+                    ? { ...prev.metadata, name: getPublicationFileTitle(suggestName) }
+                    : prev.metadata,
+                }
+              })
+            }
+          />
         )}
         {step === 2 && (
-          <PublicationStep2Content blocks={form.blocks} onBlocksChange={(blocks) => setForm((prev) => ({ ...prev, blocks }))} />
+          <PublicationStep1Details metadata={form.metadata} errors={visibleDetailsErrors} onChange={updateMetadata} />
         )}
         {step === 3 && <PublicationStep3Review form={form} onEditStep={goToStep} onPreview={handlePreview} />}
       </div>

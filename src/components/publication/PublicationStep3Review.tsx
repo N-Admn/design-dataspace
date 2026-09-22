@@ -78,13 +78,13 @@ function PublicationStep3Review({ form, onEditStep, onPreview }: PublicationStep
           <SummaryRow label="Resource Name" value={metadata.name || '—'} />
           <SummaryRow label="Description" value={metadata.description || '—'} />
           <SummaryRow
-            label="Authors"
+            label="Contributors"
             value={
-              metadata.authors.length > 0 ? (
+              metadata.contributors.length > 0 ? (
                 <div className="flex flex-wrap gap-1.5">
-                  {metadata.authors.map((a) => (
-                    <Badge key={a} variant="secondary">
-                      {a}
+                  {metadata.contributors.map((c) => (
+                    <Badge key={c.id} variant="secondary">
+                      {c.name}
                     </Badge>
                   ))}
                 </div>
