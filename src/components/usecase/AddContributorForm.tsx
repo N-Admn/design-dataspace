@@ -4,7 +4,6 @@ import { User } from 'lucide-react'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
 import { FieldError } from '@/components/ui/field-error'
 import { useConfirm } from '@/components/ui/confirm-dialog'
@@ -15,8 +14,8 @@ import type { UploadedAsset } from '@/lib/generic-upload'
 interface ContributorDraft {
   name: string
   role: string
+  designation?: string
   organisation?: string
-  bio?: string
   image?: UploadedAsset | null
 }
 
@@ -35,13 +34,13 @@ function AddContributorForm({
   onOpenChange,
   onAdd,
   contentLabel = 'Use Case',
-  rolePlaceholder = 'e.g. Data Analyst',
+  rolePlaceholder = 'e.g. Author, Editor, Reviewer',
 }: AddContributorFormProps) {
   const confirm = useConfirm()
   const [name, setName] = React.useState('')
   const [role, setRole] = React.useState('')
+  const [designation, setDesignation] = React.useState('')
   const [organisation, setOrganisation] = React.useState('')
-  const [bio, setBio] = React.useState('')
   const [image, setImage] = React.useState<UploadedAsset | null>(null)
   const [errors, setErrors] = React.useState<{ name?: string }>({})
 
@@ -49,15 +48,15 @@ function AddContributorForm({
     if (open) {
       setName('')
       setRole('')
+      setDesignation('')
       setOrganisation('')
-      setBio('')
       setImage(null)
       setErrors({})
     }
   }, [open])
 
   const hasUnsavedChanges =
-    name.trim() !== '' || role.trim() !== '' || organisation.trim() !== '' || bio.trim() !== '' || image !== null
+    name.trim() !== '' || role.trim() !== '' || designation.trim() !== '' || organisation.trim() !== '' || image !== null
 
   const requestClose = async () => {
     if (hasUnsavedChanges) {
@@ -78,7 +77,7 @@ function AddContributorForm({
       setErrors({ name: 'Enter a contributor name.' })
       return
     }
-    onAdd({ name: name.trim(), role: role.trim(), organisation: organisation.trim(), bio: bio.trim(), image })
+    onAdd({ name: name.trim(), role: role.trim(), designation: designation.trim(), organisation: organisation.trim(), image })
   }
 
   return (
@@ -143,6 +142,17 @@ function AddContributorForm({
             </div>
 
             <div>
+              <Label htmlFor="contributor-designation">Designation</Label>
+              <Input
+                id="contributor-designation"
+                className="mt-1.5"
+                placeholder="e.g. Program Manager, Data Analyst"
+                value={designation}
+                onChange={(e) => setDesignation(e.target.value)}
+              />
+            </div>
+
+            <div>
               <Label htmlFor="contributor-organisation">Organisation</Label>
               <Input
                 id="contributor-organisation"
@@ -150,17 +160,6 @@ function AddContributorForm({
                 placeholder="e.g. CivicDataLab"
                 value={organisation}
                 onChange={(e) => setOrganisation(e.target.value)}
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="contributor-bio">Description / Bio</Label>
-              <Textarea
-                id="contributor-bio"
-                className="mt-1.5"
-                rows={3}
-                value={bio}
-                onChange={(e) => setBio(e.target.value)}
               />
             </div>
           </div>

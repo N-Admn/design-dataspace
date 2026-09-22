@@ -94,8 +94,8 @@ const useCase1Form: UseCaseFormState = {
   connections: {
     datasets: [{ id: 'ds-2', title: 'District Health Infrastructure & Service Availability (2024)' }],
     contributors: [
-      { id: 'contributor-seed-1', name: 'Dr. Aisha Verma', role: 'Public Health Researcher' },
-      { id: 'contributor-seed-2', name: 'Rohan Mehta', role: 'Data Analyst, District Health Mission' },
+      { id: 'contributor-seed-1', name: 'Dr. Aisha Verma', role: 'Author', designation: 'Public Health Researcher' },
+      { id: 'contributor-seed-2', name: 'Rohan Mehta', role: 'Contributor', designation: 'Data Analyst, District Health Mission' },
     ],
     organizations: [MOCK_ORGANISATIONS[1], MOCK_ORGANISATIONS[2]],
   },

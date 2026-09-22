@@ -31,9 +31,13 @@ function PublicationStep1Details({ metadata, errors, onChange }: PublicationStep
   const addContributorFromDirectory = (person: MockPerson) => {
     onChange('contributors', [
       ...metadata.contributors,
-      { id: `contributor-${person.id}`, name: person.name, role: person.role ?? '', organisation: person.organisation },
+      { id: `contributor-${person.id}`, name: person.name, role: '', designation: person.role, organisation: person.organisation },
     ])
     toast({ title: 'Contributor added', description: `"${person.name}" added and connected.`, variant: 'success' })
+  }
+
+  const updateContributorRole = (id: string, role: string) => {
+    onChange('contributors', metadata.contributors.map((c) => (c.id === id ? { ...c, role } : c)))
   }
 
   return (
@@ -127,22 +131,29 @@ function PublicationStep1Details({ metadata, errors, onChange }: PublicationStep
             <p className="py-4 text-center text-sm text-muted-foreground">No contributors added yet.</p>
           ) : (
             metadata.contributors.map((c) => (
-              <div key={c.id} className="flex items-center gap-3 rounded-lg border border-border p-3">
+              <div key={c.id} className="flex items-center gap-3 rounded-lg border border-border px-3 py-2">
                 {c.image?.dataUrl ? (
-                  <img src={c.image.dataUrl} alt="" className="size-9 shrink-0 rounded-full border border-border object-cover" />
+                  <img src={c.image.dataUrl} alt="" className="size-8 shrink-0 rounded-full border border-border object-cover" />
                 ) : (
-                  <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
-                    <User className="size-4" />
+                  <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
+                    <User className="size-3.5" />
                   </div>
                 )}
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium text-foreground">{c.name}</p>
-                  {[c.role, c.organisation].filter(Boolean).length > 0 && (
-                    <p className="truncate text-xs text-muted-foreground">
-                      {[c.role, c.organisation].filter(Boolean).join(' · ')}
+                <div className="flex min-w-0 flex-1 items-baseline gap-1.5">
+                  <p className="shrink-0 truncate text-sm font-medium text-foreground">{c.name}</p>
+                  {[c.designation, c.organisation].filter(Boolean).length > 0 && (
+                    <p className="min-w-0 truncate text-xs text-muted-foreground">
+                      {[c.designation, c.organisation].filter(Boolean).join(' · ')}
                     </p>
                   )}
                 </div>
+                <Input
+                  value={c.role}
+                  onChange={(e) => updateContributorRole(c.id, e.target.value)}
+                  placeholder="Role: e.g. Author, Editor"
+                  aria-label={`Role for ${c.name}`}
+                  className="h-8 w-40 shrink-0 text-xs"
+                />
                 <Button
                   type="button"
                   variant="ghost"
@@ -154,7 +165,7 @@ function PublicationStep1Details({ metadata, errors, onChange }: PublicationStep
                       metadata.contributors.filter((x) => x.id !== c.id),
                     )
                   }
-                  className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+                  className="shrink-0 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
                 >
                   <Trash2 className="size-4" />
                 </Button>
