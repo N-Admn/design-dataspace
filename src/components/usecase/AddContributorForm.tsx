@@ -11,15 +11,32 @@ import { useConfirm } from '@/components/ui/confirm-dialog'
 import { FileUploadField } from '@/components/shared/FileUploadField'
 import { MAX_IMAGE_BYTES, SUPPORTED_IMAGE_EXTENSIONS } from '@/types/event'
 import type { UploadedAsset } from '@/lib/generic-upload'
-import type { UseCaseContributor } from '@/types/usecase'
+
+interface ContributorDraft {
+  name: string
+  role: string
+  organisation?: string
+  bio?: string
+  image?: UploadedAsset | null
+}
 
 interface AddContributorFormProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  onAdd: (contributor: Omit<UseCaseContributor, 'id'>) => void
+  onAdd: (contributor: ContributorDraft) => void
+  /** What this contributor is being attached to — shown in the dialog description. */
+  contentLabel?: string
+  /** Example roles shown as Role field placeholder text, e.g. "e.g. Author, Editor, Director". */
+  rolePlaceholder?: string
 }
 
-function AddContributorForm({ open, onOpenChange, onAdd }: AddContributorFormProps) {
+function AddContributorForm({
+  open,
+  onOpenChange,
+  onAdd,
+  contentLabel = 'Use Case',
+  rolePlaceholder = 'e.g. Data Analyst',
+}: AddContributorFormProps) {
   const confirm = useConfirm()
   const [name, setName] = React.useState('')
   const [role, setRole] = React.useState('')
@@ -78,7 +95,7 @@ function AddContributorForm({ open, onOpenChange, onAdd }: AddContributorFormPro
       <DialogContent variant="right-drawer" className="gap-0 p-0">
         <DialogHeader className="shrink-0">
           <DialogTitle>Add Contributor</DialogTitle>
-          <DialogDescription>Add a person who contributed to this Use Case.</DialogDescription>
+          <DialogDescription>Add a person who contributed to this {contentLabel}.</DialogDescription>
         </DialogHeader>
 
         <div className="min-h-0 flex-1 overflow-y-auto px-6 py-5">
@@ -119,7 +136,7 @@ function AddContributorForm({ open, onOpenChange, onAdd }: AddContributorFormPro
               <Input
                 id="contributor-role"
                 className="mt-1.5"
-                placeholder="e.g. Data Analyst"
+                placeholder={rolePlaceholder}
                 value={role}
                 onChange={(e) => setRole(e.target.value)}
               />

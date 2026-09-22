@@ -23,7 +23,9 @@ function optionLabel(options: { value: string; label: string }[], value: string)
 function matchesSearch(record: PublicationRecord, query: string): boolean {
   const q = query.trim().toLowerCase()
   const { metadata } = record.form
-  const haystack = [metadata.name, metadata.description, metadata.authors.join(' ')].join(' ').toLowerCase()
+  const haystack = [metadata.name, metadata.description, metadata.contributors.map((c) => c.name).join(' ')]
+    .join(' ')
+    .toLowerCase()
   return haystack.includes(q)
 }
 

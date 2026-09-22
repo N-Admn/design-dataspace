@@ -1,12 +1,11 @@
 import * as React from 'react'
-import { CheckCircle2, ChevronDown, ChevronUp, Eye, Pencil, Plus, Trash2, Video } from 'lucide-react'
+import { CheckCircle2, ChevronDown, ChevronUp, Pencil, Plus, Trash2, Video } from 'lucide-react'
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { FieldError } from '@/components/ui/field-error'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { DropzoneUploadField } from '@/components/shared/DropzoneUploadField'
 import { ResourcePreviewDialog, assetToPreviewResource, type PreviewResource } from '@/components/shared/ResourcePreviewDialog'
 import { PublicationFileDetailsSheet } from '@/components/publication/PublicationFileDetailsSheet'
@@ -25,7 +24,6 @@ interface PublicationStep2ContentProps {
 
 function FileBlockRow({
   block,
-  onTitleChange,
   onOpenDetails,
   onMoveUp,
   onMoveDown,
@@ -34,7 +32,6 @@ function FileBlockRow({
   isLast,
 }: {
   block: PublicationFileBlock
-  onTitleChange: (id: string, title: string) => void
   onOpenDetails: () => void
   onMoveUp: () => void
   onMoveDown: () => void
@@ -43,63 +40,12 @@ function FileBlockRow({
   isLast: boolean
 }) {
   const title = getPublicationFileTitle(block)
-  const [isEditing, setIsEditing] = React.useState(false)
-  const [draft, setDraft] = React.useState(title)
-
-  React.useEffect(() => {
-    if (!isEditing) setDraft(title)
-  }, [title, isEditing])
-
-  const commit = () => {
-    setIsEditing(false)
-    const next = draft.trim()
-    if (next) {
-      onTitleChange(block.id, next)
-    } else {
-      setDraft(title)
-    }
-  }
 
   return (
     <div className="flex flex-wrap items-center gap-3 rounded-lg border border-border px-4 py-3">
       <CheckCircle2 className="size-5 shrink-0 text-success-text" />
       <div className="min-w-0 flex-1">
-        {isEditing ? (
-          <Input
-            autoFocus
-            value={draft}
-            aria-label={`Title for ${block.asset?.name ?? 'file'}`}
-            onChange={(e) => setDraft(e.target.value)}
-            onBlur={commit}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') commit()
-              if (e.key === 'Escape') {
-                setDraft(title)
-                setIsEditing(false)
-              }
-            }}
-            className="h-8 max-w-xs text-sm font-medium"
-          />
-        ) : (
-          <div className="flex min-w-0 items-center gap-1">
-            <p className="truncate text-sm font-medium text-foreground">{title}</p>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  aria-label={`Edit title for ${block.asset?.name ?? 'file'}`}
-                  onClick={() => setIsEditing(true)}
-                  className="size-6 shrink-0"
-                >
-                  <Pencil className="size-3.5" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent side="top">Edit title</TooltipContent>
-            </Tooltip>
-          </div>
-        )}
+        <p className="truncate text-sm font-medium text-foreground">{title}</p>
         {block.asset && (
           <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
             <Badge variant="secondary">{block.asset.extension}</Badge>
@@ -124,10 +70,10 @@ function FileBlockRow({
             type="button"
             variant="ghost"
             size="icon"
-            aria-label={`View details for ${block.asset?.name ?? 'file'}`}
+            aria-label={`Edit details for ${block.asset?.name ?? 'file'}`}
             onClick={onOpenDetails}
           >
-            <Eye className="size-4" />
+            <Pencil className="size-4" />
           </Button>
           <Button
             type="button"
@@ -322,7 +268,6 @@ function PublicationStep2Content({ blocks, onBlocksChange }: PublicationStep2Con
                   <FileBlockRow
                     key={block.id}
                     block={block}
-                    onTitleChange={(id, title) => updateBlock(id, { title })}
                     onOpenDetails={() => setDetailsId(block.id)}
                     onRemove={() => removeBlock(block.id)}
                     {...shared}

@@ -17,7 +17,10 @@ const publication1Form: PublicationFormState = {
     name: 'State of Open Water Data in South Asia',
     description:
       'A cross-country review of open water and sanitation datasets published by government bodies, covering coverage gaps, licensing practices, and recommendations for standardisation.',
-    authors: ['Dr. Meera Krishnan', 'Farhan Ali'],
+    contributors: [
+      { id: 'contributor-mock-1', name: 'Dr. Meera Krishnan', role: 'Lead Researcher', organisation: 'CivicDataLab' },
+      { id: 'contributor-mock-2', name: 'Farhan Ali', role: 'Data Analyst', organisation: 'CivicDataLab' },
+    ],
     date: '2026-07-15',
     sector: 'water-sanitation',
     geography: 'global',
@@ -51,7 +54,7 @@ const publication2Form: PublicationFormState = {
   metadata: {
     name: 'Community Health Worker Field Notes — Q2 2026',
     description: '',
-    authors: [],
+    contributors: [],
     date: '',
     sector: '',
     geography: '',
