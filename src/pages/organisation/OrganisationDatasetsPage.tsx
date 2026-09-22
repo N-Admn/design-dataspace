@@ -5,8 +5,10 @@ import { useAppData } from '@/context/AppDataContext'
 import { OrganisationNotFound } from '@/components/organisation/OrganisationNotFound'
 import { OrganisationContentTable, type OrganisationContentItem } from '@/components/organisation/OrganisationContentTable'
 import { DatasetCreationFlow } from '@/components/dataset/DatasetCreationFlow'
+import { DatasetTypeDialog } from '@/components/dataset/DatasetTypeDialog'
 import { useConfirm } from '@/components/ui/confirm-dialog'
 import { useToast } from '@/components/ui/toast'
+import type { DatasetType } from '@/types/dataset'
 
 function OrganisationDatasetsPage() {
   const { organisationId, organisation, permissions } = useOrganisation()
@@ -16,6 +18,8 @@ function OrganisationDatasetsPage() {
 
   const [view, setView] = useState<'list' | 'create'>('list')
   const [activeDatasetId, setActiveDatasetId] = useState<string | null>(null)
+  const [pendingDatasetType, setPendingDatasetType] = useState<DatasetType>('dataset')
+  const [showTypeDialog, setShowTypeDialog] = useState(false)
 
   if (!organisation) return <OrganisationNotFound />
 
@@ -28,8 +32,17 @@ function OrganisationDatasetsPage() {
     createdBy: d.createdBy,
   }))
 
-  const openDataset = (id: string | null) => {
+  const openDataset = (id: string) => {
     setActiveDatasetId(id)
+    setView('create')
+  }
+
+  const handleAddDataset = () => setShowTypeDialog(true)
+
+  const handleTypeSelected = (type: DatasetType) => {
+    setShowTypeDialog(false)
+    setPendingDatasetType(type)
+    setActiveDatasetId(null)
     setView('create')
   }
 
@@ -51,6 +64,7 @@ function OrganisationDatasetsPage() {
       <DatasetCreationFlow
         variant="page"
         datasetId={activeDatasetId}
+        initialDatasetType={pendingDatasetType}
         organisationId={organisationId}
         organisationName={organisation.metadata.name}
         canCreateContent={permissions.canCreateContent}
@@ -60,19 +74,22 @@ function OrganisationDatasetsPage() {
   }
 
   return (
-    <OrganisationContentTable
-      title="Organisation Datasets"
-      primaryColumnLabel="Dataset"
-      subtitle={(count) => `${count} dataset${count === 1 ? '' : 's'} · created by members of ${organisation.metadata.name}`}
-      addLabel="Create Dataset"
-      onAdd={permissions.canCreateContent ? () => openDataset(null) : undefined}
-      items={items}
-      onOpen={(item) => openDataset(item.id)}
-      onDelete={permissions.role === 'admin' ? handleDelete : undefined}
-      emptyTitle="No organisation datasets yet"
-      emptyDescription="Datasets created by this organisation's members will show up here."
-      searchPlaceholder="Search datasets..."
-    />
+    <>
+      <OrganisationContentTable
+        title="Organisation Datasets"
+        primaryColumnLabel="Dataset"
+        subtitle={(count) => `${count} dataset${count === 1 ? '' : 's'} · created by members of ${organisation.metadata.name}`}
+        addLabel="Create Dataset"
+        onAdd={permissions.canCreateContent ? handleAddDataset : undefined}
+        items={items}
+        onOpen={(item) => openDataset(item.id)}
+        onDelete={permissions.role === 'admin' ? handleDelete : undefined}
+        emptyTitle="No organisation datasets yet"
+        emptyDescription="Datasets created by this organisation's members will show up here."
+        searchPlaceholder="Search datasets..."
+      />
+      <DatasetTypeDialog open={showTypeDialog} onOpenChange={setShowTypeDialog} onContinue={handleTypeSelected} />
+    </>
   )
 }
 
