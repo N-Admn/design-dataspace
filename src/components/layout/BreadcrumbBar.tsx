@@ -23,6 +23,12 @@ function findNavMatch(groups: typeof NAV_GROUPS, pathname: string) {
 }
 
 const ORG_ROUTE_PATTERN = /^\/organisations\/([^/]+)(?:\/(.*))?$/
+const DATASET_DETAIL_PATTERN = /^\/explore\/datasets\/([^/]+)$/
+/** The app has no standalone "Explore" landing route (TopNav's EXPLORE control
+ *  is a menu, not a page) — Discover is the closest existing page that actually
+ *  serves as the site's browse/explore hub, so the breadcrumb points there
+ *  rather than leaving "Explore" a dead label or inventing a new route. */
+const EXPLORE_PATH = '/discover'
 
 interface CrumbSpec {
   label: string
@@ -47,7 +53,13 @@ function Crumb({ crumb, isLast }: { crumb: CrumbSpec; isLast: boolean }) {
           {crumb.label}
         </Link>
       ) : (
-        <span aria-current={isLast ? 'page' : undefined}>{crumb.label}</span>
+        <span
+          aria-current={isLast ? 'page' : undefined}
+          title={isLast ? crumb.label : undefined}
+          className={isLast ? 'inline-block max-w-[200px] truncate align-bottom sm:max-w-xs' : undefined}
+        >
+          {crumb.label}
+        </span>
       )}
     </>
   )
@@ -65,8 +77,29 @@ function Breadcrumbs({ crumbs }: { crumbs: CrumbSpec[] }) {
 
 function BreadcrumbBar() {
   const location = useLocation()
-  const { organisationWorkspaces } = useAppData()
+  const { organisationWorkspaces, datasets } = useAppData()
   const isDashboard = location.pathname === '/'
+
+  // Consumer-facing trail — deliberately not the contributor "Home → Dashboard"
+  // one below, since a public dataset page has nothing to do with the
+  // authenticated Dashboard.
+  const datasetMatch = DATASET_DETAIL_PATTERN.exec(location.pathname)
+  if (datasetMatch) {
+    const dataset = datasets.find((d) => d.id === datasetMatch[1])
+    const datasetName = dataset?.form.metadata.name || 'Dataset'
+    return (
+      <div data-slot="breadcrumb" className="w-full bg-breadcrumb-background px-8 py-2.5">
+        <Breadcrumbs
+          crumbs={[
+            { label: 'Home', to: HOME_PATH },
+            { label: 'Explore', to: EXPLORE_PATH },
+            { label: 'Datasets', to: '/explore/datasets' },
+            { label: datasetName },
+          ]}
+        />
+      </div>
+    )
+  }
 
   const orgMatch = ORG_ROUTE_PATTERN.exec(location.pathname)
 

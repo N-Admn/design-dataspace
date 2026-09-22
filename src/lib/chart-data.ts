@@ -12,14 +12,86 @@ export type ChartRow = Record<string, string | number>
 
 /** Columns are keyed by dataset id rather than file id — every tabular file within a
  * dataset in this mock represents the same underlying table for preview purposes. */
+/** ds-1's wide/tall table — a frontend-only mock demonstrating how the Data
+ * tab's preview behaves once a real file has many rows and columns (bounded
+ * viewport, sticky header + first column, horizontal + vertical scroll).
+ * `quarter`/`gdp_billions` keep their original names — chart-1 (mock-charts.ts)
+ * already reads this dataset's table by those field names. */
+const WIDE_TABLE_COLUMNS: ChartColumn[] = [
+  { name: 'quarter', label: 'Quarter', type: 'date' },
+  { name: 'state_code', label: 'State', type: 'geo' },
+  { name: 'sector_code', label: 'Sector', type: 'categorical' },
+  { name: 'gdp_billions', label: 'GDP (₹ Billions)', type: 'numeric' },
+  { name: 'labor_index', label: 'Labor Index', type: 'numeric' },
+  { name: 'population', label: 'Population (M)', type: 'numeric' },
+  { name: 'employment_rate', label: 'Employment Rate', type: 'numeric' },
+  { name: 'unemployment_rate', label: 'Unemployment Rate', type: 'numeric' },
+  { name: 'cpi', label: 'CPI', type: 'numeric' },
+  { name: 'gsdp_growth', label: 'GSDP Growth', type: 'numeric' },
+  { name: 'per_capita_income', label: 'Per Capita Income (₹)', type: 'numeric' },
+  { name: 'industrial_output', label: 'Industrial Output', type: 'numeric' },
+  { name: 'services_output', label: 'Services Output', type: 'numeric' },
+  { name: 'agriculture_output', label: 'Agriculture Output', type: 'numeric' },
+  { name: 'exports', label: 'Exports (₹ Bn)', type: 'numeric' },
+  { name: 'imports', label: 'Imports (₹ Bn)', type: 'numeric' },
+  { name: 'investment', label: 'Investment (₹ Bn)', type: 'numeric' },
+  { name: 'fiscal_deficit', label: 'Fiscal Deficit (%)', type: 'numeric' },
+  { name: 'revenue', label: 'Revenue (₹ Bn)', type: 'numeric' },
+  { name: 'expenditure', label: 'Expenditure (₹ Bn)', type: 'numeric' },
+  { name: 'urban_population', label: 'Urban Population (%)', type: 'numeric' },
+  { name: 'rural_population', label: 'Rural Population (%)', type: 'numeric' },
+  { name: 'literacy_rate', label: 'Literacy Rate (%)', type: 'numeric' },
+  { name: 'workforce_participation', label: 'Workforce Participation (%)', type: 'numeric' },
+  { name: 'inflation', label: 'Inflation (%)', type: 'numeric' },
+  { name: 'poverty_rate', label: 'Poverty Rate (%)', type: 'numeric' },
+]
+
+const WIDE_TABLE_STATES = ['Karnataka', 'Maharashtra', 'Tamil Nadu', 'Gujarat', 'West Bengal', 'Rajasthan', 'Uttar Pradesh']
+const WIDE_TABLE_SECTORS = ['Manufacturing', 'Services', 'Agriculture', 'Energy', 'Construction']
+
+/** Deterministically generates 28 quarterly rows (2020-Q1 .. 2026-Q4) with
+ * plausible, gently trending values — a formula, not real observations, used
+ * purely to demonstrate scale rather than being presented as real statistics. */
+function buildWideTableRows(): ChartRow[] {
+  const rows: ChartRow[] = []
+  for (let i = 0; i < 28; i++) {
+    const year = 2020 + Math.floor(i / 4)
+    const q = (i % 4) + 1
+    const round1 = (n: number) => Math.round(n * 10) / 10
+    rows.push({
+      quarter: `${year}-Q${q}`,
+      state_code: WIDE_TABLE_STATES[i % WIDE_TABLE_STATES.length],
+      sector_code: WIDE_TABLE_SECTORS[i % WIDE_TABLE_SECTORS.length],
+      gdp_billions: 380 + i * 3 + (i % 5) * 7,
+      labor_index: round1(94 + (i % 6) * 0.6),
+      population: round1(60 + i * 0.4),
+      employment_rate: round1(92 + (i % 4) * 0.8),
+      unemployment_rate: round1(8 - (i % 4) * 0.8),
+      cpi: round1(150 + i * 1.2),
+      gsdp_growth: round1(5 + (i % 7) * 0.3),
+      per_capita_income: 140000 + i * 1500,
+      industrial_output: round1(200 + i * 2.5),
+      services_output: round1(300 + i * 3),
+      agriculture_output: round1(150 + (i % 5) * 4),
+      exports: round1(50 + i * 1.1),
+      imports: round1(45 + i * 1.0),
+      investment: round1(80 + i * 1.8),
+      fiscal_deficit: round1(3 + (i % 4) * 0.4),
+      revenue: round1(500 + i * 6),
+      expenditure: round1(520 + i * 6.2),
+      urban_population: round1(30 + i * 0.3),
+      rural_population: round1(70 - i * 0.1),
+      literacy_rate: round1(74 + (i % 10) * 0.2),
+      workforce_participation: round1(45 + (i % 6) * 0.5),
+      inflation: round1(4 + (i % 5) * 0.4),
+      poverty_rate: round1(18 - (i % 9) * 0.3),
+    })
+  }
+  return rows
+}
+
 const DATASET_COLUMNS: Record<string, ChartColumn[]> = {
-  'ds-1': [
-    { name: 'quarter', label: 'Quarter', type: 'date' },
-    { name: 'state_code', label: 'State', type: 'geo' },
-    { name: 'sector_code', label: 'Sector', type: 'categorical' },
-    { name: 'gdp_billions', label: 'GDP (₹ Billions)', type: 'numeric' },
-    { name: 'labor_index', label: 'Labor Index', type: 'numeric' },
-  ],
+  'ds-1': WIDE_TABLE_COLUMNS,
   'ds-2': [
     { name: 'district', label: 'District', type: 'geo' },
     { name: 'facility_type', label: 'Facility Type', type: 'categorical' },
@@ -50,14 +122,7 @@ const FALLBACK_COLUMNS: ChartColumn[] = [
 ]
 
 const DATASET_ROWS: Record<string, ChartRow[]> = {
-  'ds-1': [
-    { quarter: '2025-Q1', state_code: 'Karnataka', sector_code: 'Manufacturing', gdp_billions: 412, labor_index: 96.2 },
-    { quarter: '2025-Q2', state_code: 'West Bengal', sector_code: 'Services', gdp_billions: 389, labor_index: 97.4 },
-    { quarter: '2025-Q3', state_code: 'Rajasthan', sector_code: 'Energy', gdp_billions: 455, labor_index: 95.8 },
-    { quarter: '2025-Q4', state_code: 'Karnataka', sector_code: 'Manufacturing', gdp_billions: 430, labor_index: 96.9 },
-    { quarter: '2026-Q1', state_code: 'West Bengal', sector_code: 'Services', gdp_billions: 401, labor_index: 97.9 },
-    { quarter: '2026-Q2', state_code: 'Rajasthan', sector_code: 'Energy', gdp_billions: 468, labor_index: 96.3 },
-  ],
+  'ds-1': buildWideTableRows(),
   'ds-2': [
     { district: 'Pune', facility_type: 'Primary Health Center', reporting_year: '2022', hospital_count: 12, bed_capacity: 340 },
     { district: 'Nagpur', facility_type: 'District Hospital', reporting_year: '2022', hospital_count: 5, bed_capacity: 610 },
@@ -108,7 +173,7 @@ export interface AggregatedPoint {
   value: number
 }
 
-function toNumber(value: string | number | undefined): number | null {
+export function toNumber(value: string | number | undefined): number | null {
   const num = typeof value === 'number' ? value : Number(value)
   return Number.isFinite(num) ? num : null
 }
@@ -143,6 +208,29 @@ export function aggregateRows(
 export function aggregateSingleValue(rows: ChartRow[], valueField: string, aggregation: ChartAggregation): number {
   const values = rows.map((row) => toNumber(row[valueField])).filter((v): v is number => v !== null)
   return reduceValues(values, aggregation)
+}
+
+/** One-line summary for a Data preview table's insight row — computed live
+ * from the same rows the table renders, never a fabricated or hardcoded
+ * value. Returns `undefined` when this column type has no defined summary
+ * yet (date/geo) or there's nothing to summarize, so callers can render an
+ * empty cell rather than a fake one. A real backend would likely replace
+ * this with a server-computed value of the same shape (`string | undefined`
+ * per column). */
+export function computeColumnInsight(column: ChartColumn, rows: ChartRow[]): string | undefined {
+  if (column.type === 'numeric') {
+    const values = rows.map((row) => toNumber(row[column.name])).filter((v): v is number => v !== null)
+    if (values.length === 0) return undefined
+    return `${formatChartNumber(Math.min(...values))} – ${formatChartNumber(Math.max(...values))}`
+  }
+  if (column.type === 'categorical') {
+    const distinct = new Set(rows.map((row) => String(row[column.name] ?? '')).filter(Boolean))
+    return distinct.size > 0 ? `${distinct.size} unique` : undefined
+  }
+  // date / geo: no defined summary in this app yet (e.g. a date range needs
+  // real date parsing this mock layer doesn't do) — leave it to the caller
+  // to render an empty cell rather than inventing one here.
+  return undefined
 }
 
 /** Infers a reasonable chart type from the shape of the data — always optional,
