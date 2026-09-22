@@ -20,9 +20,10 @@ interface GlobalSearchFieldProps {
 
 /**
  * The one global search field, reused on both the landing page (large) and
- * the results page (compact) — same component, same visual language as the
- * existing SearchInput used across the builder's dropdowns, extended with a
- * clear action and an explicit submit button/Enter-to-submit.
+ * the results page (compact) — a full pill with a circular icon-only submit
+ * button inset on the right, built from the existing `Button` (primary
+ * variant, `size="icon"`) rather than a one-off control, so it already
+ * carries the platform's brand color and focus/hover states.
  */
 function GlobalSearchField({
   value,
@@ -45,13 +46,12 @@ function GlobalSearchField({
         onSubmit(value)
       }}
       className={cn(
-        'flex items-center gap-2 rounded-md border border-input bg-background pl-4 pr-2 shadow-sm transition-colors',
+        'flex items-center gap-2 rounded-full border border-input bg-background pl-5 shadow-sm transition-colors',
         'focus-within:border-ring focus-within:ring-2 focus-within:ring-ring',
-        size === 'lg' ? 'h-14' : 'h-11',
+        size === 'lg' ? 'h-16 pr-2' : 'h-12 pr-1.5',
         className,
       )}
     >
-      <Search className={cn('shrink-0 text-muted-foreground', size === 'lg' ? 'size-5' : 'size-4')} aria-hidden="true" />
       <input
         ref={inputRef}
         type="search"
@@ -80,8 +80,13 @@ function GlobalSearchField({
           <X className="size-4" />
         </button>
       )}
-      <Button type="submit" size={size === 'lg' ? 'lg' : 'sm'} className="shrink-0">
-        Search
+      <Button
+        type="submit"
+        size="icon"
+        aria-label="Search"
+        className={cn('shrink-0 rounded-full', size === 'lg' ? 'size-12' : 'size-9')}
+      >
+        <Search className={size === 'lg' ? 'size-5' : 'size-4'} aria-hidden="true" />
       </Button>
     </form>
   )
