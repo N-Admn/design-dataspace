@@ -23,11 +23,12 @@ export const MAX_PUBLICATION_FILE_BYTES = MAX_DOCUMENT_BYTES
 export interface PublicationContributor {
   id: string
   name: string
+  /** Their contribution to this content, e.g. Author, Editor, Director. */
   role: string
+  /** Their job title, e.g. Program Manager — distinct from `role`. */
+  designation?: string
   /** Organisation the contributor is affiliated with, when known. */
   organisation?: string
-  /** Short description / bio, when provided. */
-  bio?: string
   /** Profile photo, when uploaded. */
   image?: UploadedAsset | null
 }

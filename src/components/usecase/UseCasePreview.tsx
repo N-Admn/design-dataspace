@@ -157,7 +157,11 @@ function UseCasePreview({ form, publishedAt }: { form: UseCaseFormState; publish
                         </div>
                         <div className="min-w-0">
                           <p className="truncate text-sm font-medium text-foreground">{c.name}</p>
-                          {c.role && <p className="truncate text-xs text-muted-foreground">{c.role}</p>}
+                          {[c.role, c.designation].filter(Boolean).length > 0 && (
+                            <p className="truncate text-xs text-muted-foreground">
+                              {[c.role, c.designation].filter(Boolean).join(' · ')}
+                            </p>
+                          )}
                         </div>
                       </div>
                     ))}

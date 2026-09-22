@@ -31,7 +31,7 @@ function PublicationStep1Details({ metadata, errors, onChange }: PublicationStep
   const addContributorFromDirectory = (person: MockPerson) => {
     onChange('contributors', [
       ...metadata.contributors,
-      { id: `contributor-${person.id}`, name: person.name, role: person.role ?? '', organisation: person.organisation },
+      { id: `contributor-${person.id}`, name: person.name, role: '', designation: person.role, organisation: person.organisation },
     ])
     toast({ title: 'Contributor added', description: `"${person.name}" added and connected.`, variant: 'success' })
   }
@@ -141,16 +141,18 @@ function PublicationStep1Details({ metadata, errors, onChange }: PublicationStep
                 )}
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-medium text-foreground">{c.name}</p>
-                  <div className="mt-1 flex items-center gap-1.5">
-                    <Input
-                      value={c.role}
-                      onChange={(e) => updateContributorRole(c.id, e.target.value)}
-                      placeholder="e.g. Author, Editor, Director"
-                      aria-label={`Role for ${c.name}`}
-                      className="h-7 max-w-48 text-xs"
-                    />
-                    {c.organisation && <span className="truncate text-xs text-muted-foreground">· {c.organisation}</span>}
-                  </div>
+                  {[c.designation, c.organisation].filter(Boolean).length > 0 && (
+                    <p className="truncate text-xs text-muted-foreground">
+                      {[c.designation, c.organisation].filter(Boolean).join(' · ')}
+                    </p>
+                  )}
+                  <Input
+                    value={c.role}
+                    onChange={(e) => updateContributorRole(c.id, e.target.value)}
+                    placeholder="Role: e.g. Author, Editor, Director"
+                    aria-label={`Role for ${c.name}`}
+                    className="mt-1.5 h-7 max-w-56 text-xs"
+                  />
                 </div>
                 <Button
                   type="button"
