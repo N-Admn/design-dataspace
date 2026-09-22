@@ -10,6 +10,7 @@ import { PublicationStep1Details } from '@/components/publication/PublicationSte
 import { PublicationStep2Content } from '@/components/publication/PublicationStep2Content'
 import { PublicationStep3Review } from '@/components/publication/PublicationStep3Review'
 import { LeaveCreationDialog } from '@/components/shared/LeaveCreationDialog'
+import { OrganisationContextBanner } from '@/components/organisation/OrganisationContextBanner'
 import { useToast } from '@/components/ui/toast'
 import { useAppData } from '@/context/AppDataContext'
 import { useHelpContext } from '@/context/HelpContext'
@@ -35,17 +36,22 @@ const PUBLICATION_STEPS = [
 interface PublicationNavState {
   publicationId?: string
   initialStep?: PublicationStep
+  organisationId?: string
+  returnTo?: string
 }
 
 function PublicationCreationPage() {
   const navigate = useNavigate()
   const location = useLocation()
-  const { publications, upsertPublication } = useAppData()
+  const { publications, upsertPublication, organisationWorkspaces } = useAppData()
   const { setContextLabel } = useHelpContext()
   const toast = useToast()
 
   const navState = (location.state as PublicationNavState | null) ?? null
   const resumeRecord = navState?.publicationId ? publications.find((p) => p.id === navState.publicationId) : undefined
+  const organisationId = navState?.organisationId
+  const returnTo = navState?.returnTo ?? '/dashboard/publications'
+  const organisation = organisationId ? organisationWorkspaces.find((o) => o.id === organisationId) : undefined
 
   const [editingId, setEditingId] = useState<string | null>(resumeRecord?.id ?? null)
   const [step, setStep] = useState<PublicationStep>(navState?.initialStep ?? 1)
@@ -87,7 +93,7 @@ function PublicationCreationPage() {
       setShowLeaveConfirm(true)
       return
     }
-    navigate('/dashboard/publications')
+    navigate(returnTo)
   }
 
   const goToStep = (next: PublicationStep) => {
@@ -111,7 +117,7 @@ function PublicationCreationPage() {
 
   const handleSaveDraft = () => {
     setSaved(false)
-    const id = upsertPublication(editingId, 'draft', form)
+    const id = upsertPublication(editingId, 'draft', form, organisationId)
     if (!editingId) setEditingId(id)
     setLastSavedForm(form)
     setTimeout(() => setSaved(true), 500)
@@ -132,7 +138,7 @@ function PublicationCreationPage() {
     }
     let id = editingId
     if (!id) {
-      id = upsertPublication(null, 'draft', form)
+      id = upsertPublication(null, 'draft', form, organisationId)
       setEditingId(id)
       setLastSavedForm(form)
     }
@@ -150,6 +156,7 @@ function PublicationCreationPage() {
         editablePlaceholder="Untitled Publication"
         unsavedChanges={showUnsavedIndicator}
       />
+      {organisation && <OrganisationContextBanner organisationName={organisation.metadata.name} />}
       <div className="border-t border-border px-6 py-6">
         <Stepper
           steps={PUBLICATION_STEPS}
@@ -202,11 +209,11 @@ function PublicationCreationPage() {
         onSave={() => {
           setShowLeaveConfirm(false)
           handleSaveDraft()
-          navigate('/dashboard/publications')
+          navigate(returnTo)
         }}
         onDiscard={() => {
           setShowLeaveConfirm(false)
-          navigate('/dashboard/publications')
+          navigate(returnTo)
         }}
       />
     </Card>

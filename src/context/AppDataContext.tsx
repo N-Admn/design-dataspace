@@ -225,7 +225,7 @@ interface AppDataContextValue {
   deleteChart: (id: string) => void
 
   publications: PublicationRecord[]
-  upsertPublication: (id: string | null, status: PublicationStatus, form: PublicationFormState) => string
+  upsertPublication: (id: string | null, status: PublicationStatus, form: PublicationFormState, organisationId?: string) => string
   unpublishPublication: (id: string) => void
   deletePublication: (id: string) => void
 
@@ -628,7 +628,7 @@ function AppDataProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   const upsertPublication = React.useCallback(
-    (id: string | null, status: PublicationStatus, form: PublicationFormState) => {
+    (id: string | null, status: PublicationStatus, form: PublicationFormState, organisationId?: string) => {
       const updatedAt = formatTimestamp(new Date())
       const recordId = id ?? `publication-${(publicationIdCounter += 1)}`
       setPublications((prev) => {
@@ -637,7 +637,18 @@ function AppDataProvider({ children }: { children: React.ReactNode }) {
         if (existing) {
           return prev.map((p) => (p.id === recordId ? { ...p, status: nextStatus, updatedAt, form, publishedForm } : p))
         }
-        return [{ id: recordId, status: nextStatus, updatedAt, form, publishedForm }, ...prev]
+        return [
+          {
+            id: recordId,
+            status: nextStatus,
+            updatedAt,
+            form,
+            publishedForm,
+            organisationId,
+            createdBy: organisationId ? currentUserDisplayName : undefined,
+          },
+          ...prev,
+        ]
       })
       return recordId
     },

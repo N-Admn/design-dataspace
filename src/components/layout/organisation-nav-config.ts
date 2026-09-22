@@ -1,4 +1,4 @@
-import { CalendarDays, Database, FolderKanban, LayoutDashboard, LineChart, ShieldCheck, Sparkles, User, Users } from 'lucide-react'
+import { CalendarDays, Database, FileStack, FolderKanban, LayoutDashboard, LineChart, ShieldCheck, Sparkles, User, Users } from 'lucide-react'
 
 import type { NavGroup } from '@/components/layout/nav-config'
 
@@ -19,6 +19,7 @@ export function organisationNavGroups(organisationId: string): NavGroup[] {
       label: 'Contribution',
       items: [
         { key: 'datasets', label: 'Datasets', icon: Database, path: `${base}/datasets` },
+        { key: 'publications', label: 'Publications', icon: FileStack, path: `${base}/publications` },
         { key: 'use-cases', label: 'Use Cases', icon: FolderKanban, path: `${base}/use-cases` },
         { key: 'ai-models', label: 'AI Models', icon: Sparkles, path: `${base}/ai-models` },
         { key: 'collaboratives', label: 'Collaboratives', icon: Users, path: `${base}/collaboratives` },
