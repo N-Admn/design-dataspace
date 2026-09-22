@@ -16,7 +16,7 @@ import { MOCK_PROFILE, type ContributorProfile } from '@/types/profile'
 import type { UseCaseFormState, UseCaseRecord, UseCaseStatus } from '@/types/usecase'
 import type { CollaborativeFormState, CollaborativeRecord, CollaborativeStatus } from '@/types/collaborative'
 import type { AIModelFormState, AIModelRecord, AIModelStatus } from '@/types/ai-model'
-import type { PublicationFormState, PublicationRecord, PublicationStatus } from '@/types/publication'
+import type { PublicationFormState, PublicationMetadata, PublicationRecord, PublicationStatus } from '@/types/publication'
 import type { ChartFormState, ChartRecord, ChartStatus } from '@/types/chart'
 import { MOCK_ORGANISATION_WORKSPACES } from '@/lib/mock-organisation-workspaces'
 import {
@@ -115,10 +115,35 @@ function bumpAIModelIdCounter(records: AIModelRecord[]) {
  * their preview/publish also happens from a separate window.open() tab. */
 const PUBLICATIONS_STORAGE_KEY = 'civicdataspace:publications'
 
+/** Migrate a Publication's metadata persisted before Contributors replaced the
+ * plain Author Name(s) list: a legacy record has `authors: string[]` and no
+ * `contributors` at all, so it's converted into one contributor per name (role
+ * left blank — there was no Role concept for authors yet). Records already on
+ * the current shape (including a legitimately empty `contributors: []`) pass
+ * through untouched. */
+function migratePublicationMetadata(metadata: PublicationMetadata & { authors?: string[] }): PublicationMetadata {
+  if (Array.isArray(metadata.contributors)) return metadata
+  const legacyAuthors = Array.isArray(metadata.authors) ? metadata.authors : []
+  return {
+    ...metadata,
+    contributors: legacyAuthors.map((name, index) => ({ id: `contributor-legacy-${index}-${name}`, name, role: '' })),
+  }
+}
+
+function normalizeStoredPublications(records: PublicationRecord[]): PublicationRecord[] {
+  return records.map((r) => ({
+    ...r,
+    form: { ...r.form, metadata: migratePublicationMetadata(r.form.metadata) },
+    publishedForm: r.publishedForm
+      ? { ...r.publishedForm, metadata: migratePublicationMetadata(r.publishedForm.metadata) }
+      : r.publishedForm,
+  }))
+}
+
 function loadStoredPublications(): PublicationRecord[] | null {
   try {
     const raw = window.localStorage.getItem(PUBLICATIONS_STORAGE_KEY)
-    return raw ? normalizeStoredRecords(JSON.parse(raw) as PublicationRecord[]) : null
+    return raw ? normalizeStoredPublications(normalizeStoredRecords(JSON.parse(raw) as PublicationRecord[])) : null
   } catch {
     return null
   }
@@ -339,7 +364,7 @@ function AppDataProvider({ children }: { children: React.ReactNode }) {
     const handleStorage = (event: StorageEvent) => {
       if (event.key !== PUBLICATIONS_STORAGE_KEY || !event.newValue) return
       try {
-        const next = JSON.parse(event.newValue) as PublicationRecord[]
+        const next = normalizeStoredPublications(JSON.parse(event.newValue) as PublicationRecord[])
         bumpPublicationIdCounter(next)
         setPublications(next)
       } catch {
