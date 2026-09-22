@@ -5,10 +5,7 @@ export interface PublicationDetailsErrors {
   description?: string
   contributors?: string
   date?: string
-  sector?: string
-  geography?: string
   usageRights?: string
-  resourceType?: string
 }
 
 export function validatePublicationDetails(form: PublicationFormState): PublicationDetailsErrors {
@@ -19,10 +16,7 @@ export function validatePublicationDetails(form: PublicationFormState): Publicat
   if (!metadata.description.trim()) errors.description = 'Add a description or abstract.'
   if (metadata.contributors.length === 0) errors.contributors = 'Add at least one contributor.'
   if (!metadata.date) errors.date = 'Select a date.'
-  if (!metadata.sector) errors.sector = 'Select a sector or domain.'
-  if (!metadata.geography) errors.geography = 'Select a geography.'
   if (!metadata.usageRights) errors.usageRights = 'Select usage rights.'
-  if (!metadata.resourceType) errors.resourceType = 'Select a resource type.'
 
   return errors
 }
