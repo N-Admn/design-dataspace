@@ -19,10 +19,10 @@ export function organisationNavGroups(organisationId: string): NavGroup[] {
       label: 'Contribution',
       items: [
         { key: 'datasets', label: 'Datasets', icon: Database, path: `${base}/datasets` },
-        { key: 'publications', label: 'Publications', icon: FileStack, path: `${base}/publications` },
         { key: 'use-cases', label: 'Use Cases', icon: FolderKanban, path: `${base}/use-cases` },
-        { key: 'ai-models', label: 'AI Models', icon: Sparkles, path: `${base}/ai-models` },
         { key: 'collaboratives', label: 'Collaboratives', icon: Users, path: `${base}/collaboratives` },
+        { key: 'ai-models', label: 'AI Models', icon: Sparkles, path: `${base}/ai-models` },
+        { key: 'publications', label: 'Publications', icon: FileStack, path: `${base}/publications` },
         { key: 'charts', label: 'Charts', icon: LineChart, path: `${base}/charts` },
         { key: 'events', label: 'Events', icon: CalendarDays, path: `${base}/events` },
       ],

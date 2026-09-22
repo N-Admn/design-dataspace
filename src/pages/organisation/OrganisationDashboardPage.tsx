@@ -37,10 +37,10 @@ function OrganisationDashboardPage() {
 
   const summary: SummaryCard[] = [
     { key: 'datasets', label: 'Datasets', count: orgDatasets.length, icon: Database, path: `/organisations/${organisationId}/datasets` },
-    { key: 'publications', label: 'Publications', count: orgPublications.length, icon: FileStack, path: `/organisations/${organisationId}/publications` },
     { key: 'use-cases', label: 'Use Cases', count: orgUseCases.length, icon: FolderKanban, path: `/organisations/${organisationId}/use-cases` },
-    { key: 'ai-models', label: 'AI Models', count: orgAIModels.length, icon: Sparkles, path: `/organisations/${organisationId}/ai-models` },
     { key: 'collaboratives', label: 'Collaboratives', count: orgCollaboratives.length, icon: Users, path: `/organisations/${organisationId}/collaboratives` },
+    { key: 'ai-models', label: 'AI Models', count: orgAIModels.length, icon: Sparkles, path: `/organisations/${organisationId}/ai-models` },
+    { key: 'publications', label: 'Publications', count: orgPublications.length, icon: FileStack, path: `/organisations/${organisationId}/publications` },
     { key: 'charts', label: 'Charts', count: orgCharts.length, icon: LineChart, path: `/organisations/${organisationId}/charts` },
     { key: 'events', label: 'Events', count: orgEvents.length, icon: CalendarDays, path: `/organisations/${organisationId}/events` },
   ]
