@@ -182,9 +182,7 @@ function PublicationStep1Details({ metadata, errors, onChange }: PublicationStep
         </CardHeader>
         <CardContent className="flex flex-col gap-5">
           <div>
-            <Label htmlFor="publication-resource-type">
-              Resource Type <span className="text-destructive">*</span>
-            </Label>
+            <Label htmlFor="publication-resource-type">Resource Type</Label>
             <div className="mt-1.5">
               <SearchableSelect
                 id="publication-resource-type"
@@ -192,17 +190,13 @@ function PublicationStep1Details({ metadata, errors, onChange }: PublicationStep
                 value={metadata.resourceType}
                 onChange={(value) => onChange('resourceType', value)}
                 placeholder="Select a resource type..."
-                invalid={Boolean(errors.resourceType)}
               />
             </div>
-            <FieldError message={errors.resourceType} />
           </div>
 
           <div className="flex flex-col gap-5 sm:flex-row">
             <div className="flex-1">
-              <Label htmlFor="publication-sector">
-                Sector / Domain <span className="text-destructive">*</span>
-              </Label>
+              <Label htmlFor="publication-sector">Sector / Domain</Label>
               <div className="mt-1.5">
                 <SearchableSelect
                   id="publication-sector"
@@ -210,15 +204,11 @@ function PublicationStep1Details({ metadata, errors, onChange }: PublicationStep
                   value={metadata.sector}
                   onChange={(value) => onChange('sector', value)}
                   placeholder="Search and select a sector..."
-                  invalid={Boolean(errors.sector)}
                 />
               </div>
-              <FieldError message={errors.sector} />
             </div>
             <div className="flex-1">
-              <Label htmlFor="publication-geography">
-                Geography <span className="text-destructive">*</span>
-              </Label>
+              <Label htmlFor="publication-geography">Geography</Label>
               <div className="mt-1.5">
                 <SearchableSelect
                   id="publication-geography"
@@ -226,10 +216,8 @@ function PublicationStep1Details({ metadata, errors, onChange }: PublicationStep
                   value={metadata.geography}
                   onChange={(value) => onChange('geography', value)}
                   placeholder="Search and select geography..."
-                  invalid={Boolean(errors.geography)}
                 />
               </div>
-              <FieldError message={errors.geography} />
             </div>
           </div>
 
