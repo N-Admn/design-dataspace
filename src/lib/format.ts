@@ -37,3 +37,13 @@ export function formatShortDate(value: string): string {
   const day = String(date.getDate()).padStart(2, '0')
   return `${day} ${MONTH_LABELS[date.getMonth()]} ${date.getFullYear()}`
 }
+
+/** Formats a plain "YYYY-MM-DD" date (e.g. `DatasetMetadata.createDate`, entered
+ *  via a native `<input type="date">`) as "09 Aug 2026" — distinct from
+ *  `formatShortDate`, which parses the app's "DD/MM/YYYY HH:mm:ss" timestamps and
+ *  produces an invalid date if given an ISO string instead. */
+export function formatIsoDateShort(value: string): string {
+  const [year, month, day] = value.split('-').map(Number)
+  if (!year || !month || !day) return value
+  return `${String(day).padStart(2, '0')} ${MONTH_LABELS[month - 1]} ${year}`
+}

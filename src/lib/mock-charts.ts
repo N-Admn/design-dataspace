@@ -21,7 +21,12 @@ const chart1Form: ChartFormState = {
 const chart2Form: ChartFormState = {
   datasetId: 'ds-2',
   fileId: 'ds2-file-1',
-  chartType: 'map',
+  // Was 'map': the mock 'district' values (Pune, Nagpur, ...) are city/district
+  // names, and the app only bundles state-level boundaries (see
+  // lib/geo-boundaries.ts) — a map here can never resolve, so it always showed
+  // the "Map preview unavailable" state. Bar reads the same category/value
+  // fields without needing a matched geographic boundary.
+  chartType: 'bar',
   config: {
     categoryField: 'district',
     valueField: 'hospital_count',
@@ -29,8 +34,8 @@ const chart2Form: ChartFormState = {
     showLegend: true,
     unit: '',
     displayLabel: '',
-    xAxisLabel: '',
-    yAxisLabel: '',
+    xAxisLabel: 'District',
+    yAxisLabel: 'Hospital Count',
   },
   uploadedImage: null,
   name: 'Hospitals by District',

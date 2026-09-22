@@ -17,6 +17,10 @@ const ds1Form: DatasetFormState = {
     accessType: 'open',
     license: 'cc-by-4.0',
   },
+  // Imported from GitHub, preserving its folder structure — demonstrates the
+  // Data tab's nested folder/file browser (DatasetFile.path) alongside a flat
+  // direct-upload dataset like ds-2, rather than every mock dataset being a
+  // flat list. Mock data only; no model/API change.
   files: [
     {
       id: 'ds1-file-1',
@@ -25,6 +29,14 @@ const ds1Form: DatasetFormState = {
       sizeLabel: '4.2MB',
       sizeBytes: mb(4.2),
       uploadedAt: '05/08/2026 09:14:22',
+      source: 'GitHub',
+      path: 'data/economic-indicators',
+      importUrl: 'https://github.com/civicdatalab/national-economic-indicators',
+      // Representative mock counts for the "large dataset" Data preview demo —
+      // intentionally larger than the 28 rows actually rendered by the mock
+      // table (lib/chart-data.ts); see that file's WIDE_TABLE_* comment.
+      rowCount: 12430,
+      columnCount: 26,
     },
     {
       id: 'ds1-file-2',
@@ -33,6 +45,20 @@ const ds1Form: DatasetFormState = {
       sizeLabel: '6.8MB',
       sizeBytes: mb(6.8),
       uploadedAt: '05/08/2026 09:14:22',
+      source: 'GitHub',
+      path: 'data/economic-indicators',
+      importUrl: 'https://github.com/civicdatalab/national-economic-indicators',
+    },
+    {
+      id: 'ds1-file-4',
+      name: 'unemployment_rate_by_state.csv',
+      extension: 'CSV',
+      sizeLabel: '2.1MB',
+      sizeBytes: mb(2.1),
+      uploadedAt: '05/08/2026 09:14:22',
+      source: 'GitHub',
+      path: 'data/employment',
+      importUrl: 'https://github.com/civicdatalab/national-economic-indicators',
     },
     {
       id: 'ds1-file-3',
@@ -41,6 +67,30 @@ const ds1Form: DatasetFormState = {
       sizeLabel: '0.9MB',
       sizeBytes: mb(0.9),
       uploadedAt: '05/08/2026 09:14:22',
+      source: 'GitHub',
+      path: 'documentation',
+      importUrl: 'https://github.com/civicdatalab/national-economic-indicators',
+    },
+    {
+      id: 'ds1-file-5',
+      name: 'column_definitions.csv',
+      extension: 'CSV',
+      sizeLabel: '0.1MB',
+      sizeBytes: mb(0.1),
+      uploadedAt: '05/08/2026 09:14:22',
+      source: 'GitHub',
+      path: 'metadata',
+      importUrl: 'https://github.com/civicdatalab/national-economic-indicators',
+    },
+    {
+      id: 'ds1-file-6',
+      name: 'README.md',
+      extension: 'MD',
+      sizeLabel: '0.01MB',
+      sizeBytes: mb(0.01),
+      uploadedAt: '05/08/2026 09:14:22',
+      source: 'GitHub',
+      importUrl: 'https://github.com/civicdatalab/national-economic-indicators',
     },
   ],
   resources: [],
@@ -321,6 +371,9 @@ const ds9Form: DatasetFormState = {
     targetLanguages: ['en', 'hi'],
     targetModelTypes: ['gpt', 'claude', 'indic-llm'],
   },
+  // Imported from a Public Platform (Hugging Face) that preserved its
+  // `train`/`test` folder structure — exercises DatasetFile.path with real
+  // nesting, rather than every mock dataset being a flat, direct-upload list.
   files: [
     {
       id: 'ds9-file-1',
@@ -329,7 +382,9 @@ const ds9Form: DatasetFormState = {
       sizeLabel: '1.6MB',
       sizeBytes: mb(1.6),
       uploadedAt: '20/08/2026 10:05:00',
-      source: 'File upload',
+      source: 'Hugging Face',
+      path: 'train',
+      importUrl: 'https://huggingface.co/datasets/civicdatalab/grievance-redressal-prompts',
       rowCount: 3200,
       columnCount: 3,
       promptFileMetadata: {
@@ -343,6 +398,63 @@ const ds9Form: DatasetFormState = {
           { name: 'output', description: 'The expected redressal response from the model.' },
         ],
       },
+    },
+    {
+      id: 'ds9-file-2',
+      name: 'grievance_responses_train.csv',
+      extension: 'CSV',
+      sizeLabel: '0.9MB',
+      sizeBytes: mb(0.9),
+      uploadedAt: '20/08/2026 10:05:00',
+      source: 'Hugging Face',
+      path: 'train',
+      importUrl: 'https://huggingface.co/datasets/civicdatalab/grievance-redressal-prompts',
+      rowCount: 3200,
+      columnCount: 2,
+      promptFileMetadata: {
+        promptFileName: 'Grievance Responses — Train',
+        promptFormat: 'instruction',
+        hasSystemPrompt: false,
+        hasExampleResponses: true,
+        fields: [
+          { name: 'instruction_id', description: 'Links a response back to its instruction row.' },
+          { name: 'output', description: 'The expected redressal response from the model.' },
+        ],
+      },
+    },
+    {
+      id: 'ds9-file-3',
+      name: 'grievance_instruction_pairs_test.csv',
+      extension: 'CSV',
+      sizeLabel: '0.4MB',
+      sizeBytes: mb(0.4),
+      uploadedAt: '20/08/2026 10:05:00',
+      source: 'Hugging Face',
+      path: 'test',
+      importUrl: 'https://huggingface.co/datasets/civicdatalab/grievance-redressal-prompts',
+      rowCount: 800,
+      columnCount: 3,
+      promptFileMetadata: {
+        promptFileName: 'Grievance Instruction Pairs — Test',
+        promptFormat: 'instruction',
+        hasSystemPrompt: true,
+        hasExampleResponses: true,
+        fields: [
+          { name: 'instruction', description: 'The citizen grievance or request given to the model.' },
+          { name: 'input', description: 'Additional context supplied with the grievance, when available.' },
+          { name: 'output', description: 'The expected redressal response from the model.' },
+        ],
+      },
+    },
+    {
+      id: 'ds9-file-4',
+      name: 'README.md',
+      extension: 'MD',
+      sizeLabel: '0.01MB',
+      sizeBytes: mb(0.01),
+      uploadedAt: '20/08/2026 10:05:00',
+      source: 'Hugging Face',
+      importUrl: 'https://huggingface.co/datasets/civicdatalab/grievance-redressal-prompts',
     },
   ],
   resources: [],

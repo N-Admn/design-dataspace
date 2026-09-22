@@ -48,6 +48,7 @@ import { DiscoverPage } from '@/pages/DiscoverPage'
 import { SearchResultsPage } from '@/pages/SearchResultsPage'
 import { UseCasesExplorePage } from '@/pages/explore/UseCasesExplorePage'
 import { UseCaseDetailPage } from '@/pages/explore/UseCaseDetailPage'
+import { DatasetDetailPage } from '@/pages/explore/DatasetDetailPage'
 import { SignInPage } from '@/pages/auth/SignInPage'
 import { RegisterPage } from '@/pages/auth/RegisterPage'
 import { ForgotPasswordPage } from '@/pages/auth/ForgotPasswordPage'
@@ -88,6 +89,7 @@ function AppLayout() {
   const isAIModelPreview = /^\/dashboard\/ai-models\/[^/]+\/preview$/.test(location.pathname)
   const isEventPreview = /^\/dashboard\/events\/[^/]+\/preview$/.test(location.pathname)
   const isPublicationPreview = /^\/dashboard\/publications\/[^/]+\/preview$/.test(location.pathname)
+  const isDatasetDetail = /^\/explore\/datasets\/[^/]+$/.test(location.pathname)
   const isDesignSystem = location.pathname === '/design-system'
   const isConsumerRoute =
     location.pathname.startsWith('/explore/') ||
@@ -128,7 +130,7 @@ function AppLayout() {
         !isAIModelPreview &&
         !isEventPreview &&
         !isPublicationPreview &&
-        !isConsumerRoute && <BreadcrumbBar />}
+        (!isConsumerRoute || isDatasetDetail) && <BreadcrumbBar />}
 
       <main
         className={cn(
@@ -177,6 +179,7 @@ function AppLayout() {
             <Route path="/discover" element={<DiscoverPage />} />
             <Route path="/search" element={<SearchResultsPage />} />
             <Route path="/explore/datasets" element={<ComingSoonPage title="Datasets" />} />
+            <Route path="/explore/datasets/:id" element={<DatasetDetailPage />} />
             <Route path="/explore/use-cases" element={<UseCasesExplorePage />} />
             <Route path="/explore/use-cases/:id" element={<UseCaseDetailPage />} />
             <Route path="/explore/ai-models" element={<ComingSoonPage title="AI Models and Prompts" />} />
