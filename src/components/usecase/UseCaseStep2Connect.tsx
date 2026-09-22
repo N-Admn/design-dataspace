@@ -113,29 +113,29 @@ function UseCaseStep2Connect({ metadata, onMetadataChange, connections, onChange
             <p className="py-4 text-center text-sm text-muted-foreground">No contributors added yet.</p>
           ) : (
             connections.contributors.map((c) => (
-              <div key={c.id} className="flex items-center gap-3 rounded-lg border border-border p-3">
+              <div key={c.id} className="flex items-center gap-3 rounded-lg border border-border px-3 py-2">
                 {c.image?.dataUrl ? (
-                  <img src={c.image.dataUrl} alt="" className="size-9 shrink-0 rounded-full border border-border object-cover" />
+                  <img src={c.image.dataUrl} alt="" className="size-8 shrink-0 rounded-full border border-border object-cover" />
                 ) : (
-                  <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
-                    <User className="size-4" />
+                  <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
+                    <User className="size-3.5" />
                   </div>
                 )}
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium text-foreground">{c.name}</p>
+                <div className="flex min-w-0 flex-1 items-baseline gap-1.5">
+                  <p className="shrink-0 truncate text-sm font-medium text-foreground">{c.name}</p>
                   {[c.designation, c.organisation].filter(Boolean).length > 0 && (
-                    <p className="truncate text-xs text-muted-foreground">
+                    <p className="min-w-0 truncate text-xs text-muted-foreground">
                       {[c.designation, c.organisation].filter(Boolean).join(' · ')}
                     </p>
                   )}
-                  <Input
-                    value={c.role}
-                    onChange={(e) => updateContributorRole(c.id, e.target.value)}
-                    placeholder="Role: e.g. Author, Editor, Reviewer"
-                    aria-label={`Role for ${c.name}`}
-                    className="mt-1.5 h-7 max-w-56 text-xs"
-                  />
                 </div>
+                <Input
+                  value={c.role}
+                  onChange={(e) => updateContributorRole(c.id, e.target.value)}
+                  placeholder="Role: e.g. Author, Editor"
+                  aria-label={`Role for ${c.name}`}
+                  className="h-8 w-40 shrink-0 text-xs"
+                />
                 <Button
                   type="button"
                   variant="ghost"
@@ -144,7 +144,7 @@ function UseCaseStep2Connect({ metadata, onMetadataChange, connections, onChange
                   onClick={() =>
                     onChange({ ...connections, contributors: connections.contributors.filter((x) => x.id !== c.id) })
                   }
-                  className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+                  className="shrink-0 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
                 >
                   <Trash2 className="size-4" />
                 </Button>
