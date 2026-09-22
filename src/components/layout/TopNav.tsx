@@ -1,17 +1,9 @@
 import { useState } from 'react'
-import { ChevronDown, LayoutDashboard, LogOut, Menu, Search } from 'lucide-react'
+import { LayoutDashboard, LogOut, Menu, Search } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'
 
 import { Button } from '@/components/ui/button'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-
-const EXPLORE_LINKS = [
-  { label: 'Datasets', to: '/explore/datasets' },
-  { label: 'Use Cases', to: '/explore/use-cases' },
-  { label: 'AI Models and Prompts', to: '/explore/ai-models' },
-  { label: 'Publications', to: '/explore/publications' },
-  { label: 'Events', to: '/explore/events' },
-]
 
 const NAV_LINKS = [
   { label: 'COLLABORATIVES', to: '/collaboratives' },
@@ -23,36 +15,6 @@ const CURRENT_USER = {
   name: 'John Doe',
   email: 'johndoe@gmail.com',
   initials: 'JD',
-}
-
-function ExploreMenu() {
-  const navigate = useNavigate()
-
-  return (
-    <Popover>
-      <PopoverTrigger asChild>
-        <button
-          type="button"
-          className="hidden items-center gap-1 rounded-sm text-primary-foreground/90 transition-colors hover:text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 md:flex"
-        >
-          EXPLORE
-          <ChevronDown className="size-4" />
-        </button>
-      </PopoverTrigger>
-      <PopoverContent align="start" className="w-56 p-1.5">
-        {EXPLORE_LINKS.map((item) => (
-          <button
-            key={item.label}
-            type="button"
-            onClick={() => navigate(item.to)}
-            className="flex w-full items-center rounded-md px-2.5 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted"
-          >
-            {item.label}
-          </button>
-        ))}
-      </PopoverContent>
-    </Popover>
-  )
 }
 
 function AuthButton({ onLogIn }: { onLogIn: () => void }) {
@@ -136,18 +98,6 @@ function MobileNavMenu() {
         </button>
       </PopoverTrigger>
       <PopoverContent align="end" className="w-56 p-1.5">
-        <p className="px-2.5 pb-1 pt-2 text-xs font-semibold uppercase text-muted-foreground">Explore</p>
-        {EXPLORE_LINKS.map((item) => (
-          <button
-            key={item.label}
-            type="button"
-            onClick={() => navigate(item.to)}
-            className="flex w-full items-center rounded-md px-2.5 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted"
-          >
-            {item.label}
-          </button>
-        ))}
-        <div className="my-1 border-t border-border" />
         {NAV_LINKS.map((link) => (
           <button
             key={link.label}
@@ -185,8 +135,6 @@ function TopNav() {
         >
           <Search className="size-5" />
         </button>
-
-        <ExploreMenu />
 
         {NAV_LINKS.map((link) => (
           <button
