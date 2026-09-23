@@ -81,13 +81,13 @@ function DatasetDetailHeader({ metadata, publisher, updatedAt }: DatasetDetailHe
           <h1 className="type-heading-1 break-words text-text-brand">{metadata.name || 'Untitled dataset'}</h1>
         </div>
         <div className="flex shrink-0 items-center gap-2">
-          <Button type="button" variant="outline" onClick={handleDownload}>
-            <Download className="size-4" />
-            Download
-          </Button>
           <Button type="button" variant="outline" onClick={handleShare}>
             <Share2 className="size-4" />
             Share
+          </Button>
+          <Button type="button" onClick={handleDownload}>
+            <Download className="size-4" />
+            Download
           </Button>
         </div>
       </div>
