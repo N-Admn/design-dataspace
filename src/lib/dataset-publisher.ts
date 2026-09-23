@@ -48,3 +48,20 @@ export function resolveDatasetPublisher(
     avatarUrl: MOCK_PROFILE.avatarDataUrl,
   }
 }
+
+/** The name + avatar half of `resolveDatasetPublisher`'s `organisationId` →
+ *  Organisation Workspace lookup, generalized for any record shaped the same
+ *  way (currently Dataset and AI Model) — used where only the card-level
+ *  identity is needed, not the full publisher profile (description/website). */
+export function resolvePublisherByOrganisation(
+  organisationId: string | undefined,
+  createdBy: string | undefined,
+  organisationWorkspaces: OrganisationRecord[],
+): { name: string; avatarUrl: string | null } {
+  const org = organisationId ? organisationWorkspaces.find((o) => o.id === organisationId) : undefined
+  if (org) return { name: org.metadata.name, avatarUrl: org.metadata.logo?.dataUrl ?? null }
+  return {
+    name: createdBy || `${MOCK_PROFILE.firstName} ${MOCK_PROFILE.lastName}`,
+    avatarUrl: MOCK_PROFILE.avatarDataUrl,
+  }
+}

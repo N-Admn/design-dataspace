@@ -38,6 +38,13 @@ export function formatShortDate(value: string): string {
   return `${day} ${MONTH_LABELS[date.getMonth()]} ${date.getFullYear()}`
 }
 
+/** Formats the app's "DD/MM/YYYY HH:mm:ss" timestamp string as "Aug 2026" —
+ *  month + year only, for compact card metadata rows. */
+export function formatMonthYear(value: string): string {
+  const date = parseAppTimestamp(value)
+  return `${MONTH_LABELS[date.getMonth()]} ${date.getFullYear()}`
+}
+
 /** Formats a plain "YYYY-MM-DD" date (e.g. `DatasetMetadata.createDate`, entered
  *  via a native `<input type="date">`) as "09 Aug 2026" — distinct from
  *  `formatShortDate`, which parses the app's "DD/MM/YYYY HH:mm:ss" timestamps and

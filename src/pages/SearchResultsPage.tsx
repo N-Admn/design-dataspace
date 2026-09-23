@@ -1,8 +1,9 @@
 import * as React from 'react'
-import { ChevronDown, LayoutGrid, LayoutList, SearchX } from 'lucide-react'
-import { useSearchParams } from 'react-router-dom'
+import { ChevronDown, LayoutGrid, LayoutList, SearchX, TrendingUp } from 'lucide-react'
+import { Link, useSearchParams } from 'react-router-dom'
 
 import { EmptyState } from '@/components/shared/EmptyState'
+import { Button } from '@/components/ui/button'
 import { Chip } from '@/components/discover/Chip'
 import { GlobalSearchField } from '@/components/discover/GlobalSearchField'
 import { SearchResultCard, TYPE_ICON } from '@/components/discover/SearchResultCard'
@@ -31,9 +32,53 @@ const TYPE_FILTERS: { value: TypeFilter; label: string }[] = [
   { value: 'ai-model', label: 'AI Models' },
 ]
 
-/** How many cards each category shows in the grouped "All" view before
- *  handing off to "View all →" (which just re-selects that type's pill). */
-const GROUPED_VIEW_LIMIT = 3
+/** Contextual heading + one-line description shown below the content-type
+ *  pills, keyed by the selected pill — updates instantly since it's derived
+ *  straight from `type`, no separate state. */
+const TYPE_INTRO: Record<TypeFilter, { heading: string; description: string }> = {
+  all: {
+    heading: 'Search CivicDataSpace',
+    description: 'Discover datasets, use cases, publications, events, collaboratives and AI models.',
+  },
+  dataset: { heading: 'Datasets', description: 'Discover and explore datasets published on CivicDataSpace.' },
+  'use-case': { heading: 'Use Cases', description: 'Explore how civic data is used to solve real-world problems.' },
+  publication: { heading: 'Publications', description: 'Explore research, reports and publications related to civic data.' },
+  collaborative: { heading: 'Collaboratives', description: 'Explore collaborative initiatives working with civic data.' },
+  event: { heading: 'Events', description: 'Discover upcoming and past events from the civic data community.' },
+  'ai-model': { heading: 'AI Models', description: 'Discover AI models built for civic data applications.' },
+}
+
+/** Primary contribution CTA shown next to the intro block — only for the
+ *  content types that actually have a contribution flow to send someone to.
+ *  Datasets has no standalone `/new` route (creation starts from the list
+ *  page's own "Add Dataset" flow), so it links there instead of a route that
+ *  doesn't exist. */
+const TYPE_CTA: Partial<Record<TypeFilter, { label: string; to: string }>> = {
+  dataset: { label: 'Contribute Dataset', to: '/dashboard/datasets' },
+  'use-case': { label: 'Contribute Use Case', to: '/dashboard/use-cases/new' },
+  publication: { label: 'Contribute Publication', to: '/dashboard/publications/new' },
+  'ai-model': { label: 'Contribute AI Model', to: '/dashboard/ai-models/new' },
+}
+
+/** Curated starting points shown on the pre-search landing state — not
+ *  derived from the mock data (there's no real query-popularity signal to
+ *  rank by), just realistic topics a civic data search would surface. The
+ *  count shown on each chip, though, is computed live against the actual
+ *  search index (below) rather than a made-up number. */
+const TRENDING_SEARCHES = ['Air pollution', 'Maternal health', 'Flood data', 'Education', 'Climate', 'Public finance']
+
+/** Longer, realistic search phrases — the kind of thing people actually type
+ *  or pick from a "recent/popular searches" list, each paired with the
+ *  keyword query and content type it should resolve to. Rendered as a plain
+ *  divided list rather than pills, to read as phrases rather than tags. */
+const POPULAR_SEARCH_PHRASES: { label: string; query: string; type: TypeFilter }[] = [
+  { label: 'Datasets for maternal health', query: 'maternal health', type: 'dataset' },
+  { label: 'Use cases for health infrastructure', query: 'health', type: 'use-case' },
+  { label: 'Datasets on education enrollment', query: 'education enrollment', type: 'dataset' },
+  { label: 'Climate risk and vulnerability data', query: 'climate risk', type: 'dataset' },
+  { label: 'Municipal budget and expenditure data', query: 'budget', type: 'dataset' },
+  { label: 'Urban water supply datasets', query: 'water supply', type: 'dataset' },
+]
 
 type SortKey = 'relevance' | 'newest' | 'oldest' | 'az'
 
@@ -134,7 +179,7 @@ function SortMenu({ sort, onChange }: { sort: SortKey; onChange: (sort: SortKey)
 }
 
 function SearchResultsPage() {
-  const { datasets, useCases, collaboratives, events, aiModels, organisationWorkspaces } = useAppData()
+  const { datasets, useCases, collaboratives, events, aiModels, organisationWorkspaces, charts } = useAppData()
   const [searchParams, setSearchParams] = useSearchParams()
 
   const query = searchParams.get('q') ?? ''
@@ -201,8 +246,16 @@ function SearchResultsPage() {
   React.useEffect(() => setDraft(query), [query])
 
   const index = React.useMemo(
-    () => buildSearchIndex({ datasets, useCases, collaboratives, events, aiModels, organisationWorkspaces }),
-    [datasets, useCases, collaboratives, events, aiModels, organisationWorkspaces],
+    () => buildSearchIndex({ datasets, useCases, collaboratives, events, aiModels, organisationWorkspaces, charts }),
+    [datasets, useCases, collaboratives, events, aiModels, organisationWorkspaces, charts],
+  )
+
+  // Real per-topic result counts for the trending-search chips — computed
+  // against the same index/keyword matcher the results page itself uses,
+  // never a fabricated number.
+  const trendingCounts = React.useMemo(
+    () => Object.fromEntries(TRENDING_SEARCHES.map((topic) => [topic, searchItems(index, topic).length])),
+    [index],
   )
 
   const keywordMatches = React.useMemo(() => searchItems(index, query), [index, query])
@@ -219,14 +272,28 @@ function SearchResultsPage() {
   const hasActiveFilters = Object.keys(activeFilters).length > 0
   const filterGroups = FILTER_GROUPS_BY_TYPE[type]
 
+  // The pre-search landing state: no query typed, no content type chosen, no
+  // tag or filter narrowing anything yet. Any one of those is enough to mean
+  // the user has "initiated a search/browse action" and should see the
+  // results architecture instead — content-type pills included.
+  const isLanding = query.trim() === '' && type === 'all' && !tag && !hasActiveFilters
+
   return (
-    <div className="mx-auto flex w-full max-w-[1400px] flex-col gap-6 py-4">
+    // The white background for this page (and every other consumer-facing
+    // route) is set on the shared `<main>` in App.tsx via `isConsumerRoute` —
+    // nothing page-specific needed here any more.
+    // gap-9 (36px) is the space between each major section below (pills →
+    // intro, intro → filters/results) — within the requested 32–40px range.
+    // The search-bar → pills gap stays its own tighter gap-4 (16px) inside
+    // the sticky block below, per spec.
+    <div className="mx-auto flex w-full max-w-[1400px] flex-col gap-9">
       <h1 className="sr-only">Search results</h1>
 
-      {/* Sticky so the search bar and content-type pills stay reachable while
-          scrolling through results — `bg-page-background` matches the page's
-          own background so results scrolling underneath don't show through. */}
-      <div className="sticky top-0 z-20 flex flex-col gap-4 bg-page-background py-3">
+      {/* Sticky so the search bar and content-type pills stay reachable
+          while scrolling through results — `bg-background` matches the
+          page's white background so results scrolling underneath don't
+          show through. */}
+      <div className="sticky top-0 z-20 flex flex-col gap-4 bg-background py-3">
         <GlobalSearchField
           value={draft}
           onChange={setDraft}
@@ -236,22 +303,50 @@ function SearchResultsPage() {
           size="md"
         />
 
-        <div className="flex flex-wrap items-center gap-2 sm:flex-nowrap" role="group" aria-label="Filter results by content type">
-          {TYPE_FILTERS.map((f) => (
-            <Chip
-              key={f.value}
-              label={`${f.label} (${countFor(f.value)})`}
-              pressed={type === f.value}
-              onClick={() => updateParams({ type: f.value })}
-              // "All" has no single content-type icon and stays its natural
-              // width; the rest share the remaining width evenly so the row
-              // lines up with the search bar above it.
-              icon={f.value === 'all' ? undefined : TYPE_ICON[f.value]}
-              className={f.value === 'all' ? 'shrink-0' : 'min-w-0 sm:flex-1'}
-            />
-          ))}
-        </div>
+        {/* Content-type pills only make sense once the user has actually
+            initiated a search or browse — not on the pre-search landing
+            state, per spec. */}
+        {!isLanding && (
+          <div className="flex flex-wrap items-center gap-2 sm:flex-nowrap" role="group" aria-label="Filter results by content type">
+            {TYPE_FILTERS.map((f) => (
+              <Chip
+                key={f.value}
+                label={`${f.label} (${countFor(f.value)})`}
+                pressed={type === f.value}
+                onClick={() => updateParams({ type: f.value })}
+                // "All" has no single content-type icon and stays its natural
+                // width; the rest share the remaining width evenly so the row
+                // lines up with the search bar above it.
+                icon={f.value === 'all' ? undefined : TYPE_ICON[f.value]}
+                className={f.value === 'all' ? 'shrink-0' : 'min-w-0 sm:flex-1'}
+              />
+            ))}
+          </div>
+        )}
       </div>
+
+      {/* Contextual intro for the selected content type — sits between the
+          pills and the filter/results area, and swaps instantly since it
+          reads straight off `type`. Not shown on the landing state, which
+          has its own framing (Popular topics / searches / Explore by content). */}
+      {!isLanding && (
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <h2 className="type-heading-1 font-bold text-foreground">{TYPE_INTRO[type].heading}</h2>
+            <p className="mt-1 text-base text-muted-foreground">{TYPE_INTRO[type].description}</p>
+          </div>
+          {TYPE_CTA[type] && (
+            <Button asChild className="shrink-0 self-start sm:self-end">
+              <Link to={TYPE_CTA[type].to}>{TYPE_CTA[type].label}</Link>
+            </Button>
+          )}
+        </div>
+      )}
+
+      {/* A plain sibling in the page's `gap-9` flex column, not a margin on
+          either side — so the space above and below it is the same 36px on
+          both sides, rather than a one-off value tuned for this divider. */}
+      {!isLanding && <hr className="border-t border-border" />}
 
       {tag && (
         <div className="flex flex-wrap items-center gap-2" role="group" aria-label="Active tag filter">
@@ -259,12 +354,66 @@ function SearchResultsPage() {
         </div>
       )}
 
-      {query.trim() === '' && type === 'all' && !tag && !hasActiveFilters ? (
-        <EmptyState
-          icon={SearchX}
-          title="Search to get started"
-          description="Enter a keyword, topic, location, or organisation name above, or choose a content type below to browse."
-        />
+      {isLanding ? (
+        <div className="flex flex-col gap-8">
+          <section aria-labelledby="trending-searches-heading">
+            <h2 id="trending-searches-heading" className="type-heading-3 text-foreground">
+              Popular topics
+            </h2>
+            <div className="mt-3 flex flex-wrap gap-2 sm:flex-nowrap" role="group" aria-label="Trending searches">
+              {TRENDING_SEARCHES.map((topic) => (
+                <Chip
+                  key={topic}
+                  label={`${topic} (${trendingCounts[topic] ?? 0})`}
+                  onClick={() => {
+                    setDraft(topic)
+                    updateParams({ q: topic })
+                  }}
+                  className="min-w-0 sm:flex-1"
+                />
+              ))}
+            </div>
+          </section>
+
+          <section aria-labelledby="popular-phrases-heading">
+            <h2 id="popular-phrases-heading" className="type-heading-3 text-foreground">
+              Popular searches
+            </h2>
+            <div className="mt-3 divide-y divide-border" role="list" aria-label="Popular searches">
+              {POPULAR_SEARCH_PHRASES.map((phrase) => (
+                <button
+                  key={phrase.label}
+                  type="button"
+                  role="listitem"
+                  onClick={() => {
+                    setDraft(phrase.query)
+                    updateParams({ q: phrase.query, type: phrase.type })
+                  }}
+                  className="flex w-full items-center gap-3 px-5 py-3.5 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
+                >
+                  <TrendingUp className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+                  {phrase.label}
+                </button>
+              ))}
+            </div>
+          </section>
+
+          <section aria-labelledby="explore-by-content-heading">
+            <h2 id="explore-by-content-heading" className="type-heading-3 text-foreground">
+              Explore by content
+            </h2>
+            <div className="mt-3 flex flex-wrap gap-2" role="group" aria-label="Browse by content type">
+              {TYPE_FILTERS.filter((f) => f.value !== 'all').map((f) => (
+                <Chip
+                  key={f.value}
+                  label={f.label}
+                  icon={f.value === 'all' ? undefined : TYPE_ICON[f.value]}
+                  onClick={() => updateParams({ type: f.value })}
+                />
+              ))}
+            </div>
+          </section>
+        </div>
       ) : (
         <div className="flex flex-col gap-7 sm:flex-row">
           <FilterRail
@@ -284,48 +433,42 @@ function SearchResultsPage() {
                 title={tag ? `No results tagged "${tag}"` : query.trim() ? `No results for "${query}"` : 'No results'}
                 description="Try a different keyword, or clear a filter."
               />
-            ) : type === 'all' ? (
-              <div className="flex flex-col gap-8">
-                {TYPE_FILTERS.filter((f) => f.value !== 'all').map((f) => {
-                  const items = results.filter((item) => item.type === f.value)
-                  if (items.length === 0) return null
-                  return (
-                    <section key={f.value} aria-labelledby={`section-${f.value}`}>
-                      <div className="flex items-center justify-between gap-3">
-                        <h2 id={`section-${f.value}`} className="type-heading-3 text-foreground">
-                          {f.label}
-                        </h2>
-                        {items.length > GROUPED_VIEW_LIMIT && (
-                          <button
-                            type="button"
-                            onClick={() => updateParams({ type: f.value })}
-                            className="rounded-sm text-sm font-medium text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                          >
-                            View all →
-                          </button>
-                        )}
-                      </div>
-                      <div className="mt-3">
-                        <ResultsGrid items={items.slice(0, GROUPED_VIEW_LIMIT)} view="grid" />
-                      </div>
-                    </section>
-                  )
-                })}
-              </div>
             ) : (
               <>
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <p className="text-sm font-medium text-foreground">
-                    {results.length} {TYPE_FILTERS.find((f) => f.value === type)?.label}
+                    {results.length} {type === 'all' ? 'Results' : TYPE_FILTERS.find((f) => f.value === type)?.label}
                   </p>
                   <div className="flex items-center gap-4">
                     <SortMenu sort={sort} onChange={setSort} />
                     <ViewToggle view={view} onChange={setView} />
                   </div>
                 </div>
-                <div className="mt-4">
-                  <ResultsGrid items={sortResults(results, sort)} view={view} />
-                </div>
+                {type === 'all' ? (
+                  <div className="mt-4 flex flex-col gap-8">
+                    {TYPE_FILTERS.filter((f) => f.value !== 'all').map((f) => {
+                      const items = sortResults(
+                        results.filter((item) => item.type === f.value),
+                        sort,
+                      )
+                      if (items.length === 0) return null
+                      return (
+                        <section key={f.value} aria-labelledby={`section-${f.value}`}>
+                          <h2 id={`section-${f.value}`} className="type-heading-3 text-foreground">
+                            {f.label} ({items.length})
+                          </h2>
+                          <div className="mt-3">
+                            <ResultsGrid items={items} view={view} />
+                          </div>
+                        </section>
+                      )
+                    })}
+                  </div>
+                ) : (
+                  <div className="mt-4">
+                    <ResultsGrid items={sortResults(results, sort)} view={view} />
+                  </div>
+                )}
               </>
             )}
           </div>
