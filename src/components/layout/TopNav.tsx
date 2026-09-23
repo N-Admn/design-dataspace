@@ -1,9 +1,10 @@
 import { useState } from 'react'
 import { LayoutDashboard, LogOut, Menu, Search } from 'lucide-react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 
 import { Button } from '@/components/ui/button'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { useCloseSearch } from '@/hooks/use-close-search'
 
 const NAV_LINKS = [
   { label: 'COLLABORATIVES', to: '/collaboratives' },
@@ -116,6 +117,11 @@ function MobileNavMenu() {
 function TopNav() {
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const navigate = useNavigate()
+  const location = useLocation()
+  const closeSearch = useCloseSearch()
+  // Toggle: opens Search from anywhere else, closes it (back to whatever page
+  // was open before) when it's already the current screen.
+  const isSearchOpen = location.pathname === '/search'
 
   return (
     <header
@@ -129,8 +135,8 @@ function TopNav() {
       <nav className="flex items-center gap-4 text-sm font-medium sm:gap-8">
         <button
           type="button"
-          aria-label="Search CivicDataSpace"
-          onClick={() => navigate('/search')}
+          aria-label={isSearchOpen ? 'Close search' : 'Search CivicDataSpace'}
+          onClick={() => (isSearchOpen ? closeSearch() : navigate('/search'))}
           className="rounded-full text-primary-foreground/80 transition-colors hover:text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
         >
           <Search className="size-5" />
