@@ -2,11 +2,12 @@ import type { DatasetRecord } from '@/types/dataset'
 import { GEOGRAPHY_OPTIONS, SECTOR_OPTIONS } from '@/types/dataset'
 import type { UseCaseRecord } from '@/types/usecase'
 import type { CollaborativeRecord } from '@/types/collaborative'
-import type { EventRecord, EventMetadata } from '@/types/event'
-import type { AIModelRecord } from '@/types/ai-model'
+import { PUBLICATION_TYPE_OPTIONS, type EventRecord, type EventMetadata } from '@/types/event'
+import { MODEL_TYPE_OPTIONS, PROVIDER_OPTIONS, type AIModelRecord } from '@/types/ai-model'
 import type { OrganisationRecord } from '@/types/organisation-workspace'
+import type { ChartRecord } from '@/types/chart'
 import { formatEventDateRange } from '@/lib/event-status'
-import { resolveDatasetPublisher } from '@/lib/dataset-publisher'
+import { resolveDatasetPublisher, resolvePublisherByOrganisation } from '@/lib/dataset-publisher'
 import { getPrimaryAccessMethod } from '@/lib/ai-model-validation'
 import { parseAppTimestamp } from '@/lib/format'
 
@@ -93,6 +94,33 @@ export interface SearchResultItem {
    * uploaded, so the card falls back to a placeholder rather than an
    * invented image. */
   thumbnailUrl?: string | null
+  /** Structured display metadata for the ContentCard system, keyed by name
+   *  rather than a positional array — each `buildSearchIndex` push site below
+   *  only sets the fields its type actually has real data for; a field left
+   *  unset means the record genuinely has nothing there, never a fabricated
+   *  value. See `lib/content-card.ts` for how these become the card's 2–3
+   *  metadata rows. */
+  cardMeta?: {
+    geography?: string
+    formats?: string[]
+    datasetCount?: number
+    chartCount?: number
+    useCaseCount?: number
+    contributorCount?: number
+    year?: string
+    publicationType?: string
+    version?: string
+    modelType?: string
+    accessMethod?: string
+    dateRange?: string
+    location?: string
+  }
+  /** Real attribution only — one entry for a single-publisher record, several
+   *  for a record with multiple connected organisations/organisers, or
+   *  omitted entirely when the record has no attribution to show (see each
+   *  push site). `avatarUrl` follows the same real-image-or-null convention
+   *  as `thumbnailUrl` above. */
+  publishers?: { name: string; avatarUrl?: string | null }[]
   facets: SearchFacets
 }
 
@@ -127,6 +155,7 @@ export interface GlobalSearchSource {
   events: EventRecord[]
   aiModels: AIModelRecord[]
   organisationWorkspaces: OrganisationRecord[]
+  charts: ChartRecord[]
 }
 
 /** Builds the flat, mixed-type result pool — published content only. */
@@ -137,12 +166,14 @@ export function buildSearchIndex({
   events,
   aiModels,
   organisationWorkspaces,
+  charts,
 }: GlobalSearchSource): SearchResultItem[] {
   const items: SearchResultItem[] = []
 
   for (const d of datasets) {
     if (d.status !== 'published') continue
     const publisher = resolveDatasetPublisher(d, organisationWorkspaces)
+    const chartCount = charts.filter((c) => c.status === 'published' && c.form.datasetId === d.id).length
     items.push({
       id: d.id,
       type: 'dataset',
@@ -152,6 +183,12 @@ export function buildSearchIndex({
       meta: sectorGeoMeta(d.form.metadata.sector, d.form.metadata.geography),
       href: `/explore/datasets/${d.id}`,
       tags: d.form.metadata.tags,
+      cardMeta: {
+        geography: d.form.metadata.geography ? optionLabel(GEOGRAPHY_OPTIONS, d.form.metadata.geography) : undefined,
+        formats: Array.from(new Set(d.form.files.map((f) => f.extension.toUpperCase()))),
+        chartCount,
+      },
+      publishers: [{ name: publisher.name, avatarUrl: publisher.avatarUrl }],
       facets: {
         sector: d.form.metadata.sector ? [d.form.metadata.sector] : [],
         geography: d.form.metadata.geography ? [d.form.metadata.geography] : [],
@@ -168,6 +205,13 @@ export function buildSearchIndex({
   for (const u of useCases) {
     if (u.status !== 'published') continue
     const organisation = u.form.connections.organizations[0]?.name
+    // Prefer the connected organisation(s) as the publisher; fall back to the
+    // first credited contributor when none is set — still real attribution
+    // from the record, never invented.
+    const useCasePublishers: SearchResultItem['publishers'] =
+      u.form.connections.organizations.length > 0
+        ? u.form.connections.organizations.map((o) => ({ name: o.name, avatarUrl: o.logo?.dataUrl ?? null }))
+        : u.form.connections.contributors.slice(0, 1).map((c) => ({ name: c.name, avatarUrl: c.image?.dataUrl ?? null }))
     items.push({
       id: u.id,
       type: 'use-case',
@@ -177,6 +221,12 @@ export function buildSearchIndex({
       meta: u.form.metadata.sectors.map((s) => optionLabel(SECTOR_OPTIONS, s)).filter(Boolean).join(', ') || undefined,
       href: `/dashboard/use-cases/${u.id}/preview`,
       thumbnailUrl: u.form.metadata.thumbnail?.dataUrl ?? null,
+      cardMeta: {
+        datasetCount: u.form.connections.datasets.length,
+        chartCount: u.form.blocks.filter((b) => b.type === 'chart').length,
+        geography: u.form.metadata.geographies[0] ? optionLabel(GEOGRAPHY_OPTIONS, u.form.metadata.geographies[0]) : undefined,
+      },
+      publishers: useCasePublishers.length > 0 ? useCasePublishers : undefined,
       facets: {
         sector: u.form.metadata.sectors,
         geography: u.form.metadata.geographies,
@@ -190,7 +240,14 @@ export function buildSearchIndex({
 
   for (const c of collaboratives) {
     if (c.status !== 'published') continue
-    const orgNames = c.form.connections.people.filter((p) => p.kind === 'organisation').map((p) => p.name)
+    const orgPeople = c.form.connections.people.filter((p) => p.kind === 'organisation')
+    const orgNames = orgPeople.map((p) => p.name)
+    // Prefer the connected organisations as the publisher(s); fall back to
+    // any connected person when the collaborative has none — still real
+    // attribution from the record.
+    const collaborativePublishers = (orgPeople.length > 0 ? orgPeople : c.form.connections.people.slice(0, 1)).map(
+      (p) => ({ name: p.name, avatarUrl: p.logo?.dataUrl ?? null }),
+    )
     items.push({
       id: c.id,
       type: 'collaborative',
@@ -199,6 +256,12 @@ export function buildSearchIndex({
       meta: c.form.metadata.sectors.map((s) => optionLabel(SECTOR_OPTIONS, s)).filter(Boolean).join(', ') || undefined,
       href: `/dashboard/collaboratives/${c.id}/preview`,
       thumbnailUrl: c.form.metadata.image?.dataUrl ?? null,
+      cardMeta: {
+        datasetCount: c.form.connections.datasets.length,
+        useCaseCount: c.form.connections.useCases.length,
+        contributorCount: c.form.connections.people.length,
+      },
+      publishers: collaborativePublishers.length > 0 ? collaborativePublishers : undefined,
       // No "Status" facet: the model has no field beyond the internal
       // draft/published lifecycle, which consumer search doesn't expose.
       facets: {
@@ -223,6 +286,14 @@ export function buildSearchIndex({
       meta: [e.form.metadata.startDate && formatEventDateRange(e.form.metadata), location].filter(Boolean).join(' · ') || undefined,
       href: `/dashboard/events/${e.id}/preview`,
       thumbnailUrl: e.form.metadata.coverImage?.dataUrl ?? null,
+      cardMeta: {
+        dateRange: e.form.metadata.startDate ? formatEventDateRange(e.form.metadata) : undefined,
+        location: location || undefined,
+      },
+      publishers:
+        e.form.organisers.length > 0
+          ? e.form.organisers.map((o) => ({ name: o.name, avatarUrl: o.logo?.dataUrl ?? null }))
+          : undefined,
       // No "Geography" facet: events have a venue city/country, not a value
       // from the shared GEOGRAPHY_OPTIONS list the other modules use.
       // "Sector" here is the organiser's sector (ORG_SECTOR_OPTIONS) — a
@@ -247,6 +318,13 @@ export function buildSearchIndex({
         organisation: pub.organisation,
         meta: e.form.metadata.title ? `From ${e.form.metadata.title}` : undefined,
         href: `/dashboard/events/${e.id}/preview`,
+        cardMeta: {
+          year,
+          publicationType: pub.publicationType ? optionLabel(PUBLICATION_TYPE_OPTIONS, pub.publicationType) : undefined,
+        },
+        // No avatar: a publication's `organisation` is a plain string with no
+        // logo field of its own (unlike Dataset/Event's Organisation record).
+        publishers: pub.organisation ? [{ name: pub.organisation }] : undefined,
         // No "Sector"/"Geography": a publication carries neither field — only
         // its parent event might, and that isn't the same thing as the
         // publication's own. "Year" is the parent event's year, the closest
@@ -265,6 +343,7 @@ export function buildSearchIndex({
     if (m.status !== 'published') continue
     const primaryVersion = m.form.versions.find((v) => v.isPrimary) ?? m.form.versions[0]
     const primaryAccess = getPrimaryAccessMethod(primaryVersion)
+    const publisher = resolvePublisherByOrganisation(m.organisationId, m.createdBy, organisationWorkspaces)
     items.push({
       id: m.id,
       type: 'ai-model',
@@ -272,6 +351,12 @@ export function buildSearchIndex({
       description: m.form.metadata.description,
       meta: m.form.metadata.sectors.map((s) => optionLabel(SECTOR_OPTIONS, s)).filter(Boolean).join(', ') || undefined,
       href: `/dashboard/ai-models/${m.id}/preview`,
+      cardMeta: {
+        version: primaryVersion?.name,
+        modelType: m.form.metadata.modelType ? optionLabel(MODEL_TYPE_OPTIONS, m.form.metadata.modelType) : undefined,
+        accessMethod: primaryAccess?.provider ? optionLabel(PROVIDER_OPTIONS, primaryAccess.provider) : undefined,
+      },
+      publishers: [{ name: publisher.name, avatarUrl: publisher.avatarUrl }],
       // No "Access" facet: AI Models have no public/restricted access field
       // like Dataset's — only per-access-method auth configuration, which
       // isn't a comparable "who can use this" classification.
