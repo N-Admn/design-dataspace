@@ -90,7 +90,6 @@ function AppLayout() {
   const isAIModelPreview = /^\/dashboard\/ai-models\/[^/]+\/preview$/.test(location.pathname)
   const isEventPreview = /^\/dashboard\/events\/[^/]+\/preview$/.test(location.pathname)
   const isPublicationPreview = /^\/dashboard\/publications\/[^/]+\/preview$/.test(location.pathname)
-  const isDatasetDetail = /^\/explore\/datasets\/[^/]+$/.test(location.pathname)
   const isDesignSystem = location.pathname === '/design-system'
   const isConsumerRoute =
     location.pathname.startsWith('/explore/') ||
@@ -130,13 +129,18 @@ function AppLayout() {
         !isCollaborativePreview &&
         !isAIModelPreview &&
         !isEventPreview &&
-        !isPublicationPreview &&
-        (!isConsumerRoute || isDatasetDetail) && <BreadcrumbBar />}
+        !isPublicationPreview && <BreadcrumbBar />}
 
       <main
         className={cn(
           'mx-auto flex w-full max-w-[1760px] flex-1 flex-col gap-6 px-10 py-8',
           !hideSidebar && 'md:flex-row',
+          // Consumer-facing pages (Explore, Search, Discover, Collaboratives,
+          // Forum) sit on a white canvas rather than the app's default grey
+          // `body` background — `flex-1` means this always fills the space
+          // below the header down to the footer, even when a page's own
+          // content is shorter than the viewport.
+          isConsumerRoute && 'bg-background',
         )}
       >
         {!hideSidebar && organisationWorkspaceId && (
@@ -194,7 +198,7 @@ function AppLayout() {
         </div>
       </main>
 
-      <Footer />
+      <Footer className={isConsumerRoute ? 'bg-background' : undefined} />
 
       {isDashboard && <HelpButton />}
     </div>

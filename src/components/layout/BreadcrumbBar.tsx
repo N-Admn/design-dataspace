@@ -24,11 +24,33 @@ function findNavMatch(groups: typeof NAV_GROUPS, pathname: string) {
 
 const ORG_ROUTE_PATTERN = /^\/organisations\/([^/]+)(?:\/(.*))?$/
 const DATASET_DETAIL_PATTERN = /^\/explore\/datasets\/([^/]+)$/
+const USE_CASE_DETAIL_PATTERN = /^\/explore\/use-cases\/([^/]+)$/
 /** The app has no standalone "Explore" landing route (TopNav's EXPLORE control
  *  is a menu, not a page) — Discover is the closest existing page that actually
  *  serves as the site's browse/explore hub, so the breadcrumb points there
  *  rather than leaving "Explore" a dead label or inventing a new route. */
 const EXPLORE_PATH = '/discover'
+
+/** Labels for the other `/explore/*` list pages (list "coming soon" pages and
+ *  the Use Cases list) — kept next to the detail-page special cases below
+ *  rather than in nav-config.ts, since these are consumer routes with no
+ *  entry in the contributor NAV_GROUPS. */
+const EXPLORE_LIST_LABELS: Record<string, string> = {
+  '/explore/datasets': 'Datasets',
+  '/explore/use-cases': 'Use Cases',
+  '/explore/ai-models': 'AI Models and Prompts',
+  '/explore/publications': 'Publications',
+  '/explore/events': 'Events',
+}
+
+/** Other standalone consumer pages that sit directly off Home — not part of
+ *  the contributor NAV_GROUPS, so they need their own label here. Discover
+ *  itself is Home, so it isn't listed. */
+const CONSUMER_PAGE_LABELS: Record<string, string> = {
+  '/search': 'Search',
+  '/collaboratives': 'Collaboratives',
+  '/forum': 'Forum',
+}
 
 interface CrumbSpec {
   label: string
@@ -41,13 +63,17 @@ interface CrumbSpec {
  *  the current page: never a link, always carrying `aria-current="page"` so
  *  assistive tech and the existing focus/contrast patterns agree on where the
  *  user is. */
-function Crumb({ crumb, isLast }: { crumb: CrumbSpec; isLast: boolean }) {
+function Crumb({ crumb, isFirst, isLast }: { crumb: CrumbSpec; isFirst: boolean; isLast: boolean }) {
   return (
     <>
-      {' '}
-      <span className="mx-1.5 text-primary/60" aria-hidden="true">
-        ›
-      </span>{' '}
+      {!isFirst && (
+        <>
+          {' '}
+          <span className="mx-1.5 text-primary/60" aria-hidden="true">
+            ›
+          </span>{' '}
+        </>
+      )}
       {crumb.to && !isLast ? (
         <Link to={crumb.to} className="rounded-sm hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
           {crumb.label}
@@ -69,7 +95,12 @@ function Breadcrumbs({ crumbs }: { crumbs: CrumbSpec[] }) {
   return (
     <p className="text-xs font-medium text-primary">
       {crumbs.map((crumb, index) => (
-        <Crumb key={`${crumb.label}-${index}`} crumb={crumb} isLast={index === crumbs.length - 1} />
+        <Crumb
+          key={`${crumb.label}-${index}`}
+          crumb={crumb}
+          isFirst={index === 0}
+          isLast={index === crumbs.length - 1}
+        />
       ))}
     </p>
   )
@@ -77,13 +108,24 @@ function Breadcrumbs({ crumbs }: { crumbs: CrumbSpec[] }) {
 
 function BreadcrumbBar() {
   const location = useLocation()
-  const { organisationWorkspaces, datasets } = useAppData()
+  const { organisationWorkspaces, datasets, useCases } = useAppData()
   const isDashboard = location.pathname === '/'
+  const { pathname } = location
 
-  // Consumer-facing trail — deliberately not the contributor "Home → Dashboard"
-  // one below, since a public dataset page has nothing to do with the
-  // authenticated Dashboard.
-  const datasetMatch = DATASET_DETAIL_PATTERN.exec(location.pathname)
+  // Consumer-facing trails below — deliberately not the contributor
+  // "Home → Dashboard" one further down, since these public pages have
+  // nothing to do with the authenticated Dashboard.
+
+  if (pathname === HOME_PATH) {
+    // Discover is the site's Home — a single, non-linking crumb.
+    return (
+      <div data-slot="breadcrumb" className="w-full bg-breadcrumb-background px-8 py-2.5">
+        <Breadcrumbs crumbs={[{ label: 'Home' }]} />
+      </div>
+    )
+  }
+
+  const datasetMatch = DATASET_DETAIL_PATTERN.exec(pathname)
   if (datasetMatch) {
     const dataset = datasets.find((d) => d.id === datasetMatch[1])
     const datasetName = dataset?.form.metadata.name || 'Dataset'
@@ -101,7 +143,46 @@ function BreadcrumbBar() {
     )
   }
 
-  const orgMatch = ORG_ROUTE_PATTERN.exec(location.pathname)
+  const useCaseMatch = USE_CASE_DETAIL_PATTERN.exec(pathname)
+  if (useCaseMatch) {
+    const record = useCases.find((u) => u.id === useCaseMatch[1])
+    const useCaseName =
+      (record?.status === 'published' ? record.publishedForm?.metadata.title : undefined) || 'Use Case'
+    return (
+      <div data-slot="breadcrumb" className="w-full bg-breadcrumb-background px-8 py-2.5">
+        <Breadcrumbs
+          crumbs={[
+            { label: 'Home', to: HOME_PATH },
+            { label: 'Explore', to: EXPLORE_PATH },
+            { label: 'Use Cases', to: '/explore/use-cases' },
+            { label: useCaseName },
+          ]}
+        />
+      </div>
+    )
+  }
+
+  const exploreListLabel = EXPLORE_LIST_LABELS[pathname]
+  if (exploreListLabel) {
+    return (
+      <div data-slot="breadcrumb" className="w-full bg-breadcrumb-background px-8 py-2.5">
+        <Breadcrumbs
+          crumbs={[{ label: 'Home', to: HOME_PATH }, { label: 'Explore', to: EXPLORE_PATH }, { label: exploreListLabel }]}
+        />
+      </div>
+    )
+  }
+
+  const consumerPageLabel = CONSUMER_PAGE_LABELS[pathname]
+  if (consumerPageLabel) {
+    return (
+      <div data-slot="breadcrumb" className="w-full bg-breadcrumb-background px-8 py-2.5">
+        <Breadcrumbs crumbs={[{ label: 'Home', to: HOME_PATH }, { label: consumerPageLabel }]} />
+      </div>
+    )
+  }
+
+  const orgMatch = ORG_ROUTE_PATTERN.exec(pathname)
 
   // Home → Dashboard are the first two crumbs on every page except the
   // Dashboard itself, where Dashboard is the current page (last crumb).

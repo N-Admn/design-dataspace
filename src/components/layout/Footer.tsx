@@ -1,3 +1,5 @@
+import { cn } from '@/lib/utils'
+
 const currentYear = new Date().getFullYear()
 
 function FooterLink({ children }: { children: string }) {
@@ -11,9 +13,9 @@ function FooterLink({ children }: { children: string }) {
   )
 }
 
-function Footer() {
+function Footer({ className }: { className?: string }) {
   return (
-    <footer className="border-t border-border">
+    <footer className={cn('border-t border-border', className)}>
       <div className="mx-auto flex min-h-[52px] max-w-[1760px] flex-wrap items-center justify-between gap-2 px-10 py-3 text-xs text-muted-foreground">
         <div className="flex items-center gap-1.5">
           <FooterLink>About Us</FooterLink>
