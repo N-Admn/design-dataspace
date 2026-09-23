@@ -9,6 +9,7 @@ import { DatasetOverview } from '@/components/dataset/consumer/DatasetOverview'
 import { DatasetDataExplorer } from '@/components/dataset/consumer/DatasetDataExplorer'
 import { DatasetVisualisations } from '@/components/dataset/consumer/DatasetVisualisations'
 import { useAppData } from '@/context/AppDataContext'
+import { useGoBack } from '@/hooks/use-go-back'
 import { resolveDatasetPublisher } from '@/lib/dataset-publisher'
 
 const VIEWS = [
@@ -24,6 +25,10 @@ function DatasetDetailPage() {
   const { id } = useParams<{ id: string }>()
   const { datasets, organisationWorkspaces } = useAppData()
   const [view, setView] = React.useState('overview')
+  // Goes back to whatever page actually linked here (Search results,
+  // Discover, a tag filter, …) instead of always the Datasets list —
+  // "/explore/datasets" is only the fallback when there's no history at all.
+  const goBack = useGoBack('/explore/datasets')
 
   const record = id ? datasets.find((d) => d.id === id) : undefined
   // Consumers only ever see the live published version — same rule as every
@@ -52,13 +57,14 @@ function DatasetDetailPage() {
 
   return (
     <div className="mx-auto flex w-full max-w-[1400px] flex-col gap-6 py-2">
-      <Link
-        to="/explore/datasets"
+      <button
+        type="button"
+        onClick={goBack}
         className="flex w-fit items-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
       >
         <ArrowLeft className="size-4" />
-        Back to Datasets
-      </Link>
+        Back
+      </button>
 
       <DatasetDetailHeader metadata={form.metadata} publisher={publisher} updatedAt={record.updatedAt} />
 
