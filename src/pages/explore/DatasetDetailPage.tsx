@@ -66,7 +66,12 @@ function DatasetDetailPage() {
         Back
       </button>
 
-      <DatasetDetailHeader metadata={form.metadata} publisher={publisher} updatedAt={record.updatedAt} />
+      <DatasetDetailHeader
+        metadata={form.metadata}
+        publisher={publisher}
+        updatedAt={record.updatedAt}
+        downloadCount={record.downloadCount}
+      />
 
       <ViewTabs items={VIEWS} value={view} onChange={setView} idPrefix="dataset-detail" label="Dataset views" />
 
