@@ -4,7 +4,7 @@ import { ManagementTable, type ManagementColumn, type ManagementFilterDef, type 
 import { Badge } from '@/components/ui/badge'
 import { TruncatedText } from '@/components/shared/TruncatedText'
 import { StatusBadge } from '@/components/shared/StatusBadge'
-import { formatEventDateRange, getRegistrationStatus } from '@/lib/event-status'
+import { formatEventDateRange, getEventRegistrationState } from '@/lib/event-status'
 import { formatShortDate, parseAppTimestamp } from '@/lib/format'
 import { ACCESS_TYPE_LABELS, EVENT_TYPE_OPTIONS, type EventRecord, type EventStatus } from '@/types/event'
 
@@ -80,9 +80,11 @@ function buildColumns(onOpen: (event: EventRecord) => void): ManagementColumn<Ev
     responsive: 'md',
     optional: true,
     render: (e) => {
-      const registration = getRegistrationStatus(e.form.metadata)
+      const registration = getEventRegistrationState(e.form.metadata)
       if (registration === 'open') return <Badge variant="success">Open</Badge>
+      if (registration === 'not-yet-open') return <Badge variant="warning">Opens soon</Badge>
       if (registration === 'closed') return <Badge variant="muted">Closed</Badge>
+      if (registration === 'event-completed') return <Badge variant="muted">Concluded</Badge>
       return <Badge variant="muted">None</Badge>
     },
   },
@@ -116,10 +118,12 @@ const FILTERS: ManagementFilterDef<EventRecord>[] = [
     placeholder: 'Any registration state',
     options: [
       { value: 'open', label: 'Open' },
+      { value: 'not-yet-open', label: 'Opens soon' },
       { value: 'closed', label: 'Closed' },
       { value: 'not-required', label: 'None' },
+      { value: 'event-completed', label: 'Concluded' },
     ],
-    matches: (e, v) => getRegistrationStatus(e.form.metadata) === v,
+    matches: (e, v) => getEventRegistrationState(e.form.metadata) === v,
   },
 ]
 

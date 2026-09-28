@@ -16,7 +16,7 @@ import { useToast } from '@/components/ui/toast'
 import { useAppData } from '@/context/AppDataContext'
 import { useHelpContext } from '@/context/HelpContext'
 import { saveEventDraftSnapshot } from '@/lib/event-draft-storage'
-import { isEventInformationValid } from '@/lib/event-validation'
+import { isEventInformationValid, validateEventInformation } from '@/lib/event-validation'
 import { hasUnsavedEdits } from '@/lib/content-status'
 import { emptyEventForm, type EventFormState, type EventMetadata } from '@/types/event'
 
@@ -64,6 +64,10 @@ function EventCreationPage() {
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(false)
   // Stepper is a progress indicator until Review is reached with every step valid.
   const [stepperUnlocked, setStepperUnlocked] = useState(false)
+  // Inline field errors on step 1 only show once the contributor has tried to
+  // move past it — not on first render of a blank form.
+  const [showInformationErrors, setShowInformationErrors] = useState(false)
+  const informationErrors = validateEventInformation(form.metadata)
 
   const stepLabel = EVENT_STEPS.find((s) => s.step === step)?.label ?? 'Information'
   useEffect(() => {
@@ -96,6 +100,10 @@ function EventCreationPage() {
   }
 
   const handleContinueFromInformation = () => {
+    if (Object.keys(informationErrors).length > 0) {
+      setShowInformationErrors(true)
+      return
+    }
     setStep(2)
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
@@ -178,7 +186,11 @@ function EventCreationPage() {
       </div>
       <div className="border-t border-border px-6 py-6">
         {step === 1 && (
-          <EventInformationStep metadata={form.metadata} errors={{}} onChange={updateMetadata} />
+          <EventInformationStep
+            metadata={form.metadata}
+            errors={showInformationErrors ? informationErrors : {}}
+            onChange={updateMetadata}
+          />
         )}
         {step === 2 && <EventConnectionsStep form={form} onChange={setForm} />}
         {step === 3 && <EventResourcesStep form={form} onChange={setForm} />}

@@ -20,7 +20,8 @@ export const MOCK_PROFILE: ContributorProfile = {
   email: 'john.doe@civicdatalab.in',
   location: 'New Delhi, India',
   bio: 'Data researcher working on public health and civic data.',
-  avatarDataUrl: null,
+  // Fictional persona — a stock headshot stands in for a real profile photo.
+  avatarDataUrl: 'https://images.pexels.com/photos/9092311/pexels-photo-9092311.jpeg?auto=compress&cs=tinysrgb&w=300',
   social: {
     github: 'https://github.com/johndoe',
     linkedin: 'https://linkedin.com/in/johndoe',

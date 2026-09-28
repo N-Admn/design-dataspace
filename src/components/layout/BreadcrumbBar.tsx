@@ -25,6 +25,7 @@ function findNavMatch(groups: typeof NAV_GROUPS, pathname: string) {
 const ORG_ROUTE_PATTERN = /^\/organisations\/([^/]+)(?:\/(.*))?$/
 const DATASET_DETAIL_PATTERN = /^\/explore\/datasets\/([^/]+)$/
 const USE_CASE_DETAIL_PATTERN = /^\/explore\/use-cases\/([^/]+)$/
+const EVENT_DETAIL_PATTERN = /^\/explore\/events\/([^/]+)$/
 /** The app has no standalone "Explore" landing route (TopNav's EXPLORE control
  *  is a menu, not a page) — Discover is the closest existing page that actually
  *  serves as the site's browse/explore hub, so the breadcrumb points there
@@ -108,7 +109,7 @@ function Breadcrumbs({ crumbs }: { crumbs: CrumbSpec[] }) {
 
 function BreadcrumbBar() {
   const location = useLocation()
-  const { organisationWorkspaces, datasets, useCases } = useAppData()
+  const { organisationWorkspaces, datasets, useCases, events } = useAppData()
   const isDashboard = location.pathname === '/'
   const { pathname } = location
 
@@ -156,6 +157,24 @@ function BreadcrumbBar() {
             { label: 'Explore', to: EXPLORE_PATH },
             { label: 'Use Cases', to: '/explore/use-cases' },
             { label: useCaseName },
+          ]}
+        />
+      </div>
+    )
+  }
+
+  const eventMatch = EVENT_DETAIL_PATTERN.exec(pathname)
+  if (eventMatch) {
+    const record = events.find((e) => e.id === eventMatch[1])
+    const eventName = (record?.status === 'published' ? record.publishedForm?.metadata.title : undefined) || 'Event'
+    return (
+      <div data-slot="breadcrumb" className="w-full bg-breadcrumb-background px-8 py-2.5">
+        <Breadcrumbs
+          crumbs={[
+            { label: 'Home', to: HOME_PATH },
+            { label: 'Explore', to: EXPLORE_PATH },
+            { label: 'Events', to: '/explore/events' },
+            { label: eventName },
           ]}
         />
       </div>

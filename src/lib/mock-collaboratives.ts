@@ -1,8 +1,24 @@
+import type { UploadedAsset } from '@/lib/generic-upload'
 import type { CollaborativeFormState, CollaborativeRecord } from '@/types/collaborative'
+
+function fakeAsset(url: string, name: string): UploadedAsset {
+  return {
+    id: `asset-${name}`,
+    name,
+    extension: 'jpg',
+    sizeLabel: '1.2 MB',
+    sizeBytes: 1_200_000,
+    uploadedAt: '06/08/2026 09:00:00',
+    dataUrl: url,
+  }
+}
 
 const collaborative1Form: CollaborativeFormState = {
   metadata: {
-    image: null,
+    image: fakeAsset(
+      'https://images.pexels.com/photos/76969/cold-front-warm-front-hurricane-felix-76969.jpeg?auto=compress&cs=tinysrgb&w=1200',
+      'hero.jpg',
+    ),
     name: 'Climate and Health Data Collaborative',
     descriptionHtml:
       '<p>A cross-sector initiative bringing together health and climate researchers to track the public-health impact of extreme weather events, and to make that data openly available for policy planning.</p>',
@@ -24,7 +40,10 @@ const collaborative1Form: CollaborativeFormState = {
 
 const collaborative2Form: CollaborativeFormState = {
   metadata: {
-    image: null,
+    image: fakeAsset(
+      'https://images.pexels.com/photos/17609960/pexels-photo-17609960.jpeg?auto=compress&cs=tinysrgb&w=1200',
+      'hero.jpg',
+    ),
     name: 'Urban Water Resilience Network',
     descriptionHtml: '',
     externalUrl: '',
