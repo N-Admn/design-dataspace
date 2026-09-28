@@ -49,13 +49,15 @@ interface DatasetDetailHeaderProps {
   metadata: DatasetMetadata
   publisher: DatasetPublisher
   updatedAt: string
+  downloadCount: number
 }
 
 /** Establishes dataset identity before the Overview/Data/Visualisations views —
- *  name, publisher, sector, geography, last updated, plus the Download and Share
- *  primary actions. The description itself lives only in the Overview tab's
- *  "About this dataset" section, not here. No other actions are added. */
-function DatasetDetailHeader({ metadata, publisher, updatedAt }: DatasetDetailHeaderProps) {
+ *  name, publisher, sector, geography, last updated, download count, plus the
+ *  Download and Share primary actions. The description itself lives only in
+ *  the Overview tab's "About this dataset" section, not here. No other
+ *  actions are added. */
+function DatasetDetailHeader({ metadata, publisher, updatedAt, downloadCount }: DatasetDetailHeaderProps) {
   const toast = useToast()
   const SectorIcon = metadata.sector ? (SECTOR_ICONS[metadata.sector] ?? Tag) : null
 
@@ -92,7 +94,7 @@ function DatasetDetailHeader({ metadata, publisher, updatedAt }: DatasetDetailHe
         </div>
       </div>
 
-      <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-text-subdued">
+      <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-ring">
         <span className="flex min-w-0 items-center gap-1.5">
           <Building2 className="size-4 shrink-0" aria-hidden="true" />
           <span className="truncate">{publisher.name}</span>
@@ -112,6 +114,10 @@ function DatasetDetailHeader({ metadata, publisher, updatedAt }: DatasetDetailHe
         <span className="flex items-center gap-1.5">
           <CalendarDays className="size-3.5 shrink-0" aria-hidden="true" />
           Last updated {formatShortDate(updatedAt)}
+        </span>
+        <span className="flex items-center gap-1.5">
+          <Download className="size-3.5 shrink-0" aria-hidden="true" />
+          {downloadCount.toLocaleString()} download{downloadCount === 1 ? '' : 's'}
         </span>
       </div>
     </header>
