@@ -21,13 +21,18 @@ interface SearchResultCardProps {
   /** "grid" (default) is the compact multi-column grid and the grouped "All"
    *  view; "list" is the results toolbar's List view (the default there). */
   layout?: 'grid' | 'list'
+  /** Set only by true search/listing surfaces (the Search results page) —
+   *  gives the metadata row its tinted-pill treatment. Left unset when this
+   *  card is embedded in a detail page (e.g. Event Details' Related
+   *  Content), which keeps its metadata plain/neutral. */
+  tintedMetadata?: boolean
 }
 
 /** Adapts a search-index `SearchResultItem` into the shared `ContentCard` —
  *  every content type (Dataset, Use Case, Publication, Collaborative, Event,
  *  AI Model) renders through that one card; this is a data mapping, not a
  *  separate card implementation. */
-function SearchResultCard({ item, layout = 'grid' }: SearchResultCardProps) {
+function SearchResultCard({ item, layout = 'grid', tintedMetadata }: SearchResultCardProps) {
   return (
     <ContentCard
       type={item.type}
@@ -39,6 +44,7 @@ function SearchResultCard({ item, layout = 'grid' }: SearchResultCardProps) {
       href={item.href}
       visualCount={item.type === 'dataset' ? item.cardMeta?.chartCount : undefined}
       variant={layout}
+      tintedMetadata={tintedMetadata}
     />
   )
 }

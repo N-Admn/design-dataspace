@@ -107,7 +107,7 @@ function ResultsGrid({ items, view }: { items: SearchResultItem[]; view: ResultV
   return (
     <div className={view === 'grid' ? 'grid grid-cols-1 gap-4 sm:grid-cols-2' : 'flex flex-col gap-3'}>
       {items.map((item) => (
-        <SearchResultCard key={`${item.type}-${item.id}`} item={item} layout={view} />
+        <SearchResultCard key={`${item.type}-${item.id}`} item={item} layout={view} tintedMetadata />
       ))}
     </div>
   )
