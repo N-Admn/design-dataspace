@@ -39,19 +39,59 @@ function ColumnTypeIndicator({ type }: { type: ChartColumnType }) {
 
 type SortState = { column: string; direction: 'asc' | 'desc' } | null
 
-function SortButton({ column, sort, onSort, children }: { column: ChartColumn; sort: SortState; onSort: (name: string) => void; children: React.ReactNode }) {
+interface SortButtonProps extends Omit<React.ComponentPropsWithoutRef<'button'>, 'children'> {
+  column: ChartColumn
+  sort: SortState
+  onSort: (name: string) => void
+  children: React.ReactNode
+}
+
+/** Forwards its ref and any extra DOM props (`React.forwardRef` + `...rest`)
+ * rather than just rendering a plain `<button>` — required for `TooltipTrigger
+ * asChild` (see `SortableColumnHeader`) to attach its hover/focus handlers to
+ * the actual button element. Radix's `asChild` merges props onto whatever
+ * single child it's given; a custom component that doesn't forward them
+ * silently drops the merge and the tooltip never opens. */
+const SortButton = React.forwardRef<HTMLButtonElement, SortButtonProps>(function SortButton(
+  { column, sort, onSort, children, className, ...rest },
+  ref,
+) {
   const active = sort?.column === column.name
   const Icon = active ? (sort!.direction === 'asc' ? ArrowUp : ArrowDown) : ArrowUpDown
   return (
     <button
+      ref={ref}
       type="button"
       onClick={() => onSort(column.name)}
       aria-label={`Sort by ${column.label}${active ? `, ${sort!.direction === 'asc' ? 'ascending' : 'descending'}` : ''}`}
-      className="group flex items-center gap-1.5 rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-focus"
+      className={cn('group flex min-w-0 items-center gap-1.5 rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-focus', className)}
+      {...rest}
     >
       {children}
       <Icon className={cn('size-3.5 shrink-0', active ? 'text-text-brand' : 'text-text-subdued opacity-0 group-hover:opacity-60')} aria-hidden="true" />
     </button>
+  )
+})
+
+/** Column labels are contributor-entered and unbounded in length — without a
+ * cap, one long name would stretch its whole column (and, since column
+ * sizing is shared down the table, push every other column's readable width
+ * around it). Truncates the visible label to an ellipsis at a fixed max
+ * width; the tooltip sits on the sort button itself — the element that
+ * actually receives keyboard focus — so it fires on focus exactly like
+ * hover, not hover-only, and the button's own `aria-label` (built from the
+ * untruncated name) already carries the full name to assistive tech
+ * regardless of the tooltip. */
+function SortableColumnHeader({ column, sort, onSort }: { column: ChartColumn; sort: SortState; onSort: (name: string) => void }) {
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <SortButton column={column} sort={sort} onSort={onSort}>
+          <span className="max-w-[10rem] truncate">{column.label}</span>
+        </SortButton>
+      </TooltipTrigger>
+      <TooltipContent side="bottom">{column.label}</TooltipContent>
+    </Tooltip>
   )
 }
 
@@ -233,14 +273,12 @@ function DataFilePreview({ file, columns, rows, onOpenDetails }: DataFilePreview
                           scope="col"
                           aria-sort={sort?.column === col.name ? (sort.direction === 'asc' ? 'ascending' : 'descending') : 'none'}
                           className={cn(
-                            'sticky top-0 whitespace-nowrap border-b border-border-default bg-surface-subdued px-4 py-2.5 font-medium',
+                            'sticky top-0 min-w-[6rem] max-w-[14rem] whitespace-nowrap border-b border-border-default bg-surface-subdued px-4 py-2.5 font-medium',
                             i === 0 ? 'z-30 left-0' : 'z-20',
                           )}
                         >
-                          <span className="flex items-center gap-1.5">
-                            <SortButton column={col} sort={sort} onSort={toggleSort}>
-                              {col.label}
-                            </SortButton>
+                          <span className="flex min-w-0 items-center gap-1.5">
+                            <SortableColumnHeader column={col} sort={sort} onSort={toggleSort} />
                             <ColumnTypeIndicator type={col.type} />
                           </span>
                         </th>
