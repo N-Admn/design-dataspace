@@ -1,9 +1,24 @@
-import { Building2, CalendarDays, Database, FileText, Layers, MapPin, Mic2, Sparkles, Users2 } from 'lucide-react'
+import { Building2, CalendarDays, Database, ExternalLink, FileText, Layers, MapPin, Mic2, Sparkles, Users2 } from 'lucide-react'
 
 import { Badge } from '@/components/ui/badge'
 import { SECTOR_OPTIONS } from '@/types/dataset'
-import { formatEventDateRange, getRegistrationStatus } from '@/lib/event-status'
+import {
+  EVENT_LIFECYCLE_LABELS,
+  EVENT_REGISTRATION_LABELS,
+  formatEventDateRange,
+  getEventLifecycleStatus,
+  getEventRegistrationState,
+} from '@/lib/event-status'
 import { ACCESS_TYPE_LABELS, EVENT_TYPE_OPTIONS, PUBLICATION_TYPE_OPTIONS, type EventFormState } from '@/types/event'
+
+const LIFECYCLE_BADGE_VARIANT = { upcoming: 'secondary', ongoing: 'success', completed: 'muted' } as const
+const REGISTRATION_BADGE_VARIANT = {
+  open: 'success',
+  'not-yet-open': 'warning',
+  closed: 'muted',
+  'not-required': 'muted',
+  'event-completed': 'muted',
+} as const
 
 function optionLabel(options: { value: string; label: string }[], value: string): string {
   return options.find((o) => o.value === value)?.label ?? value
@@ -11,7 +26,8 @@ function optionLabel(options: { value: string; label: string }[], value: string)
 
 function EventPreview({ form }: { form: EventFormState }) {
   const { metadata, organisers, partners, speakers, publications, relatedContent } = form
-  const registration = getRegistrationStatus(metadata)
+  const lifecycle = getEventLifecycleStatus(metadata)
+  const registration = getEventRegistrationState(metadata)
   const showVenue =
     (metadata.accessType === 'hybrid' || metadata.accessType === 'in-person') &&
     [metadata.venueName, metadata.address, metadata.city, metadata.state, metadata.country].some(Boolean)
@@ -36,6 +52,7 @@ function EventPreview({ form }: { form: EventFormState }) {
           <div className="mt-3 flex flex-wrap items-center gap-1.5">
             {metadata.eventType && <Badge variant="secondary">{optionLabel(EVENT_TYPE_OPTIONS, metadata.eventType)}</Badge>}
             {metadata.theme && <Badge variant="muted">{optionLabel(SECTOR_OPTIONS, metadata.theme)}</Badge>}
+            <Badge variant={LIFECYCLE_BADGE_VARIANT[lifecycle]}>{EVENT_LIFECYCLE_LABELS[lifecycle]}</Badge>
           </div>
         </div>
       </div>
@@ -56,20 +73,22 @@ function EventPreview({ form }: { form: EventFormState }) {
             </span>
           </div>
         )}
-        {metadata.registrationRequired && (
-          <div className="flex flex-wrap items-center gap-2 text-sm text-foreground">
-            {registration === 'open' ? (
-              <Badge variant="success">Registration Open</Badge>
-            ) : (
-              <Badge variant="muted">Registration Closed</Badge>
-            )}
-            {metadata.registrationUrl && (
-              <a href={metadata.registrationUrl} target="_blank" rel="noreferrer" className="text-sm text-primary underline-offset-4 hover:underline focus-visible:underline">
-                Register →
-              </a>
-            )}
+        {(metadata.accessType === 'online' || metadata.accessType === 'hybrid') && metadata.onlineUrl && (
+          <div className="flex items-start gap-2.5 text-sm text-foreground">
+            <ExternalLink className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
+            <a href={metadata.onlineUrl} target="_blank" rel="noreferrer" className="text-primary underline-offset-4 hover:underline focus-visible:underline">
+              {metadata.onlineUrl}
+            </a>
           </div>
         )}
+        <div className="flex flex-wrap items-center gap-2 text-sm text-foreground">
+          <Badge variant={REGISTRATION_BADGE_VARIANT[registration]}>{EVENT_REGISTRATION_LABELS[registration]}</Badge>
+          {registration === 'open' && metadata.registrationUrl && (
+            <a href={metadata.registrationUrl} target="_blank" rel="noreferrer" className="text-sm text-primary underline-offset-4 hover:underline focus-visible:underline">
+              Register →
+            </a>
+          )}
+        </div>
       </div>
 
       {/* Overview */}

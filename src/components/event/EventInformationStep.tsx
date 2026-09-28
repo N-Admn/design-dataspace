@@ -110,6 +110,29 @@ function EventInformationStep({ metadata, errors, onChange }: EventInformationSt
 
               <div className="flex flex-col gap-5 sm:flex-row">
                 <div className="flex-1">
+                  <Label htmlFor="registration-start-date">Registration Opens (optional)</Label>
+                  <Input
+                    id="registration-start-date"
+                    type="date"
+                    className="mt-1.5"
+                    value={metadata.registrationStartDate}
+                    onChange={(e) => onChange('registrationStartDate', e.target.value)}
+                  />
+                </div>
+                <div className="flex-1">
+                  <Label htmlFor="registration-start-time">&nbsp;</Label>
+                  <Input
+                    id="registration-start-time"
+                    type="time"
+                    className="mt-1.5"
+                    value={metadata.registrationStartTime}
+                    onChange={(e) => onChange('registrationStartTime', e.target.value)}
+                  />
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-5 sm:flex-row">
+                <div className="flex-1">
                   <Label htmlFor="registration-end-date">
                     Registration End Date <span className="text-destructive">*</span>
                   </Label>
@@ -337,6 +360,26 @@ function EventInformationStep({ metadata, errors, onChange }: EventInformationSt
             </RadioGroup>
             <FieldError message={errors.accessType} />
           </div>
+
+          {(metadata.accessType === 'online' || metadata.accessType === 'hybrid') && (
+            <div>
+              <Label htmlFor="online-url">
+                Online Event Link <span className="text-destructive">*</span>
+              </Label>
+              <Input
+                id="online-url"
+                className="mt-1.5"
+                placeholder="https://meet.example.com/event"
+                value={metadata.onlineUrl}
+                aria-invalid={Boolean(errors.onlineUrl)}
+                onChange={(e) => onChange('onlineUrl', e.target.value)}
+              />
+              <FieldError message={errors.onlineUrl} />
+              <p className="mt-1.5 text-xs text-muted-foreground">
+                Attendees use this link to join the event online.
+              </p>
+            </div>
+          )}
 
           {(metadata.accessType === 'hybrid' || metadata.accessType === 'in-person') && (
             <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">

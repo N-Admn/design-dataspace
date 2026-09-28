@@ -16,7 +16,10 @@ function fakeAsset(url: string, name: string): UploadedAsset {
 
 const useCase1Form: UseCaseFormState = {
   metadata: {
-    thumbnail: fakeAsset('https://picsum.photos/seed/maternal-health/1200/675', 'hero.jpg'),
+    thumbnail: fakeAsset(
+      'https://images.pexels.com/photos/30313887/pexels-photo-30313887.jpeg?auto=compress&cs=tinysrgb&w=1200',
+      'hero.jpg',
+    ),
     title: 'Maternal Health Monitoring in Rural Districts',
     subtitle:
       'How twelve districts used open health-facility data to close a maternal mortality gap that outlived a decade of infrastructure spending.',
@@ -103,7 +106,10 @@ const useCase1Form: UseCaseFormState = {
 
 const useCase2Form: UseCaseFormState = {
   metadata: {
-    thumbnail: null,
+    thumbnail: fakeAsset(
+      'https://images.pexels.com/photos/12415346/pexels-photo-12415346.jpeg?auto=compress&cs=tinysrgb&w=1200',
+      'hero.jpg',
+    ),
     title: 'Urban Water Access Gap Analysis',
     subtitle: '',
     tags: [],
