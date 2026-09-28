@@ -413,6 +413,7 @@ function AppDataProvider({ children }: { children: React.ReactNode }) {
             id: recordId,
             status: nextStatus,
             updatedAt,
+            downloadCount: 0,
             form,
             publishedForm,
             organisationId,

@@ -139,6 +139,8 @@ export interface DatasetRecord {
   id: string
   status: DatasetStatus
   updatedAt: string
+  /** Total number of times this dataset's files have been downloaded. */
+  downloadCount: number
   form: DatasetFormState
   /** Snapshot of `form` from the moment this record was last published — untouched
    * while a working copy has unpublished edits, so Discard can restore the live version. */
