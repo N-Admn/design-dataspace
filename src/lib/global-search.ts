@@ -6,7 +6,8 @@ import { PUBLICATION_TYPE_OPTIONS, type EventRecord, type EventMetadata } from '
 import { MODEL_TYPE_OPTIONS, PROVIDER_OPTIONS, type AIModelRecord } from '@/types/ai-model'
 import type { OrganisationRecord } from '@/types/organisation-workspace'
 import type { ChartRecord } from '@/types/chart'
-import { formatEventDateRange } from '@/lib/event-status'
+import { formatEventDateRange, getEventLifecycleStatus } from '@/lib/event-status'
+import { EVENT_MOCK_COVER_IMAGE } from '@/lib/event-thumbnail'
 import { resolveDatasetPublisher, resolvePublisherByOrganisation } from '@/lib/dataset-publisher'
 import { getPrimaryAccessMethod } from '@/lib/ai-model-validation'
 import { parseAppTimestamp } from '@/lib/format'
@@ -135,17 +136,15 @@ function sectorGeoMeta(sector: string, geography: string): string | undefined {
   return parts.length > 0 ? parts.join(' · ') : undefined
 }
 
-/** Upcoming / ongoing / past — computed from the event's own start/end dates,
- *  the closest thing this data model has to a public-facing "event status"
- *  (there's no separate status field beyond the internal draft/published
- *  lifecycle, which consumers never see). */
+/** Upcoming / ongoing / past — the existing "Status" search filter's values.
+ *  Delegates to the canonical `getEventLifecycleStatus` (also used by the
+ *  contributor preview, Review & Publish, and the consumer Event Details
+ *  page) so this facet can never disagree with what those surfaces show;
+ *  only the "completed" → "past" label is kept local, since it's this
+ *  filter's own existing value/copy. */
 function eventTimeStatus(metadata: EventMetadata, now = new Date()): 'upcoming' | 'ongoing' | 'past' {
-  const start = metadata.startDate ? new Date(`${metadata.startDate}T${metadata.startTime || '00:00'}`) : null
-  if (!start || Number.isNaN(start.getTime())) return 'upcoming'
-  const end = metadata.endDate ? new Date(`${metadata.endDate}T${metadata.endTime || '23:59'}`) : start
-  if (now < start) return 'upcoming'
-  if (end && !Number.isNaN(end.getTime()) && now > end) return 'past'
-  return 'ongoing'
+  const status = getEventLifecycleStatus(metadata, now)
+  return status === 'completed' ? 'past' : status
 }
 
 export interface GlobalSearchSource {
@@ -284,8 +283,8 @@ export function buildSearchIndex({
       description: e.form.metadata.subtitle,
       organisation: organiserNames[0],
       meta: [e.form.metadata.startDate && formatEventDateRange(e.form.metadata), location].filter(Boolean).join(' · ') || undefined,
-      href: `/dashboard/events/${e.id}/preview`,
-      thumbnailUrl: e.form.metadata.coverImage?.dataUrl ?? null,
+      href: `/explore/events/${e.id}`,
+      thumbnailUrl: e.form.metadata.coverImage?.dataUrl || EVENT_MOCK_COVER_IMAGE,
       cardMeta: {
         dateRange: e.form.metadata.startDate ? formatEventDateRange(e.form.metadata) : undefined,
         location: location || undefined,
@@ -317,7 +316,7 @@ export function buildSearchIndex({
         description: pub.description,
         organisation: pub.organisation,
         meta: e.form.metadata.title ? `From ${e.form.metadata.title}` : undefined,
-        href: `/dashboard/events/${e.id}/preview`,
+        href: `/explore/events/${e.id}`,
         cardMeta: {
           year,
           publicationType: pub.publicationType ? optionLabel(PUBLICATION_TYPE_OPTIONS, pub.publicationType) : undefined,

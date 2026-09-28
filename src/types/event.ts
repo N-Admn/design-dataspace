@@ -5,7 +5,6 @@ export { MAX_DOCUMENT_BYTES, MAX_IMAGE_BYTES }
 
 export type EventStatus = 'draft' | 'published'
 export type EventAccessType = 'online' | 'hybrid' | 'in-person'
-export type RegistrationStatus = 'not-required' | 'open' | 'closed'
 export type RelatedContentType = 'dataset' | 'use-case' | 'collaborative' | 'ai-model'
 
 export interface Organisation {
@@ -65,6 +64,10 @@ export interface RelatedContentItem {
 export interface EventMetadata {
   registrationRequired: boolean
   registrationUrl: string
+  /** Optional — when unset, registration opens as soon as it's required and
+   *  stays open until `registrationEndDate`/`registrationEndTime`. */
+  registrationStartDate: string
+  registrationStartTime: string
   registrationEndDate: string
   registrationEndTime: string
 
@@ -81,6 +84,8 @@ export interface EventMetadata {
 
   accessType: EventAccessType | ''
 
+  /** Required for `online`/`hybrid` events — the join link/URL attendees use. */
+  onlineUrl: string
   venueName: string
   address: string
   city: string
@@ -125,6 +130,8 @@ export interface EventRecord {
 export const emptyEventMetadata: EventMetadata = {
   registrationRequired: false,
   registrationUrl: '',
+  registrationStartDate: '',
+  registrationStartTime: '',
   registrationEndDate: '',
   registrationEndTime: '',
 
@@ -141,6 +148,7 @@ export const emptyEventMetadata: EventMetadata = {
 
   accessType: '',
 
+  onlineUrl: '',
   venueName: '',
   address: '',
   city: '',

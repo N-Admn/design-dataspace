@@ -1,6 +1,6 @@
 import * as React from 'react'
 import type { ReactNode } from 'react'
-import { Database, ExternalLink, Eye, Layers, Sparkles, Users2 } from 'lucide-react'
+import { AlertTriangle, Database, ExternalLink, Eye, Layers, Sparkles, Users2 } from 'lucide-react'
 
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -9,13 +9,34 @@ import { ResourcePreviewDialog, assetToPreviewResource, type PreviewResource } f
 import { ReviewPublishPanel } from '@/components/shared/ReviewPublishPanel'
 import { SectionHeader } from '@/components/shared/SectionHeader'
 import { SECTOR_OPTIONS } from '@/types/dataset'
-import { formatEventDateRange, getRegistrationStatus } from '@/lib/event-status'
+import {
+  EVENT_LIFECYCLE_LABELS,
+  EVENT_REGISTRATION_LABELS,
+  formatEventDateRange,
+  getEventLifecycleStatus,
+  getEventRegistrationState,
+} from '@/lib/event-status'
+import { validateEventInformation, getEventPublishRecommendations } from '@/lib/event-validation'
 import {
   ACCESS_TYPE_LABELS,
   EVENT_TYPE_OPTIONS,
   PUBLICATION_TYPE_OPTIONS,
   type EventFormState,
 } from '@/types/event'
+
+const REGISTRATION_BADGE_VARIANT: Record<ReturnType<typeof getEventRegistrationState>, 'success' | 'warning' | 'muted'> = {
+  open: 'success',
+  'not-yet-open': 'warning',
+  closed: 'muted',
+  'not-required': 'muted',
+  'event-completed': 'muted',
+}
+
+const LIFECYCLE_BADGE_VARIANT: Record<ReturnType<typeof getEventLifecycleStatus>, 'secondary' | 'success' | 'muted'> = {
+  upcoming: 'secondary',
+  ongoing: 'success',
+  completed: 'muted',
+}
 
 interface EventPublishReviewProps {
   form: EventFormState
@@ -38,7 +59,11 @@ function ReviewField({ label, value }: { label: string; value: ReactNode }) {
 
 function EventPublishReview({ form, onEditSection, onPreview }: EventPublishReviewProps) {
   const { metadata } = form
-  const registration = getRegistrationStatus(metadata)
+  const lifecycle = getEventLifecycleStatus(metadata)
+  const registration = getEventRegistrationState(metadata)
+  const errors = validateEventInformation(metadata)
+  const errorMessages = Object.values(errors).filter((message): message is string => Boolean(message))
+  const recommendations = getEventPublishRecommendations(form)
   const [preview, setPreview] = React.useState<PreviewResource | null>(null)
 
   return (
@@ -48,6 +73,43 @@ function EventPublishReview({ form, onEditSection, onPreview }: EventPublishRevi
         title="Review & Publish"
         description="Check your information before making this content available publicly."
       />
+
+      <div className="flex flex-wrap items-center gap-4 rounded-xl border border-border-default bg-surface-default px-5 py-4">
+        <ReviewField label="Event Status" value={<Badge variant={LIFECYCLE_BADGE_VARIANT[lifecycle]}>{EVENT_LIFECYCLE_LABELS[lifecycle]}</Badge>} />
+        <ReviewField
+          label="Registration Status"
+          value={<Badge variant={REGISTRATION_BADGE_VARIANT[registration]}>{EVENT_REGISTRATION_LABELS[registration]}</Badge>}
+        />
+        <p className="ml-auto max-w-xs text-xs text-muted-foreground">
+          Both are calculated automatically from the schedule below and update on their own as the event approaches.
+        </p>
+      </div>
+
+      {errorMessages.length > 0 && (
+        <div className="flex flex-col gap-2 rounded-md border border-warning/40 bg-warning/10 px-4 py-3 text-sm text-warning-foreground">
+          <p className="flex items-center gap-2 font-semibold">
+            <AlertTriangle className="size-4 shrink-0" />
+            Fix the following before publishing
+          </p>
+          <ul className="list-disc pl-6">
+            {errorMessages.map((message, index) => (
+              <li key={index}>{message}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {recommendations.length > 0 && (
+        <div className="flex flex-col gap-2 rounded-md bg-primary/5 px-4 py-3 text-sm text-primary">
+          <p className="font-semibold">Recommendations</p>
+          <ul className="list-disc pl-6">
+            {recommendations.map((message, index) => (
+              <li key={index}>{message}</li>
+            ))}
+          </ul>
+          <p className="text-xs">These are optional — they won't block publishing.</p>
+        </div>
+      )}
 
       <ReviewSection title="Information" defaultOpen onEdit={() => onEditSection(1)}>
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
@@ -75,6 +137,9 @@ function EventPublishReview({ form, onEditSection, onPreview }: EventPublishRevi
             label="Access Type"
             value={metadata.accessType ? ACCESS_TYPE_LABELS[metadata.accessType] : '—'}
           />
+          {(metadata.accessType === 'online' || metadata.accessType === 'hybrid') && (
+            <ReviewField label="Online Event Link" value={metadata.onlineUrl || '—'} />
+          )}
           {(metadata.accessType === 'hybrid' || metadata.accessType === 'in-person') && (
             <div className="sm:col-span-2">
               <ReviewField
@@ -89,15 +154,7 @@ function EventPublishReview({ form, onEditSection, onPreview }: EventPublishRevi
           )}
           <ReviewField
             label="Registration"
-            value={
-              registration === 'not-required' ? (
-                <Badge variant="muted">None</Badge>
-              ) : registration === 'open' ? (
-                <Badge variant="success">Open</Badge>
-              ) : (
-                <Badge variant="muted">Closed</Badge>
-              )
-            }
+            value={<Badge variant={REGISTRATION_BADGE_VARIANT[registration]}>{EVENT_REGISTRATION_LABELS[registration]}</Badge>}
           />
           {metadata.registrationRequired && (
             <ReviewField label="Registration URL" value={metadata.registrationUrl || '—'} />

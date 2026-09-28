@@ -50,6 +50,7 @@ import { SearchResultsPage } from '@/pages/SearchResultsPage'
 import { UseCasesExplorePage } from '@/pages/explore/UseCasesExplorePage'
 import { UseCaseDetailPage } from '@/pages/explore/UseCaseDetailPage'
 import { DatasetDetailPage } from '@/pages/explore/DatasetDetailPage'
+import { EventDetailPage } from '@/pages/explore/EventDetailPage'
 import { SignInPage } from '@/pages/auth/SignInPage'
 import { RegisterPage } from '@/pages/auth/RegisterPage'
 import { ForgotPasswordPage } from '@/pages/auth/ForgotPasswordPage'
@@ -191,6 +192,7 @@ function AppLayout() {
             <Route path="/explore/ai-models" element={<ComingSoonPage title="AI Models and Prompts" />} />
             <Route path="/explore/publications" element={<ComingSoonPage title="Publications" />} />
             <Route path="/explore/events" element={<ComingSoonPage title="Events" />} />
+            <Route path="/explore/events/:id" element={<EventDetailPage />} />
             <Route path="/collaboratives" element={<ComingSoonPage title="Collaboratives" />} />
             <Route path="/forum" element={<ComingSoonPage title="Forum" />} />
             <Route path="*" element={<Navigate to="/dashboard/datasets" replace />} />
