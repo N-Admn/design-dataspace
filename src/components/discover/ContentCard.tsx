@@ -42,6 +42,13 @@ export interface ContentCardProps {
    *  no visualisations shows just the plain "Dataset" tag. */
   visualCount?: number
   variant: 'list' | 'grid'
+  /** Search/listing pages get a compact tinted-pill treatment per metadata
+   *  item (light background + matching semantic color, e.g. orange for
+   *  location). Embedded contexts — e.g. this same card inside an Event
+   *  Details page's Related Content — leave this unset and stay plain/
+   *  neutral, so a detail page's own metadata treatment isn't duplicated or
+   *  competed with. */
+  tintedMetadata?: boolean
 }
 
 /** Avatar-only — the publisher's name is never shown as text on the card
@@ -143,16 +150,31 @@ function CardFooter({
 
 /** Icon + label pairs — the icon is decorative (each label already says what
  *  it means, e.g. "Updated Aug 2026", "CSV", "India"), so meaning never
- *  depends on the icon alone. */
-function MetadataRow({ metadata, className }: { metadata: ContentCardMetadataItem[]; className?: string }) {
+ *  depends on the icon alone. In `tinted` mode (search/listing cards only)
+ *  the icon and label text both use the `chart-2` semantic color, with a
+ *  heavier icon stroke for emphasis — no background shape, one consistent
+ *  treatment regardless of metadata type. Untinted (the default, used
+ *  wherever this card is embedded in a detail page) keeps the original
+ *  plain icon+text treatment. */
+function MetadataRow({ metadata, tinted, className }: { metadata: ContentCardMetadataItem[]; tinted?: boolean; className?: string }) {
   if (metadata.length === 0) return null
   return (
     <div className={cn('flex flex-wrap items-center gap-x-3.5 gap-y-1', className)}>
       {metadata.map((item, index) => {
         const Icon = item.icon
         const label = (
-          <span className="inline-flex min-w-0 items-center gap-1 text-xs text-muted-foreground">
-            <Icon className="size-3.5 shrink-0" aria-hidden="true" />
+          <span className={cn('inline-flex min-w-0 items-center gap-1.5 text-xs leading-none', tinted ? 'font-semibold text-chart-2' : 'text-muted-foreground')}>
+            {/* A fixed-size flex wrapper (rather than sizing the `<svg>` itself)
+                gives every icon an identical, precisely centered box — lucide
+                glyphs differ enough that centering the raw SVG next to text
+                left a visible per-icon jitter across metadata items. */}
+            <span className={cn('flex shrink-0 items-center justify-center', tinted ? 'size-[16.8px]' : 'size-3.5')}>
+              {tinted ? (
+                <Icon className="size-[16.8px] text-chart-2" strokeWidth={2.5} aria-hidden="true" />
+              ) : (
+                <Icon className="size-3.5" aria-hidden="true" />
+              )}
+            </span>
             <span className="truncate">{item.label}</span>
           </span>
         )
@@ -165,8 +187,13 @@ function MetadataRow({ metadata, className }: { metadata: ContentCardMetadataIte
             <TooltipTrigger asChild>
               {/* `span`, not `button` — this can sit inside the whole-card
                   `<Link>`, where a real button would be invalid nested
-                  interactive content. */}
-              <span tabIndex={0} className="rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                  interactive content. `inline-flex items-center leading-none`
+                  matters here: without it this wrapper's line box takes the
+                  ambient (larger) line-height instead of hugging its 16.8px
+                  icon, so this one item (the only one ever wrapped like this —
+                  it's used exactly when a metadata value is truncated, e.g.
+                  "CSV +3") visibly sat a couple pixels off from its siblings. */}
+              <span tabIndex={0} className="inline-flex items-center rounded-sm leading-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
                 {label}
               </span>
             </TooltipTrigger>
@@ -233,7 +260,7 @@ function ClickableShell({ href, ariaLabel, className, children }: { href: string
   )
 }
 
-function ContentCard({ type, title, description, metadata, publishers = [], thumbnailUrl, href, action, visualCount, variant }: ContentCardProps) {
+function ContentCard({ type, title, description, metadata, publishers = [], thumbnailUrl, href, action, visualCount, variant, tintedMetadata }: ContentCardProps) {
   const hasThumbnail = Boolean(thumbnailUrl)
   const actionSlot = action && (
     <div onClick={(event) => event.stopPropagation()} className="shrink-0">
@@ -267,7 +294,7 @@ function ContentCard({ type, title, description, metadata, publishers = [], thum
             {description && <p className="mt-1 truncate text-sm text-muted-foreground">{description}</p>}
           </div>
           <div className="mt-auto flex flex-col gap-2">
-            <MetadataRow metadata={metadata} />
+            <MetadataRow metadata={metadata} tinted={tintedMetadata} />
             <CardFooter type={type} publishers={publishers} visualCount={visualCount} />
           </div>
         </div>
@@ -284,14 +311,19 @@ function ContentCard({ type, title, description, metadata, publishers = [], thum
             {description && <p className="mt-1 w-4/5 truncate text-sm text-muted-foreground">{description}</p>}
           </div>
           <div className="mt-auto flex flex-col gap-2">
-            <MetadataRow metadata={metadata} />
+            <MetadataRow metadata={metadata} tinted={tintedMetadata} />
             <CardFooter type={type} publishers={publishers} visualCount={visualCount} />
           </div>
         </div>
       </div>
     )
 
-  const className = cn('overflow-hidden rounded-lg border border-border bg-card', variant === 'grid' && 'flex flex-col')
+  // `h-full` matters wherever an ancestor stretches this card to match a
+  // sibling (a CSS Grid row's default `align-items: stretch`, or a flex row
+  // like `CardCarousel`'s) — without it, the card only grew to its own
+  // content height even while its wrapper was already stretched, so same-row
+  // cards with different amounts of text ended up visibly different heights.
+  const className = cn('h-full overflow-hidden rounded-lg border border-border bg-card', variant === 'grid' && 'flex flex-col')
 
   if (!href) return <StaticShell className={className}>{body}</StaticShell>
   if (!action) return (
