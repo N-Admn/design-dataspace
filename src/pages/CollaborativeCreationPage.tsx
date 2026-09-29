@@ -6,6 +6,7 @@ import { Card } from '@/components/ui/card'
 import { Stepper } from '@/components/ui/stepper'
 import { WorkspaceHeader } from '@/components/dataset/WorkspaceHeader'
 import { WizardFooter } from '@/components/dataset/WizardFooter'
+import { PublicVisibilityBadge } from '@/components/dataset/PublicVisibilityNotice'
 import { CollaborativeStep1About } from '@/components/collaborative/CollaborativeStep1About'
 import { CollaborativeStep2People } from '@/components/collaborative/CollaborativeStep2People'
 import { CollaborativeStep3Content } from '@/components/collaborative/CollaborativeStep3Content'
@@ -16,7 +17,12 @@ import { useToast } from '@/components/ui/toast'
 import { useAppData } from '@/context/AppDataContext'
 import { useHelpContext } from '@/context/HelpContext'
 import { saveCollaborativeDraftSnapshot } from '@/lib/collaborative-draft-storage'
-import { isCollaborativeReadyToPublish } from '@/lib/collaborative-validation'
+import {
+  isCollaborativeReadyToPublish,
+  slugify,
+  takenCollaborativeSlugs,
+  validateCollaborativeAbout,
+} from '@/lib/collaborative-validation'
 import { hasUnsavedEdits } from '@/lib/content-status'
 import { emptyCollaborativeForm, type CollaborativeFormState, type CollaborativeMetadata } from '@/types/collaborative'
 
@@ -24,7 +30,7 @@ type CollaborativeStep = 1 | 2 | 3 | 4
 
 const COLLABORATIVE_STEPS = [
   { step: 1, label: 'About', description: 'What is this?', icon: FileText },
-  { step: 2, label: 'People', description: 'Who is involved?', icon: Users },
+  { step: 2, label: 'People & Organisations', description: 'Who is involved?', icon: Users },
   { step: 3, label: 'Content', description: 'What is connected?', icon: Share2 },
   { step: 4, label: 'Review & Publish', description: 'Check readiness', icon: ListChecks },
 ]
@@ -59,6 +65,9 @@ function CollaborativeCreationPage() {
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(false)
   // Stepper is a progress indicator until Review is reached with every step valid.
   const [stepperUnlocked, setStepperUnlocked] = useState(false)
+  // Like Dataset Creation, field errors stay hidden until they matter — here, from
+  // the moment the user reaches Review, where readiness is checked.
+  const [showAboutErrors, setShowAboutErrors] = useState(false)
 
   const stepLabel = COLLABORATIVE_STEPS.find((s) => s.step === step)?.label ?? 'About'
   useEffect(() => {
@@ -97,7 +106,15 @@ function CollaborativeCreationPage() {
   }, [form])
 
   const updateMetadata = <K extends keyof CollaborativeMetadata>(field: K, value: CollaborativeMetadata[K]) => {
-    setForm((prev) => ({ ...prev, metadata: { ...prev.metadata, [field]: value } }))
+    setForm((prev) => {
+      const metadata = { ...prev.metadata, [field]: value }
+      // The URL follows the name until someone edits it by hand (i.e. while it still
+      // matches what the previous name would have produced).
+      if (field === 'name' && (!prev.metadata.slug || prev.metadata.slug === slugify(prev.metadata.name))) {
+        metadata.slug = slugify(value as string)
+      }
+      return { ...prev, metadata }
+    })
   }
 
   const handleClose = () => {
@@ -118,8 +135,11 @@ function CollaborativeCreationPage() {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
-  const allStepsValid = isCollaborativeReadyToPublish(form)
+  const takenSlugs = takenCollaborativeSlugs(collaboratives, editingId)
+  const aboutErrors = validateCollaborativeAbout(form, takenSlugs)
+  const allStepsValid = isCollaborativeReadyToPublish(form, takenSlugs)
   useEffect(() => {
+    if (step === 4) setShowAboutErrors(true)
     if (step === 4 && allStepsValid) setStepperUnlocked(true)
   }, [step, allStepsValid])
 
@@ -133,11 +153,12 @@ function CollaborativeCreationPage() {
     if (!editingId) setEditingId(id)
     setLastSavedForm(form)
     setTimeout(() => setSaved(true), 500)
+    // Same wording as Dataset Creation (datasetLifecycleMessage).
     toast({
-      title: hasLiveVersion ? 'Changes saved' : 'Draft saved',
+      title: hasLiveVersion ? 'Changes saved' : 'Collaborative saved as Draft',
       description: hasLiveVersion
         ? 'Your edits aren’t published yet. The current published version stays live.'
-        : 'Your Collaborative has been saved as a draft.',
+        : 'It is not publicly available yet.',
       variant: 'success',
     })
     return id
@@ -172,12 +193,13 @@ function CollaborativeCreationPage() {
       <WorkspaceHeader
         saved={saved}
         onClose={handleClose}
-        title={form.metadata.name || 'Untitled Collaborative'}
-        onTitleChange={(name) => updateMetadata('name', name)}
-        editablePlaceholder="Untitled Collaborative"
+        title={editingId ? form.metadata.name || 'Untitled Collaborative' : 'New Collaborative'}
         unsavedChanges={showUnsavedIndicator}
       />
       {organisation && <OrganisationContextBanner organisationName={organisation.metadata.name} />}
+      <div className="flex items-center border-t border-border px-6 py-2.5">
+        <PublicVisibilityBadge isLive={hasLiveVersion} />
+      </div>
       <div className="border-t border-border px-6 py-6">
         <Stepper
           steps={COLLABORATIVE_STEPS}
@@ -187,7 +209,13 @@ function CollaborativeCreationPage() {
         />
       </div>
       <div className="border-t border-border px-6 py-6">
-        {step === 1 && <CollaborativeStep1About metadata={form.metadata} errors={{}} onChange={updateMetadata} />}
+        {step === 1 && (
+          <CollaborativeStep1About
+            metadata={form.metadata}
+            errors={showAboutErrors ? aboutErrors : {}}
+            onChange={updateMetadata}
+          />
+        )}
         {step === 2 && (
           <CollaborativeStep2People
             connections={form.connections}
@@ -201,7 +229,9 @@ function CollaborativeCreationPage() {
             onCreateUseCase={handleCreateUseCase}
           />
         )}
-        {step === 4 && <CollaborativeStep4Review form={form} onEditStep={goToStep} onPreview={handlePreview} />}
+        {step === 4 && (
+          <CollaborativeStep4Review form={form} takenSlugs={takenSlugs} onEditStep={goToStep} onPreview={handlePreview} />
+        )}
       </div>
       <div className="border-t border-border">
         <WizardFooter

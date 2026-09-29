@@ -27,11 +27,11 @@ interface DatasetConnectionsCardProps {
   description?: string
   emptyHint?: string
   /** 'panel' (default) — the existing inline expanding search-and-filter panel,
-   * unchanged, used by Event and Collaborative. 'dropdown' — the standardized
-   * searchable dropdown used for Organisation/Contributor search: a full-width
-   * search field that opens a popover of results; selecting one connects it
-   * immediately and removes it from the candidate pool. Use Case → Connect is
-   * the only current 'dropdown' consumer. */
+   * unchanged, used by Event. 'dropdown' — the standardized searchable dropdown
+   * used for Organisation/Contributor search: a full-width search field that
+   * opens a popover of results; selecting one connects it immediately and
+   * removes it from the candidate pool. Used by Use Case → Connect and
+   * Collaborative → Content. */
   searchVariant?: 'panel' | 'dropdown'
 }
 

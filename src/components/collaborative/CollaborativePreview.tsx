@@ -1,6 +1,7 @@
-import { Building2, Database, ExternalLink, FolderKanban, User } from 'lucide-react'
+import { Building2, CalendarDays, Database, ExternalLink, FolderKanban, User } from 'lucide-react'
 
 import { Badge } from '@/components/ui/badge'
+import { formatShortDate } from '@/lib/format'
 import { GEOGRAPHY_OPTIONS, SECTOR_OPTIONS } from '@/types/dataset'
 import { SDG_GOAL_OPTIONS } from '@/types/usecase'
 import { RELATIONSHIP_OPTIONS, type CollaborativeFormState, type CollaborativeRelationship } from '@/types/collaborative'
@@ -13,7 +14,9 @@ function relationshipLabel(value: CollaborativeRelationship): string {
   return optionLabel(RELATIONSHIP_OPTIONS, value)
 }
 
-function CollaborativePreview({ form }: { form: CollaborativeFormState }) {
+/** `updatedAt` — the record's last-saved timestamp, shown as "Last updated". There's no
+ * user-entered start/end date; this automatic date is the Collaborative's timeline. */
+function CollaborativePreview({ form, updatedAt }: { form: CollaborativeFormState; updatedAt?: string }) {
   const { metadata, connections } = form
   const { people, datasets, useCases } = connections
 
@@ -28,6 +31,12 @@ function CollaborativePreview({ form }: { form: CollaborativeFormState }) {
         {metadata.image?.dataUrl && <img src={metadata.image.dataUrl} alt="" className="h-56 w-full object-cover" />}
         <div className="px-6 py-6">
           <h1 className="type-heading-1 text-primary">{metadata.name || 'Untitled Collaborative'}</h1>
+          {updatedAt && (
+            <p className="mt-1.5 flex items-center gap-1.5 text-xs text-muted-foreground">
+              <CalendarDays className="size-3.5 shrink-0" />
+              Last updated {formatShortDate(updatedAt)}
+            </p>
+          )}
 
           <div className="mt-3 flex flex-wrap items-center gap-1.5">
             {metadata.sectors.map((s) => (

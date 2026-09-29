@@ -8,7 +8,7 @@ import { CollaborativePreview } from '@/components/collaborative/CollaborativePr
 import { useToast } from '@/components/ui/toast'
 import { useConfirm } from '@/components/ui/confirm-dialog'
 import { useAppData } from '@/context/AppDataContext'
-import { isCollaborativeReadyToPublish } from '@/lib/collaborative-validation'
+import { isCollaborativeReadyToPublish, takenCollaborativeSlugs } from '@/lib/collaborative-validation'
 import { clearCollaborativeDraftSnapshot, loadCollaborativeDraftSnapshot } from '@/lib/collaborative-draft-storage'
 
 function CollaborativePreviewPage() {
@@ -57,7 +57,7 @@ function CollaborativePreviewPage() {
     )
   }
 
-  const ready = isCollaborativeReadyToPublish(form)
+  const ready = isCollaborativeReadyToPublish(form, takenCollaborativeSlugs(collaboratives, id))
 
   const handlePublish = async () => {
     if (!ready) return
@@ -152,7 +152,7 @@ function CollaborativePreviewPage() {
         </p>
       )}
 
-      <CollaborativePreview form={form} />
+      <CollaborativePreview form={form} updatedAt={record?.updatedAt} />
     </div>
   )
 }
