@@ -2,7 +2,6 @@ import * as React from 'react'
 import { Building2, Plus, Trash2, User } from 'lucide-react'
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { DatasetConnectionsCard } from '@/components/shared/DatasetConnectionsCard'
@@ -67,14 +66,10 @@ function UseCaseStep2Connect({ metadata, onMetadataChange, connections, onChange
       ...connections,
       contributors: [
         ...connections.contributors,
-        { id: `contributor-${person.id}`, name: person.name, role: '', designation: person.role, organisation: person.organisation },
+        { id: `contributor-${person.id}`, name: person.name, designation: person.role, organisation: person.organisation },
       ],
     })
     toast({ title: 'Contributor added', description: `"${person.name}" added and connected.`, variant: 'success' })
-  }
-
-  const updateContributorRole = (id: string, role: string) => {
-    onChange({ ...connections, contributors: connections.contributors.map((c) => (c.id === id ? { ...c, role } : c)) })
   }
 
   return (
@@ -129,13 +124,6 @@ function UseCaseStep2Connect({ metadata, onMetadataChange, connections, onChange
                     </p>
                   )}
                 </div>
-                <Input
-                  value={c.role}
-                  onChange={(e) => updateContributorRole(c.id, e.target.value)}
-                  placeholder="Role: e.g. Author, Editor"
-                  aria-label={`Role for ${c.name}`}
-                  className="h-8 w-40 shrink-0 text-xs"
-                />
                 <Button
                   type="button"
                   variant="ghost"

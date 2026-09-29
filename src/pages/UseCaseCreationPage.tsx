@@ -193,8 +193,8 @@ function UseCaseCreationPage() {
             onMetadataChange={updateMetadata}
             blocks={form.blocks}
             onBlocksChange={(blocks) => setForm((prev) => ({ ...prev, blocks }))}
-            dashboardEmbedCode={form.dashboardEmbedCode}
-            onDashboardEmbedCodeChange={(dashboardEmbedCode) => setForm((prev) => ({ ...prev, dashboardEmbedCode }))}
+            dashboardUrl={form.dashboardUrl}
+            onDashboardUrlChange={(dashboardUrl) => setForm((prev) => ({ ...prev, dashboardUrl }))}
           />
         )}
         {step === 2 && (

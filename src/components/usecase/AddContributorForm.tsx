@@ -13,7 +13,6 @@ import type { UploadedAsset } from '@/lib/generic-upload'
 
 interface ContributorDraft {
   name: string
-  role: string
   designation?: string
   organisation?: string
   image?: UploadedAsset | null
@@ -25,11 +24,6 @@ interface AddContributorFormProps {
   onAdd: (contributor: ContributorDraft) => void
   /** What this contributor is being attached to — shown in the dialog description. */
   contentLabel?: string
-  /** Example roles shown as Role field placeholder text, e.g. "e.g. Author, Editor, Director". */
-  rolePlaceholder?: string
-  /** Hide the free-text Role field — for flows that set the person's role elsewhere
-   * (e.g. a Collaborative's Contributor/Partner/Supporter picker). */
-  showRole?: boolean
   title?: string
   description?: string
   submitLabel?: string
@@ -40,15 +34,12 @@ function AddContributorForm({
   onOpenChange,
   onAdd,
   contentLabel = 'Use Case',
-  rolePlaceholder = 'e.g. Author, Editor, Reviewer',
-  showRole = true,
   title = 'Add Contributor',
   description,
   submitLabel = 'Add Contributor',
 }: AddContributorFormProps) {
   const confirm = useConfirm()
   const [name, setName] = React.useState('')
-  const [role, setRole] = React.useState('')
   const [designation, setDesignation] = React.useState('')
   const [organisation, setOrganisation] = React.useState('')
   const [image, setImage] = React.useState<UploadedAsset | null>(null)
@@ -57,7 +48,6 @@ function AddContributorForm({
   React.useEffect(() => {
     if (open) {
       setName('')
-      setRole('')
       setDesignation('')
       setOrganisation('')
       setImage(null)
@@ -66,7 +56,7 @@ function AddContributorForm({
   }, [open])
 
   const hasUnsavedChanges =
-    name.trim() !== '' || role.trim() !== '' || designation.trim() !== '' || organisation.trim() !== '' || image !== null
+    name.trim() !== '' || designation.trim() !== '' || organisation.trim() !== '' || image !== null
 
   const requestClose = async () => {
     if (hasUnsavedChanges) {
@@ -87,7 +77,7 @@ function AddContributorForm({
       setErrors({ name: 'Enter a contributor name.' })
       return
     }
-    onAdd({ name: name.trim(), role: role.trim(), designation: designation.trim(), organisation: organisation.trim(), image })
+    onAdd({ name: name.trim(), designation: designation.trim(), organisation: organisation.trim(), image })
   }
 
   return (
@@ -139,19 +129,6 @@ function AddContributorForm({
               />
               <FieldError message={errors.name} />
             </div>
-
-            {showRole && (
-              <div>
-                <Label htmlFor="contributor-role">Role</Label>
-                <Input
-                  id="contributor-role"
-                  className="mt-1.5"
-                  placeholder={rolePlaceholder}
-                  value={role}
-                  onChange={(e) => setRole(e.target.value)}
-                />
-              </div>
-            )}
 
             <div>
               <Label htmlFor="contributor-designation">Designation</Label>

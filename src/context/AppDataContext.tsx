@@ -8,6 +8,7 @@ import { MOCK_ORGANISATIONS } from '@/lib/mock-organisations'
 import { MOCK_USE_CASE_RECORDS } from '@/lib/mock-usecases'
 import { MOCK_COLLABORATIVE_RECORDS } from '@/lib/mock-collaboratives'
 import { slugify } from '@/lib/collaborative-validation'
+import { withDashboardUrl } from '@/lib/dashboard-embed'
 import { MOCK_AI_MODEL_RECORDS } from '@/lib/mock-ai-models'
 import { MOCK_PUBLICATION_RECORDS } from '@/lib/mock-publications'
 import { MOCK_CHART_RECORDS } from '@/lib/mock-charts'
@@ -59,7 +60,12 @@ const USE_CASES_STORAGE_KEY = 'civicdataspace:usecases'
 function loadStoredUseCases(): UseCaseRecord[] | null {
   try {
     const raw = window.localStorage.getItem(USE_CASES_STORAGE_KEY)
-    return raw ? normalizeStoredRecords(JSON.parse(raw) as UseCaseRecord[]) : null
+    if (!raw) return null
+    return normalizeStoredRecords(JSON.parse(raw) as UseCaseRecord[]).map((r) => ({
+      ...r,
+      form: withDashboardUrl(r.form),
+      publishedForm: r.publishedForm ? withDashboardUrl(r.publishedForm) : null,
+    }))
   } catch {
     return null
   }
@@ -129,8 +135,7 @@ const PUBLICATIONS_STORAGE_KEY = 'civicdataspace:publications'
 
 /** Migrate a Publication's metadata persisted before Contributors replaced the
  * plain Author Name(s) list: a legacy record has `authors: string[]` and no
- * `contributors` at all, so it's converted into one contributor per name (role
- * left blank — there was no Role concept for authors yet). Records already on
+ * `contributors` at all, so it's converted into one contributor per name. Records already on
  * the current shape (including a legitimately empty `contributors: []`) pass
  * through untouched. */
 function migratePublicationMetadata(metadata: PublicationMetadata & { authors?: string[] }): PublicationMetadata {
@@ -138,7 +143,7 @@ function migratePublicationMetadata(metadata: PublicationMetadata & { authors?: 
   const legacyAuthors = Array.isArray(metadata.authors) ? metadata.authors : []
   return {
     ...metadata,
-    contributors: legacyAuthors.map((name, index) => ({ id: `contributor-legacy-${index}-${name}`, name, role: '' })),
+    contributors: legacyAuthors.map((name, index) => ({ id: `contributor-legacy-${index}-${name}`, name })),
   }
 }
 

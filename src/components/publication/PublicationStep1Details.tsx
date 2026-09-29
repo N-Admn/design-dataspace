@@ -31,13 +31,9 @@ function PublicationStep1Details({ metadata, errors, onChange }: PublicationStep
   const addContributorFromDirectory = (person: MockPerson) => {
     onChange('contributors', [
       ...metadata.contributors,
-      { id: `contributor-${person.id}`, name: person.name, role: '', designation: person.role, organisation: person.organisation },
+      { id: `contributor-${person.id}`, name: person.name, designation: person.role, organisation: person.organisation },
     ])
     toast({ title: 'Contributor added', description: `"${person.name}" added and connected.`, variant: 'success' })
-  }
-
-  const updateContributorRole = (id: string, role: string) => {
-    onChange('contributors', metadata.contributors.map((c) => (c.id === id ? { ...c, role } : c)))
   }
 
   return (
@@ -147,13 +143,6 @@ function PublicationStep1Details({ metadata, errors, onChange }: PublicationStep
                     </p>
                   )}
                 </div>
-                <Input
-                  value={c.role}
-                  onChange={(e) => updateContributorRole(c.id, e.target.value)}
-                  placeholder="Role: e.g. Author, Editor"
-                  aria-label={`Role for ${c.name}`}
-                  className="h-8 w-40 shrink-0 text-xs"
-                />
                 <Button
                   type="button"
                   variant="ghost"
@@ -244,7 +233,6 @@ function PublicationStep1Details({ metadata, errors, onChange }: PublicationStep
         open={showContributorForm}
         onOpenChange={setShowContributorForm}
         contentLabel="Publication"
-        rolePlaceholder="e.g. Author, Editor, Director"
         onAdd={(contributor) => {
           onChange('contributors', [...metadata.contributors, { id: `contributor-${Date.now()}`, ...contributor }])
           setShowContributorForm(false)

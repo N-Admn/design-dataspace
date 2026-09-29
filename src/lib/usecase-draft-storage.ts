@@ -1,3 +1,4 @@
+import { withDashboardUrl } from '@/lib/dashboard-embed'
 import type { UseCaseFormState, UseCaseStatus } from '@/types/usecase'
 
 /** Carries the in-progress (possibly unsaved) editor state into a preview tab
@@ -22,7 +23,9 @@ export function saveUseCaseDraftSnapshot(snapshot: UseCaseDraftSnapshot) {
 export function loadUseCaseDraftSnapshot(id: string): UseCaseDraftSnapshot | null {
   try {
     const raw = window.localStorage.getItem(`${DRAFT_KEY_PREFIX}${id}`)
-    return raw ? (JSON.parse(raw) as UseCaseDraftSnapshot) : null
+    if (!raw) return null
+    const snapshot = JSON.parse(raw) as UseCaseDraftSnapshot
+    return { ...snapshot, form: withDashboardUrl(snapshot.form) }
   } catch {
     return null
   }

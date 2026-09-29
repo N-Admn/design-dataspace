@@ -96,22 +96,19 @@ const useCase1Form: UseCaseFormState = {
       description: 'The full facility-level dataset used to identify staffing and referral gaps.',
     },
   ],
-  dashboardEmbedCode:
-    '<iframe src="https://superset.example.org/embedded/maternal-health-dashboard" width="100%" height="600" frameborder="0"></iframe>',
+  dashboardUrl: 'https://superset.example.org/embedded/maternal-health-dashboard',
   connections: {
     datasets: [{ id: 'ds-2', title: 'District Health Infrastructure & Service Availability (2024)' }],
     contributors: [
       {
         id: 'contributor-seed-1',
         name: 'Dr. Aisha Verma',
-        role: 'Author',
         designation: 'Public Health Researcher',
         image: fakeAsset(PEXELS_AVATAR(7580822), 'aisha-verma.jpg'),
       },
       {
         id: 'contributor-seed-2',
         name: 'Rohan Mehta',
-        role: 'Contributor',
         designation: 'Data Analyst, District Health Mission',
         image: fakeAsset(PEXELS_AVATAR(11357069), 'rohan-mehta.jpg'),
       },
@@ -134,7 +131,7 @@ const useCase2Form: UseCaseFormState = {
     geographies: [],
   },
   blocks: [],
-  dashboardEmbedCode: '',
+  dashboardUrl: '',
   connections: {
     datasets: [],
     contributors: [],
