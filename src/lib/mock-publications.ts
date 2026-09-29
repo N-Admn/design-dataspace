@@ -72,6 +72,8 @@ export const MOCK_PUBLICATION_RECORDS: PublicationRecord[] = [
     updatedAt: '15/07/2026 09:30:00',
     form: publication1Form,
     publishedForm: publication1Form,
+    organisationId: 'org-workspace-1',
+    createdBy: 'John Doe',
   },
   {
     id: 'publication-2',
@@ -79,5 +81,7 @@ export const MOCK_PUBLICATION_RECORDS: PublicationRecord[] = [
     updatedAt: '20/08/2026 16:05:00',
     form: publication2Form,
     publishedForm: null,
+    organisationId: 'org-workspace-1',
+    createdBy: 'Sana Khan',
   },
 ]

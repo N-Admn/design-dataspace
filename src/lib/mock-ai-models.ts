@@ -82,6 +82,8 @@ export const MOCK_AI_MODEL_RECORDS: AIModelRecord[] = [
     updatedAt: '09/08/2026 11:20:00',
     form: aiModel1Form,
     publishedForm: aiModel1Form,
+    organisationId: 'org-workspace-1',
+    createdBy: 'John Doe',
   },
   {
     id: 'ai-model-2',
@@ -89,5 +91,7 @@ export const MOCK_AI_MODEL_RECORDS: AIModelRecord[] = [
     updatedAt: '17/08/2026 16:40:00',
     form: aiModel2Form,
     publishedForm: null,
+    organisationId: 'org-workspace-1',
+    createdBy: 'Sana Khan',
   },
 ]

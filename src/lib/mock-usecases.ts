@@ -142,11 +142,12 @@ const useCase2Form: UseCaseFormState = {
 export const MOCK_USE_CASE_RECORDS: UseCaseRecord[] = [
   {
     id: 'usecase-1',
-    organisationId: 'org-workspace-1',
     status: 'published',
     updatedAt: '06/08/2026 10:20:00',
     form: useCase1Form,
     publishedForm: useCase1Form,
+    organisationId: 'org-workspace-1',
+    createdBy: 'John Doe',
   },
   {
     id: 'usecase-2',
@@ -154,5 +155,7 @@ export const MOCK_USE_CASE_RECORDS: UseCaseRecord[] = [
     updatedAt: '11/08/2026 15:42:00',
     form: useCase2Form,
     publishedForm: null,
+    organisationId: 'org-workspace-1',
+    createdBy: 'Rahul Mehta',
   },
 ]

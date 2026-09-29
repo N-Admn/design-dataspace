@@ -461,13 +461,13 @@ const ds9Form: DatasetFormState = {
 }
 
 export const MOCK_DATASETS: DatasetRecord[] = [
-  { id: 'ds-1', status: 'published', updatedAt: '05/08/2026 09:14:22', downloadCount: 1284, form: ds1Form, publishedForm: ds1Form },
+  { id: 'ds-1', status: 'published', updatedAt: '05/08/2026 09:14:22', downloadCount: 1284, form: ds1Form, publishedForm: ds1Form, organisationId: 'org-workspace-1', createdBy: 'John Doe' },
   { id: 'ds-2', status: 'published', updatedAt: '18/07/2026 14:02:10', downloadCount: 742, form: ds2Form, publishedForm: ds2Form },
   { id: 'ds-3', status: 'published', updatedAt: '03/05/2026 16:40:00', downloadCount: 356, form: ds3Form, publishedForm: ds3Form },
   { id: 'ds-4', status: 'published', updatedAt: '22/06/2026 11:15:30', downloadCount: 519, form: ds4Form, publishedForm: ds4Form },
   { id: 'ds-5', status: 'published', updatedAt: '12/07/2026 08:45:00', downloadCount: 208, form: ds5WorkingForm, publishedForm: ds5Form },
-  { id: 'ds-6', status: 'draft', updatedAt: '10/08/2026 17:30:00', downloadCount: 0, form: ds6Form, publishedForm: null },
-  { id: 'ds-7', status: 'draft', updatedAt: '09/08/2026 12:10:00', downloadCount: 0, form: ds7Form, publishedForm: null },
-  { id: 'ds-8', status: 'draft', updatedAt: '08/08/2026 09:05:00', downloadCount: 0, form: ds8Form, publishedForm: null },
+  { id: 'ds-6', status: 'draft', updatedAt: '10/08/2026 17:30:00', downloadCount: 0, form: ds6Form, publishedForm: null, organisationId: 'org-workspace-1', createdBy: 'Rahul Mehta' },
+  { id: 'ds-7', status: 'draft', updatedAt: '09/08/2026 12:10:00', downloadCount: 0, form: ds7Form, publishedForm: null, organisationId: 'org-workspace-1', createdBy: 'Sana Khan' },
+  { id: 'ds-8', status: 'draft', updatedAt: '08/08/2026 09:05:00', downloadCount: 0, form: ds8Form, publishedForm: null, organisationId: 'org-workspace-1', createdBy: 'John Doe' },
   { id: 'ds-9', status: 'published', updatedAt: '20/08/2026 10:05:00', downloadCount: 97, form: ds9Form, publishedForm: ds9Form },
 ]
