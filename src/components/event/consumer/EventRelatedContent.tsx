@@ -29,7 +29,7 @@ function RelatedGroup({
       <SectionHeader as="h3" title={title} />
       <CardCarousel>
         {resolved.map((item) => (
-          <SearchResultCard key={item.id} item={item} layout="grid" />
+          <SearchResultCard key={item.id} item={item} layout="grid" tintedMetadata />
         ))}
       </CardCarousel>
     </div>
@@ -54,7 +54,7 @@ function PublicationsGroup({
       <SectionHeader as="h3" title="Publications" />
       <CardCarousel>
         {resolved.map((item) => (
-          <SearchResultCard key={item.id} item={item} layout="grid" />
+          <SearchResultCard key={item.id} item={item} layout="grid" tintedMetadata />
         ))}
       </CardCarousel>
     </div>

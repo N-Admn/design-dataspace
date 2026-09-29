@@ -36,11 +36,6 @@ export interface ContentCardProps {
   /** Optional secondary control (e.g. an icon button) — rendered so its own
    *  clicks never also trigger the card's own navigation. */
   action?: ReactNode
-  /** Number of published charts/maps for this record (currently Datasets
-   *  only) — shown as an extra "Visual (N)" badge before the content-type
-   *  badge when greater than 0; omitted entirely otherwise, so a dataset with
-   *  no visualisations shows just the plain "Dataset" tag. */
-  visualCount?: number
   variant: 'list' | 'grid'
   /** Search/listing pages get a compact tinted-pill treatment per metadata
    *  item (light background + matching semantic color, e.g. orange for
@@ -125,25 +120,22 @@ function PublisherGroup({ publishers }: { publishers: ContentCardPublisher[] }) 
 function CardFooter({
   type,
   publishers,
-  visualCount,
   className,
 }: {
   type: SearchResultType
   publishers: ContentCardPublisher[]
-  visualCount?: number
   className?: string
 }) {
   return (
     <div className={cn('flex items-center gap-2 border-t border-border pt-3', className)}>
       <PublisherGroup publishers={publishers} />
-      {/* `ml-auto` (not `justify-between` on the row) keeps the badge(s)
+      {/* `ml-auto` (not `justify-between` on the row) keeps the badge
           pinned to the right even when there's no publisher to occupy the
           left — `justify-between` would otherwise snap a lone child to the
           start. */}
-      <div className="ml-auto flex items-center gap-2">
-        {visualCount != null && visualCount > 0 && <Badge variant="outline">Visual ({visualCount})</Badge>}
-        <Badge variant="secondary">{SEARCH_TYPE_LABEL[type]}</Badge>
-      </div>
+      <Badge variant="secondary" className="ml-auto">
+        {SEARCH_TYPE_LABEL[type]}
+      </Badge>
     </div>
   )
 }
@@ -159,7 +151,7 @@ function CardFooter({
 function MetadataRow({ metadata, tinted, className }: { metadata: ContentCardMetadataItem[]; tinted?: boolean; className?: string }) {
   if (metadata.length === 0) return null
   return (
-    <div className={cn('flex flex-wrap items-center gap-x-3.5 gap-y-1', className)}>
+    <div className={cn('flex flex-wrap items-center gap-x-[16.8px] gap-y-1', className)}>
       {metadata.map((item, index) => {
         const Icon = item.icon
         const label = (
@@ -260,7 +252,7 @@ function ClickableShell({ href, ariaLabel, className, children }: { href: string
   )
 }
 
-function ContentCard({ type, title, description, metadata, publishers = [], thumbnailUrl, href, action, visualCount, variant, tintedMetadata }: ContentCardProps) {
+function ContentCard({ type, title, description, metadata, publishers = [], thumbnailUrl, href, action, variant, tintedMetadata }: ContentCardProps) {
   const hasThumbnail = Boolean(thumbnailUrl)
   const actionSlot = action && (
     <div onClick={(event) => event.stopPropagation()} className="shrink-0">
@@ -288,14 +280,14 @@ function ContentCard({ type, title, description, metadata, publishers = [], thum
         <div className="flex flex-1 flex-col gap-3 p-[18px]">
           <div>
             <div className="flex items-start justify-between gap-3">
-              <p className="min-w-0 line-clamp-2 text-base font-semibold text-foreground">{title}</p>
+              <p className="min-w-0 line-clamp-2 text-lg font-semibold text-foreground">{title}</p>
               {actionSlot}
             </div>
             {description && <p className="mt-1 truncate text-sm text-muted-foreground">{description}</p>}
           </div>
           <div className="mt-auto flex flex-col gap-2">
             <MetadataRow metadata={metadata} tinted={tintedMetadata} />
-            <CardFooter type={type} publishers={publishers} visualCount={visualCount} />
+            <CardFooter type={type} publishers={publishers} />
           </div>
         </div>
       </>
@@ -305,14 +297,14 @@ function ContentCard({ type, title, description, metadata, publishers = [], thum
         <div className="flex min-w-0 flex-1 flex-col gap-3">
           <div>
             <div className="flex items-start justify-between gap-3">
-              <p className="min-w-0 line-clamp-2 text-base font-semibold text-foreground">{title}</p>
+              <p className="min-w-0 line-clamp-2 text-lg font-semibold text-foreground">{title}</p>
               {actionSlot}
             </div>
             {description && <p className="mt-1 w-4/5 truncate text-sm text-muted-foreground">{description}</p>}
           </div>
           <div className="mt-auto flex flex-col gap-2">
             <MetadataRow metadata={metadata} tinted={tintedMetadata} />
-            <CardFooter type={type} publishers={publishers} visualCount={visualCount} />
+            <CardFooter type={type} publishers={publishers} />
           </div>
         </div>
       </div>

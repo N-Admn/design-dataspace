@@ -42,7 +42,6 @@ function SearchResultCard({ item, layout = 'grid', tintedMetadata }: SearchResul
       publishers={item.publishers}
       thumbnailUrl={item.thumbnailUrl}
       href={item.href}
-      visualCount={item.type === 'dataset' ? item.cardMeta?.chartCount : undefined}
       variant={layout}
       tintedMetadata={tintedMetadata}
     />
