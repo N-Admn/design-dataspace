@@ -150,7 +150,6 @@ function CollaborativeStep2People({ connections, onChange }: CollaborativeStep2P
         title="Add Person"
         description="Add a person involved in this Collaborative. You can set whether they’re a Contributor, Partner or Supporter after adding them."
         submitLabel="Add Person"
-        showRole={false}
         onAdd={(person) => {
           addPerson({
             refId: `person-new-${Date.now()}`,

@@ -9,7 +9,7 @@ import { SocialShareLinks } from '@/components/shared/SocialShareLinks'
 import { Badge } from '@/components/ui/badge'
 import { useAppData } from '@/context/AppDataContext'
 import { getFileColumns, getMockRows } from '@/lib/chart-data'
-import { extractIframeSrc } from '@/lib/dashboard-embed'
+import { parseDashboardUrl } from '@/lib/dashboard-embed'
 import { cn } from '@/lib/utils'
 import { SECTOR_OPTIONS } from '@/types/dataset'
 import type { UseCaseBlock, UseCaseConnections, UseCaseMetadata } from '@/types/usecase'
@@ -162,7 +162,7 @@ export function UseCaseRail({
         <div className="flex flex-col gap-3">
           <p className={sidebarLabel}>Contributors</p>
           {connections.contributors.map((c) => (
-            <EntityRow key={c.id} name={c.name} imageUrl={c.image?.dataUrl} detail={c.designation || c.role} />
+            <EntityRow key={c.id} name={c.name} imageUrl={c.image?.dataUrl} detail={c.designation} />
           ))}
           {connections.organizations.map((o) => (
             <EntityRow key={o.id} name={o.name} imageUrl={o.logo?.dataUrl} detail="Organisation" />
@@ -254,9 +254,10 @@ export function UseCaseBlockList({
   )
 }
 
-/** "Explore the data" — the embedded dashboard. Renders nothing without an embed. */
-export function DashboardSection({ embedCode }: { embedCode: string }) {
-  const src = embedCode ? extractIframeSrc(embedCode) : null
+/** "Explore the data" — the author's dashboard URL, embedded in an iframe built
+ * here. Renders nothing without a usable URL. */
+export function DashboardSection({ url }: { url: string }) {
+  const src = parseDashboardUrl(url)
   if (!src) return null
   return (
     <section className="flex flex-col gap-3">

@@ -1,39 +1,41 @@
 import * as React from 'react'
-import { AlertCircle, LayoutDashboard, Loader2 } from 'lucide-react'
+import { ExternalLink, LayoutDashboard, Loader2 } from 'lucide-react'
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
 import { FieldError } from '@/components/ui/field-error'
 import { useConfirm } from '@/components/ui/confirm-dialog'
-import { extractIframeSrc } from '@/lib/dashboard-embed'
+import { parseDashboardUrl } from '@/lib/dashboard-embed'
 
 interface UseCaseDashboardSectionProps {
-  embedCode: string
-  onChange: (embedCode: string) => void
+  url: string
+  onChange: (url: string) => void
 }
 
-function UseCaseDashboardSection({ embedCode, onChange }: UseCaseDashboardSectionProps) {
+/** The single optional external dashboard. Authors paste its URL; the published
+ * page embeds that URL in an iframe the app builds itself. */
+function UseCaseDashboardSection({ url, onChange }: UseCaseDashboardSectionProps) {
   const confirm = useConfirm()
   const [isEditing, setIsEditing] = React.useState(false)
   const [draft, setDraft] = React.useState('')
   const [error, setError] = React.useState<string>()
   const [isValidating, setIsValidating] = React.useState(false)
 
-  const savedSrc = embedCode ? extractIframeSrc(embedCode) : null
-  // With no saved dashboard the embed field is shown straight away; `isEditing` only
+  const savedSrc = parseDashboardUrl(url)
+  // With no saved dashboard the URL field is shown straight away; `isEditing` only
   // matters when replacing one that already exists.
-  const showForm = isEditing || !embedCode
+  const showForm = isEditing || !url
 
   const startReplace = async () => {
     const ok = await confirm({
       title: 'Replace dashboard?',
-      description: 'This will replace the currently embedded dashboard. You can update the embed code below.',
+      description: 'This will replace the currently embedded dashboard. You can enter a new dashboard URL below.',
       confirmLabel: 'Replace Dashboard',
     })
     if (!ok) return
-    setDraft(embedCode)
+    setDraft(url)
     setError(undefined)
     setIsEditing(true)
   }
@@ -57,19 +59,20 @@ function UseCaseDashboardSection({ embedCode, onChange }: UseCaseDashboardSectio
 
   const handleSave = () => {
     if (!draft.trim()) {
-      setError('Paste your dashboard embed code.')
+      setError('Enter your dashboard URL.')
       return
     }
-    if (!extractIframeSrc(draft)) {
-      setError('This embed code could not be used. Please check the code and try again.')
+    const parsed = parseDashboardUrl(draft)
+    if (!parsed) {
+      setError('Enter a full web address starting with https://, e.g. https://superset.example.org/dashboard/1')
       return
     }
     setError(undefined)
     setIsValidating(true)
     // No real network validation for this prototype — a brief delay just
-    // represents the "checking the embed" state before it's saved.
+    // represents the "checking the dashboard" state before it's saved.
     window.setTimeout(() => {
-      onChange(draft.trim())
+      onChange(parsed)
       setIsValidating(false)
       setIsEditing(false)
       setDraft('')
@@ -88,21 +91,27 @@ function UseCaseDashboardSection({ embedCode, onChange }: UseCaseDashboardSectio
         {showForm ? (
           <div className="flex flex-col gap-3">
             <div>
-              <Label htmlFor="usecase-dashboard-embed">Dashboard embed code</Label>
-              <Textarea
-                id="usecase-dashboard-embed"
-                className="mt-1.5 min-h-32 font-mono text-xs"
-                placeholder="Paste your dashboard iframe embed code here..."
+              <Label htmlFor="usecase-dashboard-url">Dashboard URL</Label>
+              <Input
+                id="usecase-dashboard-url"
+                type="url"
+                inputMode="url"
+                className="mt-1.5"
+                placeholder="https://"
                 value={draft}
                 aria-invalid={Boolean(error)}
                 onChange={(e) => {
                   setDraft(e.target.value)
                   if (error) setError(undefined)
                 }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') handleSave()
+                }}
                 disabled={isValidating}
               />
               <p className="mt-1.5 text-xs text-muted-foreground">
-                Copy the iframe embed code from your dashboard provider, such as Superset.
+                Paste the shareable or embed link from your dashboard provider, such as Superset. We’ll embed it on
+                the Use Case page for you.
               </p>
               <FieldError message={error} />
             </div>
@@ -112,13 +121,13 @@ function UseCaseDashboardSection({ embedCode, onChange }: UseCaseDashboardSectio
                 {isValidating ? (
                   <>
                     <Loader2 className="size-4 animate-spin" />
-                    Checking embed...
+                    Checking dashboard...
                   </>
                 ) : (
                   'Save Dashboard'
                 )}
               </Button>
-              {embedCode && (
+              {url && (
                 <Button type="button" variant="ghost" size="sm" onClick={handleCancel} disabled={isValidating}>
                   Cancel
                 </Button>
@@ -149,9 +158,21 @@ function UseCaseDashboardSection({ embedCode, onChange }: UseCaseDashboardSectio
               </div>
             </div>
 
-            {/* Preview is secondary — some providers block cross-origin embedding, so a
-                blank frame here doesn't mean the saved embed code itself is invalid. */}
-            {savedSrc ? (
+            {savedSrc && (
+              <a
+                href={savedSrc}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex min-w-0 items-center gap-1.5 text-xs text-primary underline-offset-4 hover:underline"
+              >
+                <ExternalLink className="size-3.5 shrink-0" />
+                <span className="truncate">{savedSrc}</span>
+              </a>
+            )}
+
+            {/* Preview is secondary — some providers block being embedded on other
+                sites, so a blank frame here doesn't mean the URL itself is wrong. */}
+            {savedSrc && (
               <iframe
                 src={savedSrc}
                 title="Embedded dashboard preview"
@@ -159,11 +180,6 @@ function UseCaseDashboardSection({ embedCode, onChange }: UseCaseDashboardSectio
                 sandbox="allow-scripts allow-same-origin allow-popups"
                 className="h-48 w-full rounded-md border border-border bg-muted/20"
               />
-            ) : (
-              <div className="flex h-24 items-center justify-center gap-2 rounded-md border border-dashed border-border bg-muted/20 text-xs text-muted-foreground">
-                <AlertCircle className="size-3.5" />
-                Preview unavailable for this embed code.
-              </div>
             )}
           </div>
         )}

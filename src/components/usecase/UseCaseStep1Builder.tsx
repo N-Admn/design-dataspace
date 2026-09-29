@@ -158,8 +158,8 @@ interface UseCaseStep1BuilderProps {
   onMetadataChange: <K extends keyof UseCaseMetadata>(field: K, value: UseCaseMetadata[K]) => void
   blocks: UseCaseBlock[]
   onBlocksChange: (blocks: UseCaseBlock[]) => void
-  dashboardEmbedCode: string
-  onDashboardEmbedCodeChange: (embedCode: string) => void
+  dashboardUrl: string
+  onDashboardUrlChange: (url: string) => void
 }
 
 function UseCaseStep1Builder({
@@ -168,8 +168,8 @@ function UseCaseStep1Builder({
   onMetadataChange,
   blocks,
   onBlocksChange,
-  dashboardEmbedCode,
-  onDashboardEmbedCodeChange,
+  dashboardUrl,
+  onDashboardUrlChange,
 }: UseCaseStep1BuilderProps) {
   const { charts, datasets } = useAppData()
   const [addMenuOpen, setAddMenuOpen] = React.useState(false)
@@ -502,7 +502,7 @@ function UseCaseStep1Builder({
         </CardContent>
       </Card>
 
-      <UseCaseDashboardSection embedCode={dashboardEmbedCode} onChange={onDashboardEmbedCodeChange} />
+      <UseCaseDashboardSection url={dashboardUrl} onChange={onDashboardUrlChange} />
     </div>
   )
 }

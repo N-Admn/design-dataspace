@@ -110,9 +110,7 @@ export interface UseCaseConnectedDataset {
 export interface UseCaseContributor {
   id: string
   name: string
-  /** Their contribution to this content, e.g. Author, Editor, Director. */
-  role: string
-  /** Their job title, e.g. Program Manager — distinct from `role`. */
+  /** Their job title, e.g. Program Manager. */
   designation?: string
   /** Organisation the contributor is affiliated with, when known. */
   organisation?: string
@@ -129,10 +127,10 @@ export interface UseCaseConnections {
 export interface UseCaseFormState {
   metadata: UseCaseMetadata
   blocks: UseCaseBlock[]
-  /** Raw iframe embed code for the single optional external dashboard, added in
-   * the Builder step (Embedded Dashboard section) and shown on the published
-   * page under "Explore the Data". Empty string = no dashboard added. */
-  dashboardEmbedCode: string
+  /** URL of the single optional external dashboard, added in the Builder step
+   * (Embedded Dashboard section). The published page embeds it in an iframe under
+   * "Explore the data". Empty string = no dashboard added. */
+  dashboardUrl: string
   connections: UseCaseConnections
 }
 
@@ -164,7 +162,7 @@ export const emptyUseCaseMetadata: UseCaseMetadata = {
 export const emptyUseCaseForm: UseCaseFormState = {
   metadata: emptyUseCaseMetadata,
   blocks: [],
-  dashboardEmbedCode: '',
+  dashboardUrl: '',
   connections: {
     datasets: [],
     contributors: [],

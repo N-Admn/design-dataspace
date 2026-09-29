@@ -41,7 +41,7 @@ function UseCasePreview({
   shareUrl,
   stickyTopClassName = 'lg:top-10',
 }: UseCasePreviewProps) {
-  const { metadata, blocks, connections, dashboardEmbedCode } = form
+  const { metadata, blocks, connections, dashboardUrl } = form
   const { annotatedHtml, toc } = useHeadingIndex(blocks)
   const title = metadata.title || 'Untitled Use Case'
   const hasPlacement = metadata.geographies.length > 0 || Boolean(publishedAt)
@@ -98,7 +98,7 @@ function UseCasePreview({
       </div>
 
       {/* Full-width sections below the story: dashboard, datasets, then metadata. */}
-      <DashboardSection embedCode={dashboardEmbedCode} />
+      <DashboardSection url={dashboardUrl} />
       <DatasetsSection datasets={connections.datasets} />
       <MetadataPanel metadata={metadata} />
     </article>
