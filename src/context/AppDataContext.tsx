@@ -700,6 +700,7 @@ function AppDataProvider({ children }: { children: React.ReactNode }) {
           updatedAt: timestamp,
         },
       ],
+      invitations: [],
       createdAt: timestamp,
       updatedAt: timestamp,
     }

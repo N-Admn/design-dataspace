@@ -6,6 +6,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { HelpSupportPanel } from '@/components/layout/HelpSupportPanel'
 import { cn } from '@/lib/utils'
 import { WORKSPACE_HEIGHT_CLASS } from '@/lib/layout'
+import { MOCK_PROFILE } from '@/types/profile'
 import { NAV_GROUPS, isNavItemActive, visibleNavGroups, type NavGroup, type NavItem } from '@/components/layout/nav-config'
 
 const COLLAPSE_STORAGE_KEY = 'cds-sidebar-collapsed'
@@ -66,8 +67,10 @@ function NavRow({ item, isActive, collapsed, onClick }: NavRowProps) {
 }
 
 export interface SidebarIdentity {
-  /** Initials or short label shown in the avatar circle. */
+  /** Initials or short label shown in the avatar circle when `avatarUrl` is unset. */
   avatarLabel: string
+  /** Profile photo / organisation logo — shown instead of `avatarLabel` when present. */
+  avatarUrl?: string
   /** Primary identity line (person name, or organisation name). */
   name: string
   /** Optional secondary line shown under the name when expanded (e.g. a role badge). */
@@ -88,7 +91,11 @@ interface ContributorSidebarProps {
   backTo?: string
 }
 
-const DEFAULT_IDENTITY: SidebarIdentity = { avatarLabel: 'JD', name: 'John Doe' }
+const DEFAULT_IDENTITY: SidebarIdentity = {
+  avatarLabel: 'JD',
+  avatarUrl: MOCK_PROFILE.avatarDataUrl ?? undefined,
+  name: `${MOCK_PROFILE.firstName} ${MOCK_PROFILE.lastName}`,
+}
 
 function ContributorSidebar({
   className,
@@ -107,7 +114,9 @@ function ContributorSidebar({
 
   const groups = visibleNavGroups(groupsProp ?? NAV_GROUPS)
 
-  const avatar = (
+  const avatar = identity.avatarUrl ? (
+    <img src={identity.avatarUrl} alt="" className="size-12 shrink-0 rounded-full object-cover" />
+  ) : (
     <div className="flex size-12 shrink-0 items-center justify-center rounded-full bg-muted text-sm font-semibold text-muted-foreground">
       {identity.avatarLabel}
     </div>
