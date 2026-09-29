@@ -7,13 +7,12 @@
 
 import type { UploadedAsset } from '@/lib/generic-upload'
 
-export type OrganisationRole = 'admin' | 'editor' | 'auditor' | 'member'
+export type OrganisationRole = 'admin' | 'editor' | 'evaluator'
 
 export const ORGANISATION_ROLE_OPTIONS: { value: OrganisationRole; label: string }[] = [
   { value: 'admin', label: 'Admin' },
   { value: 'editor', label: 'Editor' },
-  { value: 'auditor', label: 'Auditor' },
-  { value: 'member', label: 'Member' },
+  { value: 'evaluator', label: 'Evaluator' },
 ]
 
 export function organisationRoleLabel(role: OrganisationRole): string {
@@ -46,6 +45,9 @@ export interface OrganisationMember {
   personId: string
   name: string
   email?: string
+  /** Fictional persona — a stock headshot stands in for a real profile photo,
+   *  same convention as `ContributorProfile.avatarDataUrl` (types/profile.ts). */
+  avatarUrl?: string
   role: OrganisationRole
   joinedAt: string
   updatedAt: string
@@ -83,10 +85,24 @@ export const emptyOrganisationMetadata: OrganisationMetadata = {
   location: '',
 }
 
+export type OrganisationInvitationStatus = 'pending' | 'revoked'
+
+export interface OrganisationInvitation {
+  id: string
+  /** Links to `MockPerson.id` — the same directory `OrganisationMember.personId` uses. */
+  personId: string
+  name: string
+  email?: string
+  role: OrganisationRole
+  status: OrganisationInvitationStatus
+  invitedAt: string
+}
+
 export interface OrganisationRecord {
   id: string
   metadata: OrganisationMetadata
   members: OrganisationMember[]
+  invitations: OrganisationInvitation[]
   createdAt: string
   updatedAt: string
 }

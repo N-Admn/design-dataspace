@@ -2,17 +2,14 @@
  * Organisation Workspace UI should call one of these, never compare
  * `role === 'admin'` inline, so the rules stay in one place.
  *
- * PRODUCT DECISIONS ASSUMED (undocumented upstream — flagged in the audit report):
- *  - Auditor is read-only: can view everything but never create or edit content,
- *    matching the usual meaning of "auditor" and the spec's explicit Admin/Editor
- *    "Yes" vs Auditor/Member "Based on existing rules" split.
- *  - Member behaves like a baseline contributor: can create content and edit their
- *    own, but cannot manage members, roles, or organisation settings.
- *  - Editor can create/edit content (including other members' content, since
- *    "editor" implies broader content authority) but has no membership/admin
- *    capability at all.
- * These are reasonable defaults for a prototype with no existing backend
- * permission logic to defer to — a real implementation should confirm them. */
+ * Three roles:
+ *  - Admin manages the organisation and its members (add/remove/change roles,
+ *    org settings), plus full content authority.
+ *  - Editor manages the organisation's content (datasets, use cases, etc.) but
+ *    has no membership/admin capability.
+ *  - Evaluator is a specialised role for AI model evaluation through Parakh —
+ *    no access to manage the organisation's datasets, use cases, or other
+ *    content; scoped to its own evaluator surface. */
 
 import type { OrganisationMember, OrganisationRecord, OrganisationRole } from '@/types/organisation-workspace'
 import { currentUserRole } from '@/types/organisation-workspace'
@@ -42,17 +39,15 @@ export function canEditOrganisation(role: OrganisationRole | null): boolean {
 }
 
 export function canCreateContent(role: OrganisationRole | null): boolean {
-  return role === 'admin' || role === 'editor' || role === 'member'
+  return role === 'admin' || role === 'editor'
 }
 
-export function canEditOrganisationContent(role: OrganisationRole | null, isOwnContent: boolean): boolean {
-  if (role === 'admin' || role === 'editor') return true
-  if (role === 'member') return isOwnContent
-  return false
+export function canEditOrganisationContent(role: OrganisationRole | null): boolean {
+  return role === 'admin' || role === 'editor'
 }
 
 export function canPublishOrganisationContent(role: OrganisationRole | null): boolean {
-  return role === 'admin' || role === 'editor' || role === 'member'
+  return role === 'admin' || role === 'editor'
 }
 
 /** Guards against ever leaving an organisation with zero admins. */

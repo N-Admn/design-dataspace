@@ -20,6 +20,7 @@ function OrganisationSidebar({ organisationId, className }: { organisationId: st
       groups={organisationNavGroups(organisationId)}
       identity={{
         avatarLabel: initialsFor(org.metadata.name),
+        avatarUrl: org.metadata.logo?.dataUrl,
         name: org.metadata.name,
         subtitle: role ? organisationRoleLabel(role) : undefined,
       }}

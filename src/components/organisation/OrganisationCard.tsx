@@ -67,14 +67,23 @@ function OrganisationCard({ organisation, role }: OrganisationCardProps) {
 
       {members.length > 0 && (
         <div className="flex items-center -space-x-2" aria-hidden="true">
-          {visibleMembers.map((member) => (
-            <div
-              key={member.id}
-              className="flex size-9 items-center justify-center rounded-full border-2 border-surface-default bg-surface-subdued text-xs font-semibold text-text-subdued"
-            >
-              {initialsFor(member.name)}
-            </div>
-          ))}
+          {visibleMembers.map((member) =>
+            member.avatarUrl ? (
+              <img
+                key={member.id}
+                src={member.avatarUrl}
+                alt=""
+                className="size-9 rounded-full border-2 border-surface-default object-cover"
+              />
+            ) : (
+              <div
+                key={member.id}
+                className="flex size-9 items-center justify-center rounded-full border-2 border-surface-default bg-surface-subdued text-xs font-semibold text-text-subdued"
+              >
+                {initialsFor(member.name)}
+              </div>
+            ),
+          )}
           {overflowCount > 0 && (
             <div className="flex size-9 items-center justify-center rounded-full border-2 border-surface-default bg-surface-subdued text-xs font-semibold text-text-subdued">
               +{overflowCount}
