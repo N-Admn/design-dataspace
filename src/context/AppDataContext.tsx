@@ -23,6 +23,7 @@ import type { ChartFormState, ChartRecord, ChartStatus } from '@/types/chart'
 import { MOCK_ORGANISATION_WORKSPACES } from '@/lib/mock-organisation-workspaces'
 import {
   CURRENT_USER_PERSON_ID,
+  type OrganisationInvitation,
   type OrganisationMember,
   type OrganisationMetadata,
   type OrganisationRecord,
@@ -51,6 +52,7 @@ let publicationIdCounter = 0
 let chartIdCounter = 0
 let organisationWorkspaceIdCounter = 0
 let organisationMemberIdCounter = 0
+let organisationInvitationIdCounter = 0
 
 /** Use cases are persisted to localStorage (and synced across tabs) so a Use Case
  * previewed/published from a separate preview tab is reflected back in the
@@ -180,7 +182,12 @@ const ORGANISATION_WORKSPACES_STORAGE_KEY = 'civicdataspace:organisation-workspa
 function loadStoredOrganisationWorkspaces(): OrganisationRecord[] | null {
   try {
     const raw = window.localStorage.getItem(ORGANISATION_WORKSPACES_STORAGE_KEY)
-    return raw ? (JSON.parse(raw) as OrganisationRecord[]) : null
+    if (!raw) return null
+    const parsed = JSON.parse(raw) as OrganisationRecord[]
+    // Back-fills `invitations` on records persisted before that field existed —
+    // otherwise every `org.invitations.filter/map` call below throws on a
+    // returning user's stale localStorage state.
+    return parsed.map((org) => ({ ...org, invitations: org.invitations ?? [] }))
   } catch {
     return null
   }
@@ -203,6 +210,16 @@ function bumpOrganisationMemberIdCounter(records: OrganisationRecord[]) {
     for (const member of record.members) {
       const match = /^org-member-(\d+)$/.exec(member.id)
       if (match) organisationMemberIdCounter = Math.max(organisationMemberIdCounter, Number(match[1]))
+    }
+  }
+}
+
+/** Same shared-counter reasoning as `bumpOrganisationMemberIdCounter`, for invitation ids. */
+function bumpOrganisationInvitationIdCounter(records: OrganisationRecord[]) {
+  for (const record of records) {
+    for (const invitation of record.invitations ?? []) {
+      const match = /^org-invitation-(\d+)$/.exec(invitation.id)
+      if (match) organisationInvitationIdCounter = Math.max(organisationInvitationIdCounter, Number(match[1]))
     }
   }
 }
@@ -258,6 +275,11 @@ interface AppDataContextValue {
   addOrganisationMember: (organisationId: string, member: { personId: string; name: string; email?: string; role: OrganisationRole }) => void
   updateOrganisationMemberRole: (organisationId: string, memberId: string, role: OrganisationRole) => void
   removeOrganisationMember: (organisationId: string, memberId: string) => void
+  inviteOrganisationMember: (
+    organisationId: string,
+    invitation: { personId: string; name: string; email?: string; role: OrganisationRole },
+  ) => OrganisationInvitation
+  revokeOrganisationInvitation: (organisationId: string, invitationId: string) => void
 }
 
 const AppDataContext = React.createContext<AppDataContextValue | null>(null)
@@ -297,6 +319,7 @@ function AppDataProvider({ children }: { children: React.ReactNode }) {
     const initial = stored ?? MOCK_ORGANISATION_WORKSPACES
     bumpOrganisationWorkspaceIdCounter(initial)
     bumpOrganisationMemberIdCounter(initial)
+    bumpOrganisationInvitationIdCounter(initial)
     return initial
   })
 
@@ -760,6 +783,43 @@ function AppDataProvider({ children }: { children: React.ReactNode }) {
     )
   }, [])
 
+  const inviteOrganisationMember = React.useCallback(
+    (organisationId: string, invitation: { personId: string; name: string; email?: string; role: OrganisationRole }) => {
+      const timestamp = formatTimestamp(new Date())
+      organisationInvitationIdCounter += 1
+      const newInvitation: OrganisationInvitation = {
+        id: `org-invitation-${organisationInvitationIdCounter}`,
+        ...invitation,
+        status: 'pending',
+        invitedAt: timestamp,
+      }
+      setOrganisationWorkspaces((prev) =>
+        prev.map((org) =>
+          org.id === organisationId
+            ? { ...org, invitations: [...org.invitations, newInvitation], updatedAt: timestamp }
+            : org,
+        ),
+      )
+      return newInvitation
+    },
+    [],
+  )
+
+  const revokeOrganisationInvitation = React.useCallback((organisationId: string, invitationId: string) => {
+    const updatedAt = formatTimestamp(new Date())
+    setOrganisationWorkspaces((prev) =>
+      prev.map((org) =>
+        org.id === organisationId
+          ? {
+              ...org,
+              updatedAt,
+              invitations: org.invitations.map((i) => (i.id === invitationId ? { ...i, status: 'revoked' } : i)),
+            }
+          : org,
+      ),
+    )
+  }, [])
+
   const value = React.useMemo<AppDataContextValue>(
     () => ({
       datasets,
@@ -800,6 +860,8 @@ function AppDataProvider({ children }: { children: React.ReactNode }) {
       addOrganisationMember,
       updateOrganisationMemberRole,
       removeOrganisationMember,
+      inviteOrganisationMember,
+      revokeOrganisationInvitation,
     }),
     [
       datasets,
@@ -839,6 +901,8 @@ function AppDataProvider({ children }: { children: React.ReactNode }) {
       addOrganisationMember,
       updateOrganisationMemberRole,
       removeOrganisationMember,
+      inviteOrganisationMember,
+      revokeOrganisationInvitation,
     ],
   )
 
