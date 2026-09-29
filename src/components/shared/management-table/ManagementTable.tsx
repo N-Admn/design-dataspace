@@ -11,6 +11,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { cn } from '@/lib/utils'
 import { WORKSPACE_HEIGHT_CLASS } from '@/lib/layout'
 import { useMediaQuery } from '@/hooks/use-media-query'
+import { ViewTabs } from '@/components/shared/ViewTabs'
 
 // ---------- Shared row-geometry tokens (the validated Datasets reference values) ----------
 const PAGE_SIZE = 10
@@ -61,6 +62,11 @@ export interface ManagementTableProps<T, S extends string> {
    *  e.g. a member without permission to add organisation members. */
   addLabel?: string
   onAdd?: () => void
+  /** Optional second header action shown before the primary Add button (e.g.
+   *  Admin & Members' "Invite" alongside "Add Member") — omit for tables that
+   *  only need one action. */
+  secondaryActionLabel?: string
+  onSecondaryAction?: () => void
   items: T[]
   getId: (row: T) => string
   columns: ManagementColumn<T>[]
@@ -69,6 +75,14 @@ export interface ManagementTableProps<T, S extends string> {
   filters?: ManagementFilterDef<T>[]
   statuses?: { key: S; label: string }[]
   getStatus?: (row: T) => S
+  /** A second, independent tab row in the same position/style as the status
+   *  tabs above — for switching between two entirely different item sets
+   *  (different shapes/columns) rendered via separate `ManagementTable`
+   *  instances, e.g. Admin & Members' Members/Invitations switch. Purely
+   *  presentational: the caller owns `value`/`onChange` and swaps its own
+   *  `items`/`columns` accordingly; unrelated to `statuses`, which filters a
+   *  single homogeneous list by a status field on the same row type. */
+  viewTabs?: { items: { key: string; label: string }[]; value: string; onChange: (key: string) => void; label: string }
   searchPlaceholder: string
   searchMatch?: (row: T, query: string) => boolean
   getActions: (row: T) => ManagementRowAction<T>[]
@@ -140,6 +154,8 @@ function ManagementTable<T, S extends string>({
   subtitle,
   addLabel,
   onAdd,
+  secondaryActionLabel,
+  onSecondaryAction,
   items,
   getId,
   columns,
@@ -148,6 +164,7 @@ function ManagementTable<T, S extends string>({
   filters = [],
   statuses,
   getStatus,
+  viewTabs,
   searchPlaceholder,
   searchMatch,
   getActions,
@@ -318,12 +335,19 @@ function ManagementTable<T, S extends string>({
       <CenteredBodyMessage>
         <p className="text-sm font-medium text-foreground">{emptyTitle}</p>
         <p className="text-sm text-muted-foreground">{emptyDescription}</p>
-        {onAdd && addLabel && (
-          <Button type="button" size="sm" className="mt-1" onClick={onAdd}>
-            <Plus className="size-4" />
-            {addLabel}
-          </Button>
-        )}
+        <div className="mt-1 flex items-center gap-2">
+          {onSecondaryAction && secondaryActionLabel && (
+            <Button type="button" variant="outline" size="sm" onClick={onSecondaryAction}>
+              {secondaryActionLabel}
+            </Button>
+          )}
+          {onAdd && addLabel && (
+            <Button type="button" size="sm" onClick={onAdd}>
+              <Plus className="size-4" />
+              {addLabel}
+            </Button>
+          )}
+        </div>
       </CenteredBodyMessage>
     )
   } else if (tabFiltered.length === 0) {
@@ -448,6 +472,17 @@ function ManagementTable<T, S extends string>({
     </div>
   )
 
+  const viewTabsRow = viewTabs && (
+    <ViewTabs
+      items={viewTabs.items}
+      value={viewTabs.value}
+      onChange={viewTabs.onChange}
+      idPrefix="management-table-view"
+      label={viewTabs.label}
+      className="px-5"
+    />
+  )
+
   const searchFilterRow = (
     <div className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-border px-5 py-3">
       <div className="flex h-9 w-full min-w-[10rem] max-w-xs flex-1 items-center gap-2 rounded-md border border-input bg-background px-3">
@@ -542,15 +577,23 @@ function ManagementTable<T, S extends string>({
           <CardTitle>{title}</CardTitle>
           <p className="mt-1 text-sm font-normal text-muted-foreground">{subtitle(items.length)}</p>
         </div>
-        {onAdd && addLabel && (
-          <Button type="button" onClick={onAdd}>
-            <Plus className="size-4" />
-            {addLabel}
-          </Button>
-        )}
+        <div className="flex items-center gap-2">
+          {onSecondaryAction && secondaryActionLabel && (
+            <Button type="button" variant="outline" onClick={onSecondaryAction}>
+              {secondaryActionLabel}
+            </Button>
+          )}
+          {onAdd && addLabel && (
+            <Button type="button" onClick={onAdd}>
+              <Plus className="size-4" />
+              {addLabel}
+            </Button>
+          )}
+        </div>
       </CardHeader>
 
       {searchFilterRow}
+      {viewTabsRow}
       {statusTabsRow}
 
       <CardContent className="flex min-h-0 flex-1 flex-col p-0">{body}</CardContent>
