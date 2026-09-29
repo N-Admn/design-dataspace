@@ -56,9 +56,13 @@ function RailRow({ icon, children }: { icon: ReactNode; children: ReactNode }) {
 function RailOrgRow({ organisation }: { organisation: Organisation }) {
   const content = (
     <>
-      <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-surface-subdued text-text-subdued">
-        <Building2 className="size-3.5" />
-      </span>
+      {organisation.logo ? (
+        <img src={organisation.logo.dataUrl} alt="" className="size-6 shrink-0 rounded-full object-cover" />
+      ) : (
+        <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-surface-subdued text-text-subdued">
+          <Building2 className="size-3.5" />
+        </span>
+      )}
       <span className="min-w-0 truncate text-sm text-text-default">{organisation.name}</span>
     </>
   )
