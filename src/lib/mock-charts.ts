@@ -61,6 +61,14 @@ const referralTimeChartForm: ChartFormState = {
   name: 'Average obstetric referral time, 2022–2024',
 }
 
+// chart-2 is published and live, but has a saved working copy with an
+// unpublished label tweak — surfaces in "Continue Working" the same way
+// evt-6/ds-5 already do.
+const chart2WorkingForm: ChartFormState = {
+  ...chart2Form,
+  config: { ...chart2Form.config, yAxisLabel: 'Hospitals (count)' },
+}
+
 export const MOCK_CHART_RECORDS: ChartRecord[] = [
   {
     id: 'chart-1',
@@ -68,13 +76,17 @@ export const MOCK_CHART_RECORDS: ChartRecord[] = [
     updatedAt: '06/08/2026 10:30:00',
     form: chart1Form,
     publishedForm: chart1Form,
+    organisationId: 'org-workspace-1',
+    createdBy: 'Rahul Mehta',
   },
   {
     id: 'chart-2',
     status: 'published',
     updatedAt: '19/07/2026 15:45:00',
-    form: chart2Form,
+    form: chart2WorkingForm,
     publishedForm: chart2Form,
+    organisationId: 'org-workspace-1',
+    createdBy: 'John Doe',
   },
   {
     id: 'chart-referral-time',

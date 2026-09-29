@@ -68,6 +68,8 @@ export const MOCK_COLLABORATIVE_RECORDS: CollaborativeRecord[] = [
     updatedAt: '10/08/2026 09:15:00',
     form: collaborative1Form,
     publishedForm: collaborative1Form,
+    organisationId: 'org-workspace-1',
+    createdBy: 'Rahul Mehta',
   },
   {
     id: 'collaborative-2',
@@ -75,5 +77,7 @@ export const MOCK_COLLABORATIVE_RECORDS: CollaborativeRecord[] = [
     updatedAt: '15/08/2026 14:05:00',
     form: collaborative2Form,
     publishedForm: null,
+    organisationId: 'org-workspace-1',
+    createdBy: 'John Doe',
   },
 ]

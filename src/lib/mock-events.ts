@@ -407,12 +407,12 @@ const evt6WorkingForm: EventFormState = {
 }
 
 export const MOCK_EVENTS: EventRecord[] = [
-  { id: 'evt-1', status: 'published', createdAt: '20/07/2026 09:00:00', updatedAt: '02/08/2026 10:15:00', form: evt1Form, publishedForm: evt1Form },
+  { id: 'evt-1', status: 'published', createdAt: '20/07/2026 09:00:00', updatedAt: '02/08/2026 10:15:00', form: evt1Form, publishedForm: evt1Form, organisationId: 'org-workspace-1', createdBy: 'John Doe' },
   { id: 'evt-2', status: 'published', createdAt: '10/07/2026 09:00:00', updatedAt: '28/07/2026 14:40:00', form: evt2Form, publishedForm: evt2Form },
   { id: 'evt-3', status: 'published', createdAt: '01/07/2026 09:00:00', updatedAt: '15/07/2026 11:20:00', form: evt3Form, publishedForm: evt3Form },
   { id: 'evt-4', status: 'published', createdAt: '28/06/2026 09:00:00', updatedAt: '05/07/2026 16:05:00', form: evt4Form, publishedForm: evt4Form },
   { id: 'evt-5', status: 'published', createdAt: '18/06/2026 09:00:00', updatedAt: '22/06/2026 12:30:00', form: evt5Form, publishedForm: evt5Form },
-  { id: 'evt-6', status: 'published', createdAt: '02/06/2026 09:00:00', updatedAt: '09/06/2026 17:45:00', form: evt6WorkingForm, publishedForm: evt6Form },
+  { id: 'evt-6', status: 'published', createdAt: '02/06/2026 09:00:00', updatedAt: '09/06/2026 17:45:00', form: evt6WorkingForm, publishedForm: evt6Form, organisationId: 'org-workspace-1', createdBy: 'Sana Khan' },
   { id: 'evt-7', status: 'published', createdAt: '20/05/2026 09:00:00', updatedAt: '25/05/2026 10:10:00', form: evt7Form, publishedForm: evt7Form },
   { id: 'evt-8', status: 'published', createdAt: '28/04/2026 09:00:00', updatedAt: '05/05/2026 14:20:00', form: evt8Form, publishedForm: evt8Form },
 ]
