@@ -14,6 +14,10 @@ function fakeAsset(url: string, name: string): UploadedAsset {
   }
 }
 
+/** Square 160px centre crop of a free-to-use Pexels photo (pexels.com/license). */
+const PEXELS_AVATAR = (id: number) =>
+  `https://images.pexels.com/photos/${id}/pexels-photo-${id}.jpeg?auto=compress&cs=tinysrgb&w=160&h=160&fit=crop`
+
 const useCase1Form: UseCaseFormState = {
   metadata: {
     thumbnail: fakeAsset(
@@ -75,7 +79,7 @@ const useCase1Form: UseCaseFormState = {
       id: 'block-seed-9',
       type: 'chart',
       chartId: 'chart-referral-time',
-      chartTitle: 'Average obstetric referral time, before vs. after intervention',
+      chartTitle: 'Average obstetric referral time, 2022–2024',
       caption: 'District-level referral times narrowed sharply after mobile deployment was reprioritised using the open facility dataset.',
     },
     {
@@ -97,8 +101,20 @@ const useCase1Form: UseCaseFormState = {
   connections: {
     datasets: [{ id: 'ds-2', title: 'District Health Infrastructure & Service Availability (2024)' }],
     contributors: [
-      { id: 'contributor-seed-1', name: 'Dr. Aisha Verma', role: 'Author', designation: 'Public Health Researcher' },
-      { id: 'contributor-seed-2', name: 'Rohan Mehta', role: 'Contributor', designation: 'Data Analyst, District Health Mission' },
+      {
+        id: 'contributor-seed-1',
+        name: 'Dr. Aisha Verma',
+        role: 'Author',
+        designation: 'Public Health Researcher',
+        image: fakeAsset(PEXELS_AVATAR(7580822), 'aisha-verma.jpg'),
+      },
+      {
+        id: 'contributor-seed-2',
+        name: 'Rohan Mehta',
+        role: 'Contributor',
+        designation: 'Data Analyst, District Health Mission',
+        image: fakeAsset(PEXELS_AVATAR(11357069), 'rohan-mehta.jpg'),
+      },
     ],
     organizations: [MOCK_ORGANISATIONS[1], MOCK_ORGANISATIONS[2]],
   },
@@ -129,6 +145,7 @@ const useCase2Form: UseCaseFormState = {
 export const MOCK_USE_CASE_RECORDS: UseCaseRecord[] = [
   {
     id: 'usecase-1',
+    organisationId: 'org-workspace-1',
     status: 'published',
     updatedAt: '06/08/2026 10:20:00',
     form: useCase1Form,

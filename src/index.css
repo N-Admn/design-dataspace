@@ -119,4 +119,53 @@
     line-height: var(--line-height-caption);
     font-weight: var(--type-font-weight-regular);
   }
+
+  /* Rich-text HTML inside a Use Case story (text blocks). The markup comes from the
+   * editor, so it can't carry .type-* classes — these rules apply the same roles by
+   * element instead: body copy = .type-body, H2 = .type-heading-1, H3 = .type-heading-2. */
+  .use-case-prose {
+    font-size: var(--font-size-body);
+    line-height: var(--line-height-body);
+    font-weight: var(--type-font-weight-regular);
+  }
+  .use-case-prose p + p,
+  .use-case-prose p + ul,
+  .use-case-prose p + ol,
+  .use-case-prose ul + p,
+  .use-case-prose ol + p {
+    margin-top: 1rem;
+  }
+  .use-case-prose a {
+    color: var(--primary);
+    text-decoration: underline;
+  }
+  .use-case-prose ul {
+    list-style: disc;
+    padding-left: 1.25rem;
+  }
+  .use-case-prose ol {
+    list-style: decimal;
+    padding-left: 1.25rem;
+  }
+  .use-case-prose h2,
+  .use-case-prose h3 {
+    color: var(--foreground);
+    font-weight: var(--type-font-weight-semibold);
+    scroll-margin-top: 1.5rem;
+  }
+  .use-case-prose h2 {
+    font-size: var(--font-size-heading-one);
+    line-height: var(--line-height-heading-one);
+    margin-top: 3rem;
+    margin-bottom: 1rem;
+  }
+  .use-case-prose h3 {
+    font-size: var(--font-size-heading-two);
+    line-height: var(--line-height-heading-two);
+    margin-top: 2.5rem;
+    margin-bottom: 0.75rem;
+  }
+  .use-case-prose > :first-child {
+    margin-top: 0;
+  }
 }

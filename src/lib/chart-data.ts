@@ -98,6 +98,7 @@ const DATASET_COLUMNS: Record<string, ChartColumn[]> = {
     { name: 'reporting_year', label: 'Reporting Year', type: 'date' },
     { name: 'hospital_count', label: 'Hospital Count', type: 'numeric' },
     { name: 'bed_capacity', label: 'Bed Capacity', type: 'numeric' },
+    { name: 'avg_referral_minutes', label: 'Avg. Referral Time (min)', type: 'numeric' },
   ],
   'ds-3': [
     { name: 'district', label: 'District', type: 'geo' },
@@ -124,12 +125,12 @@ const FALLBACK_COLUMNS: ChartColumn[] = [
 const DATASET_ROWS: Record<string, ChartRow[]> = {
   'ds-1': buildWideTableRows(),
   'ds-2': [
-    { district: 'Pune', facility_type: 'Primary Health Center', reporting_year: '2022', hospital_count: 12, bed_capacity: 340 },
-    { district: 'Nagpur', facility_type: 'District Hospital', reporting_year: '2022', hospital_count: 5, bed_capacity: 610 },
-    { district: 'Jaipur', facility_type: 'Primary Health Center', reporting_year: '2023', hospital_count: 15, bed_capacity: 410 },
-    { district: 'Lucknow', facility_type: 'District Hospital', reporting_year: '2023', hospital_count: 7, bed_capacity: 720 },
-    { district: 'Patna', facility_type: 'Community Health Center', reporting_year: '2024', hospital_count: 9, bed_capacity: 260 },
-    { district: 'Bhopal', facility_type: 'Primary Health Center', reporting_year: '2024', hospital_count: 11, bed_capacity: 300 },
+    { district: 'Pune', facility_type: 'Primary Health Center', reporting_year: '2022', hospital_count: 12, bed_capacity: 340, avg_referral_minutes: 98 },
+    { district: 'Nagpur', facility_type: 'District Hospital', reporting_year: '2022', hospital_count: 5, bed_capacity: 610, avg_referral_minutes: 94 },
+    { district: 'Jaipur', facility_type: 'Primary Health Center', reporting_year: '2023', hospital_count: 15, bed_capacity: 410, avg_referral_minutes: 75 },
+    { district: 'Lucknow', facility_type: 'District Hospital', reporting_year: '2023', hospital_count: 7, bed_capacity: 720, avg_referral_minutes: 69 },
+    { district: 'Patna', facility_type: 'Community Health Center', reporting_year: '2024', hospital_count: 9, bed_capacity: 260, avg_referral_minutes: 55 },
+    { district: 'Bhopal', facility_type: 'Primary Health Center', reporting_year: '2024', hospital_count: 11, bed_capacity: 300, avg_referral_minutes: 49 },
   ],
   'ds-3': [
     { district: 'Indore', account_type: 'Savings', year: '2022', accounts_opened: 18450, digital_transactions: 52000 },

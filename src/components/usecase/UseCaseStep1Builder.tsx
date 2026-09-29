@@ -148,10 +148,6 @@ function BlockWrapper({
   )
 }
 
-/** Mirrors the published preview's rotation so the Builder canvas shows the
- * same color a Highlight block will actually render with. */
-const HIGHLIGHT_STYLES = ['bg-primary/5', 'bg-accent/20', 'bg-success/20']
-
 function stripHtml(html: string): string {
   return html.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim()
 }
@@ -436,11 +432,10 @@ function UseCaseStep1Builder({
                   }
 
                   if (block.type === 'highlight') {
-                    const highlightIndex = blocks.slice(0, index).filter((b) => b.type === 'highlight').length
-                    const highlightStyle = HIGHLIGHT_STYLES[highlightIndex % HIGHLIGHT_STYLES.length]
                     return (
                       <BlockWrapper key={block.id} {...shellProps}>
-                        <div className={cn('rounded-xl px-4 py-3.5', highlightStyle)}>
+                        {/* Mirrors the published pull-quote: large, regular weight, centred, no box. */}
+                        <div className="px-4 py-3.5 text-center">
                           {active ? (
                             <>
                               <input
@@ -448,19 +443,19 @@ function UseCaseStep1Builder({
                                 value={block.highlight}
                                 onChange={(e) => updateBlock(block.id, { highlight: e.target.value })}
                                 placeholder="Key highlight, e.g. 32% reduction in maternal mortality"
-                                className={cn(ghostField, 'text-base font-semibold text-primary')}
+                                className={cn(ghostField, 'type-heading-1 text-center font-normal text-foreground')}
                               />
                               <Textarea
                                 value={block.supportingText}
                                 onChange={(e) => updateBlock(block.id, { supportingText: e.target.value })}
                                 placeholder="Optional supporting text"
                                 rows={1}
-                                className={cn(ghostField, 'mt-1 min-h-0 resize-none text-sm text-muted-foreground')}
+                                className={cn(ghostField, 'type-body mt-1 min-h-0 resize-none text-center text-muted-foreground')}
                               />
                             </>
                           ) : (
                             <>
-                              <p className="text-base font-semibold text-primary">{block.highlight || 'Key highlight'}</p>
+                              <p className="type-heading-1 font-normal text-foreground">{block.highlight || 'Key highlight'}</p>
                               {block.supportingText && <p className="mt-1 text-sm text-muted-foreground">{block.supportingText}</p>}
                             </>
                           )}
@@ -489,19 +484,9 @@ function UseCaseStep1Builder({
                                 placeholder="https://example.org/resource"
                                 className={cn(ghostField, 'mt-0.5 font-mono text-xs text-muted-foreground')}
                               />
-                              <Textarea
-                                value={block.description}
-                                onChange={(e) => updateBlock(block.id, { description: e.target.value })}
-                                placeholder="Optional description"
-                                rows={1}
-                                className={cn(ghostField, 'mt-1 min-h-0 resize-none text-xs text-muted-foreground')}
-                              />
                             </>
                           ) : (
-                            <>
-                              <p className="truncate text-sm font-medium text-primary">{block.label || block.url || 'Untitled link'}</p>
-                              {block.description && <p className="mt-0.5 text-xs text-muted-foreground">{block.description}</p>}
-                            </>
+                            <p className="truncate text-sm font-medium text-primary">{block.label || block.url || 'Untitled link'}</p>
                           )}
                         </div>
                       </div>
