@@ -1,4 +1,4 @@
-import { BarChart3, BookOpen, Calendar, Cpu, Database, FileType, Layers, Link2, MapPin, Users, type LucideIcon } from 'lucide-react'
+import { BarChart3, BookOpen, Calendar, Cpu, Database, FileText, Layers, Link2, MapPin, Users, type LucideIcon } from 'lucide-react'
 
 import { formatMonthYear } from '@/lib/format'
 import type { SearchResultItem } from '@/lib/global-search'
@@ -28,13 +28,14 @@ export function buildCardMetadata(item: SearchResultItem): ContentCardMetadataIt
     case 'dataset':
       rows.push({ icon: Calendar, label: `Updated ${formatMonthYear(item.facets.updatedAt)}` })
       if (meta.formats && meta.formats.length > 0) {
-        const truncated = meta.formats.length > 2
+        const truncated = meta.formats.length > 1
         rows.push({
-          icon: FileType,
-          label: truncated ? `${meta.formats[0]} +${meta.formats.length - 1}` : meta.formats.join(' / '),
+          icon: FileText,
+          label: truncated ? `${meta.formats[0]} +${meta.formats.length - 1}` : meta.formats[0],
           tooltip: truncated ? meta.formats.join(', ') : undefined,
         })
       }
+      if (meta.chartCount != null && meta.chartCount > 0) rows.push({ icon: BarChart3, label: plural(meta.chartCount, 'chart') })
       if (meta.geography) rows.push({ icon: MapPin, label: meta.geography })
       break
 
@@ -71,5 +72,8 @@ export function buildCardMetadata(item: SearchResultItem): ContentCardMetadataIt
       break
   }
 
-  return rows.slice(0, 3)
+  // Datasets get one extra slot — chart count only shows up alongside the
+  // three fields already documented for them (updated/format/geography), so
+  // a visualised dataset needs 4 to show all four without dropping one.
+  return item.type === 'dataset' ? rows.slice(0, 4) : rows.slice(0, 3)
 }
