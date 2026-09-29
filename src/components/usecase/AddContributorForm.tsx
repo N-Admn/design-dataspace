@@ -27,6 +27,12 @@ interface AddContributorFormProps {
   contentLabel?: string
   /** Example roles shown as Role field placeholder text, e.g. "e.g. Author, Editor, Director". */
   rolePlaceholder?: string
+  /** Hide the free-text Role field — for flows that set the person's role elsewhere
+   * (e.g. a Collaborative's Contributor/Partner/Supporter picker). */
+  showRole?: boolean
+  title?: string
+  description?: string
+  submitLabel?: string
 }
 
 function AddContributorForm({
@@ -35,6 +41,10 @@ function AddContributorForm({
   onAdd,
   contentLabel = 'Use Case',
   rolePlaceholder = 'e.g. Author, Editor, Reviewer',
+  showRole = true,
+  title = 'Add Contributor',
+  description,
+  submitLabel = 'Add Contributor',
 }: AddContributorFormProps) {
   const confirm = useConfirm()
   const [name, setName] = React.useState('')
@@ -93,8 +103,8 @@ function AddContributorForm({
     >
       <DialogContent variant="right-drawer" className="gap-0 p-0">
         <DialogHeader className="shrink-0">
-          <DialogTitle>Add Contributor</DialogTitle>
-          <DialogDescription>Add a person who contributed to this {contentLabel}.</DialogDescription>
+          <DialogTitle>{title}</DialogTitle>
+          <DialogDescription>{description ?? `Add a person who contributed to this ${contentLabel}.`}</DialogDescription>
         </DialogHeader>
 
         <div className="min-h-0 flex-1 overflow-y-auto px-6 py-5">
@@ -130,16 +140,18 @@ function AddContributorForm({
               <FieldError message={errors.name} />
             </div>
 
-            <div>
-              <Label htmlFor="contributor-role">Role</Label>
-              <Input
-                id="contributor-role"
-                className="mt-1.5"
-                placeholder={rolePlaceholder}
-                value={role}
-                onChange={(e) => setRole(e.target.value)}
-              />
-            </div>
+            {showRole && (
+              <div>
+                <Label htmlFor="contributor-role">Role</Label>
+                <Input
+                  id="contributor-role"
+                  className="mt-1.5"
+                  placeholder={rolePlaceholder}
+                  value={role}
+                  onChange={(e) => setRole(e.target.value)}
+                />
+              </div>
+            )}
 
             <div>
               <Label htmlFor="contributor-designation">Designation</Label>
@@ -170,7 +182,7 @@ function AddContributorForm({
             Cancel
           </Button>
           <Button type="button" onClick={handleSubmit}>
-            Add Contributor
+            {submitLabel}
           </Button>
         </div>
       </DialogContent>

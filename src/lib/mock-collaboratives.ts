@@ -20,6 +20,7 @@ const collaborative1Form: CollaborativeFormState = {
       'hero.jpg',
     ),
     name: 'Climate and Health Data Collaborative',
+    slug: 'climate-health-data',
     descriptionHtml:
       '<p>A cross-sector initiative bringing together health and climate researchers to track the public-health impact of extreme weather events, and to make that data openly available for policy planning.</p>',
     externalUrl: 'https://civicdatalab.in',
@@ -45,6 +46,7 @@ const collaborative2Form: CollaborativeFormState = {
       'hero.jpg',
     ),
     name: 'Urban Water Resilience Network',
+    slug: 'urban-water-resilience',
     descriptionHtml: '',
     externalUrl: '',
     sectors: ['water-sanitation'],

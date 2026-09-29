@@ -10,9 +10,17 @@ export const RELATIONSHIP_OPTIONS: { value: CollaborativeRelationship; label: st
   { value: 'supporter', label: 'Supporter' },
 ]
 
+/** Every Collaborative gets its own subdomain: `<slug>${COLLABORATIVE_URL_SUFFIX}`. */
+export const COLLABORATIVE_URL_SUFFIX = '.collab.civicdataspace.in'
+
+/** Plain-text length limit for the description (matches the current Collaboratives editor). */
+export const COLLABORATIVE_DESCRIPTION_MAX_LENGTH = 10000
+
 export interface CollaborativeMetadata {
   image: UploadedAsset | null
   name: string
+  /** Subdomain label for the Collaborative URL — lowercase letters, digits, hyphens. */
+  slug: string
   descriptionHtml: string
   externalUrl: string
   sectors: string[]
@@ -70,6 +78,7 @@ export interface CollaborativeRecord {
 export const emptyCollaborativeMetadata: CollaborativeMetadata = {
   image: null,
   name: '',
+  slug: '',
   descriptionHtml: '',
   externalUrl: '',
   sectors: [],

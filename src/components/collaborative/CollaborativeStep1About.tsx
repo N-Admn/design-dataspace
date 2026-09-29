@@ -1,3 +1,5 @@
+import { useMemo } from 'react'
+
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -9,8 +11,13 @@ import { FileUploadField } from '@/components/shared/FileUploadField'
 import { GEOGRAPHY_OPTIONS, SECTOR_OPTIONS } from '@/types/dataset'
 import { SDG_GOAL_OPTIONS } from '@/types/usecase'
 import { SUPPORTED_IMAGE_EXTENSIONS, MAX_IMAGE_BYTES } from '@/types/event'
-import type { CollaborativeMetadata } from '@/types/collaborative'
-import type { CollaborativeAboutErrors } from '@/lib/collaborative-validation'
+import { cn } from '@/lib/utils'
+import {
+  COLLABORATIVE_DESCRIPTION_MAX_LENGTH,
+  COLLABORATIVE_URL_SUFFIX,
+  type CollaborativeMetadata,
+} from '@/types/collaborative'
+import { richTextLength, type CollaborativeAboutErrors } from '@/lib/collaborative-validation'
 
 const COLLABORATIVE_IMAGE_EXTENSIONS = [...SUPPORTED_IMAGE_EXTENSIONS, 'svg']
 
@@ -21,6 +28,8 @@ interface CollaborativeStep1AboutProps {
 }
 
 function CollaborativeStep1About({ metadata, errors, onChange }: CollaborativeStep1AboutProps) {
+  const descriptionLength = useMemo(() => richTextLength(metadata.descriptionHtml), [metadata.descriptionHtml])
+
   return (
     <div className="flex flex-col gap-6">
       <Card>
@@ -59,6 +68,33 @@ function CollaborativeStep1About({ metadata, errors, onChange }: CollaborativeSt
           </div>
 
           <div>
+            <Label htmlFor="collaborative-slug">
+              Collaborative URL <span className="text-destructive">*</span>
+            </Label>
+            <p className="mt-0.5 text-xs text-muted-foreground">
+              The web address for this Collaborative. Filled in from the name — edit it if you need a shorter one.
+            </p>
+            <div className="mt-1.5 flex items-center gap-2">
+              <Input
+                id="collaborative-slug"
+                className="min-w-0 flex-1"
+                placeholder="e.g. femhealth-data"
+                value={metadata.slug}
+                spellCheck={false}
+                autoCapitalize="none"
+                aria-invalid={Boolean(errors.slug)}
+                aria-describedby="collaborative-slug-suffix"
+                // Lowercase and swap spaces as they type; full format is checked by validation.
+                onChange={(e) => onChange('slug', e.target.value.toLowerCase().replace(/\s+/g, '-'))}
+              />
+              <span id="collaborative-slug-suffix" className="shrink-0 text-sm text-muted-foreground">
+                {COLLABORATIVE_URL_SUFFIX}
+              </span>
+            </div>
+            <FieldError message={errors.slug} />
+          </div>
+
+          <div>
             <Label htmlFor="collaborative-description">
               Description <span className="text-destructive">*</span>
             </Label>
@@ -74,6 +110,14 @@ function CollaborativeStep1About({ metadata, errors, onChange }: CollaborativeSt
                 placeholder="Describe this Collaborative..."
               />
             </div>
+            <p
+              className={cn(
+                'mt-1.5 text-xs tabular-nums',
+                descriptionLength > COLLABORATIVE_DESCRIPTION_MAX_LENGTH ? 'text-destructive' : 'text-muted-foreground',
+              )}
+            >
+              Character limit: {descriptionLength.toLocaleString()}/{COLLABORATIVE_DESCRIPTION_MAX_LENGTH.toLocaleString()}
+            </p>
             <FieldError message={errors.description} />
           </div>
 

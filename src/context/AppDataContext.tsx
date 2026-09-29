@@ -7,6 +7,7 @@ import { MOCK_EVENTS } from '@/lib/mock-events'
 import { MOCK_ORGANISATIONS } from '@/lib/mock-organisations'
 import { MOCK_USE_CASE_RECORDS } from '@/lib/mock-usecases'
 import { MOCK_COLLABORATIVE_RECORDS } from '@/lib/mock-collaboratives'
+import { slugify } from '@/lib/collaborative-validation'
 import { MOCK_AI_MODEL_RECORDS } from '@/lib/mock-ai-models'
 import { MOCK_PUBLICATION_RECORDS } from '@/lib/mock-publications'
 import { MOCK_CHART_RECORDS } from '@/lib/mock-charts'
@@ -75,10 +76,21 @@ function bumpUseCaseIdCounter(records: UseCaseRecord[]) {
  * their preview/publish also happens from a separate window.open() tab. */
 const COLLABORATIVES_STORAGE_KEY = 'civicdataspace:collaboratives'
 
+/** Records saved before the Collaborative URL existed have no slug — derive one from the name. */
+function withCollaborativeSlug(form: CollaborativeFormState): CollaborativeFormState {
+  if (typeof form.metadata.slug === 'string') return form
+  return { ...form, metadata: { ...form.metadata, slug: slugify(form.metadata.name) } }
+}
+
 function loadStoredCollaboratives(): CollaborativeRecord[] | null {
   try {
     const raw = window.localStorage.getItem(COLLABORATIVES_STORAGE_KEY)
-    return raw ? normalizeStoredRecords(JSON.parse(raw) as CollaborativeRecord[]) : null
+    if (!raw) return null
+    return normalizeStoredRecords(JSON.parse(raw) as CollaborativeRecord[]).map((r) => ({
+      ...r,
+      form: withCollaborativeSlug(r.form),
+      publishedForm: r.publishedForm ? withCollaborativeSlug(r.publishedForm) : null,
+    }))
   } catch {
     return null
   }

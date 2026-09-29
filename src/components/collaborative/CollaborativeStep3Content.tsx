@@ -3,11 +3,13 @@ import { CheckCircle2, FolderKanban, Plus, Search, Trash2 } from 'lucide-react'
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { Label } from '@/components/ui/label'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { SearchInput, SearchResultList, SearchResultRow } from '@/components/shared/SearchResultList'
 import { StatusBadge } from '@/components/shared/StatusBadge'
 import { EmptyState } from '@/components/shared/EmptyState'
 import { DatasetConnectionsCard } from '@/components/shared/DatasetConnectionsCard'
 import { useAppData } from '@/context/AppDataContext'
-import { cn } from '@/lib/utils'
 import { SECTOR_OPTIONS } from '@/types/dataset'
 import type { CollaborativeConnections } from '@/types/collaborative'
 
@@ -23,20 +25,23 @@ interface CollaborativeStep3ContentProps {
 
 function CollaborativeStep3Content({ connections, onChange, onCreateUseCase }: CollaborativeStep3ContentProps) {
   const { useCases } = useAppData()
-  const [showUseCaseSearch, setShowUseCaseSearch] = React.useState(false)
+  const [searchOpen, setSearchOpen] = React.useState(false)
   const [useCaseQuery, setUseCaseQuery] = React.useState('')
   const [justAddedMessage, setJustAddedMessage] = React.useState<string | null>(null)
 
+  // Same dropdown pattern as the Datasets card above: only published use cases,
+  // and anything already connected drops out of the list.
   const connectedUseCaseIds = connections.useCases.map((u) => u.id)
   const q = useCaseQuery.trim().toLowerCase()
   const useCaseResults = useCases
-    .filter((u) => u.status === 'published')
+    .filter((u) => u.status === 'published' && !connectedUseCaseIds.includes(u.id))
     .filter((u) => !q || (u.form.metadata.title || '').toLowerCase().includes(q))
 
   const connectUseCase = (useCase: { id: string; title: string }) => {
     onChange({ ...connections, useCases: [...connections.useCases, useCase] })
     setJustAddedMessage(`"${useCase.title}" connected to this Collaborative.`)
-    setShowUseCaseSearch(false)
+    setSearchOpen(false)
+    setUseCaseQuery('')
   }
 
   return (
@@ -46,6 +51,7 @@ function CollaborativeStep3Content({ connections, onChange, onCreateUseCase }: C
         parentLabel="this Collaborative"
         description="Connect published datasets that support or relate to this Collaborative."
         onChange={(datasets) => onChange({ ...connections, datasets })}
+        searchVariant="dropdown"
       />
 
       <Card>
@@ -56,24 +62,10 @@ function CollaborativeStep3Content({ connections, onChange, onCreateUseCase }: C
               Connect published Use Cases that are part of or related to this Collaborative.
             </p>
           </div>
-          <div className="flex flex-col items-end gap-1.5">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => setShowUseCaseSearch((prev) => !prev)}
-            >
-              <Plus className="size-4" />
-              Connect Use Case
-            </Button>
-            <button
-              type="button"
-              onClick={onCreateUseCase}
-              className="text-xs font-medium text-primary underline-offset-4 hover:underline focus-visible:underline"
-            >
-              + Create New Use Case
-            </button>
-          </div>
+          <Button type="button" variant="outline" size="sm" onClick={onCreateUseCase}>
+            <Plus className="size-4" />
+            Create New Use Case
+          </Button>
         </CardHeader>
         <CardContent className="flex flex-col gap-3">
           {justAddedMessage && (
@@ -83,80 +75,46 @@ function CollaborativeStep3Content({ connections, onChange, onCreateUseCase }: C
             </div>
           )}
 
-          {showUseCaseSearch && (
-            <div className="flex flex-col gap-3 rounded-lg border border-border bg-muted/30 p-3">
-              <div className="flex items-center gap-2 rounded-md border border-input bg-background px-3 py-2">
-                <Search className="size-4 shrink-0 text-muted-foreground" />
-                <input
-                  autoFocus
-                  value={useCaseQuery}
-                  onChange={(e) => setUseCaseQuery(e.target.value)}
-                  placeholder="Search published use cases..."
-                  className="h-6 w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
-                />
-              </div>
-
-              {useCaseResults.length === 0 ? (
-                <div className="flex flex-col items-center gap-1 py-6 text-center">
-                  <p className="text-sm font-medium text-foreground">No published Use Cases found.</p>
-                  <p className="text-xs text-muted-foreground">Only published Use Cases can be connected.</p>
-                </div>
-              ) : (
-                <div className="flex max-h-80 flex-col gap-2 overflow-y-auto">
-                  {useCaseResults.map((useCase) => {
-                    const isConnected = connectedUseCaseIds.includes(useCase.id)
-                    const title = useCase.form.metadata.title || 'Untitled Use Case'
-
-                    return (
-                      <div
-                        key={useCase.id}
-                        className={cn(
-                          'flex items-center gap-3 rounded-lg border border-border bg-card p-3',
-                          isConnected && 'opacity-60',
-                        )}
-                      >
-                        <div className="flex size-9 shrink-0 items-center justify-center rounded-md bg-muted text-muted-foreground">
-                          <FolderKanban className="size-4" />
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <p className="truncate text-sm font-medium text-foreground">{title}</p>
-                          {useCase.form.metadata.sectors.length > 0 && (
-                            <p className="mt-0.5 text-xs text-muted-foreground">
-                              {useCase.form.metadata.sectors.map((s) => optionLabel(SECTOR_OPTIONS, s)).join(', ')}
-                            </p>
-                          )}
-                        </div>
-                        {isConnected ? (
-                          <span className="shrink-0 rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium text-muted-foreground">
-                            Connected
-                          </span>
-                        ) : (
-                          <Button
-                            type="button"
-                            size="sm"
-                            className="shrink-0"
-                            onClick={() => connectUseCase({ id: useCase.id, title })}
-                          >
-                            Connect
-                          </Button>
-                        )}
-                      </div>
-                    )
-                  })}
-                </div>
-              )}
-
-              <Button
+          <Label className="sr-only">Search Use Cases</Label>
+          <Popover
+            open={searchOpen}
+            onOpenChange={(next) => {
+              setSearchOpen(next)
+              if (next) setUseCaseQuery('')
+            }}
+          >
+            <PopoverTrigger asChild>
+              <button
                 type="button"
-                variant="ghost"
-                size="sm"
-                className="self-start"
-                onClick={() => setShowUseCaseSearch(false)}
+                className="flex h-10 w-full items-center gap-2 rounded-md border border-border-input bg-surface-default px-3 text-sm text-text-subdued transition-colors hover:border-border-brand/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-focus"
               >
-                Cancel
-              </Button>
-            </div>
-          )}
+                <Search className="size-4 shrink-0" />
+                Search published use cases...
+              </button>
+            </PopoverTrigger>
+            <PopoverContent className="flex flex-col gap-3 p-3" onOpenAutoFocus={(e) => e.preventDefault()}>
+              <SearchInput autoFocus value={useCaseQuery} onChange={setUseCaseQuery} placeholder="Search by title" />
+              <SearchResultList
+                isEmpty={useCaseResults.length === 0}
+                emptyLabel="No published use cases found."
+                className="max-h-72 overflow-y-auto"
+              >
+                {useCaseResults.map((useCase) => {
+                  const title = useCase.form.metadata.title || 'Untitled Use Case'
+                  const sectors = useCase.form.metadata.sectors.map((s) => optionLabel(SECTOR_OPTIONS, s)).join(', ')
+                  return (
+                    <SearchResultRow
+                      key={useCase.id}
+                      icon={FolderKanban}
+                      primary={title}
+                      secondary={sectors || '—'}
+                      onSelect={() => connectUseCase({ id: useCase.id, title })}
+                    />
+                  )
+                })}
+              </SearchResultList>
+            </PopoverContent>
+          </Popover>
 
           {connections.useCases.length === 0 ? (
             <EmptyState

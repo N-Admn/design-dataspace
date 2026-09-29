@@ -4,10 +4,12 @@ import { Button } from '@/components/ui/button'
 import { ReviewPublishPanel } from '@/components/shared/ReviewPublishPanel'
 import { SectionHeader } from '@/components/shared/SectionHeader'
 import { validateCollaborativeAbout, validateCollaborativeContent, isCollaborativeReadyToPublish } from '@/lib/collaborative-validation'
-import type { CollaborativeFormState } from '@/types/collaborative'
+import { COLLABORATIVE_URL_SUFFIX, type CollaborativeFormState } from '@/types/collaborative'
 
 interface CollaborativeStep4ReviewProps {
   form: CollaborativeFormState
+  /** Slugs used by other Collaboratives, for the URL uniqueness check. */
+  takenSlugs: string[]
   onEditStep: (step: 1 | 2 | 3) => void
   onPreview: () => void
 }
@@ -45,14 +47,16 @@ function ReadinessRow({
   )
 }
 
-function CollaborativeStep4Review({ form, onEditStep, onPreview }: CollaborativeStep4ReviewProps) {
-  const aboutErrors = validateCollaborativeAbout(form)
+function CollaborativeStep4Review({ form, takenSlugs, onEditStep, onPreview }: CollaborativeStep4ReviewProps) {
+  const aboutErrors = validateCollaborativeAbout(form, takenSlugs)
   const aboutOk = Object.keys(aboutErrors).length === 0
   const contentErrors = validateCollaborativeContent(form)
   const contentOk = Object.keys(contentErrors).length === 0
-  const ready = isCollaborativeReadyToPublish(form)
+  const ready = isCollaborativeReadyToPublish(form, takenSlugs)
 
-  const aboutDetail = Object.values(aboutErrors).filter(Boolean).join(' ')
+  const aboutDetail = aboutOk
+    ? `URL: ${form.metadata.slug}${COLLABORATIVE_URL_SUFFIX}`
+    : Object.values(aboutErrors).filter(Boolean).join(' ')
 
   const { people, datasets, useCases } = form.connections
   const contributorCount = people.filter((p) => p.relationship === 'contributor').length
@@ -88,7 +92,7 @@ function CollaborativeStep4Review({ form, onEditStep, onPreview }: Collaborative
         </p>
         <div className="mt-2 divide-y divide-border">
           <ReadinessRow label="About" ok={aboutOk} detail={aboutDetail} onEdit={() => onEditStep(1)} />
-          <ReadinessRow label="People" ok detail={peopleDetail} />
+          <ReadinessRow label="People & Organisations" ok detail={peopleDetail} />
           <ReadinessRow label="Content" ok={contentOk} detail={contentDetail} onEdit={() => onEditStep(3)} />
         </div>
       </div>
