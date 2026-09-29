@@ -155,7 +155,8 @@ function BreadcrumbBar() {
           crumbs={[
             { label: 'Home', to: HOME_PATH },
             { label: 'Explore', to: EXPLORE_PATH },
-            { label: 'Use Cases', to: '/explore/use-cases' },
+            // Use cases are browsed in global search (Use Cases tab), not the old list page.
+            { label: 'Use Cases', to: '/search?type=use-case' },
             { label: useCaseName },
           ]}
         />

@@ -218,7 +218,8 @@ export function buildSearchIndex({
       description: u.form.metadata.subtitle,
       organisation,
       meta: u.form.metadata.sectors.map((s) => optionLabel(SECTOR_OPTIONS, s)).filter(Boolean).join(', ') || undefined,
-      href: `/dashboard/use-cases/${u.id}/preview`,
+      // Public detail page — never the owner's publishing preview under /dashboard.
+      href: `/explore/use-cases/${u.id}`,
       thumbnailUrl: u.form.metadata.thumbnail?.dataUrl ?? null,
       cardMeta: {
         datasetCount: u.form.connections.datasets.length,
