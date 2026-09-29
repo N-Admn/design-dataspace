@@ -49,7 +49,7 @@ function UseCaseDetailPage() {
             className="type-label flex w-fit items-center gap-1.5 text-foreground/75 transition-colors hover:text-foreground"
           >
             <ArrowLeft className="size-4" />
-            Back to Use Cases
+            Back
           </button>
         }
       />
