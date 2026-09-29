@@ -8,13 +8,14 @@ import { UseCasePreview } from '@/components/usecase/UseCasePreview'
 import { useToast } from '@/components/ui/toast'
 import { useConfirm } from '@/components/ui/confirm-dialog'
 import { useAppData } from '@/context/AppDataContext'
+import { resolveUseCaseCreator } from '@/lib/usecase-creator'
 import { isUseCaseReadyToPublish } from '@/lib/usecase-validation'
 import { clearUseCaseDraftSnapshot, loadUseCaseDraftSnapshot } from '@/lib/usecase-draft-storage'
 
 function UseCasePreviewPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-  const { useCases, upsertUseCase } = useAppData()
+  const { useCases, upsertUseCase, organisationWorkspaces } = useAppData()
   const confirm = useConfirm()
   const toast = useToast()
   const [isSubmitting, setIsSubmitting] = React.useState(false)
@@ -85,7 +86,7 @@ function UseCasePreviewPage() {
   }
 
   return (
-    <div className="mx-auto flex max-w-5xl flex-col gap-6 py-6">
+    <div className="mx-auto flex max-w-6xl flex-col gap-6 py-6">
       <PreviewActionBar>
         <div>
           <p className="text-sm font-semibold text-foreground">
@@ -142,7 +143,15 @@ function UseCasePreviewPage() {
         </p>
       )}
 
-      <UseCasePreview form={form} publishedAt={record?.updatedAt} />
+      {/* Share the eventual public URL, not this preview route; the rail sits
+          below the sticky action bar. */}
+      <UseCasePreview
+        form={form}
+        creator={resolveUseCaseCreator(record, organisationWorkspaces)}
+        publishedAt={record?.updatedAt}
+        shareUrl={`${window.location.origin}/explore/use-cases/${id}`}
+        stickyTopClassName="lg:top-32"
+      />
     </div>
   )
 }

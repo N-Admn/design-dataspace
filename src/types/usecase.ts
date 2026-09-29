@@ -23,6 +23,28 @@ export const SDG_GOAL_OPTIONS = [
   { value: 'sdg-17', label: '17. Partnerships for the Goals' },
 ]
 
+/** Official UN colour for each goal (HEX values from the UN "Guidelines for the use
+ * of the SDG logo, including the colour wheel, and 17 icons", Aug 2019). */
+export const SDG_GOAL_COLORS: Record<string, string> = {
+  'sdg-1': '#E5243B',
+  'sdg-2': '#DDA63A',
+  'sdg-3': '#4C9F38',
+  'sdg-4': '#C5192D',
+  'sdg-5': '#FF3A21',
+  'sdg-6': '#26BDE2',
+  'sdg-7': '#FCC30B',
+  'sdg-8': '#A21942',
+  'sdg-9': '#FD6925',
+  'sdg-10': '#DD1367',
+  'sdg-11': '#FD9D24',
+  'sdg-12': '#BF8B2E',
+  'sdg-13': '#3F7E44',
+  'sdg-14': '#0A97D9',
+  'sdg-15': '#56C02B',
+  'sdg-16': '#00689D',
+  'sdg-17': '#19486A',
+}
+
 export interface UseCaseMetadata {
   thumbnail: UploadedAsset | null
   title: string

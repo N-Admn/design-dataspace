@@ -123,7 +123,7 @@ function AppLayout() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className={cn('flex min-h-screen flex-col', isConsumerRoute && 'bg-background')}>
       <TopNav />
       {!isUseCasePreview &&
         !isCollaborativePreview &&
