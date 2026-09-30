@@ -6,7 +6,7 @@ import { ChartPreviewCanvas } from '@/components/chart/ChartPreviewCanvas'
 import { EmptyPreviewState } from '@/components/chart/EmptyPreviewState'
 import { SdgBadge } from '@/components/shared/SdgBadge'
 import { SocialShareLinks } from '@/components/shared/SocialShareLinks'
-import { Badge } from '@/components/ui/badge'
+import { Badge, badgeVariants } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
 import { useAppData } from '@/context/AppDataContext'
 import { getFileColumns, getMockRows } from '@/lib/chart-data'
@@ -313,9 +313,16 @@ export function MetadataPanel({ metadata }: { metadata: UseCaseMetadata }) {
           <p className="type-label text-foreground">Tags</p>
           <div className="mt-3 flex flex-wrap gap-1.5">
             {metadata.tags.map((tag) => (
-              <Badge key={tag} variant="outline">
+              <Link
+                key={tag}
+                to={`/search?type=use-case&tag=${encodeURIComponent(tag)}`}
+                className={cn(
+                  badgeVariants({ variant: 'outline' }),
+                  'transition-colors hover:bg-surface-accent hover:text-text-on-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-focus focus-visible:ring-offset-2',
+                )}
+              >
                 {tag}
-              </Badge>
+              </Link>
             ))}
           </div>
         </div>
