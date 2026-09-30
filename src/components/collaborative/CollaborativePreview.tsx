@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import { Building2, CalendarDays, Database, ExternalLink, FolderKanban, User } from 'lucide-react'
 
 import { Badge } from '@/components/ui/badge'
@@ -100,11 +101,15 @@ function CollaborativePreview({ form, updatedAt }: { form: CollaborativeFormStat
           <p className="text-sm font-semibold text-foreground">Datasets</p>
           <div className="mt-2 flex flex-col gap-1">
             {datasets.map((d) => (
-              <div key={d.id} className="flex items-center gap-2 text-sm text-foreground">
+              <Link
+                key={d.id}
+                to={`/explore/datasets/${d.id}`}
+                className="flex items-center gap-2 rounded-sm text-sm text-foreground hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
                 <Database className="size-3.5 shrink-0 text-muted-foreground" />
                 <span className="min-w-0 flex-1 truncate">{d.title}</span>
                 <span className="text-xs text-primary">View →</span>
-              </div>
+              </Link>
             ))}
           </div>
         </div>
@@ -116,11 +121,15 @@ function CollaborativePreview({ form, updatedAt }: { form: CollaborativeFormStat
           <p className="text-sm font-semibold text-foreground">Use Cases</p>
           <div className="mt-2 flex flex-col gap-1">
             {useCases.map((u) => (
-              <div key={u.id} className="flex items-center gap-2 text-sm text-foreground">
+              <Link
+                key={u.id}
+                to={`/explore/use-cases/${u.id}`}
+                className="flex items-center gap-2 rounded-sm text-sm text-foreground hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
                 <FolderKanban className="size-3.5 shrink-0 text-muted-foreground" />
                 <span className="min-w-0 flex-1 truncate">{u.title}</span>
                 <span className="text-xs text-primary">View →</span>
-              </div>
+              </Link>
             ))}
           </div>
         </div>
