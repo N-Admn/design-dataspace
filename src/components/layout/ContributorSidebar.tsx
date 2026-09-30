@@ -101,7 +101,7 @@ function ContributorSidebar({
   className,
   groups: groupsProp,
   identity = DEFAULT_IDENTITY,
-  backLabel = 'Dashboard',
+  backLabel = 'My Workspace',
   backTo = '/',
 }: ContributorSidebarProps) {
   const location = useLocation()
