@@ -1,33 +1,24 @@
 import * as React from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { Loader2, Send } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { PreviewActionBar } from '@/components/shared/PreviewActionBar'
 import { UseCasePreview } from '@/components/usecase/UseCasePreview'
-import { useToast } from '@/components/ui/toast'
-import { useConfirm } from '@/components/ui/confirm-dialog'
 import { useAppData } from '@/context/AppDataContext'
 import { resolveUseCaseCreator } from '@/lib/usecase-creator'
-import { isUseCaseReadyToPublish } from '@/lib/usecase-validation'
-import { clearUseCaseDraftSnapshot, loadUseCaseDraftSnapshot } from '@/lib/usecase-draft-storage'
+import { loadUseCaseDraftSnapshot } from '@/lib/usecase-draft-storage'
 
+/** View-only preview of the working copy, opened in a new tab from the editor's
+ * Review step. Publishing happens back in the editor, not here. */
 function UseCasePreviewPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-  const { useCases, upsertUseCase, organisationWorkspaces } = useAppData()
-  const confirm = useConfirm()
-  const toast = useToast()
-  const [isSubmitting, setIsSubmitting] = React.useState(false)
-  const [justPublished, setJustPublished] = React.useState(false)
+  const { useCases, organisationWorkspaces } = useAppData()
 
   const record = id ? useCases.find((u) => u.id === id) : undefined
-  // Load once on mount and freeze — re-reading after our own publish action would
-  // pick up the just-updated status and flip "Publish" into "Publish Changes" mid-flow.
+  // Load once on mount — the snapshot carries unsaved editor state into this tab.
   const [snapshot] = React.useState(() => (id ? loadUseCaseDraftSnapshot(id) : null))
   const form = snapshot?.form ?? record?.form
-  const [initialStatus] = React.useState(() => snapshot?.status ?? record?.status ?? 'draft')
-  const hasLiveVersion = initialStatus === 'published'
 
   const handleEditInWorkspace = () => {
     window.close()
@@ -35,15 +26,6 @@ function UseCasePreviewPage() {
       navigate('/dashboard/use-cases/new', { state: { useCaseId: id, initialStep: 1 } })
     }, 50)
   }
-
-  const handleBackToUseCases = () => {
-    window.close()
-    window.setTimeout(() => {
-      navigate('/dashboard/use-cases')
-    }, 50)
-  }
-
-  const publicUrl = `/explore/use-cases/${id}`
 
   if (!id || !form) {
     return (
@@ -59,90 +41,19 @@ function UseCasePreviewPage() {
     )
   }
 
-  const ready = isUseCaseReadyToPublish(form)
-
-  const handlePublish = async () => {
-    if (!ready) return
-    const ok = await confirm({
-      title: hasLiveVersion ? 'Publish changes?' : 'Publish use case?',
-      description: hasLiveVersion
-        ? `Your changes to "${form.metadata.title}" will replace the current published version immediately.`
-        : `You're about to publish "${form.metadata.title}". Once published, this Use Case will be visible to the public.`,
-      confirmLabel: hasLiveVersion ? 'Publish Changes' : 'Publish Use Case',
-    })
-    if (!ok) return
-    setIsSubmitting(true)
-    window.setTimeout(() => {
-      upsertUseCase(id, 'published', form)
-      clearUseCaseDraftSnapshot(id)
-      setIsSubmitting(false)
-      setJustPublished(true)
-      toast({
-        title: hasLiveVersion ? 'Changes published' : 'Use Case published',
-        description: hasLiveVersion
-          ? 'Your changes are now live on CivicDataSpace.'
-          : 'Your Use Case is now available on CivicDataSpace.',
-        variant: 'success',
-      })
-    }, 500)
-  }
-
   return (
     <div className="mx-auto flex max-w-6xl flex-col gap-6 py-6">
       <PreviewActionBar>
         <div>
-          <p className="text-sm font-semibold text-foreground">
-            {justPublished ? (hasLiveVersion ? 'Changes published' : 'Use Case published') : 'Use Case Preview'}
-          </p>
+          <p className="text-sm font-semibold text-foreground">Use Case Preview</p>
           <p className="text-xs text-muted-foreground">
-            {justPublished
-              ? hasLiveVersion
-                ? 'Your changes are now live on CivicDataSpace.'
-                : 'Your Use Case is now available on CivicDataSpace.'
-              : 'This is what your Use Case will look like when published.'}
+            This is what your Use Case will look like when published. Publish it from the Review step in the editor.
           </p>
         </div>
-        <div className="flex items-center gap-2">
-          {justPublished ? (
-            <>
-              {/* Navigates this same tab to the real public page — it was only ever
-                  a preview tab, so repurposing it to show the live result is the
-                  most direct way to answer "show me how it looks live." */}
-              <Button type="button" variant="outline" onClick={() => navigate(publicUrl)}>
-                View live
-              </Button>
-              <Button type="button" onClick={handleBackToUseCases}>
-                Back to Use Cases
-              </Button>
-            </>
-          ) : (
-            <>
-              <Button type="button" variant="outline" onClick={handleEditInWorkspace}>
-                Edit in Workspace
-              </Button>
-              <Button type="button" onClick={handlePublish} disabled={!ready || isSubmitting}>
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="size-4 animate-spin" />
-                    Publishing...
-                  </>
-                ) : (
-                  <>
-                    {hasLiveVersion ? 'Publish Changes' : 'Publish Use Case'}
-                    <Send className="size-4" />
-                  </>
-                )}
-              </Button>
-            </>
-          )}
-        </div>
+        <Button type="button" variant="outline" onClick={handleEditInWorkspace}>
+          Edit in Workspace
+        </Button>
       </PreviewActionBar>
-
-      {!ready && !justPublished && (
-        <p className="rounded-md border border-warning/40 bg-warning/10 px-4 py-2.5 text-sm text-warning-foreground">
-          This Use Case isn't ready to publish yet. Return to the workspace to complete the required fields.
-        </p>
-      )}
 
       {/* Share the eventual public URL, not this preview route; the rail sits
           below the sticky action bar. */}

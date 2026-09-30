@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { LayoutTemplate, ListChecks, Share2 } from 'lucide-react'
+import { ExternalLink, LayoutTemplate, ListChecks, Share2 } from 'lucide-react'
 
+import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Stepper } from '@/components/ui/stepper'
 import { WorkspaceHeader } from '@/components/dataset/WorkspaceHeader'
@@ -12,9 +13,10 @@ import { UseCaseStep3Review } from '@/components/usecase/UseCaseStep3Review'
 import { LeaveCreationDialog } from '@/components/shared/LeaveCreationDialog'
 import { OrganisationContextBanner } from '@/components/organisation/OrganisationContextBanner'
 import { useToast } from '@/components/ui/toast'
+import { useConfirm } from '@/components/ui/confirm-dialog'
 import { useAppData } from '@/context/AppDataContext'
 import { useHelpContext } from '@/context/HelpContext'
-import { saveUseCaseDraftSnapshot } from '@/lib/usecase-draft-storage'
+import { clearUseCaseDraftSnapshot, saveUseCaseDraftSnapshot } from '@/lib/usecase-draft-storage'
 import { isUseCaseReadyToPublish } from '@/lib/usecase-validation'
 import { hasUnsavedEdits } from '@/lib/content-status'
 import { emptyUseCaseForm, type UseCaseFormState, type UseCaseMetadata } from '@/types/usecase'
@@ -65,6 +67,7 @@ function UseCaseCreationPage() {
   const { useCases, upsertUseCase, organisationWorkspaces } = useAppData()
   const { setContextLabel } = useHelpContext()
   const toast = useToast()
+  const confirm = useConfirm()
 
   const navState = (location.state as UseCaseNavState | null) ?? null
   const resumeRecord = navState?.useCaseId ? useCases.find((u) => u.id === navState.useCaseId) : undefined
@@ -155,6 +158,38 @@ function UseCaseCreationPage() {
     }
   }
 
+  /** Publishing happens here in the editor (Review step), not from the preview tab. */
+  const handlePublish = async () => {
+    if (!isUseCaseReadyToPublish(form)) return
+    const title = form.metadata.title || 'Untitled Use Case'
+    const ok = await confirm({
+      title: hasLiveVersion ? 'Publish changes?' : 'Publish use case?',
+      description: hasLiveVersion
+        ? `Your changes to "${title}" will replace the current published version immediately.`
+        : `You're about to publish "${title}". Once published, this Use Case will be visible to the public.`,
+      confirmLabel: hasLiveVersion ? 'Publish Changes' : 'Publish Use Case',
+    })
+    if (!ok) return
+    const id = upsertUseCase(editingId, 'published', form, organisationId)
+    if (!editingId) setEditingId(id)
+    setLastSavedForm(form)
+    clearUseCaseDraftSnapshot(id)
+    toast({
+      title: hasLiveVersion ? 'Changes published' : 'Use Case published',
+      description: hasLiveVersion
+        ? 'Your changes are now live on CivicDataSpace.'
+        : 'Your Use Case is now available on CivicDataSpace.',
+      variant: 'success',
+    })
+    // Back to where the flow started — the Use Cases list, an organisation, or a
+    // Collaborative that launched "Create New Use Case" (which then links it).
+    if (navState?.returnTo) {
+      navigate(navState.returnTo, { state: { ...navState.returnState, createdUseCaseId: id } })
+      return
+    }
+    navigate(navState?.organisationReturnTo ?? '/dashboard/use-cases')
+  }
+
   const handlePreview = () => {
     let id = editingId
     if (!id) {
@@ -205,7 +240,9 @@ function UseCaseCreationPage() {
             onChange={(connections) => setForm((prev) => ({ ...prev, connections }))}
           />
         )}
-        {step === 3 && <UseCaseStep3Review form={form} onEditStep={goToStep} onPreview={handlePreview} />}
+        {step === 3 && (
+          <UseCaseStep3Review form={form} onEditStep={goToStep} hasLiveVersion={hasLiveVersion} onPublish={handlePublish} />
+        )}
       </div>
       <div className="border-t border-border">
         <WizardFooter
@@ -215,6 +252,14 @@ function UseCaseCreationPage() {
           onContinue={() => goToStep((step + 1) as UseCaseStep)}
           onSaveDraft={handleSaveDraft}
           saveLabel={hasLiveVersion ? 'Save Changes' : 'Save as Draft'}
+          secondaryAction={
+            step === 3 && (
+              <Button type="button" variant="outline" onClick={handlePreview}>
+                Preview Use Case
+                <ExternalLink className="size-4" />
+              </Button>
+            )
+          }
         />
       </div>
 
