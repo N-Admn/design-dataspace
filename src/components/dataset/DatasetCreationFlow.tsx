@@ -151,7 +151,7 @@ function DatasetCreationFlow({
   const [lastSavedForm, setLastSavedForm] = React.useState<DatasetFormState>(resolveInitialForm)
   const [showMetadataErrors, setShowMetadataErrors] = React.useState(false)
   const [saved, setSaved] = React.useState(true)
-  const [publishSuccess, setPublishSuccess] = React.useState<{ name: string } | null>(null)
+  const [publishSuccess, setPublishSuccess] = React.useState<{ name: string; id: string } | null>(null)
   const [drawerSuccess, setDrawerSuccess] = React.useState<{ status: ContentStatus; id: string } | null>(null)
   const [showLeaveConfirm, setShowLeaveConfirm] = React.useState(false)
   // The stepper is a plain progress indicator until the user reaches Review with every
@@ -305,7 +305,7 @@ function DatasetCreationFlow({
     if (hasLiveVersion) {
       toast({ title: 'Changes published', description: 'Your changes are now live on CivicDataSpace.', variant: 'success' })
     } else {
-      setPublishSuccess({ name: form.metadata.name })
+      setPublishSuccess({ name: form.metadata.name, id })
     }
   }
 
@@ -513,6 +513,7 @@ function DatasetCreationFlow({
       <PublishSuccessModal
         open={publishSuccess !== null}
         datasetName={publishSuccess?.name ?? ''}
+        datasetId={publishSuccess?.id ?? ''}
         onCreateAnother={() => {
           setPublishSuccess(null)
           setEditingId(null)

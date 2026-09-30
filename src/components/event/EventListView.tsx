@@ -1,4 +1,4 @@
-import { Archive, Pencil, Trash2 } from 'lucide-react'
+import { Archive, ExternalLink, Pencil, Trash2 } from 'lucide-react'
 
 import { ManagementTable, type ManagementColumn, type ManagementFilterDef, type ManagementRowAction } from '@/components/shared/management-table/ManagementTable'
 import { Badge } from '@/components/ui/badge'
@@ -155,6 +155,12 @@ function EventListView({
       ]
     }
     return [
+      {
+        key: 'view-live',
+        icon: ExternalLink,
+        label: () => `View live: ${title}`,
+        onClick: () => window.open(`/explore/events/${event.id}`, '_blank', 'noopener,noreferrer'),
+      },
       { key: 'edit', icon: Pencil, label: () => `Edit ${title}`, onClick: () => onEditEvent(event.id) },
       { key: 'unpublish', icon: Archive, label: () => `Unpublish ${title}`, onClick: () => onUnpublishEvent(event.id), destructive: true },
     ]

@@ -1,4 +1,4 @@
-import { Archive, FolderKanban, Pencil, Trash2 } from 'lucide-react'
+import { Archive, ExternalLink, FolderKanban, Pencil, Trash2 } from 'lucide-react'
 
 import { ManagementTable, type ManagementColumn, type ManagementFilterDef, type ManagementRowAction } from '@/components/shared/management-table/ManagementTable'
 import { TruncatedText } from '@/components/shared/TruncatedText'
@@ -135,6 +135,12 @@ function UseCaseListView({
       ]
     }
     return [
+      {
+        key: 'view-live',
+        icon: ExternalLink,
+        label: () => `View live: ${title}`,
+        onClick: () => window.open(`/explore/use-cases/${useCase.id}`, '_blank', 'noopener,noreferrer'),
+      },
       { key: 'edit', icon: Pencil, label: () => `Edit ${title}`, onClick: () => onEditUseCase(useCase.id) },
       { key: 'unpublish', icon: Archive, label: () => `Unpublish ${title}`, onClick: () => onUnpublishUseCase(useCase.id), destructive: true },
     ]

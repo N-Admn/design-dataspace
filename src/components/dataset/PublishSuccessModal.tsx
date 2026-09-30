@@ -8,6 +8,7 @@ import { useToast } from '@/components/ui/toast'
 interface PublishSuccessModalProps {
   open: boolean
   datasetName: string
+  datasetId: string
   onCreateAnother: () => void
   onViewWorkspace: () => void
 }
@@ -44,7 +45,7 @@ function CopyField({ label, value }: { label: string; value: string }) {
   )
 }
 
-function PublishSuccessModal({ open, datasetName, onCreateAnother, onViewWorkspace }: PublishSuccessModalProps) {
+function PublishSuccessModal({ open, datasetName, datasetId, onCreateAnother, onViewWorkspace }: PublishSuccessModalProps) {
   return (
     <Dialog open={open} onOpenChange={(next) => !next && onViewWorkspace()}>
       <DialogContent className="flex max-w-xl flex-col gap-0 p-0" showClose={false}>
@@ -67,8 +68,13 @@ function PublishSuccessModal({ open, datasetName, onCreateAnother, onViewWorkspa
         </div>
 
         <div className="flex shrink-0 flex-col gap-2 border-t border-border-default px-6 py-4 sm:flex-row-reverse">
-          <Button type="button" className="sm:flex-1" onClick={onViewWorkspace}>
-            View in My Workspace
+          <Button type="button" className="sm:flex-1" asChild>
+            <a href={`/explore/datasets/${datasetId}`} target="_blank" rel="noreferrer">
+              View live
+            </a>
+          </Button>
+          <Button type="button" variant="outline" className="sm:flex-1" onClick={onViewWorkspace}>
+            Back to My Workspace
           </Button>
           <Button type="button" variant="outline" className="sm:flex-1" onClick={onCreateAnother}>
             Create Another Dataset

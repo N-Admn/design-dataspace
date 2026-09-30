@@ -210,7 +210,10 @@ function ChartCreationPage() {
   }
 
   const handleViewOnDataset = () => {
-    navigate('/dashboard/datasets', { state: { datasetId: form.datasetId } })
+    // Charts have no page of their own — they only ever appear embedded in
+    // their parent dataset's public Visualisations tab, so that's the real
+    // "view live" destination here, not the contributor's own editor.
+    navigate(`/explore/datasets/${form.datasetId}?view=visualisations`)
   }
 
   const handleBackToCharts = () => {
