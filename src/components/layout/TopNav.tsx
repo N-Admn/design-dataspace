@@ -65,7 +65,7 @@ function UserMenu({ onSignOut }: { onSignOut: () => void }) {
             className="flex w-full items-center gap-2.5 rounded-md px-2.5 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted"
           >
             <LayoutDashboard className="size-4 text-muted-foreground" />
-            Dashboard
+            My Workspace
           </button>
         </div>
 

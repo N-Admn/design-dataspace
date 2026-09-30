@@ -242,12 +242,18 @@ function BreadcrumbBar() {
   }
 
   const match = findNavMatch(NAV_GROUPS, location.pathname)
-  const isWorkspaceItem = match?.group.key === 'contribution'
 
-  const crumbs: CrumbSpec[] = [...leadingCrumbs]
-  if (!isDashboard && isWorkspaceItem && match) {
-    crumbs.push({ label: 'My Workspace' }, { label: match.item.label })
-  } else if (!isDashboard && match) {
+  // Personal-workspace pages get "Home › My Workspace › …" — a single,
+  // consistent contributor-side crumb rather than the redundant
+  // "Dashboard › My Workspace" the generic `leadingCrumbs` would otherwise
+  // produce (that wording is still correct for the Dashboard page itself and
+  // for Organisation Workspace pages, which keep their existing hierarchy).
+  const workspaceLeadingCrumbs: CrumbSpec[] = isDashboard
+    ? [{ label: 'Home', to: HOME_PATH }, { label: 'My Workspace' }]
+    : [{ label: 'Home', to: HOME_PATH }, { label: 'My Workspace', to: DASHBOARD_PATH }]
+
+  const crumbs: CrumbSpec[] = [...workspaceLeadingCrumbs]
+  if (!isDashboard && match) {
     crumbs.push({ label: match.item.label })
   }
 
