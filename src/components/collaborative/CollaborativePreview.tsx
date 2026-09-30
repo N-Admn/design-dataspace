@@ -1,8 +1,9 @@
 import { Link } from 'react-router-dom'
 import { Building2, CalendarDays, Database, ExternalLink, FolderKanban, User } from 'lucide-react'
 
-import { Badge } from '@/components/ui/badge'
+import { Badge, badgeVariants } from '@/components/ui/badge'
 import { formatShortDate } from '@/lib/format'
+import { cn } from '@/lib/utils'
 import { GEOGRAPHY_OPTIONS, SECTOR_OPTIONS } from '@/types/dataset'
 import { SDG_GOAL_OPTIONS } from '@/types/usecase'
 import { RELATIONSHIP_OPTIONS, type CollaborativeFormState, type CollaborativeRelationship } from '@/types/collaborative'
@@ -154,9 +155,16 @@ function CollaborativePreview({ form, updatedAt }: { form: CollaborativeFormStat
               <p className="text-sm font-semibold text-foreground">Tags</p>
               <div className="mt-2 flex flex-wrap gap-1.5">
                 {metadata.tags.map((tag) => (
-                  <Badge key={tag} variant="muted">
+                  <Link
+                    key={tag}
+                    to={`/search?type=collaborative&tag=${encodeURIComponent(tag)}`}
+                    className={cn(
+                      badgeVariants({ variant: 'muted' }),
+                      'transition-colors hover:bg-surface-accent hover:text-text-on-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-focus focus-visible:ring-offset-2',
+                    )}
+                  >
                     {tag}
-                  </Badge>
+                  </Link>
                 ))}
               </div>
             </div>

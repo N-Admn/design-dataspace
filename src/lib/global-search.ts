@@ -84,8 +84,10 @@ export interface SearchResultItem {
    * pointing somewhere invented. See the module doc comment above.
    */
   href?: string
-  /** Structured tag values (currently only populated for datasets) — matched
-   * exactly by `filterByTag`, distinct from the free-text `searchItems` query. */
+  /** Structured tag values — matched exactly by `filterByTag`, distinct from
+   * the free-text `searchItems` query. Populated for every type that has a
+   * `metadata.tags` field of its own (Dataset, Use Case, Collaborative, AI
+   * Model); Event and Publication have no tags field to draw from. */
   tags?: string[]
   /** The record's own cover image/thumbnail, when the module has one and the
    * contributor actually uploaded one — Use Case (`metadata.thumbnail`),
@@ -221,6 +223,7 @@ export function buildSearchIndex({
       // Public detail page — never the owner's publishing preview under /dashboard.
       href: `/explore/use-cases/${u.id}`,
       thumbnailUrl: u.form.metadata.thumbnail?.dataUrl ?? null,
+      tags: u.form.metadata.tags,
       cardMeta: {
         datasetCount: u.form.connections.datasets.length,
         chartCount: u.form.blocks.filter((b) => b.type === 'chart').length,
@@ -256,6 +259,7 @@ export function buildSearchIndex({
       meta: c.form.metadata.sectors.map((s) => optionLabel(SECTOR_OPTIONS, s)).filter(Boolean).join(', ') || undefined,
       href: `/dashboard/collaboratives/${c.id}/preview`,
       thumbnailUrl: c.form.metadata.image?.dataUrl ?? null,
+      tags: c.form.metadata.tags,
       cardMeta: {
         datasetCount: c.form.connections.datasets.length,
         useCaseCount: c.form.connections.useCases.length,
@@ -351,6 +355,7 @@ export function buildSearchIndex({
       description: m.form.metadata.description,
       meta: m.form.metadata.sectors.map((s) => optionLabel(SECTOR_OPTIONS, s)).filter(Boolean).join(', ') || undefined,
       href: `/dashboard/ai-models/${m.id}/preview`,
+      tags: m.form.metadata.tags,
       cardMeta: {
         version: primaryVersion?.name,
         modelType: m.form.metadata.modelType ? optionLabel(MODEL_TYPE_OPTIONS, m.form.metadata.modelType) : undefined,

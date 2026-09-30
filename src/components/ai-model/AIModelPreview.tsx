@@ -1,6 +1,8 @@
+import { Link } from 'react-router-dom'
 import { ExternalLink, Globe2, Sparkles } from 'lucide-react'
 
-import { Badge } from '@/components/ui/badge'
+import { Badge, badgeVariants } from '@/components/ui/badge'
+import { cn } from '@/lib/utils'
 import { GEOGRAPHY_OPTIONS, LICENSE_OPTIONS, SECTOR_OPTIONS } from '@/types/dataset'
 import {
   DOMAIN_OPTIONS,
@@ -133,9 +135,16 @@ function AIModelPreview({ form }: { form: AIModelFormState }) {
               <p className="text-sm font-semibold text-foreground">Tags</p>
               <div className="mt-2 flex flex-wrap gap-1.5">
                 {metadata.tags.map((t) => (
-                  <Badge key={t} variant="muted">
+                  <Link
+                    key={t}
+                    to={`/search?type=ai-model&tag=${encodeURIComponent(t)}`}
+                    className={cn(
+                      badgeVariants({ variant: 'muted' }),
+                      'transition-colors hover:bg-surface-accent hover:text-text-on-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-focus focus-visible:ring-offset-2',
+                    )}
+                  >
                     {t}
-                  </Badge>
+                  </Link>
                 ))}
               </div>
             </div>
