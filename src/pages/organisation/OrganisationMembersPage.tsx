@@ -4,8 +4,7 @@ import { Ban, Pencil, Trash2 } from 'lucide-react'
 import { useOrganisation } from '@/hooks/use-organisation'
 import { useAppData } from '@/context/AppDataContext'
 import { OrganisationNotFound } from '@/components/organisation/OrganisationNotFound'
-import { AddMemberSideSheet } from '@/components/organisation/AddMemberSideSheet'
-import { InviteMemberSideSheet } from '@/components/organisation/InviteMemberSideSheet'
+import { AddMembersSideSheet } from '@/components/organisation/AddMembersSideSheet'
 import { EditMemberRoleSideSheet } from '@/components/organisation/EditMemberRoleSideSheet'
 import { Badge } from '@/components/ui/badge'
 import { ManagementTable, type ManagementColumn, type ManagementRowAction } from '@/components/shared/management-table/ManagementTable'
@@ -46,7 +45,6 @@ function OrganisationMembersPage() {
 
   const [tab, setTab] = React.useState<'members' | 'invitations'>('members')
   const [addOpen, setAddOpen] = React.useState(false)
-  const [inviteOpen, setInviteOpen] = React.useState(false)
   const [editingMember, setEditingMember] = React.useState<OrganisationMember | null>(null)
 
   if (!organisation) return <OrganisationNotFound />
@@ -197,8 +195,6 @@ function OrganisationMembersPage() {
       permissions.canAddMembers
         ? 'Manage organisation members and their access.'
         : 'View the people who are part of this organisation.',
-    secondaryActionLabel: permissions.canAddMembers ? 'Invite' : undefined,
-    onSecondaryAction: permissions.canAddMembers ? () => setInviteOpen(true) : undefined,
     addLabel: permissions.canAddMembers ? 'Add Member' : undefined,
     onAdd: permissions.canAddMembers ? () => setAddOpen(true) : undefined,
     viewTabs: { items: TABS, value: tab, onChange: (key: string) => setTab(key as 'members' | 'invitations'), label: 'Admin & Members views' },
@@ -238,8 +234,7 @@ function OrganisationMembersPage() {
         />
       )}
 
-      <AddMemberSideSheet open={addOpen} onOpenChange={setAddOpen} organisation={organisation} />
-      <InviteMemberSideSheet open={inviteOpen} onOpenChange={setInviteOpen} organisation={organisation} />
+      <AddMembersSideSheet open={addOpen} onOpenChange={setAddOpen} organisation={organisation} />
       <EditMemberRoleSideSheet organisation={organisation} member={editingMember} onOpenChange={(open) => !open && setEditingMember(null)} />
     </div>
   )

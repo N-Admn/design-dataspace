@@ -89,8 +89,10 @@ export type OrganisationInvitationStatus = 'pending' | 'revoked'
 
 export interface OrganisationInvitation {
   id: string
-  /** Links to `MockPerson.id` — the same directory `OrganisationMember.personId` uses. */
-  personId: string
+  /** Links to `MockPerson.id` — the same directory `OrganisationMember.personId` uses.
+   *  Omitted for an invitation sent to a plain email address that has no existing
+   *  CivicDataSpace account/person record. */
+  personId?: string
   name: string
   email?: string
   role: OrganisationRole
