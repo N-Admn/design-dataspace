@@ -36,7 +36,7 @@ function ChartPublishSuccessModal({ open, chartName, hasLiveVersion, onViewOnDat
 
         <div className="flex shrink-0 flex-col gap-2 border-t border-border px-6 py-4 sm:flex-row-reverse">
           <Button type="button" className="sm:flex-1" onClick={onViewOnDataset}>
-            View on Dataset
+            View live
           </Button>
           <Button type="button" variant="outline" className="sm:flex-1" onClick={onBackToCharts}>
             Back to Charts

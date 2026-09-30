@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useParams, useSearchParams } from 'react-router-dom'
 import { ArrowLeft } from 'lucide-react'
 
 import { EmptyState } from '@/components/shared/EmptyState'
@@ -24,11 +24,16 @@ const VIEWS = [
 function DatasetDetailPage() {
   const { id } = useParams<{ id: string }>()
   const { datasets, organisationWorkspaces } = useAppData()
-  const [view, setView] = React.useState('overview')
+  const [searchParams] = useSearchParams()
+  // Lets a "View live" link deep-link straight to the Visualisations tab
+  // (e.g. from a freshly-published Chart, which has no page of its own —
+  // it only ever appears embedded here).
+  const requestedView = searchParams.get('view')
+  const [view, setView] = React.useState(() => (VIEWS.some((v) => v.key === requestedView) ? requestedView! : 'overview'))
   // Goes back to whatever page actually linked here (Search results,
   // Discover, a tag filter, …) instead of always the Datasets list —
   // "/explore/datasets" is only the fallback when there's no history at all.
-  const goBack = useGoBack('/explore/datasets')
+  const goBack = useGoBack('/search?type=dataset')
 
   const record = id ? datasets.find((d) => d.id === id) : undefined
   // Consumers only ever see the live published version — same rule as every

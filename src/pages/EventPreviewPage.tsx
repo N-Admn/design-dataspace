@@ -35,12 +35,14 @@ function EventPreviewPage() {
     }, 50)
   }
 
-  const handleContinueToManage = () => {
+  const handleBackToEvents = () => {
     window.close()
     window.setTimeout(() => {
       navigate('/dashboard/events')
     }, 50)
   }
+
+  const publicUrl = `/explore/events/${id}`
 
   if (!id || !form) {
     return (
@@ -100,11 +102,13 @@ function EventPreviewPage() {
         <div className="flex items-center gap-2">
           {justPublished ? (
             <>
-              <Button type="button" variant="outline" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-                View Event
+              {/* Navigates this same tab to the real public page — see UseCasePreviewPage
+                  for the same pattern/rationale. */}
+              <Button type="button" variant="outline" onClick={() => navigate(publicUrl)}>
+                View live
               </Button>
-              <Button type="button" onClick={handleContinueToManage}>
-                Continue to Manage
+              <Button type="button" onClick={handleBackToEvents}>
+                Back to Events
               </Button>
             </>
           ) : (

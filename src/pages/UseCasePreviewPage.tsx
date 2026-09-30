@@ -36,12 +36,14 @@ function UseCasePreviewPage() {
     }, 50)
   }
 
-  const handleContinueToManage = () => {
+  const handleBackToUseCases = () => {
     window.close()
     window.setTimeout(() => {
       navigate('/dashboard/use-cases')
     }, 50)
   }
+
+  const publicUrl = `/explore/use-cases/${id}`
 
   if (!id || !form) {
     return (
@@ -103,15 +105,14 @@ function UseCasePreviewPage() {
         <div className="flex items-center gap-2">
           {justPublished ? (
             <>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-              >
-                View Use Case
+              {/* Navigates this same tab to the real public page — it was only ever
+                  a preview tab, so repurposing it to show the live result is the
+                  most direct way to answer "show me how it looks live." */}
+              <Button type="button" variant="outline" onClick={() => navigate(publicUrl)}>
+                View live
               </Button>
-              <Button type="button" onClick={handleContinueToManage}>
-                Continue to Manage
+              <Button type="button" onClick={handleBackToUseCases}>
+                Back to Use Cases
               </Button>
             </>
           ) : (

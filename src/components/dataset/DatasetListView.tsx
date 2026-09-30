@@ -1,4 +1,4 @@
-import { Archive, FileText, Pencil, Trash2 } from 'lucide-react'
+import { Archive, ExternalLink, FileText, Pencil, Trash2 } from 'lucide-react'
 
 import { ManagementTable, type ManagementColumn, type ManagementFilterDef, type ManagementRowAction } from '@/components/shared/management-table/ManagementTable'
 import { TruncatedText } from '@/components/shared/TruncatedText'
@@ -171,6 +171,12 @@ function DatasetListView({
       ]
     }
     return [
+      {
+        key: 'view-live',
+        icon: ExternalLink,
+        label: () => `View live: ${name}`,
+        onClick: () => window.open(`/explore/datasets/${dataset.id}`, '_blank', 'noopener,noreferrer'),
+      },
       { key: 'edit', icon: Pencil, label: () => `Edit ${name}`, onClick: () => onEditDataset(dataset.id) },
       { key: 'unpublish', icon: Archive, label: () => `Unpublish ${name}`, onClick: () => onUnpublishDataset(dataset.id), destructive: true },
     ]
