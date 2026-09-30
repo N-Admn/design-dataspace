@@ -180,6 +180,7 @@ function UseCaseCreationPage() {
         ? 'Your changes are now live on CivicDataSpace.'
         : 'Your Use Case is now available on CivicDataSpace.',
       variant: 'success',
+      action: { label: 'View live', href: `/explore/use-cases/${id}` },
     })
     // Back to where the flow started — the Use Cases list, an organisation, or a
     // Collaborative that launched "Create New Use Case" (which then links it).
