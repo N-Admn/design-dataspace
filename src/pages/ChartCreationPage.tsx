@@ -1,14 +1,13 @@
 import { useEffect, useRef, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { Database, ListChecks, Sparkles } from 'lucide-react'
+import { ListChecks, Sparkles } from 'lucide-react'
 
 import { Card } from '@/components/ui/card'
 import { Stepper } from '@/components/ui/stepper'
 import { WorkspaceHeader } from '@/components/dataset/WorkspaceHeader'
 import { WizardFooter } from '@/components/dataset/WizardFooter'
-import { ChartStep1Dataset } from '@/components/chart/ChartStep1Dataset'
-import { ChartStep2Create } from '@/components/chart/ChartStep2Create'
-import { ChartStep3Review } from '@/components/chart/ChartStep3Review'
+import { ChartStep1Build } from '@/components/chart/ChartStep1Build'
+import { ChartStep2Review } from '@/components/chart/ChartStep2Review'
 import { ChartPublishSuccessModal } from '@/components/chart/ChartPublishSuccessModal'
 import { LeaveCreationDialog } from '@/components/shared/LeaveCreationDialog'
 import { OrganisationContextBanner } from '@/components/organisation/OrganisationContextBanner'
@@ -18,16 +17,15 @@ import { useAppData } from '@/context/AppDataContext'
 import { useHelpContext } from '@/context/HelpContext'
 import { getFileColumns } from '@/lib/chart-data'
 import type { UploadedAsset } from '@/lib/generic-upload'
-import { validateChartStep1, validateChartStep2 } from '@/lib/chart-validation'
+import { validateChartBuild } from '@/lib/chart-validation'
 import { hasUnsavedEdits } from '@/lib/content-status'
-import { emptyChartConfig, emptyChartForm, type ChartFormState, type ChartType } from '@/types/chart'
+import { emptyChartConfig, emptyChartForm, type ChartConfig, type ChartFormState, type ChartType } from '@/types/chart'
 
-type ChartStep = 1 | 2 | 3
+type ChartStep = 1 | 2
 
 const CHART_STEPS = [
-  { step: 1, label: 'Dataset', description: 'Choose a dataset', icon: Database },
-  { step: 2, label: 'Create', description: 'Build your chart', icon: Sparkles },
-  { step: 3, label: 'Review & Publish', description: 'Check readiness', icon: ListChecks },
+  { step: 1, label: 'Build', description: 'Choose data and build your chart', icon: Sparkles },
+  { step: 2, label: 'Review & Publish', description: 'Check readiness', icon: ListChecks },
 ]
 
 interface ChartNavState {
@@ -52,19 +50,18 @@ function ChartCreationPage() {
   const organisation = organisationId ? organisationWorkspaces.find((o) => o.id === organisationId) : undefined
 
   const [editingId, setEditingId] = useState<string | null>(resumeRecord?.id ?? null)
-  const [step, setStep] = useState<ChartStep>(navState?.initialStep ?? 1)
+  const [step, setStep] = useState<ChartStep>(navState?.initialStep === 2 ? 2 : 1)
   const [form, setForm] = useState<ChartFormState>(resumeRecord?.form ?? emptyChartForm)
   const [lastSavedForm, setLastSavedForm] = useState<ChartFormState>(resumeRecord?.form ?? form)
   const [saved, setSaved] = useState(true)
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(false)
-  const [showStep1Errors, setShowStep1Errors] = useState(false)
-  const [showStep2Errors, setShowStep2Errors] = useState(false)
+  const [showBuildErrors, setShowBuildErrors] = useState(false)
   const [publishState, setPublishState] = useState<'idle' | 'checking' | 'publishing'>('idle')
   const [justPublished, setJustPublished] = useState(false)
   // Stepper is a progress indicator until Review is reached with every step valid.
   const [stepperUnlocked, setStepperUnlocked] = useState(false)
 
-  const stepLabel = CHART_STEPS.find((s) => s.step === step)?.label ?? 'Dataset'
+  const stepLabel = CHART_STEPS.find((s) => s.step === step)?.label ?? 'Build'
   useEffect(() => {
     setContextLabel(`Charts → ${stepLabel}`)
   }, [stepLabel, setContextLabel])
@@ -83,8 +80,7 @@ function ChartCreationPage() {
   }, [form])
 
   const columns = form.datasetId ? getFileColumns(form.datasetId) : []
-  const step1Errors = validateChartStep1(form)
-  const step2Errors = validateChartStep2(form, columns)
+  const buildErrors = validateChartBuild(form, columns)
   const otherCharts = charts.filter((c) => c.id !== editingId).map((c) => ({ name: c.form.name, datasetId: c.form.datasetId }))
 
   const handleClose = () => {
@@ -106,38 +102,26 @@ function ChartCreationPage() {
   }
 
   const handleContinue = () => {
-    if (step === 1) {
-      if (Object.keys(step1Errors).length > 0) {
-        setShowStep1Errors(true)
-        return
-      }
-      setShowStep1Errors(false)
-      goToStep(2)
+    if (Object.keys(buildErrors).length > 0) {
+      setShowBuildErrors(true)
       return
     }
-    if (step === 2) {
-      if (Object.keys(step2Errors).length > 0) {
-        setShowStep2Errors(true)
-        return
-      }
-      setShowStep2Errors(false)
-      goToStep(3)
-    }
+    setShowBuildErrors(false)
+    goToStep(2)
   }
 
   const editingRecord = editingId ? charts.find((c) => c.id === editingId) : undefined
   const hasLiveVersion = editingRecord?.status === 'published'
   const showUnsavedIndicator = hasLiveVersion && hasUnsavedChanges
-  const readyToPublish = Object.keys(step1Errors).length === 0 && Object.keys(step2Errors).length === 0
+  const readyToPublish = Object.keys(buildErrors).length === 0
 
   useEffect(() => {
-    if (step === 3 && readyToPublish) setStepperUnlocked(true)
+    if (step === 2 && readyToPublish) setStepperUnlocked(true)
   }, [step, readyToPublish])
 
   const handleStepperNav = (next: ChartStep) => {
     // Surface any issues on the step being opened so they are visible immediately.
-    setShowStep1Errors(true)
-    setShowStep2Errors(true)
+    setShowBuildErrors(true)
     goToStep(next)
   }
 
@@ -177,8 +161,8 @@ function ChartCreationPage() {
     setForm((prev) => ({ ...prev, chartType, config: emptyChartConfig, uploadedImage: null }))
   }
 
-  const handleConfigChange = <K extends keyof ChartFormState['config']>(field: K, value: ChartFormState['config'][K]) => {
-    setForm((prev) => ({ ...prev, config: { ...prev.config, [field]: value } }))
+  const handleConfigChange = (patch: Partial<ChartConfig>) => {
+    setForm((prev) => ({ ...prev, config: { ...prev.config, ...patch } }))
   }
 
   const handleUploadImage = (asset: UploadedAsset | null) => {
@@ -241,29 +225,22 @@ function ChartCreationPage() {
       </div>
       <div className="border-t border-border px-6 py-6">
         {step === 1 && (
-          <ChartStep1Dataset
-            datasetId={form.datasetId}
-            error={showStep1Errors ? step1Errors.dataset : undefined}
-            onSelect={handleSelectDataset}
-          />
-        )}
-        {step === 2 && form.datasetId && (
-          <ChartStep2Create
-            datasetId={form.datasetId}
+          <ChartStep1Build
             form={form}
-            errors={showStep2Errors ? step2Errors : {}}
+            errors={showBuildErrors ? buildErrors : {}}
+            onSelectDataset={handleSelectDataset}
             onSelectFile={handleSelectFile}
             onSelectChartType={handleSelectChartType}
             onConfigChange={handleConfigChange}
             onUploadImage={handleUploadImage}
           />
         )}
-        {step === 3 && (
-          <ChartStep3Review
+        {step === 2 && (
+          <ChartStep2Review
             form={form}
             otherCharts={otherCharts}
             onNameChange={(name) => setForm((prev) => ({ ...prev, name }))}
-            onEditStep={goToStep}
+            onEditBuild={() => goToStep(1)}
             onPublish={handlePublish}
             publishState={publishState}
             hasLiveVersion={Boolean(hasLiveVersion)}
@@ -273,7 +250,7 @@ function ChartCreationPage() {
       <div className="border-t border-border">
         <WizardFooter
           showPrevious={step > 1}
-          showContinue={step < 3}
+          showContinue={step < 2}
           onPrevious={handlePrevious}
           onContinue={handleContinue}
           onSaveDraft={handleSaveDraft}

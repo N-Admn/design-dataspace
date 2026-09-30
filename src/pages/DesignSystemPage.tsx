@@ -237,6 +237,9 @@ const CHART_COLORS = [
   ['--chart-3', 'chart-3'],
   ['--chart-4', 'chart-4'],
   ['--chart-5', 'chart-5'],
+  ['--chart-6', 'chart-6'],
+  ['--chart-7', 'chart-7'],
+  ['--chart-8', 'chart-8'],
 ] as const
 
 const CHROME_SURFACES = [
@@ -645,7 +648,7 @@ export function DesignSystemPage() {
         <Section
           id="color-chart"
           title="Chart palette"
-          subtitle="Categorical series colors — an amber-to-brown ramp, each stop independently ≥3:1 on white. Pair with direct labels / markers; contrast alone doesn't satisfy WCAG 1.4.1."
+          subtitle="Categorical series colors — 8 distinct, colorblind-safe hues, assigned in this fixed order and never cycled (fold a 9th series into “Other”). Always pair with a legend or labels; slots 3–5 are below 3:1 on white."
         >
           <div className="flex flex-wrap gap-0 overflow-hidden rounded-lg border border-border">
             {CHART_COLORS.map(([v, l]) => (

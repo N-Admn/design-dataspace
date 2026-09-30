@@ -11,23 +11,23 @@ import { ResourcePreviewDialog, assetToPreviewResource, type PreviewResource } f
 import { ReviewPublishPanel } from '@/components/shared/ReviewPublishPanel'
 import { SectionHeader } from '@/components/shared/SectionHeader'
 import { ChartPreviewCanvas } from '@/components/chart/ChartPreviewCanvas'
-import { categoryFieldLabel, valueFieldLabel } from '@/components/chart/ChartStep2Create'
+import { categoryFieldLabel, valueFieldLabel } from '@/components/chart/ChartStep1Build'
 import { useAppData } from '@/context/AppDataContext'
 import { getFileColumns, getMockRows } from '@/lib/chart-data'
 import { getChartReadiness, isChartReadyToPublish, validateChartName } from '@/lib/chart-validation'
-import { CHART_TYPE_OPTIONS, type ChartFormState } from '@/types/chart'
+import { CHART_TYPE_OPTIONS, aggregationPhrase, chartValues, type ChartFormState } from '@/types/chart'
 
-interface ChartStep3ReviewProps {
+interface ChartStep2ReviewProps {
   form: ChartFormState
   otherCharts: { name: string; datasetId: string | null }[]
   onNameChange: (name: string) => void
-  onEditStep: (step: 1 | 2) => void
+  onEditBuild: () => void
   onPublish: () => void
   publishState: 'idle' | 'checking' | 'publishing'
   hasLiveVersion: boolean
 }
 
-function ChartStep3Review({ form, otherCharts, onNameChange, onEditStep, onPublish, publishState, hasLiveVersion }: ChartStep3ReviewProps) {
+function ChartStep2Review({ form, otherCharts, onNameChange, onEditBuild, onPublish, publishState, hasLiveVersion }: ChartStep2ReviewProps) {
   const { datasets } = useAppData()
   const [nameTouched, setNameTouched] = React.useState(false)
   const [preview, setPreview] = React.useState<PreviewResource | null>(null)
@@ -41,6 +41,8 @@ function ChartStep3Review({ form, otherCharts, onNameChange, onEditStep, onPubli
   const ready = isChartReadyToPublish(readiness)
   const nameError = validateChartName(form.name, form.datasetId, otherCharts).name
   const busy = publishState !== 'idle'
+  const values = chartValues(form.config)
+  const isAxisChart = form.chartType === 'bar' || form.chartType === 'line'
 
   return (
     <div className="flex flex-col gap-6">
@@ -50,7 +52,7 @@ function ChartStep3Review({ form, otherCharts, onNameChange, onEditStep, onPubli
         description="Check your information before making this content available publicly."
       />
 
-      <ReviewSection title="Dataset & Source" defaultOpen onEdit={() => onEditStep(1)}>
+      <ReviewSection title="Dataset & Source" defaultOpen onEdit={onEditBuild}>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
             <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Dataset</p>
@@ -64,7 +66,7 @@ function ChartStep3Review({ form, otherCharts, onNameChange, onEditStep, onPubli
       </ReviewSection>
 
       {form.chartType === 'upload-image' && (
-        <ReviewSection title="Chart Image" defaultOpen onEdit={() => onEditStep(2)}>
+        <ReviewSection title="Chart Image" defaultOpen onEdit={onEditBuild}>
           <div className="flex items-center justify-between gap-3">
             <div className="min-w-0">
               <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Image</p>
@@ -87,7 +89,7 @@ function ChartStep3Review({ form, otherCharts, onNameChange, onEditStep, onPubli
       )}
 
       {form.chartType && form.chartType !== 'upload-image' && (
-        <ReviewSection title="Chart Type & Configuration" defaultOpen onEdit={() => onEditStep(2)}>
+        <ReviewSection title="Chart Type & Configuration" defaultOpen onEdit={onEditBuild}>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
               <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Chart Type</p>
@@ -107,8 +109,24 @@ function ChartStep3Review({ form, otherCharts, onNameChange, onEditStep, onPubli
             )}
             <div>
               <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{valueFieldLabel(form.chartType)}</p>
-              <p className="mt-1 text-sm text-foreground">{columns.find((c) => c.name === form.config.valueField)?.label || '—'}</p>
+              {values.length === 0 ? (
+                <p className="mt-1 text-sm text-foreground">—</p>
+              ) : (
+                values.map((v) => (
+                  <p key={v.field} className="mt-1 text-sm text-foreground">
+                    {aggregationPhrase(v.aggregation)} {columns.find((c) => c.name === v.field)?.label ?? v.field}
+                  </p>
+                ))
+              )}
             </div>
+            {isAxisChart && form.config.splitField && values.length === 1 && (
+              <div>
+                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Split by colour</p>
+                <p className="mt-1 text-sm text-foreground">
+                  {columns.find((c) => c.name === form.config.splitField)?.label ?? form.config.splitField}
+                </p>
+              </div>
+            )}
           </div>
         </ReviewSection>
       )}
@@ -139,7 +157,7 @@ function ChartStep3Review({ form, otherCharts, onNameChange, onEditStep, onPubli
           <CardTitle>Live Preview</CardTitle>
         </CardHeader>
         <CardContent>
-          <ChartPreviewCanvas form={form} columns={columns} rows={rows} />
+          <ChartPreviewCanvas form={form} columns={columns} rows={rows} size="large" />
         </CardContent>
       </Card>
 
@@ -149,7 +167,7 @@ function ChartStep3Review({ form, otherCharts, onNameChange, onEditStep, onPubli
         </p>
         <div className="mt-3 flex flex-col gap-2">
           {readiness.map((item) => {
-            const fixStep = item.step === 1 || item.step === 2 ? item.step : null
+            const fixable = item.step === 1
             return (
               <div key={item.key} className="flex items-center justify-between gap-3">
                 <div className="flex items-center gap-2">
@@ -160,8 +178,8 @@ function ChartStep3Review({ form, otherCharts, onNameChange, onEditStep, onPubli
                   )}
                   <p className="text-sm text-foreground">{item.ok ? item.label : (item.message ?? item.label)}</p>
                 </div>
-                {!item.ok && fixStep && (
-                  <Button type="button" variant="outline" size="sm" onClick={() => onEditStep(fixStep)}>
+                {!item.ok && fixable && (
+                  <Button type="button" variant="outline" size="sm" onClick={onEditBuild}>
                     Fix →
                   </Button>
                 )}
@@ -202,4 +220,4 @@ function ChartStep3Review({ form, otherCharts, onNameChange, onEditStep, onPubli
   )
 }
 
-export { ChartStep3Review }
+export { ChartStep2Review }

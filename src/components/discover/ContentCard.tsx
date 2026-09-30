@@ -143,7 +143,7 @@ function CardFooter({
 /** Icon + label pairs — the icon is decorative (each label already says what
  *  it means, e.g. "Updated Aug 2026", "CSV", "India"), so meaning never
  *  depends on the icon alone. In `tinted` mode (search/listing cards only)
- *  the icon and label text both use the `chart-2` semantic color, with a
+ *  the icon and label text both use the `text-accent-strong` amber, with a
  *  heavier icon stroke for emphasis — no background shape, one consistent
  *  treatment regardless of metadata type. Untinted (the default, used
  *  wherever this card is embedded in a detail page) keeps the original
@@ -155,14 +155,14 @@ function MetadataRow({ metadata, tinted, className }: { metadata: ContentCardMet
       {metadata.map((item, index) => {
         const Icon = item.icon
         const label = (
-          <span className={cn('inline-flex min-w-0 items-center gap-1.5 text-xs leading-none', tinted ? 'font-semibold text-chart-2' : 'text-muted-foreground')}>
+          <span className={cn('inline-flex min-w-0 items-center gap-1.5 text-xs leading-none', tinted ? 'font-semibold text-text-accent-strong' : 'text-muted-foreground')}>
             {/* A fixed-size flex wrapper (rather than sizing the `<svg>` itself)
                 gives every icon an identical, precisely centered box — lucide
                 glyphs differ enough that centering the raw SVG next to text
                 left a visible per-icon jitter across metadata items. */}
             <span className={cn('flex shrink-0 items-center justify-center', tinted ? 'size-[16.8px]' : 'size-3.5')}>
               {tinted ? (
-                <Icon className="size-[16.8px] text-chart-2" strokeWidth={2.5} aria-hidden="true" />
+                <Icon className="size-[16.8px] text-text-accent-strong"strokeWidth={2.5} aria-hidden="true" />
               ) : (
                 <Icon className="size-3.5" aria-hidden="true" />
               )}

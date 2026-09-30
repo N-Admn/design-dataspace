@@ -11,7 +11,7 @@ function ChartsPage() {
   const toast = useToast()
   const confirm = useConfirm()
 
-  const openChart = (id: string, initialStep: 1 | 3) => {
+  const openChart = (id: string, initialStep: 1 | 2) => {
     navigate('/dashboard/charts/new', { state: { chartId: id, initialStep } })
   }
 
@@ -49,7 +49,7 @@ function ChartsPage() {
     <ChartListView
       charts={charts}
       onAddChart={() => navigate('/dashboard/charts/new')}
-      onViewChart={(id) => openChart(id, 3)}
+      onViewChart={(id) => openChart(id, 2)}
       onEditChart={(id) => openChart(id, 1)}
       onDeleteChart={handleDeleteChart}
       onUnpublishChart={handleUnpublishChart}

@@ -102,6 +102,7 @@
   --text-warning: var(--base-navy-solid-9);
   --text-brand: var(--base-navy-solid-9);
   --text-critical-strong: var(--base-red-solid-9);
+  --text-accent-strong: #b46702;
 
   /* DataSpace token reconciliation — border colors */
   --border-default: var(--base-gray-solid-4);
@@ -134,11 +135,14 @@
   --action-ghost-pressed: var(--surface-pressed);
 
   /* Chart palette */
-  --chart-1: #d27802;
-  --chart-2: #b46702;
-  --chart-3: #a05b02;
-  --chart-4: #8b5002;
-  --chart-5: #7c4701;
+  --chart-1: #2a78d6;
+  --chart-2: #eb6834;
+  --chart-3: #1baf7a;
+  --chart-4: #eda100;
+  --chart-5: #e87ba4;
+  --chart-6: #008300;
+  --chart-7: #4a3aa7;
+  --chart-8: #e34948;
 
   /* Sidebar */
   --sidebar: #fafafa;
@@ -210,6 +214,7 @@
   --color-text-warning: var(--text-warning);
   --color-text-brand: var(--text-brand);
   --color-text-critical-strong: var(--text-critical-strong);
+  --color-text-accent-strong: var(--text-accent-strong);
 
   /* DataSpace token reconciliation — border colors */
   --color-border-default: var(--border-default);
@@ -247,6 +252,9 @@
   --color-chart-3: var(--chart-3);
   --color-chart-4: var(--chart-4);
   --color-chart-5: var(--chart-5);
+  --color-chart-6: var(--chart-6);
+  --color-chart-7: var(--chart-7);
+  --color-chart-8: var(--chart-8);
 
   /* Sidebar */
   --color-sidebar: var(--sidebar);

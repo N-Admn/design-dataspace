@@ -95,6 +95,7 @@ A parallel semantic naming layer, reconciling this app's tokens with the naming 
 | `text.warning` | `--text-warning` | `--color-text-warning` | `var(--base-navy-solid-9)` |
 | `text.brand` | `--text-brand` | `--color-text-brand` | `var(--base-navy-solid-9)` |
 | `text.criticalStrong` | `--text-critical-strong` | `--color-text-critical-strong` | `var(--base-red-solid-9)` |
+| `text.accentStrong` | `--text-accent-strong` | `--color-text-accent-strong` | `#b46702` |
 
 **Border colors** — usable as e.g. `border-border-default`:
 
@@ -139,13 +140,16 @@ A parallel semantic naming layer, reconciling this app's tokens with the naming 
 
 | Token | CSS variable | Tailwind key | Value |
 |---|---|---|---|
-| `chart.1` | `--chart-1` | `--color-chart-1` | `#d27802` |
-| `chart.2` | `--chart-2` | `--color-chart-2` | `#b46702` |
-| `chart.3` | `--chart-3` | `--color-chart-3` | `#a05b02` |
-| `chart.4` | `--chart-4` | `--color-chart-4` | `#8b5002` |
-| `chart.5` | `--chart-5` | `--color-chart-5` | `#7c4701` |
+| `chart.1` | `--chart-1` | `--color-chart-1` | `#2a78d6` |
+| `chart.2` | `--chart-2` | `--color-chart-2` | `#eb6834` |
+| `chart.3` | `--chart-3` | `--color-chart-3` | `#1baf7a` |
+| `chart.4` | `--chart-4` | `--color-chart-4` | `#eda100` |
+| `chart.5` | `--chart-5` | `--color-chart-5` | `#e87ba4` |
+| `chart.6` | `--chart-6` | `--color-chart-6` | `#008300` |
+| `chart.7` | `--chart-7` | `--color-chart-7` | `#4a3aa7` |
+| `chart.8` | `--chart-8` | `--color-chart-8` | `#e34948` |
 
-Categorical series colors for data visualizations — an amber-to-brown ramp calibrated so every stop independently clears 3:1 against white (3.27 / 4.30 / 5.26 / 6.47 / 7.61). `chart.1` no longer aliases `accent`; the brand amber stays unchanged elsewhere. Contrast alone does not satisfy WCAG 1.4.1 for categorical series — pair with direct labels, markers, or patterns.
+Categorical series colors for data visualizations — 8 distinct hues (blue, orange, aqua, yellow, magenta, green, violet, red) in a colorblind-safe order, validated on white: worst adjacent-pair CVD ΔE 9.1, worst normal-vision ΔE 19.6. Assign slots in fixed order and never cycle; past 8 series, fold into "Other". Slots 3–5 sit below 3:1 on white, so every chart pairs color with a legend, labels or tooltips — contrast alone does not satisfy WCAG 1.4.1. The tinted card metadata that used to borrow `chart.2` now uses `text.accentStrong`.
 
 ### Sidebar
 

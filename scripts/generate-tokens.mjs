@@ -233,7 +233,7 @@ ${mdTable(rowsFor('action'))}
 
 ${mdTable(rowsFor('chart'))}
 
-Categorical series colors for data visualizations — an amber-to-brown ramp calibrated so every stop independently clears 3:1 against white (3.27 / 4.30 / 5.26 / 6.47 / 7.61). \`chart.1\` no longer aliases \`accent\`; the brand amber stays unchanged elsewhere. Contrast alone does not satisfy WCAG 1.4.1 for categorical series — pair with direct labels, markers, or patterns.
+Categorical series colors for data visualizations — 8 distinct hues (blue, orange, aqua, yellow, magenta, green, violet, red) in a colorblind-safe order, validated on white: worst adjacent-pair CVD ΔE 9.1, worst normal-vision ΔE 19.6. Assign slots in fixed order and never cycle; past 8 series, fold into "Other". Slots 3–5 sit below 3:1 on white, so every chart pairs color with a legend, labels or tooltips — contrast alone does not satisfy WCAG 1.4.1. The tinted card metadata that used to borrow \`chart.2\` now uses \`text.accentStrong\`.
 
 ### Sidebar
 

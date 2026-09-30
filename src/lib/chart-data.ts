@@ -277,3 +277,47 @@ export function suggestFields(chartType: ChartType, columns: ChartColumn[]): Fie
   }
   return { category: categoryOptions[0]?.name, value }
 }
+
+export interface ChartSeries {
+  name: string
+  /** One value per entry in `SeriesData.categories`, in the same order (0 where a category has no rows). */
+  values: number[]
+}
+
+export interface SeriesData {
+  categories: string[]
+  series: ChartSeries[]
+}
+
+/** Builds the series for a bar/line chart. More than one value → one series per value.
+ * A single value with a split field → one series per distinct value of that field.
+ * Otherwise a single series. Categories are the union across series, sorted like
+ * `aggregateRows`, so every series lines up against the same X-axis. */
+export function buildSeries(
+  rows: ChartRow[],
+  categoryField: string,
+  values: { field: string; aggregation: ChartAggregation; label: string }[],
+  splitField?: string,
+): SeriesData {
+  const groups =
+    values.length > 1 || !splitField
+      ? values.map((v) => ({ name: v.label, points: aggregateRows(rows, categoryField, v.field, v.aggregation) }))
+      : Array.from(new Set(rows.map((row) => String(row[splitField] ?? '—'))))
+          .sort((a, b) => a.localeCompare(b))
+          .map((split) => ({
+            name: split,
+            points: aggregateRows(
+              rows.filter((row) => String(row[splitField] ?? '—') === split),
+              categoryField,
+              values[0].field,
+              values[0].aggregation,
+            ),
+          }))
+
+  const categories = Array.from(new Set(groups.flatMap((g) => g.points.map((p) => p.label)))).sort((a, b) => a.localeCompare(b))
+  const series = groups.map((g) => {
+    const byLabel = new Map(g.points.map((p) => [p.label, p.value]))
+    return { name: g.name, values: categories.map((c) => byLabel.get(c) ?? 0) }
+  })
+  return { categories, series }
+}
