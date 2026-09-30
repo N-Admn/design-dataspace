@@ -92,7 +92,8 @@ function UseCasePreview({
       </header>
 
       {/* Story — sticky share + contents rail on the left, reading column on the right. */}
-      <div className="grid gap-10 lg:grid-cols-[15rem_minmax(0,1fr)] lg:gap-16">
+      {/* 16rem fits the five share buttons on one line inside the rail card's padding. */}
+      <div className="grid gap-10 lg:grid-cols-[16rem_minmax(0,1fr)] lg:gap-16">
         <UseCaseRail title={title} shareUrl={shareUrl} toc={toc} connections={connections} className={stickyTopClassName} />
         <UseCaseBlockList blocks={blocks} annotatedHtml={annotatedHtml} />
       </div>
