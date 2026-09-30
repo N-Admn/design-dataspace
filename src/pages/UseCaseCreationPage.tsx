@@ -158,7 +158,8 @@ function UseCaseCreationPage() {
     }
   }
 
-  /** Publishing happens here in the editor (Review step), not from the preview tab. */
+  /** Publish from the editor's Review step. The preview tab can also publish, for
+   * contributors who decide there once they've seen the result. */
   const handlePublish = async () => {
     if (!isUseCaseReadyToPublish(form)) return
     const title = form.metadata.title || 'Untitled Use Case'
