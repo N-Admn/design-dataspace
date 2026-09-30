@@ -10,6 +10,7 @@ import { hasUnpublishedEdits, type ContentStatus } from '@/lib/content-status'
 import { DASHBOARD_MIN_HEIGHT_CLASS } from '@/lib/layout'
 import { cn } from '@/lib/utils'
 import { NAV_GROUPS } from '@/components/layout/nav-config'
+import { isOrganisationMember } from '@/types/organisation-workspace'
 
 const ECOSYSTEM_ITEMS = NAV_GROUPS.find((g) => g.key === 'contribution')?.items ?? []
 
@@ -31,6 +32,8 @@ interface ResumeItem {
   id: string
   title: string
   moduleLabel: ModuleLabel
+  /** "My Workspace" for personal content, or the owning organisation's name. */
+  workspaceLabel: string
   status: ContentStatus
   /** Published item with a saved-but-unpublished working copy. */
   unpublishedEdits: boolean
@@ -47,17 +50,37 @@ function needsAttention(record: { status: ContentStatus; form: unknown; publishe
 function DashboardPage() {
   const navigate = useNavigate()
   const toast = useToast()
-  const { datasets, events, useCases, collaboratives } = useAppData()
+  const { datasets, events, useCases, collaboratives, organisationWorkspaces, profile } = useAppData()
 
   const comingSoon = (label: string) =>
     toast({ title: `${label} coming soon`, description: 'This area isn’t available yet.' })
 
+  // Continue Working aggregates across every workspace the signed-in user
+  // actually works in — My Workspace (content with no organisationId is
+  // always the signed-in user's own, per the Dataset/Event/etc. record
+  // comments) plus each Organisation Workspace they're a member of, scoped to
+  // their own contributions there so a teammate's drafts never show up.
+  const currentUserName = `${profile.firstName} ${profile.lastName}`
+  const myOrgIds = new Set(organisationWorkspaces.filter(isOrganisationMember).map((o) => o.id))
+  const orgNameById = new Map(organisationWorkspaces.map((o) => [o.id, o.metadata.name]))
+
+  function belongsToCurrentUser(record: { organisationId?: string; createdBy?: string }): boolean {
+    if (!record.organisationId) return true
+    return myOrgIds.has(record.organisationId) && record.createdBy === currentUserName
+  }
+
+  function workspaceLabelFor(record: { organisationId?: string }): string {
+    if (!record.organisationId) return 'My Workspace'
+    return orgNameById.get(record.organisationId) ?? 'Organisation Workspace'
+  }
+
   const resumeDatasets: ResumeItem[] = datasets
-    .filter(needsAttention)
+    .filter((d) => needsAttention(d) && belongsToCurrentUser(d))
     .map((d) => ({
       id: `dataset-${d.id}`,
       title: d.form.metadata.name || 'Untitled dataset',
       moduleLabel: 'Dataset',
+      workspaceLabel: workspaceLabelFor(d),
       status: d.status,
       unpublishedEdits: hasUnpublishedEdits(d),
       sortKey: parseAppTimestamp(d.updatedAt).getTime(),
@@ -65,11 +88,12 @@ function DashboardPage() {
     }))
 
   const resumeEvents: ResumeItem[] = events
-    .filter(needsAttention)
+    .filter((e) => needsAttention(e) && belongsToCurrentUser(e))
     .map((e) => ({
       id: `event-${e.id}`,
       title: e.form.metadata.title || 'Untitled event',
       moduleLabel: 'Event',
+      workspaceLabel: workspaceLabelFor(e),
       status: e.status,
       unpublishedEdits: hasUnpublishedEdits(e),
       sortKey: parseAppTimestamp(e.updatedAt).getTime(),
@@ -77,11 +101,12 @@ function DashboardPage() {
     }))
 
   const resumeUseCases: ResumeItem[] = useCases
-    .filter(needsAttention)
+    .filter((u) => needsAttention(u) && belongsToCurrentUser(u))
     .map((u) => ({
       id: `usecase-${u.id}`,
       title: u.form.metadata.title || 'Untitled Use Case',
       moduleLabel: 'Use Case',
+      workspaceLabel: workspaceLabelFor(u),
       status: u.status,
       unpublishedEdits: hasUnpublishedEdits(u),
       sortKey: parseAppTimestamp(u.updatedAt).getTime(),
@@ -89,11 +114,12 @@ function DashboardPage() {
     }))
 
   const resumeCollaboratives: ResumeItem[] = collaboratives
-    .filter(needsAttention)
+    .filter((c) => needsAttention(c) && belongsToCurrentUser(c))
     .map((c) => ({
       id: `collaborative-${c.id}`,
       title: c.form.metadata.name || 'Untitled Collaborative',
       moduleLabel: 'Collaborative',
+      workspaceLabel: workspaceLabelFor(c),
       status: c.status,
       unpublishedEdits: hasUnpublishedEdits(c),
       sortKey: parseAppTimestamp(c.updatedAt).getTime(),
@@ -163,7 +189,12 @@ function DashboardPage() {
           </button>
 
           <div className={cn('flex flex-1 flex-col gap-4 bg-card p-8 md:p-10', PANEL_RADIUS)}>
-            <p className="type-heading-1 text-primary">Continue Working</p>
+            <div>
+              <p className="type-heading-1 text-primary">Continue Working</p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Pick up where you left off across your personal and organisation workspaces.
+              </p>
+            </div>
             {resumeItems.length === 0 ? (
               <p className="text-sm text-muted-foreground">Nothing to work on today.</p>
             ) : (
@@ -182,7 +213,9 @@ function DashboardPage() {
                       </div>
                       <div className="min-w-0 flex-1">
                         <p className="truncate text-sm font-semibold text-foreground">{item.title}</p>
-                        <p className="text-xs text-muted-foreground">{item.moduleLabel}</p>
+                        <p className="truncate text-xs text-muted-foreground">
+                          {item.moduleLabel} · {item.workspaceLabel}
+                        </p>
                       </div>
                       <span className="flex shrink-0 items-center gap-1 text-sm font-medium text-primary">
                         Continue
