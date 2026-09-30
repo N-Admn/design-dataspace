@@ -277,7 +277,7 @@ interface AppDataContextValue {
   removeOrganisationMember: (organisationId: string, memberId: string) => void
   inviteOrganisationMember: (
     organisationId: string,
-    invitation: { personId: string; name: string; email?: string; role: OrganisationRole },
+    invitation: { personId?: string; name: string; email?: string; role: OrganisationRole },
   ) => OrganisationInvitation
   revokeOrganisationInvitation: (organisationId: string, invitationId: string) => void
 }
@@ -784,7 +784,7 @@ function AppDataProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   const inviteOrganisationMember = React.useCallback(
-    (organisationId: string, invitation: { personId: string; name: string; email?: string; role: OrganisationRole }) => {
+    (organisationId: string, invitation: { personId?: string; name: string; email?: string; role: OrganisationRole }) => {
       const timestamp = formatTimestamp(new Date())
       organisationInvitationIdCounter += 1
       const newInvitation: OrganisationInvitation = {
