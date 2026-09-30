@@ -21,7 +21,8 @@ const PEXELS_AVATAR = (id: number) =>
 const useCase1Form: UseCaseFormState = {
   metadata: {
     thumbnail: fakeAsset(
-      'https://images.pexels.com/photos/30313887/pexels-photo-30313887.jpeg?auto=compress&cs=tinysrgb&w=1200',
+      // A mother spoon-feeding her newborn — Pexels photo 4101056.
+      'https://images.pexels.com/photos/4101056/pexels-photo-4101056.jpeg?auto=compress&cs=tinysrgb&w=1200',
       'hero.jpg',
     ),
     title: 'Maternal Health Monitoring in Rural Districts',

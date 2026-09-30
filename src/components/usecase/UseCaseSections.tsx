@@ -7,6 +7,7 @@ import { EmptyPreviewState } from '@/components/chart/EmptyPreviewState'
 import { SdgBadge } from '@/components/shared/SdgBadge'
 import { SocialShareLinks } from '@/components/shared/SocialShareLinks'
 import { Badge } from '@/components/ui/badge'
+import { Card, CardContent } from '@/components/ui/card'
 import { useAppData } from '@/context/AppDataContext'
 import { getFileColumns, getMockRows } from '@/lib/chart-data'
 import { parseDashboardUrl } from '@/lib/dashboard-embed'
@@ -116,8 +117,9 @@ function LinkedChart({ chartId }: { chartId: string | null }) {
   return <ChartPreviewCanvas form={chart} columns={getFileColumns(datasetId)} rows={getMockRows(datasetId)} />
 }
 
-/** The left rail: Share, Contents, Contributors. Sticky on wide screens.
- * Spacing on the 4px scale: 12px (gap-3) inside a group, 48px (gap-12) between groups. */
+/** The left rail: Share, Contents, Contributors, in one card — the same container
+ * as the Event detail page's rail (EventMetadataRail): 20px padding, groups split
+ * by a divider. Sticky on wide screens. 12px (gap-3) inside a group, 24px either side of a divider. */
 export function UseCaseRail({
   title,
   shareUrl,
@@ -133,42 +135,46 @@ export function UseCaseRail({
 }) {
   const hasContributors = connections.contributors.length > 0 || connections.organizations.length > 0
   return (
-    <aside className={cn('flex flex-col gap-12 lg:sticky lg:self-start', className)}>
-      <div className="flex flex-col gap-3">
-        <p className={sidebarLabel}>Share this use case</p>
-        <SocialShareLinks url={shareUrl} title={title} />
-      </div>
+    <aside className={cn('lg:sticky lg:self-start', className)}>
+      <Card>
+        <CardContent className="flex flex-col gap-6 p-5">
+          <div className="flex flex-col gap-3">
+            <p className={sidebarLabel}>Share this use case</p>
+            <SocialShareLinks url={shareUrl} title={title} />
+          </div>
 
-      {toc.length > 0 && (
-        <nav className="hidden flex-col gap-2.5 lg:flex">
-          <p className={sidebarLabel}>Contents</p>
-          {toc.map((entry) => (
-            <a
-              key={entry.id}
-              href={`#${entry.id}`}
-              className={cn(
-                'type-body text-muted-foreground transition-colors hover:text-primary',
-                entry.level === 3 && 'pl-3',
-              )}
-            >
-              {entry.text}
-            </a>
-          ))}
-        </nav>
-      )}
+          {toc.length > 0 && (
+            <nav className="hidden flex-col gap-2.5 border-t border-border-default pt-6 lg:flex">
+              <p className={sidebarLabel}>Contents</p>
+              {toc.map((entry) => (
+                <a
+                  key={entry.id}
+                  href={`#${entry.id}`}
+                  className={cn(
+                    'type-body text-muted-foreground transition-colors hover:text-primary',
+                    entry.level === 3 && 'pl-3',
+                  )}
+                >
+                  {entry.text}
+                </a>
+              ))}
+            </nav>
+          )}
 
-      {/* Linked people and organisations — they helped, but aren't the creator. */}
-      {hasContributors && (
-        <div className="flex flex-col gap-3">
-          <p className={sidebarLabel}>Contributors</p>
-          {connections.contributors.map((c) => (
-            <EntityRow key={c.id} name={c.name} imageUrl={c.image?.dataUrl} detail={c.designation} />
-          ))}
-          {connections.organizations.map((o) => (
-            <EntityRow key={o.id} name={o.name} imageUrl={o.logo?.dataUrl} detail="Organisation" />
-          ))}
-        </div>
-      )}
+          {/* Linked people and organisations — they helped, but aren't the creator. */}
+          {hasContributors && (
+            <div className="flex flex-col gap-3 border-t border-border-default pt-6">
+              <p className={sidebarLabel}>Contributors</p>
+              {connections.contributors.map((c) => (
+                <EntityRow key={c.id} name={c.name} imageUrl={c.image?.dataUrl} detail={c.designation} />
+              ))}
+              {connections.organizations.map((o) => (
+                <EntityRow key={o.id} name={o.name} imageUrl={o.logo?.dataUrl} detail="Organisation" />
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </aside>
   )
 }
