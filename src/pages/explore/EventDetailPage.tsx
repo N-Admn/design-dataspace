@@ -14,15 +14,19 @@ import { useGoBack } from '@/hooks/use-go-back'
 import { buildSearchIndex } from '@/lib/global-search'
 
 /** Consumer-facing Event Details page — an editorial, content-first layout:
- *  Event Identity (chips/title/subtitle) → Event Information (thumbnail +
- *  sticky rail: event info, then Organiser, then Partners) → About the Event
- *  → Speakers → Related Content. Speakers stay in the main content column;
- *  Organiser/Partners live only in the rail, as compact rows, never as
- *  main-content cards. See the Event Details documentation for the spec. */
+ *  Event Identity (chips/title/subtitle) → thumbnail (full width) → a left
+ *  sticky rail (event info, then Organiser, then Partners) beside body
+ *  content → Speakers → Related Content. Same placement as the Use Case
+ *  detail page's sticky rail: on the left, starting alongside body copy,
+ *  never beside the hero image above it. Speakers stay in the main content
+ *  column; Organiser/Partners live only in the rail, as compact rows, never
+ *  as main-content cards. See the Event Details documentation for the spec. */
 function EventDetailPage() {
   const { id } = useParams<{ id: string }>()
   const { events, datasets, useCases, collaboratives, aiModels, organisationWorkspaces, charts } = useAppData()
-  const goBack = useGoBack('/explore/events')
+  // "/explore/events" has no listing page today, so fall back to Search
+  // instead of a dead end (matches Use Case Detail's fallback pattern).
+  const goBack = useGoBack('/search?type=event')
   // Same index Search results builds — so a related dataset/use case/etc.
   // renders as the exact same card a visitor would see there.
   const searchIndex = React.useMemo(
@@ -62,23 +66,17 @@ function EventDetailPage() {
 
       <EventIdentity metadata={metadata} />
 
-      {/* Mobile: a plain stack, so DOM order alone gives the documented
-          thumbnail → metadata → content sequence. Desktop: named grid areas
-          put the thumbnail and metadata card side by side in row 1, while
-          the metadata card's cell spans both rows so it can stay sticky
-          alongside the body content in row 2. */}
-      <div
-        className="flex flex-col gap-8 lg:grid lg:grid-cols-[1fr_320px] lg:grid-rows-[auto_1fr] lg:items-start lg:gap-x-8 lg:gap-y-10 lg:[grid-template-areas:'thumb_meta'_'body_meta']"
-      >
-        <div className="lg:[grid-area:thumb]">
-          <EventThumbnail coverImage={metadata.coverImage} />
-        </div>
+      <EventThumbnail coverImage={metadata.coverImage} />
 
-        <div className="lg:sticky lg:top-6 lg:[grid-area:meta]">
+      {/* Same rail placement as the Use Case detail page: on the left, sticky,
+          starting alongside the body content only — never beside the hero
+          image above it. Mobile stacks the rail above the body in DOM order. */}
+      <div className="flex flex-col gap-8 lg:grid lg:grid-cols-[320px_1fr] lg:items-start lg:gap-x-8 lg:gap-y-10">
+        <div className="lg:sticky lg:top-6">
           <EventMetadataRail metadata={metadata} organisers={organisers} partners={partners} />
         </div>
 
-        <div className="flex min-w-0 flex-col gap-12 lg:[grid-area:body]">
+        <div className="flex min-w-0 flex-col gap-12">
           <EventAbout overview={metadata.overview} />
           <EventSpeakers speakers={speakers} />
           <EventRelatedContent
