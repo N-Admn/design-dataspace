@@ -20,6 +20,8 @@ import {
 
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { SocialShareLinks } from '@/components/shared/SocialShareLinks'
 import { useToast } from '@/components/ui/toast'
 import { formatShortDate } from '@/lib/format'
 import type { DatasetPublisher } from '@/lib/dataset-publisher'
@@ -67,15 +69,6 @@ function DatasetDetailHeader({ metadata, publisher, updatedAt, downloadCount }: 
     toast({ title: 'Download coming soon', description: "Dataset file downloads aren't available yet." })
   }
 
-  const handleShare = async () => {
-    try {
-      await navigator.clipboard.writeText(window.location.href)
-      toast({ title: 'Link copied to clipboard', variant: 'success' })
-    } catch {
-      toast({ title: 'Unable to copy link', description: 'Please try again.', variant: 'error' })
-    }
-  }
-
   return (
     <header className="flex flex-col gap-4 border-b border-border-default pb-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
@@ -83,10 +76,22 @@ function DatasetDetailHeader({ metadata, publisher, updatedAt, downloadCount }: 
           <h1 className="type-heading-1 break-words text-text-brand">{metadata.name || 'Untitled dataset'}</h1>
         </div>
         <div className="flex shrink-0 items-center gap-2">
-          <Button type="button" variant="outline" onClick={handleShare}>
-            <Share2 className="size-4" />
-            Share
-          </Button>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button type="button" variant="outline">
+                <Share2 className="size-4" />
+                Share
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent align="end" className="w-64 p-4">
+              <p className="text-sm font-medium text-text-default">Share this dataset</p>
+              <SocialShareLinks
+                url={window.location.href}
+                title={metadata.name || 'Untitled dataset'}
+                className="mt-3"
+              />
+            </PopoverContent>
+          </Popover>
           <Button type="button" onClick={handleDownload}>
             <Download className="size-4" />
             Download
