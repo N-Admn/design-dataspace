@@ -5,13 +5,13 @@ import {
   Building2,
   CheckCircle2,
   Database,
-  ExternalLink,
   ImageIcon,
   Layers,
   Link2,
   MapPin,
   MessageSquareQuote,
   Pilcrow,
+  Send,
   Tag,
   Target,
   User,
@@ -30,7 +30,9 @@ import { validateUseCaseBasicInfo, isUseCaseReadyToPublish } from '@/lib/usecase
 interface UseCaseStep3ReviewProps {
   form: UseCaseFormState
   onEditStep: (step: 1 | 2) => void
-  onPreview: () => void
+  /** True when this use case already has a published version — publishing replaces it. */
+  hasLiveVersion: boolean
+  onPublish: () => void
 }
 
 function optionLabel(options: { value: string; label: string }[], value: string): string {
@@ -127,7 +129,7 @@ function ReadinessRow({ label, ok, detail, onEdit }: { label: string; ok: boolea
   )
 }
 
-function UseCaseStep3Review({ form, onEditStep, onPreview }: UseCaseStep3ReviewProps) {
+function UseCaseStep3Review({ form, onEditStep, hasLiveVersion, onPublish }: UseCaseStep3ReviewProps) {
   const { metadata, blocks, connections } = form
   const basicInfoErrors = validateUseCaseBasicInfo(form)
   const basicInfoOk = Object.keys(basicInfoErrors).length === 0
@@ -225,15 +227,22 @@ function UseCaseStep3Review({ form, onEditStep, onPreview }: UseCaseStep3ReviewP
         </div>
       </ReviewSection>
 
+      {/* Same publish panel as Dataset Review. Preview lives in the footer, beside Previous. */}
       <ReviewPublishPanel>
         <p className="text-sm text-muted-foreground">
-          Open a full preview of this Use Case in a new tab, exactly as it will appear once published.
+          {hasLiveVersion
+            ? 'Publishing will replace the current public version of this Use Case immediately.'
+            : 'Your Use Case will be publicly available immediately after publishing.'}
         </p>
-        <Button type="button" size="lg" className="w-full max-w-md" onClick={onPreview}>
-          Preview Use Case
-          <ExternalLink className="size-4" />
+        <Button type="button" size="lg" className="w-full max-w-md" disabled={!ready} onClick={onPublish}>
+          {hasLiveVersion ? 'Publish Changes' : 'Publish Use Case'}
+          <Send className="size-4" />
         </Button>
-        <p className="text-xs text-muted-foreground">Publishing happens from inside the preview.</p>
+        {!ready && (
+          <p className="text-xs font-medium text-text-critical-strong">
+            Complete the required Basic Information in Builder before publishing.
+          </p>
+        )}
       </ReviewPublishPanel>
     </div>
   )

@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { AlertCircle, CheckCircle2, X } from 'lucide-react'
+import { AlertCircle, CheckCircle2, ExternalLink, X } from 'lucide-react'
 
 import { cn } from '@/lib/utils'
 
@@ -9,6 +9,8 @@ interface ToastOptions {
   title: string
   description?: string
   variant?: ToastVariant
+  /** Optional follow-up link, opened in a new tab (e.g. "View live" after publishing). */
+  action?: { label: string; href: string }
 }
 
 interface ToastItem extends ToastOptions {
@@ -16,6 +18,8 @@ interface ToastItem extends ToastOptions {
 }
 
 const TOAST_DURATION_MS = 4000
+// A toast with a link stays up longer so there's time to reach it.
+const TOAST_WITH_ACTION_DURATION_MS = 8000
 
 const ToastContext = React.createContext<(options: ToastOptions) => void>(() => {})
 
@@ -33,7 +37,7 @@ function ToastProvider({ children }: { children: React.ReactNode }) {
       toastIdCounter += 1
       const id = toastIdCounter
       setToasts((prev) => [...prev, { ...options, id }])
-      window.setTimeout(() => dismiss(id), TOAST_DURATION_MS)
+      window.setTimeout(() => dismiss(id), options.action ? TOAST_WITH_ACTION_DURATION_MS : TOAST_DURATION_MS)
     },
     [dismiss],
   )
@@ -56,6 +60,17 @@ function ToastProvider({ children }: { children: React.ReactNode }) {
             <div className="min-w-0 flex-1">
               <p className="text-sm font-medium text-text-default">{t.title}</p>
               {t.description && <p className="mt-0.5 text-xs text-text-subdued">{t.description}</p>}
+              {t.action && (
+                <a
+                  href={t.action.href}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="type-label mt-1.5 inline-flex items-center gap-1 text-text-brand underline-offset-2 hover:underline"
+                >
+                  {t.action.label}
+                  <ExternalLink className="size-3.5" aria-hidden="true" />
+                </a>
+              )}
             </div>
             <button
               type="button"
