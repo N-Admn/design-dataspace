@@ -301,6 +301,7 @@ function SearchResultsPage() {
           placeholder="Search datasets, use cases, publications, and more"
           ariaLabel="Search CivicDataSpace"
           size="md"
+          autoFocus
         />
 
         {/* Content-type pills only make sense once the user has actually
