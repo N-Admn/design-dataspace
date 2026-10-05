@@ -96,6 +96,9 @@ function AppLayout() {
     location.pathname.startsWith('/explore/') ||
     location.pathname === '/collaboratives' ||
     location.pathname === '/forum' ||
+    location.pathname === '/publishers' ||
+    location.pathname === '/about' ||
+    location.pathname === '/contact' ||
     location.pathname === '/discover' ||
     location.pathname === '/search'
   const isOrganisationSelector = location.pathname === '/organisations'
@@ -195,6 +198,9 @@ function AppLayout() {
             <Route path="/explore/events/:id" element={<EventDetailPage />} />
             <Route path="/collaboratives" element={<ComingSoonPage title="Collaboratives" />} />
             <Route path="/forum" element={<ComingSoonPage title="Forum" />} />
+            <Route path="/publishers" element={<ComingSoonPage title="Publishers" />} />
+            <Route path="/about" element={<ComingSoonPage title="About" />} />
+            <Route path="/contact" element={<ComingSoonPage title="Contact Us" />} />
             <Route path="*" element={<Navigate to="/dashboard/datasets" replace />} />
           </Routes>
         </div>

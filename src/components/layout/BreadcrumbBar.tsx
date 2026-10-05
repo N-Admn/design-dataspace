@@ -26,11 +26,8 @@ const ORG_ROUTE_PATTERN = /^\/organisations\/([^/]+)(?:\/(.*))?$/
 const DATASET_DETAIL_PATTERN = /^\/explore\/datasets\/([^/]+)$/
 const USE_CASE_DETAIL_PATTERN = /^\/explore\/use-cases\/([^/]+)$/
 const EVENT_DETAIL_PATTERN = /^\/explore\/events\/([^/]+)$/
-/** The app has no standalone "Explore" landing route (TopNav's EXPLORE control
- *  is a menu, not a page) — Discover is the closest existing page that actually
- *  serves as the site's browse/explore hub, so the breadcrumb points there
- *  rather than leaving "Explore" a dead label or inventing a new route. */
-const EXPLORE_PATH = '/discover'
+/** TopNav's Explore item opens the existing Search/Explore discovery page, so the "Explore" crumb points there. */
+const EXPLORE_PATH = '/search'
 
 /** Labels for the other `/explore/*` list pages (list "coming soon" pages and
  *  the Use Cases list) — kept next to the detail-page special cases below
@@ -48,9 +45,11 @@ const EXPLORE_LIST_LABELS: Record<string, string> = {
  *  the contributor NAV_GROUPS, so they need their own label here. Discover
  *  itself is Home, so it isn't listed. */
 const CONSUMER_PAGE_LABELS: Record<string, string> = {
-  '/search': 'Search',
   '/collaboratives': 'Collaboratives',
   '/forum': 'Forum',
+  '/publishers': 'Publishers',
+  '/about': 'About',
+  '/contact': 'Contact Us',
 }
 
 interface CrumbSpec {
@@ -117,14 +116,12 @@ function BreadcrumbBar() {
   // "Home → Dashboard" one further down, since these public pages have
   // nothing to do with the authenticated Dashboard.
 
-  if (pathname === HOME_PATH) {
-    // Discover is the site's Home — a single, non-linking crumb.
-    return (
-      <div data-slot="breadcrumb" className="w-full bg-breadcrumb-background px-8 py-2.5">
-        <Breadcrumbs crumbs={[{ label: 'Home' }]} />
-      </div>
-    )
-  }
+  // Discover is the site's Home: no breadcrumb bar at all (a lone "Home" crumb
+  // adds nothing on the landing page itself).
+  if (pathname === HOME_PATH) return null
+
+  // Explore (/search) is a primary navigation destination, not a content page: no breadcrumb bar.
+  if (pathname === '/search') return null
 
   const datasetMatch = DATASET_DETAIL_PATTERN.exec(pathname)
   if (datasetMatch) {
@@ -243,14 +240,17 @@ function BreadcrumbBar() {
 
   const match = findNavMatch(NAV_GROUPS, location.pathname)
 
-  // Personal-workspace pages get "Home › My Workspace › …" — a single,
+  // The Dashboard page itself reads "Home › Dashboard".
+  // Personal-workspace pages get "Dashboard › My Workspace › …" (My Workspace is a
+  // distinct workspace with no route of its own, so it is a label, not a link)
+  // — formerly "Home › My Workspace › …" — a single,
   // consistent contributor-side crumb rather than the redundant
   // "Dashboard › My Workspace" the generic `leadingCrumbs` would otherwise
   // produce (that wording is still correct for the Dashboard page itself and
   // for Organisation Workspace pages, which keep their existing hierarchy).
   const workspaceLeadingCrumbs: CrumbSpec[] = isDashboard
-    ? [{ label: 'Home', to: HOME_PATH }, { label: 'My Workspace' }]
-    : [{ label: 'Home', to: HOME_PATH }, { label: 'My Workspace', to: DASHBOARD_PATH }]
+    ? [{ label: 'Home', to: HOME_PATH }, { label: 'Dashboard' }]
+    : [{ label: 'Dashboard', to: DASHBOARD_PATH }, { label: 'My Workspace' }]
 
   const crumbs: CrumbSpec[] = [...workspaceLeadingCrumbs]
   if (!isDashboard && match) {
