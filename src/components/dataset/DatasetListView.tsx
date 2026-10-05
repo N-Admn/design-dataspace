@@ -3,7 +3,6 @@ import { Archive, ExternalLink, FileText, Pencil, Trash2 } from 'lucide-react'
 import { ManagementTable, type ManagementColumn, type ManagementFilterDef, type ManagementRowAction } from '@/components/shared/management-table/ManagementTable'
 import { TruncatedText } from '@/components/shared/TruncatedText'
 import { StatusBadge } from '@/components/shared/StatusBadge'
-import { Badge } from '@/components/ui/badge'
 import { formatShortDate, parseAppTimestamp } from '@/lib/format'
 import {
   DATASET_TYPE_OPTIONS,
@@ -24,6 +23,11 @@ interface DatasetListViewProps {
   loading?: boolean
   loadError?: boolean
   onRetry?: () => void
+}
+
+/** "Prompt Dataset" → "Prompt dataset" — presentation only. */
+function sentenceCase(label: string): string {
+  return label.charAt(0).toUpperCase() + label.slice(1).toLowerCase()
 }
 
 function optionLabel(options: { value: string; label: string }[], value: string): string {
@@ -79,9 +83,9 @@ function buildColumns(onOpen: (dataset: DatasetRecord) => void): ManagementColum
     optional: true,
     sortable: true,
     compare: (a, b) => datasetTypeLabel(a.form.datasetType).localeCompare(datasetTypeLabel(b.form.datasetType)),
-    render: (d) => (
-      <Badge variant="outline">{datasetTypeLabel(d.form.datasetType)}</Badge>
-    ),
+    // Content classification, not a lifecycle state — plain neutral text in sentence case
+    // (stored/option labels are untouched), so Status stays the only badge here.
+    render: (d) => sentenceCase(datasetTypeLabel(d.form.datasetType)),
   },
   {
     key: 'sector',
