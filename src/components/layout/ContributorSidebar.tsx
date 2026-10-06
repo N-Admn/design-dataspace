@@ -1,8 +1,11 @@
 import * as React from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { ArrowLeft, ChevronLeft, ChevronRight } from 'lucide-react'
+import { ArrowLeft, ChevronLeft, ChevronRight, Menu } from 'lucide-react'
 
+import { Button } from '@/components/ui/button'
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { useBreakpointUp } from '@/hooks/use-breakpoint'
 import { HelpSupportPanel } from '@/components/layout/HelpSupportPanel'
 import { cn } from '@/lib/utils'
 import { WORKSPACE_HEIGHT_CLASS } from '@/lib/layout'
@@ -105,12 +108,21 @@ function ContributorSidebar({
   backTo = '/',
 }: ContributorSidebarProps) {
   const location = useLocation()
-  const [collapsed, setCollapsed] = React.useState(readStoredCollapsed)
+  const [storedCollapsed, setCollapsed] = React.useState(readStoredCollapsed)
   const [helpOpen, setHelpOpen] = React.useState(false)
+  const [drawerOpen, setDrawerOpen] = React.useState(false)
+  // Responsive Behaviour: ≥lg expanded (the user's collapse preference still applies), md–lg a collapsed rail,
+  // <md no inline sidebar — the same navigation opens in a drawer from a compact trigger.
+  const isMdUp = useBreakpointUp('md')
+  const isLgUp = useBreakpointUp('lg')
+  const collapsed = isLgUp ? storedCollapsed : true
 
   React.useEffect(() => {
-    window.localStorage.setItem(COLLAPSE_STORAGE_KEY, collapsed ? '1' : '0')
-  }, [collapsed])
+    window.localStorage.setItem(COLLAPSE_STORAGE_KEY, storedCollapsed ? '1' : '0')
+  }, [storedCollapsed])
+
+  // Close the drawer whenever the route changes or the viewport grows past it.
+  React.useEffect(() => setDrawerOpen(false), [location.pathname, isMdUp])
 
   const groups = visibleNavGroups(groupsProp ?? NAV_GROUPS)
 
@@ -122,16 +134,8 @@ function ContributorSidebar({
     </div>
   )
 
-  return (
-    <aside
-      style={{ '--sidebar-w': collapsed ? '80px' : '232px' } as React.CSSProperties}
-      className={cn(
-        'flex w-full shrink-0 flex-col overflow-hidden rounded-xl border border-border bg-card md:sticky md:top-6',
-        'md:w-[var(--sidebar-w)] transition-[width] duration-200 ease-in-out',
-        WORKSPACE_HEIGHT_CLASS,
-        className,
-      )}
-    >
+  const renderBody = (collapsed: boolean, showToggle: boolean) => (
+    <>
       <div className={cn('flex shrink-0 items-center px-3 py-4', collapsed ? 'justify-center' : 'gap-3')}>
         {collapsed ? (
           <Tooltip>
@@ -195,6 +199,7 @@ function ContributorSidebar({
           <TooltipContent side={collapsed ? 'right' : 'top'}>{backLabel}</TooltipContent>
         </Tooltip>
 
+        {showToggle && (
         <Tooltip>
           <TooltipTrigger asChild>
             <button
@@ -210,8 +215,42 @@ function ContributorSidebar({
             {collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
           </TooltipContent>
         </Tooltip>
+        )}
       </div>
 
+    </>
+  )
+
+  // <md: a compact trigger opens the same navigation in a drawer (the existing right-drawer Dialog variant).
+  if (!isMdUp) {
+    return (
+      <div className={className}>
+        <Button type="button" variant="outline" onClick={() => setDrawerOpen(true)} className="w-full justify-start">
+          <Menu className="size-4" aria-hidden="true" />
+          {backLabel === 'My Workspace' ? 'Workspace menu' : `${identity.name} menu`}
+        </Button>
+        <Dialog open={drawerOpen} onOpenChange={setDrawerOpen}>
+          <DialogContent variant="right-drawer" className="gap-0 p-0 sm:w-80 md:w-80 lg:min-w-0">
+            <DialogTitle className="sr-only">Workspace navigation</DialogTitle>
+            <div className="flex min-h-0 flex-1 flex-col">{renderBody(false, false)}</div>
+          </DialogContent>
+        </Dialog>
+        <HelpSupportPanel open={helpOpen} onOpenChange={setHelpOpen} />
+      </div>
+    )
+  }
+
+  return (
+    <aside
+      style={{ '--sidebar-w': collapsed ? '80px' : '232px' } as React.CSSProperties}
+      className={cn(
+        'flex w-full shrink-0 flex-col overflow-hidden rounded-xl border border-border bg-card md:sticky md:top-6',
+        'md:w-[var(--sidebar-w)] transition-[width] duration-200 ease-in-out',
+        WORKSPACE_HEIGHT_CLASS,
+        className,
+      )}
+    >
+      {renderBody(collapsed, isLgUp)}
       <HelpSupportPanel open={helpOpen} onOpenChange={setHelpOpen} />
     </aside>
   )

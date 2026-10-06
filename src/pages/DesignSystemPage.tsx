@@ -54,6 +54,7 @@ import { ReviewSection } from '@/components/shared/ReviewSection'
 import { StatusBadge } from '@/components/shared/StatusBadge'
 import { TruncatedText } from '@/components/shared/TruncatedText'
 import { cn } from '@/lib/utils'
+import { ResponsiveBehaviourSection } from '@/pages/design-system/ResponsiveBehaviourSection'
 
 /**
  * Living design-system reference. Everything on this page renders from the real
@@ -254,6 +255,7 @@ const CHROME_SURFACES = [
 
 const TYPE_ROLES = [
   ['type-display', 'display', '48–60 / 1.1 / 600', 'One hero moment per screen'],
+  ['type-display-2', 'display2', '26–28 / 1.1 / 600', 'Prominent feature / section title'],
   ['type-heading-1', 'heading1', '24 / 1.25 / 600', 'Page / section title'],
   ['type-heading-2', 'heading2', '20 / 1.3 / 600', 'Sub-section title'],
   ['type-heading-3', 'heading3', '16 / 1.25 / 600', 'Card / dialog title (backs CardTitle)'],
@@ -288,11 +290,11 @@ const SPACING = [
 ] as const
 
 const BREAKPOINTS = [
-  ['sm', '640px', 'sidebar + main stack → row happens at md, not here'],
-  ['md', '768px', 'App.tsx sidebar/main row; ManagementTable column fit'],
-  ['lg', '1024px', 'ManagementTable second column-fit breakpoint'],
-  ['xl', '1280px', '—'],
-  ['2xl', '1536px', 'main content caps at max-w-[1760px] regardless'],
+  ['sm', '640px', 'small adjustments — Discover tiles go to 2 columns, side sheets 70vw'],
+  ['md', '768px', 'tablet / major layout transition — sidebar becomes a collapsed rail, 24px gutter, labelled stepper, sidebar + main row'],
+  ['lg', '1024px', 'desktop / navigation transition — desktop navigation, expanded sidebar, 32px gutter, full management table'],
+  ['xl', '1280px', 'standard desktop — 40px page gutter (form fields already two-column from the documented 1200px form threshold)'],
+  ['2xl', '1536px', 'large desktop — main content caps at max-w-[1760px] regardless'],
 ] as const
 
 const SEMANTIC_STATES = [
@@ -356,6 +358,7 @@ const TOC = [
   ['shadows', 'Shadows'],
   ['spacing', 'Spacing scale'],
   ['breakpoints', 'Breakpoints'],
+  ['responsive', 'Responsive behaviour'],
   ['icons', 'Icons'],
   ['states', 'Semantic states'],
   ['button', 'Button'],
@@ -684,7 +687,11 @@ export function DesignSystemPage() {
             {TYPE_ROLES.map(([cls, name, spec, purpose]) => (
               <div key={cls} className="flex flex-col gap-1 px-5 py-4">
                 <span className={cls}>
-                  {name === 'display' ? 'Civic data' : `The quick brown fox — ${name}`}
+                  {name === 'display'
+                    ? 'Civic data'
+                    : name === 'display2'
+                      ? 'Civic data — display 2'
+                      : `The quick brown fox — ${name}`}
                 </span>
                 <span className="type-caption font-mono text-muted-foreground">
                   .{cls} · {spec} · {purpose}
@@ -783,9 +790,18 @@ export function DesignSystemPage() {
         <Section
           id="breakpoints"
           title="Breakpoints"
-          subtitle="Tailwind v4 defaults. Two JS reads in ManagementTable.tsx mirror md / lg literally."
+          subtitle="Tailwind v4 defaults (no xs, no 3xl). The few JS reads go through useBreakpointUp() in src/hooks/use-breakpoint.ts."
         >
           <PropTable rows={BREAKPOINTS.map(([k, v, note]) => [k, v, note]) as [string, string, string][]} />
+        </Section>
+
+        {/* ============================================ RESPONSIVE */}
+        <Section
+          id="responsive"
+          title="Responsive behaviour"
+          subtitle="How the existing components adapt across the existing breakpoints — demonstrated with the real prototype."
+        >
+          <ResponsiveBehaviourSection />
         </Section>
 
         {/* ============================================ ICONS */}
@@ -1262,8 +1278,8 @@ export function DesignSystemPage() {
               <p className="type-heading-3 text-foreground">ManagementTable</p>
               <p className="type-body mb-3 text-muted-foreground">
                 src/components/shared/management-table/ — the sortable, responsive list table behind
-                every module's index page. Computes column fit in JS via useMediaQuery('(min-width:
-                768px)') / '(min-width: 1024px)' and scrolls horizontally below the combined min width.
+                every module's index page. Computes column fit in JS via useBreakpointUp('md') /
+                useBreakpointUp('lg') and scrolls horizontally below the combined min width.
               </p>
               <PropTable
                 rows={[

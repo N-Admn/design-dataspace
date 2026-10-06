@@ -232,7 +232,7 @@ function DashboardPage() {
 
       {/* Footer — supporting copy and ecosystem icon stack */}
       <div className="flex shrink-0 flex-wrap items-center justify-between gap-4">
-        <p className="whitespace-nowrap text-sm text-muted-foreground">
+        <p className="min-w-0 text-sm text-muted-foreground">
           Create and share data, models, knowledge and visualizations with the civic data community.
         </p>
 

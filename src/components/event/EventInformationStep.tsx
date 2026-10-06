@@ -16,6 +16,7 @@ import {
   type EventMetadata,
 } from '@/types/event'
 import type { EventInformationErrors } from '@/lib/event-validation'
+import { FORM_COL_SPAN_2, FORM_TWO_COL_GRID } from '@/lib/layout'
 
 interface EventInformationStepProps {
   metadata: EventMetadata
@@ -262,7 +263,7 @@ function EventInformationStep({ metadata, errors, onChange }: EventInformationSt
         <CardHeader>
           <CardTitle>Schedule</CardTitle>
         </CardHeader>
-        <CardContent className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+        <CardContent className={cn(FORM_TWO_COL_GRID, 'gap-5')}>
           <div>
             <Label htmlFor="start-date">
               Start Date <span className="text-destructive">*</span>
@@ -382,8 +383,8 @@ function EventInformationStep({ metadata, errors, onChange }: EventInformationSt
           )}
 
           {(metadata.accessType === 'hybrid' || metadata.accessType === 'in-person') && (
-            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-              <div className="sm:col-span-2">
+            <div className={cn(FORM_TWO_COL_GRID, 'gap-5')}>
+              <div className={FORM_COL_SPAN_2}>
                 <Label htmlFor="venue-name">
                   Venue Name <span className="text-destructive">*</span>
                 </Label>
@@ -397,7 +398,7 @@ function EventInformationStep({ metadata, errors, onChange }: EventInformationSt
                 />
                 <FieldError message={errors.venueName} />
               </div>
-              <div className="sm:col-span-2">
+              <div className={FORM_COL_SPAN_2}>
                 <Label htmlFor="venue-address">Address/Location</Label>
                 <Input
                   id="venue-address"

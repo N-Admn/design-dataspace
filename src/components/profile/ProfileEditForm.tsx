@@ -16,6 +16,8 @@ import { MAX_IMAGE_BYTES, type UploadedAsset } from '@/lib/generic-upload'
 import { SECTOR_OPTIONS } from '@/types/dataset'
 import { BIO_MAX_LENGTH, type ContributorProfile, type ProfileSocialLinks } from '@/types/profile'
 import { DeleteAccountDialog } from '@/components/profile/DeleteAccountDialog'
+import { cn } from '@/lib/utils'
+import { FORM_TWO_COL_GRID } from '@/lib/layout'
 
 const AVATAR_EXTENSIONS = ['jpg', 'jpeg', 'png']
 
@@ -151,7 +153,7 @@ function ProfileEditForm({ profile, onSave }: ProfileEditFormProps) {
               </p>
             </CardHeader>
             <CardContent className="flex flex-col gap-5">
-              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+              <div className={cn(FORM_TWO_COL_GRID, 'gap-5')}>
                 <div>
                   <Label htmlFor="profile-first-name">
                     First Name <span className="text-destructive">*</span>
