@@ -80,13 +80,26 @@
  * Utilities still win for one-off overrides (same specificity, later in cascade). */
 @layer components {
   .type-display {
-    font-size: var(--font-size-display);
+    /* The one responsive exception to fixed type roles: the 48px display size is capped at 9vw so a long
+       unbreakable word ("CivicDataSpace") never overflows a ≤390px viewport. No effect from ~533px up. */
+    font-size: min(var(--font-size-display), 9vw);
     line-height: var(--line-height-display);
     font-weight: var(--type-font-weight-semibold);
   }
   @media (min-width: 768px) {
     .type-display {
       font-size: 3.75rem;
+    }
+  }
+  /* Display 2 — between Display and Heading 1: 26px, 28px from md (the same two-step pattern as Display). */
+  .type-display-2 {
+    font-size: var(--font-size-display-two);
+    line-height: var(--line-height-display-two);
+    font-weight: var(--type-font-weight-semibold);
+  }
+  @media (min-width: 768px) {
+    .type-display-2 {
+      font-size: 1.75rem;
     }
   }
   .type-heading-1 {

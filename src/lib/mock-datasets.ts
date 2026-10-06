@@ -8,7 +8,7 @@ const ds1Form: DatasetFormState = {
   metadata: {
     name: 'National Economic Indicators & GDP Growth Projections (2020–2026)',
     description:
-      'Quarterly national and state-level economic indicators covering GDP growth, sector performance, labour trends, and economic projections from 2020 to 2026.',
+      'Quarterly national and state-level economic indicators covering GDP growth, sector performance, labour trends, and economic projections from 2020 to 2026. The dataset brings together headline GDP series with a quarterly breakdown by sector, state-level labour force and unemployment figures, and forward-looking projections, so that trends can be compared across regions and over time. A methodology note and data dictionary describe how each indicator is defined and calculated. It is intended for researchers, journalists, and policy teams who need a consistent view of how the economy is changing. Because the series are published on a common quarterly calendar, readers can line up headline growth against sector contributions, see which states are driving or lagging national performance, and test how projections compare with observed outcomes as new quarters are added. Notes alongside the data record revisions and known gaps, so that anyone reusing the figures in a report, dashboard or model can cite them with confidence and understand their limits.',
     sector: 'finance',
     geography: 'india',
     tags: ['GDP', 'Economy', 'Growth', 'Finance', 'National Indicators'],
@@ -102,7 +102,7 @@ const ds2Form: DatasetFormState = {
   metadata: {
     name: 'District Health Infrastructure & Service Availability (2024)',
     description:
-      'District-level information on public health infrastructure, healthcare facilities, service availability, and key capacity indicators across India.',
+      'District-level information on public health infrastructure, healthcare facilities, service availability, and key capacity indicators across India. The dataset lists facilities by district together with the services they offer, so that gaps in coverage can be identified and compared between districts. A metadata dictionary explains each field, its unit and its source. It supports health planners, researchers, and civic groups assessing where facilities, staffing and services are concentrated, and where communities may have limited access to care. Where facility records are incomplete, the dataset flags the gap instead of estimating a value, so that users can distinguish a missing entry from a service that is genuinely unavailable. Because every record is tied to a district, the data can be mapped, joined with population or poverty indicators, and reused in dashboards that track whether public health investment is reaching the places that need it most.',
     sector: 'health',
     geography: 'india',
     tags: ['Health', 'Hospitals', 'Healthcare', 'District', 'Infrastructure'],
@@ -146,7 +146,7 @@ const ds3Form: DatasetFormState = {
   metadata: {
     name: 'India District Financial Inclusion Index (2024)',
     description:
-      'District-level financial inclusion indicators covering banking access, digital payment adoption, credit penetration, and savings account ownership.',
+      'District-level financial inclusion indicators covering banking access, digital payment adoption, credit penetration, and savings account ownership. The dataset combines a district index with the underlying banking-access indicators, making it possible to compare how well different districts are served by formal financial services. Each indicator is reported on a consistent district basis for 2024. It is useful for researchers, development organisations, and local administrators studying who has access to banking and credit, and where digital payments are reaching communities. Because the indicators are measured consistently for every district, they can be mapped, ranked and combined with other development data such as population, literacy or income. Definitions for each measure are documented alongside the files, which makes it easier to compare results over time as new editions are released and to explain, in plain terms, what a rising or falling value actually represents for people in that district.',
     sector: 'finance',
     geography: 'india',
     tags: ['Finance', 'Financial Inclusion', 'Banking', 'District', 'Digital Payments'],
@@ -182,7 +182,7 @@ const ds4Form: DatasetFormState = {
   metadata: {
     name: 'State-wise Education Infrastructure & Enrollment Statistics (2023–24)',
     description:
-      'State-level education infrastructure, school availability, student enrollment, and basic education indicators for the 2023–24 academic year.',
+      'State-level education infrastructure, school availability, student enrollment, and basic education indicators for the 2023–24 academic year. The dataset pairs infrastructure measures such as school availability and facilities with state-wise enrollment statistics, so that learning conditions can be read alongside participation. A methodology note describes how the figures were compiled and how each indicator is defined. It is intended for education researchers, planners, and civil society groups comparing states and tracking progress on access to schooling. The state-wise structure makes it straightforward to compare infrastructure against enrollment, and to see where facilities have kept pace with growing participation and where they have not. Definitions are documented alongside the files so that figures can be reused in reports and dashboards with confidence, combined with population or budget data, and updated as later academic years are added to the series.',
     sector: 'education',
     geography: 'india',
     tags: ['Education', 'Schools', 'Enrollment', 'Infrastructure', 'Students'],
@@ -226,7 +226,7 @@ const ds5Form: DatasetFormState = {
   metadata: {
     name: 'Urban Water Supply & Coverage Indicators (2024)',
     description:
-      'Urban water supply indicators covering household access, service coverage, supply frequency, and infrastructure across selected Indian cities.',
+      'Urban water supply indicators covering household access, service coverage, supply frequency, and infrastructure across selected Indian cities. The dataset reports coverage by city and brings together access, regularity of supply and the condition of supporting infrastructure, giving a rounded picture of how reliably households receive water. Figures are reported for 2024 on a consistent city basis. It helps urban planners, researchers, and community groups compare cities, understand service gaps, and make the case for investment where supply is weakest. Because the data is organised city by city, it can be mapped, ranked and joined with population or housing data to show which neighbourhoods and communities are served least reliably. Column definitions accompany the files so that figures can be reused in reports and dashboards, compared across years as new editions are published, and explained clearly to residents, officials and funders alike.',
     sector: 'water-sanitation',
     geography: 'india',
     tags: ['Water', 'Urban', 'Sanitation', 'Infrastructure', 'Cities'],
@@ -262,7 +262,7 @@ const ds6Form: DatasetFormState = {
   metadata: {
     name: 'State Climate Risk & Vulnerability Indicators (2025)',
     description:
-      'State-level indicators covering climate exposure, vulnerability, environmental risk, and population affected by climate-related events.',
+      'State-level indicators covering climate exposure, vulnerability, environmental risk, and population affected by climate-related events. The dataset combines indicator values with a state vulnerability index, so that exposure to hazards can be compared with the capacity of communities to cope. Figures are reported for 2025 on a consistent state basis. It is designed for researchers, disaster-management teams, and policy makers who need to see which states face the greatest climate risk, and how many people are affected when extreme events occur. Presenting exposure and vulnerability side by side helps explain why similar events can have very different consequences from one state to another. The data can be mapped, combined with demographic or infrastructure indicators, and reused in planning tools, early-warning dashboards and public reports. Definitions for each indicator accompany the files so that results are easy to interpret, cite and update as new years of data are added.',
     sector: 'environment',
     geography: 'india',
     tags: ['Climate', 'Risk', 'Vulnerability', 'Environment'],
@@ -298,7 +298,7 @@ const ds7Form: DatasetFormState = {
   metadata: {
     name: 'Municipal Expenditure & Budget Utilisation (2024–25)',
     description:
-      'Municipal-level budget allocation, expenditure, and budget utilisation indicators for selected urban local bodies.',
+      'Municipal-level budget allocation, expenditure, and budget utilisation indicators for selected urban local bodies. The dataset sets what each municipality planned to spend against what it actually spent, so that under-utilised budgets and spending patterns can be identified across the 2024–25 financial year. Indicators are reported on a consistent municipal basis in a single workbook. It is intended for researchers, civic watchdogs, and city officials interested in how local governments use public funds and how closely spending follows plans. Comparing allocation, spending and utilisation in one place makes it easier to see which urban local bodies consistently use their budgets, which leave funds unspent, and how patterns shift from year to year. The figures can be combined with population or service-delivery data to ask whether spending is reaching the services residents rely on, and reused in civic dashboards, audits and public budget explainers.',
     sector: 'finance',
     geography: 'india',
     tags: ['Municipal', 'Budget', 'Expenditure', 'Governance', 'Urban'],
@@ -326,7 +326,7 @@ const ds8Form: DatasetFormState = {
   metadata: {
     name: 'Maternal Health Service Utilisation Indicators (2024)',
     description:
-      'Indicators related to maternal healthcare service utilisation, antenatal care, institutional deliveries, and access to maternal health services.',
+      'Indicators related to maternal healthcare service utilisation, antenatal care, institutional deliveries, and access to maternal health services. The dataset describes how widely these services are used, so that differences in care before, during and after childbirth can be compared across areas. Figures are reported for 2024 using consistent definitions for each indicator. It supports health officials, researchers, and community organisations working to understand where maternal care is reaching women, and where barriers to access remain. Looking at antenatal care, institutional deliveries and wider access indicators together helps show where each stage of care is being reached and where women are dropping out of the pathway. The data can be mapped, combined with facility or demographic information, and reused in planning tools, dashboards and public reports. Each indicator is defined in the accompanying documentation so that results are easy to interpret and compare.',
     sector: 'health',
     geography: 'india',
     tags: ['Maternal Health', 'Healthcare', 'Women', 'Public Health'],
@@ -356,7 +356,7 @@ const ds9Form: DatasetFormState = {
   metadata: {
     name: 'Civic Grievance Redressal Instruction Prompts (2025)',
     description:
-      'Instruction/response prompt pairs modelled on citizen grievance redressal conversations, for training and evaluating civic-service assistant models.',
+      'Instruction/response prompt pairs modelled on citizen grievance redressal conversations, for training and evaluating civic-service assistant models. Each instruction describes a grievance or request raised by a citizen, optionally with supporting context, and is paired with an expected redressal response. The collection is split into training and test files, with a README that explains the format and intended use. It is designed for teams building and testing assistants that help people raise, track and resolve everyday civic issues. The pairs cover a range of everyday grievances and the kinds of responses a helpful civic service might give, which makes them suitable for supervised fine-tuning as well as for building evaluation sets. Keeping the instruction, context and response in separate fields means the data can be reformatted for different training frameworks, filtered by topic, and extended with new examples as more real-world situations are documented.',
     sector: 'urban-development',
     geography: 'india',
     tags: ['Prompts', 'Governance', 'Instruction Tuning', 'Civic Assistant'],

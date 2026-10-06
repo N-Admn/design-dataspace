@@ -1,3 +1,4 @@
+import type * as React from 'react'
 import {
   Bus,
   Building,
@@ -18,16 +19,26 @@ import {
   type LucideIcon,
 } from 'lucide-react'
 
-import { Badge } from '@/components/ui/badge'
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover'
 import { Button } from '@/components/ui/button'
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { SocialShareLinks } from '@/components/shared/SocialShareLinks'
 import { useToast } from '@/components/ui/toast'
 import { formatShortDate } from '@/lib/format'
 import type { DatasetPublisher } from '@/lib/dataset-publisher'
-import { GEOGRAPHY_OPTIONS, SECTOR_OPTIONS, type DatasetMetadata } from '@/types/dataset'
+import {
+  GEOGRAPHY_OPTIONS,
+  SECTOR_OPTIONS,
+  type DatasetMetadata,
+} from '@/types/dataset'
 
-function optionLabel(options: { value: string; label: string }[], value: string): string {
+function optionLabel(
+  options: { value: string; label: string }[],
+  value: string,
+): string {
   return options.find((o) => o.value === value)?.label ?? value
 }
 
@@ -47,6 +58,34 @@ const SECTOR_ICONS: Record<string, LucideIcon> = {
   'water-sanitation': Droplet,
 }
 
+interface MetaCardProps {
+  icon: LucideIcon
+  label: string
+  value: string
+}
+
+/** One identity fact on a soft white card (80% opacity over the header surface): a large line icon beside a
+ *  label/value pair, vertically centred as a unit. Icon and value are grey (--border-strong). */
+function MetaCard({ icon: Icon, label, value }: MetaCardProps) {
+  return (
+    <li className="flex min-w-0 items-center gap-5 rounded-lg border border-transparent bg-card/80 px-6 py-5">
+      <Icon
+        className="size-[36.4px] shrink-0 text-[var(--border-strong)]"
+        strokeWidth={1.5}
+        aria-hidden="true"
+      />
+      <div className="flex min-w-0 flex-col gap-0.5">
+        <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+          {label}
+        </span>
+        <span className="truncate text-sm font-semibold text-[var(--border-strong)]">
+          {value}
+        </span>
+      </div>
+    </li>
+  )
+}
+
 interface DatasetDetailHeaderProps {
   metadata: DatasetMetadata
   publisher: DatasetPublisher
@@ -54,37 +93,78 @@ interface DatasetDetailHeaderProps {
   downloadCount: number
 }
 
-/** Establishes dataset identity before the Overview/Data/Visualisations views —
- *  name, publisher, sector, geography, last updated, download count, plus the
- *  Download and Share primary actions. The description itself lives only in
- *  the Overview tab's "About this dataset" section, not here. No other
- *  actions are added. */
-function DatasetDetailHeader({ metadata, publisher, updatedAt, downloadCount }: DatasetDetailHeaderProps) {
+/** Establishes dataset identity before the Overview/Data/Visualisations views — a page-background identity card: name + Share/Download actions (with the download count as a muted secondary signal), then
+ *  Publisher, Sector, Geography and Last updated on soft white cards. The description itself lives
+ *  only in the Overview tab's "About this dataset" section, not here. No other actions are added. */
+function DatasetDetailHeader({
+  metadata,
+  publisher,
+  updatedAt,
+  downloadCount,
+}: DatasetDetailHeaderProps) {
   const toast = useToast()
-  const SectorIcon = metadata.sector ? (SECTOR_ICONS[metadata.sector] ?? Tag) : null
+  const SectorIcon = metadata.sector
+    ? (SECTOR_ICONS[metadata.sector] ?? Tag)
+    : Tag
 
   const handleDownload = () => {
     // No file storage backs dataset resources in this prototype — see the
     // Dataset Details implementation report's backend-gap notes.
-    toast({ title: 'Download coming soon', description: "Dataset file downloads aren't available yet." })
+    toast({
+      title: 'Download coming soon',
+      description: "Dataset file downloads aren't available yet.",
+    })
   }
 
+  const cards: MetaCardProps[] = [
+    { icon: Building2, label: 'Publisher', value: publisher.name },
+    ...(metadata.sector
+      ? [
+          {
+            icon: SectorIcon,
+            label: 'Sector',
+            value: optionLabel(SECTOR_OPTIONS, metadata.sector),
+          },
+        ]
+      : []),
+    ...(metadata.geography
+      ? [
+          {
+            icon: MapPin,
+            label: 'Geography',
+            value: optionLabel(GEOGRAPHY_OPTIONS, metadata.geography),
+          },
+        ]
+      : []),
+    {
+      icon: CalendarDays,
+      label: 'Last updated',
+      value: formatShortDate(updatedAt),
+    },
+  ]
+
   return (
-    <header className="flex flex-col gap-4 border-b border-border-default pb-6">
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div className="min-w-0 flex-1">
-          <h1 className="type-heading-1 break-words text-text-brand">{metadata.name || 'Untitled dataset'}</h1>
-        </div>
-        <div className="flex shrink-0 items-center gap-2">
+    <header className="flex flex-col gap-8 rounded-2xl bg-page-background p-6 text-primary sm:p-8 lg:gap-10 lg:p-10">
+      <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between lg:gap-8">
+        <h1 className="type-display-2 min-w-0 break-words text-primary lg:w-[68%] lg:flex-none">
+          {metadata.name || 'Untitled dataset'}
+        </h1>
+        <div className="flex shrink-0 items-start gap-2">
           <Popover>
             <PopoverTrigger asChild>
-              <Button type="button" variant="outline">
-                <Share2 className="size-4" />
+              <Button
+                type="button"
+                variant="outline"
+                className="border-primary bg-transparent text-primary hover:bg-primary/5"
+              >
+                <Share2 className="size-4" aria-hidden="true" />
                 Share
               </Button>
             </PopoverTrigger>
             <PopoverContent align="end" className="w-64 p-4">
-              <p className="text-sm font-medium text-text-default">Share this dataset</p>
+              <p className="text-sm font-medium text-text-default">
+                Share this dataset
+              </p>
               <SocialShareLinks
                 url={window.location.href}
                 title={metadata.name || 'Untitled dataset'}
@@ -92,39 +172,29 @@ function DatasetDetailHeader({ metadata, publisher, updatedAt, downloadCount }: 
               />
             </PopoverContent>
           </Popover>
-          <Button type="button" onClick={handleDownload}>
-            <Download className="size-4" />
-            Download
-          </Button>
+          {/* The usage count hangs directly under Download, centred on it */}
+          <div className="flex flex-col items-center gap-2">
+            <Button type="button" onClick={handleDownload}>
+              <Download className="size-4" aria-hidden="true" />
+              Download
+            </Button>
+            <p className="text-xs text-muted-foreground">
+              {downloadCount.toLocaleString()} download
+              {downloadCount === 1 ? '' : 's'}
+            </p>
+          </div>
         </div>
       </div>
 
-      <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-ring">
-        <span className="flex min-w-0 items-center gap-1.5">
-          <Building2 className="size-4 shrink-0" aria-hidden="true" />
-          <span className="truncate">{publisher.name}</span>
-        </span>
-        {metadata.sector && SectorIcon && (
-          <Badge variant="secondary">
-            <SectorIcon className="size-3.5 shrink-0" aria-hidden="true" />
-            {optionLabel(SECTOR_OPTIONS, metadata.sector)}
-          </Badge>
-        )}
-        {metadata.geography && (
-          <span className="flex items-center gap-1.5">
-            <MapPin className="size-3.5 shrink-0" aria-hidden="true" />
-            {optionLabel(GEOGRAPHY_OPTIONS, metadata.geography)}
-          </span>
-        )}
-        <span className="flex items-center gap-1.5">
-          <CalendarDays className="size-3.5 shrink-0" aria-hidden="true" />
-          Last updated {formatShortDate(updatedAt)}
-        </span>
-        <span className="flex items-center gap-1.5">
-          <Download className="size-3.5 shrink-0" aria-hidden="true" />
-          {downloadCount.toLocaleString()} download{downloadCount === 1 ? '' : 's'}
-        </span>
-      </div>
+      <ul
+        aria-label="Dataset details"
+        style={{ '--meta-cols': cards.length } as React.CSSProperties}
+        className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-[repeat(var(--meta-cols),minmax(0,1fr))]"
+      >
+        {cards.map((card) => (
+          <MetaCard key={card.label} {...card} />
+        ))}
+      </ul>
     </header>
   )
 }

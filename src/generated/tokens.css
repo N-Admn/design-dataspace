@@ -14,6 +14,7 @@
   --font-size-heading-three: 1rem;
   --font-size-heading-two: 1.25rem;
   --font-size-heading-one: 1.5rem;
+  --font-size-display-two: 1.625rem;
   --font-size-display: 3rem;
 
   /* DataSpace token reconciliation — font weights (internal, backs .type-*) */
@@ -29,6 +30,7 @@
   --line-height-heading-three: 1.25;
   --line-height-heading-two: 1.3;
   --line-height-heading-one: 1.25;
+  --line-height-display-two: 1.1;
   --line-height-display: 1.1;
 
   /* Border radius */
