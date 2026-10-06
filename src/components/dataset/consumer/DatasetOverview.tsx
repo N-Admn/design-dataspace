@@ -1,9 +1,20 @@
 import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
-import { Building2, Globe2 } from 'lucide-react'
+import {
+  Building2,
+  CalendarDays,
+  CalendarPlus,
+  Globe2,
+  Layers,
+  LockOpen,
+  MapPin,
+  Scale,
+  Tag,
+  type LucideIcon,
+} from 'lucide-react'
 
 import { badgeVariants } from '@/components/ui/badge'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
 import { formatIsoDateShort, formatShortDate } from '@/lib/format'
 import type { DatasetPublisher } from '@/lib/dataset-publisher'
@@ -18,13 +29,26 @@ import {
   type DatasetFormState,
 } from '@/types/dataset'
 
-function optionLabel(options: { value: string; label: string }[], value: string): string {
+function optionLabel(
+  options: { value: string; label: string }[],
+  value: string,
+): string {
   return options.find((o) => o.value === value)?.label ?? value
 }
 
 function initials(name: string): string {
   const parts = name.trim().split(/\s+/)
   return ((parts[0]?.[0] ?? '') + (parts[1]?.[0] ?? '')).toUpperCase()
+}
+
+/** Card headings here match the Data tab's "Data files" heading (type-heading-2). The shared
+ *  CardTitle is type-heading-3, and the two classes can't be merged reliably, so this is a local h3. */
+function OverviewCardTitle({ children }: { children: ReactNode }) {
+  return (
+    <h3 data-slot="card-title" className="type-heading-2 text-text-brand">
+      {children}
+    </h3>
+  )
 }
 
 /** The publisher's logo/avatar when one is actually set, otherwise an
@@ -51,15 +75,44 @@ function PublisherAvatar({ publisher }: { publisher: DatasetPublisher }) {
   )
 }
 
-function labelsFor(options: { value: string; label: string }[], values: string[]): string {
-  return values.length > 0 ? values.map((v) => optionLabel(options, v)).join(', ') : '—'
+function labelsFor(
+  options: { value: string; label: string }[],
+  values: string[],
+): string {
+  return values.length > 0
+    ? values.map((v) => optionLabel(options, v)).join(', ')
+    : '—'
 }
 
-function InfoField({ label, value, className }: { label: string; value: ReactNode; className?: string }) {
-  return (
-    <div className={className}>
-      <p className="text-xs font-medium uppercase tracking-wide text-text-subdued">{label}</p>
+/** A label/value pair. With an `icon`, the icon sits beside the pair and is vertically centred on it. */
+function InfoField({
+  label,
+  value,
+  className,
+  icon: Icon,
+}: {
+  label: string
+  value: ReactNode
+  className?: string
+  icon?: LucideIcon
+}) {
+  const content = (
+    <div className="min-w-0">
+      <p className="text-xs font-medium uppercase tracking-wide text-text-subdued">
+        {label}
+      </p>
       <div className="mt-1 min-w-0 text-sm text-text-default">{value}</div>
+    </div>
+  )
+  if (!Icon) return <div className={className}>{content}</div>
+  return (
+    <div className={cn('flex items-center gap-4', className)}>
+      <Icon
+        className="size-6 shrink-0 text-[var(--border-strong)]"
+        strokeWidth={1.5}
+        aria-hidden="true"
+      />
+      {content}
     </div>
   )
 }
@@ -82,26 +135,47 @@ function DatasetOverview({ form, publisher, updatedAt }: DatasetOverviewProps) {
       <h2 className="sr-only">Overview</h2>
       <Card>
         <CardHeader>
-          <CardTitle>About this dataset</CardTitle>
+          <OverviewCardTitle>About this dataset</OverviewCardTitle>
         </CardHeader>
         <CardContent>
-          {/* The card spans the shared content container; only the prose itself
-              keeps a readable line length. */}
-          <p className="max-w-3xl text-sm leading-relaxed text-text-default">
-            {metadata.description || 'No description has been provided for this dataset.'}
+          {/* The description runs the full width of the card. */}
+          <p className="text-sm leading-relaxed text-text-default">
+            {metadata.description ||
+              'No description has been provided for this dataset.'}
           </p>
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader>
-          <CardTitle>Dataset information</CardTitle>
+          <OverviewCardTitle>Dataset information</OverviewCardTitle>
         </CardHeader>
         <CardContent className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          <InfoField label="Sector" value={metadata.sector ? optionLabel(SECTOR_OPTIONS, metadata.sector) : '—'} />
-          <InfoField label="Geography" value={metadata.geography ? optionLabel(GEOGRAPHY_OPTIONS, metadata.geography) : '—'} />
-          <InfoField label="Publisher" value={publisher.name} />
           <InfoField
+            icon={Layers}
+            label="Sector"
+            value={
+              metadata.sector
+                ? optionLabel(SECTOR_OPTIONS, metadata.sector)
+                : '—'
+            }
+          />
+          <InfoField
+            icon={MapPin}
+            label="Geography"
+            value={
+              metadata.geography
+                ? optionLabel(GEOGRAPHY_OPTIONS, metadata.geography)
+                : '—'
+            }
+          />
+          <InfoField
+            icon={Building2}
+            label="Publisher"
+            value={publisher.name}
+          />
+          <InfoField
+            icon={Globe2}
             label="Source"
             value={
               metadata.sourceWebsite ? (
@@ -111,7 +185,6 @@ function DatasetOverview({ form, publisher, updatedAt }: DatasetOverviewProps) {
                   rel="noreferrer"
                   className="inline-flex items-center gap-1 break-all text-text-brand underline-offset-2 hover:underline focus-visible:underline"
                 >
-                  <Globe2 className="size-3.5 shrink-0" aria-hidden="true" />
                   {metadata.sourceWebsite}
                 </a>
               ) : (
@@ -119,14 +192,42 @@ function DatasetOverview({ form, publisher, updatedAt }: DatasetOverviewProps) {
               )
             }
           />
-          <InfoField label="Created" value={metadata.createDate ? formatIsoDateShort(metadata.createDate) : '—'} />
-          <InfoField label="Last updated" value={formatShortDate(updatedAt)} />
           <InfoField
-            label="Access"
-            value={metadata.accessType ? (metadata.accessType === 'open' ? 'Open Access' : 'Restricted Access') : '—'}
+            icon={CalendarPlus}
+            label="Created"
+            value={
+              metadata.createDate
+                ? formatIsoDateShort(metadata.createDate)
+                : '—'
+            }
           />
-          <InfoField label="License" value={metadata.license ? optionLabel(LICENSE_OPTIONS, metadata.license) : '—'} />
           <InfoField
+            icon={CalendarDays}
+            label="Last updated"
+            value={formatShortDate(updatedAt)}
+          />
+          <InfoField
+            icon={LockOpen}
+            label="Access"
+            value={
+              metadata.accessType
+                ? metadata.accessType === 'open'
+                  ? 'Open Access'
+                  : 'Restricted Access'
+                : '—'
+            }
+          />
+          <InfoField
+            icon={Scale}
+            label="License"
+            value={
+              metadata.license
+                ? optionLabel(LICENSE_OPTIONS, metadata.license)
+                : '—'
+            }
+          />
+          <InfoField
+            icon={Tag}
             label="Tags"
             // Spans the full card width instead of sharing one grid column with
             // Sector/Geography/etc. — a handful of tags already crowded a
@@ -162,32 +263,64 @@ function DatasetOverview({ form, publisher, updatedAt }: DatasetOverviewProps) {
       {isPromptDataset && (
         <Card>
           <CardHeader>
-            <CardTitle>Prompt Dataset details</CardTitle>
+            <OverviewCardTitle>Prompt Dataset details</OverviewCardTitle>
           </CardHeader>
           <CardContent className="grid grid-cols-1 gap-5 sm:grid-cols-2">
             <InfoField
               label="Task type"
-              value={promptDatasetMetadata.taskType ? optionLabel(TASK_TYPE_OPTIONS, promptDatasetMetadata.taskType) : '—'}
+              value={
+                promptDatasetMetadata.taskType
+                  ? optionLabel(
+                      TASK_TYPE_OPTIONS,
+                      promptDatasetMetadata.taskType,
+                    )
+                  : '—'
+              }
             />
             <InfoField
               label="Domain"
-              value={promptDatasetMetadata.domain ? optionLabel(PROMPT_DOMAIN_OPTIONS, promptDatasetMetadata.domain) : '—'}
+              value={
+                promptDatasetMetadata.domain
+                  ? optionLabel(
+                      PROMPT_DOMAIN_OPTIONS,
+                      promptDatasetMetadata.domain,
+                    )
+                  : '—'
+              }
             />
-            <InfoField label="Target languages" value={labelsFor(TARGET_LANGUAGE_OPTIONS, promptDatasetMetadata.targetLanguages)} />
-            <InfoField label="Target model types" value={labelsFor(TARGET_MODEL_TYPE_OPTIONS, promptDatasetMetadata.targetModelTypes)} />
+            <InfoField
+              label="Target languages"
+              value={labelsFor(
+                TARGET_LANGUAGE_OPTIONS,
+                promptDatasetMetadata.targetLanguages,
+              )}
+            />
+            <InfoField
+              label="Target model types"
+              value={labelsFor(
+                TARGET_MODEL_TYPE_OPTIONS,
+                promptDatasetMetadata.targetModelTypes,
+              )}
+            />
           </CardContent>
         </Card>
       )}
 
       <Card>
         <CardHeader>
-          <CardTitle>About the publisher</CardTitle>
+          <OverviewCardTitle>About the publisher</OverviewCardTitle>
         </CardHeader>
         <CardContent className="flex items-center gap-4">
           <PublisherAvatar publisher={publisher} />
           <div className="flex min-w-0 flex-col gap-2">
-            <p className="text-sm font-medium text-text-default">{publisher.name}</p>
-            {publisher.description && <p className="max-w-3xl text-sm text-text-subdued">{publisher.description}</p>}
+            <p className="text-sm font-medium text-text-default">
+              {publisher.name}
+            </p>
+            {publisher.description && (
+              <p className="max-w-3xl text-sm text-text-subdued">
+                {publisher.description}
+              </p>
+            )}
             <div className="flex flex-wrap gap-x-5 gap-y-1 text-sm text-text-subdued">
               {publisher.location && <span>{publisher.location}</span>}
               {publisher.website && (
