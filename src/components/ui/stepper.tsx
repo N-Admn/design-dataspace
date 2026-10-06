@@ -89,7 +89,7 @@ function Stepper({ steps, currentStep, compact = false, interactive = false, onS
                 </div>
                 <span
                   className={cn(
-                    'whitespace-nowrap text-xs font-medium',
+                    'hidden whitespace-nowrap text-xs font-medium sm:inline',
                     isCompleted || isCurrent ? 'text-text-brand' : 'text-text-subdued',
                   )}
                 >
@@ -111,61 +111,71 @@ function Stepper({ steps, currentStep, compact = false, interactive = false, onS
     )
   }
 
+  // Responsive Behaviour: ≥md the full labelled stepper; <md just the numbered markers plus a one-line
+  // "Step n of N" summary, so a long flow can never push the page wider than the viewport.
+  const current = steps.find((item) => item.step === currentStep)
   return (
-    <div className="flex w-full items-start">
-      {steps.map((item, index) => {
-        const isCompleted = item.step < currentStep
-        const isCurrent = item.step === currentStep
-        const Icon = item.icon
+    <div className="w-full">
+      <div className="flex w-full items-start">
+        {steps.map((item, index) => {
+          const isCompleted = item.step < currentStep
+          const isCurrent = item.step === currentStep
+          const Icon = item.icon
 
-        return (
-          <div key={item.step} className={cn('flex items-center', index < steps.length - 1 && 'flex-1')}>
-            <StepControl
-              item={item}
-              interactive={interactive}
-              onStepClick={onStepClick}
-              isCurrent={isCurrent}
-              className="flex flex-col items-center gap-2 text-center"
-            >
-              <div
-                className={cn(
-                  'flex size-11 shrink-0 items-center justify-center rounded-full text-sm font-semibold transition-colors',
-                  (isCompleted || isCurrent) && 'bg-action-primary-default text-action-primary-text',
-                  !isCompleted && !isCurrent && 'bg-surface-subdued text-text-subdued',
-                )}
+          return (
+            <div key={item.step} className={cn('flex items-center', index < steps.length - 1 && 'flex-1')}>
+              <StepControl
+                item={item}
+                interactive={interactive}
+                onStepClick={onStepClick}
+                isCurrent={isCurrent}
+                className="flex flex-col items-center gap-2 text-center"
               >
-                {isCompleted ? (
-                  <Check className="size-5" />
-                ) : Icon ? (
-                  <Icon className="size-5" />
-                ) : (
-                  String(item.step).padStart(2, '0')
-                )}
-              </div>
-              <div className="w-32">
-                <p
+                <div
                   className={cn(
-                    'text-sm font-semibold',
-                    isCompleted || isCurrent ? 'text-text-brand' : 'text-text-subdued',
+                    'flex size-8 shrink-0 items-center justify-center rounded-full text-sm font-semibold transition-colors md:size-11',
+                    (isCompleted || isCurrent) && 'bg-action-primary-default text-action-primary-text',
+                    !isCompleted && !isCurrent && 'bg-surface-subdued text-text-subdued',
                   )}
                 >
-                  {item.label}
-                </p>
-                {item.description && <p className="text-xs text-text-subdued">{item.description}</p>}
-              </div>
-            </StepControl>
+                  {isCompleted ? (
+                    <Check className="size-5" />
+                  ) : Icon ? (
+                    <Icon className="size-5" />
+                  ) : (
+                    String(item.step).padStart(2, '0')
+                  )}
+                </div>
+                <div className="hidden w-32 md:block">
+                  <p
+                    className={cn(
+                      'text-sm font-semibold',
+                      isCompleted || isCurrent ? 'text-text-brand' : 'text-text-subdued',
+                    )}
+                  >
+                    {item.label}
+                  </p>
+                  {item.description && <p className="text-xs text-text-subdued">{item.description}</p>}
+                </div>
+              </StepControl>
 
-            {index < steps.length - 1 && (
-              <div
-                className={cn(
-                  'mx-2 mt-5 h-0.5 flex-1 rounded-full transition-colors',
-                  item.step < currentStep ? 'bg-action-primary-default' : 'bg-surface-subdued',
-                )}
-              />
-            )}
-          </div>
-        )
-      })}
+              {index < steps.length - 1 && (
+                <div
+                  className={cn(
+                    'mx-1 mt-4 h-0.5 flex-1 rounded-full transition-colors md:mx-2 md:mt-5',
+                    item.step < currentStep ? 'bg-action-primary-default' : 'bg-surface-subdued',
+                  )}
+                />
+              )}
+            </div>
+          )
+        })}
+      </div>
+      {current && (
+        <p className="mt-3 text-sm font-semibold text-text-brand md:hidden">
+          Step {current.step} of {steps.length} · {current.label}
+        </p>
+      )}
     </div>
   )
 }

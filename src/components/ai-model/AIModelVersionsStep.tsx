@@ -58,6 +58,8 @@ import {
   type AccessMethodTestResult,
   type AccessMethodTestStatus,
 } from '@/lib/ai-model-access-test'
+import { cn } from '@/lib/utils'
+import { FORM_COL_SPAN_2, FORM_TWO_COL_GRID } from '@/lib/layout'
 
 /** Display status for a test result row — extends the lib's executed-outcome
  * statuses with the three states that only exist in the UI: a test hasn't
@@ -340,7 +342,7 @@ function AccessMethodForm({ draft, onDraftChange, otherNames, soleAccessMethod, 
           </div>
 
           {draft.authType === 'bearer-token' && (
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className={cn(FORM_TWO_COL_GRID, 'gap-4')}>
               <div>
                 <Label htmlFor="access-header-name">
                   Authentication Header Name <span className="text-destructive">*</span>
@@ -376,7 +378,7 @@ function AccessMethodForm({ draft, onDraftChange, otherNames, soleAccessMethod, 
           )}
 
           {draft.authType === 'api-key' && (
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className={cn(FORM_TWO_COL_GRID, 'gap-4')}>
               <div>
                 <Label htmlFor="access-header-name">
                   Header or Parameter Name <span className="text-destructive">*</span>
@@ -404,7 +406,7 @@ function AccessMethodForm({ draft, onDraftChange, otherNames, soleAccessMethod, 
                   />
                 </div>
               </div>
-              <div className="sm:col-span-2">
+              <div className={FORM_COL_SPAN_2}>
                 <Label htmlFor="access-credential">
                   API Key <span className="text-destructive">*</span>
                 </Label>
@@ -424,7 +426,7 @@ function AccessMethodForm({ draft, onDraftChange, otherNames, soleAccessMethod, 
           )}
 
           {draft.authType === 'custom-header' && (
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className={cn(FORM_TWO_COL_GRID, 'gap-4')}>
               <div>
                 <Label htmlFor="access-header-name">
                   Header Name <span className="text-destructive">*</span>
@@ -474,7 +476,7 @@ function AccessMethodForm({ draft, onDraftChange, otherNames, soleAccessMethod, 
             />
           </div>
 
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div className={cn(FORM_TWO_COL_GRID, 'gap-4')}>
             <div>
               <Label htmlFor="access-response-path">Response Path</Label>
               <Input
@@ -845,7 +847,7 @@ function AIModelVersionsStep({ versions, onChange, openVersionId, onOpenVersionC
                   <CardTitle>Version Details</CardTitle>
                 </CardHeader>
                 <CardContent className="flex flex-col gap-5">
-                  <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                  <div className={cn(FORM_TWO_COL_GRID, 'gap-5')}>
                     <div>
                       <Label htmlFor="version-name">
                         Version Name <span className="text-destructive">*</span>

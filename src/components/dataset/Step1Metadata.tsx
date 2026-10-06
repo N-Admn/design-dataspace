@@ -21,6 +21,7 @@ import {
   type PromptDatasetMetadata,
 } from '@/types/dataset'
 import type { MetadataErrors, PromptDatasetMetadataErrors } from '@/lib/validation'
+import { FORM_TWO_COL_GRID } from '@/lib/layout'
 
 interface Step1MetadataProps {
   datasetType: DatasetType
@@ -262,7 +263,7 @@ function Step1Metadata({ datasetType, metadata, errors, onChange, promptMetadata
               Access type <span className="text-text-critical-strong">*</span>
             </Label>
             <RadioGroup
-              className="mt-1.5 grid grid-cols-1 gap-3 sm:grid-cols-2"
+              className={cn('mt-1.5 gap-3', FORM_TWO_COL_GRID)}
               value={metadata.accessType}
               onValueChange={(value) => onChange('accessType', value as DatasetMetadata['accessType'])}
               aria-invalid={Boolean(errors.accessType)}

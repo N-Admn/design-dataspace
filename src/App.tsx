@@ -12,6 +12,7 @@ import { ConfirmProvider } from '@/components/ui/confirm-dialog'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { HelpProvider } from '@/context/HelpContext'
 import { cn } from '@/lib/utils'
+import { PAGE_GUTTER_X } from '@/lib/layout'
 import { DashboardPage } from '@/pages/DashboardPage'
 import { DatasetsPage } from '@/pages/DatasetsPage'
 import { EventsPage } from '@/pages/EventsPage'
@@ -44,6 +45,7 @@ import { OrganisationEventsPage } from '@/pages/organisation/OrganisationEventsP
 import { OrganisationMembersPage } from '@/pages/organisation/OrganisationMembersPage'
 import { OrganisationProfilePage } from '@/pages/organisation/OrganisationProfilePage'
 import { DesignSystemPage } from '@/pages/DesignSystemPage'
+import { DatasetHeaderPlayground } from '@/pages/playground/DatasetHeaderPlayground'
 import { ComingSoonPage } from '@/pages/ComingSoonPage'
 import { DiscoverPage } from '@/pages/DiscoverPage'
 import { SearchResultsPage } from '@/pages/SearchResultsPage'
@@ -92,6 +94,7 @@ function AppLayout() {
   const isEventPreview = /^\/dashboard\/events\/[^/]+\/preview$/.test(location.pathname)
   const isPublicationPreview = /^\/dashboard\/publications\/[^/]+\/preview$/.test(location.pathname)
   const isDesignSystem = location.pathname === '/design-system'
+  const isDatasetHeaderPlayground = location.pathname === '/playground/dataset-header'
   const isConsumerRoute =
     location.pathname.startsWith('/explore/') ||
     location.pathname === '/collaboratives' ||
@@ -100,6 +103,7 @@ function AppLayout() {
     location.pathname === '/about' ||
     location.pathname === '/contact' ||
     location.pathname === '/discover' ||
+    isDatasetHeaderPlayground ||
     location.pathname === '/search'
   const isOrganisationSelector = location.pathname === '/organisations'
   const organisationWorkspaceMatch = /^\/organisations\/([^/]+)/.exec(location.pathname)
@@ -133,11 +137,13 @@ function AppLayout() {
         !isCollaborativePreview &&
         !isAIModelPreview &&
         !isEventPreview &&
-        !isPublicationPreview && <BreadcrumbBar />}
+        !isPublicationPreview &&
+        !isDatasetHeaderPlayground && <BreadcrumbBar />}
 
       <main
         className={cn(
-          'mx-auto flex w-full max-w-[1760px] flex-1 flex-col gap-6 px-10 py-8',
+          'mx-auto flex w-full max-w-[1760px] flex-1 flex-col gap-6 py-8',
+          PAGE_GUTTER_X,
           !hideSidebar && 'md:flex-row',
           // Consumer-facing pages (Explore, Search, Discover, Collaboratives,
           // Forum) sit on a white canvas rather than the app's default grey
@@ -148,11 +154,11 @@ function AppLayout() {
         )}
       >
         {!hideSidebar && organisationWorkspaceId && (
-          <OrganisationSidebar organisationId={organisationWorkspaceId} className="order-2 md:order-1" />
+          <OrganisationSidebar organisationId={organisationWorkspaceId} className="order-1" />
         )}
-        {!hideSidebar && !organisationWorkspaceId && <ContributorSidebar className="order-2 md:order-1" />}
+        {!hideSidebar && !organisationWorkspaceId && <ContributorSidebar className="order-1" />}
 
-        <div className="order-1 min-w-0 flex-1 md:order-2">
+        <div className="order-2 min-w-0 flex-1">
           <Routes>
             <Route path="/" element={<DashboardPage />} />
             <Route path="/dashboard/datasets" element={<DatasetsPage />} />
@@ -186,6 +192,7 @@ function AppLayout() {
             <Route path="/organisations/:organisationId/members" element={<OrganisationMembersPage />} />
             <Route path="/organisations/:organisationId/profile" element={<OrganisationProfilePage />} />
             <Route path="/design-system" element={<DesignSystemPage />} />
+            <Route path="/playground/dataset-header" element={<DatasetHeaderPlayground />} />
             <Route path="/discover" element={<DiscoverPage />} />
             <Route path="/search" element={<SearchResultsPage />} />
             <Route path="/explore/datasets" element={<ComingSoonPage title="Datasets" />} />

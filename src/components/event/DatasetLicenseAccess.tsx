@@ -5,6 +5,7 @@ import { FieldError } from '@/components/ui/field-error'
 import { cn } from '@/lib/utils'
 import { LICENSE_OPTIONS, type DatasetMetadata } from '@/types/dataset'
 import type { MiniDatasetLicenseErrors } from '@/lib/mini-dataset-validation'
+import { FORM_TWO_COL_GRID } from '@/lib/layout'
 
 interface DatasetLicenseAccessProps {
   metadata: DatasetMetadata
@@ -20,7 +21,7 @@ function DatasetLicenseAccess({ metadata, errors, onChange }: DatasetLicenseAcce
           Access Type <span className="text-destructive">*</span>
         </Label>
         <RadioGroup
-          className="mt-1.5 grid grid-cols-1 gap-3 sm:grid-cols-2"
+          className={cn('mt-1.5 gap-3', FORM_TWO_COL_GRID)}
           value={metadata.accessType}
           onValueChange={(value) => onChange('accessType', value as DatasetMetadata['accessType'])}
           aria-invalid={Boolean(errors.accessType)}

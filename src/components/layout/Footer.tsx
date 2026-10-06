@@ -1,4 +1,5 @@
 import { cn } from '@/lib/utils'
+import { PAGE_GUTTER_X } from '@/lib/layout'
 
 const currentYear = new Date().getFullYear()
 
@@ -16,7 +17,12 @@ function FooterLink({ children }: { children: string }) {
 function Footer({ className }: { className?: string }) {
   return (
     <footer className={cn('border-t border-border', className)}>
-      <div className="mx-auto flex min-h-[52px] max-w-[1760px] flex-wrap items-center justify-between gap-2 px-10 py-3 text-xs text-muted-foreground">
+      <div
+        className={cn(
+          'mx-auto flex min-h-[52px] max-w-[1760px] flex-wrap items-center justify-between gap-2 py-3 text-xs text-muted-foreground',
+          PAGE_GUTTER_X,
+        )}
+      >
         <div className="flex items-center gap-1.5">
           <FooterLink>About Us</FooterLink>
           <span>·</span>

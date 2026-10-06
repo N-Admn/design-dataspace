@@ -185,11 +185,12 @@ Categorical series colors for data visualizations — 8 distinct hues (blue, ora
 
 `Inter` (weights 400–700 — 300 dropped, previously fetched but never applied) and `JetBrains Mono` (400–500) are loaded from Google Fonts in `index.html`.
 
-**Type roles** — named size + line-height + weight bundles, implemented as an `@layer components` block (`.type-*`) in `src/index.css` since `@theme` can't hold a bundled value. Raw sizes still come from Tailwind; usage is role-governed, not ad hoc. Every page and component heading resolves to one of these classes — there are no free-standing `text-lg/xl/2xl` + `font-semibold` heading triplets left in `src/` (chart KPI numerals under **Data typography** are the deliberate exception). The scale has no 18px step: former `text-lg` section headers map up to `.type-heading-2` (20px), former `text-lg` local/error headers map to `.type-heading-3` (16px).
+**Type roles** — named size + line-height + weight bundles, implemented as an `@layer components` block (`.type-*`) in `src/index.css` since `@theme` can't hold a bundled value. Raw sizes still come from Tailwind; usage is role-governed, not ad hoc. Every page and component heading resolves to one of these classes — there are no free-standing `text-lg/xl/2xl` + `font-semibold` heading triplets left in `src/` (chart KPI numerals under **Data typography** are the deliberate exception). Hierarchy: Display → Display 2 → Heading 1 → Heading 2 → Heading 3. The scale has no 18px step: former `text-lg` section headers map up to `.type-heading-2` (20px), former `text-lg` local/error headers map to `.type-heading-3` (16px).
 
 | Role | Class | Size | Line-height | Weight | Purpose |
 |---|---|---|---|---|---|
 | display | `.type-display` | 48–60px | 1.1× | 600 | one hero moment per screen |
+| display2 | `.type-display-2` | 26–28px | 1.1× | 600 | prominent feature or section titles where Heading 1 is too small and Display is too dominant (26px, 28px from `md`) |
 | heading1 | `.type-heading-1` | 24px | 1.25× | 600 | page/section title |
 | heading2 | `.type-heading-2` | 20px | 1.3× | 600 | sub-section title |
 | heading3 | `.type-heading-3` | 16px | 1.25× | 600 | card/dialog/local title (backs `CardTitle`) |
@@ -205,7 +206,7 @@ Categorical series colors for data visualizations — 8 distinct hues (blue, ora
 
 ### DataSpace token reconciliation — typography (in progress)
 
-The seven `.type-*` role classes above are hand-written CSS in `src/index.css` (Tailwind's `@theme` can't hold a bundled size+line-height+weight value), so reconciling their naming doesn't mean new classes for components to adopt — components keep using `.type-heading-2` etc. exactly as before. Instead, the values *inside* those seven rules now come from named, DataSpace-reconciled variables, root-only (never exposed as a Tailwind utility, so nothing invites picking an ad hoc size/weight/line-height outside the seven roles):
+The eight `.type-*` role classes above are hand-written CSS in `src/index.css` (Tailwind's `@theme` can't hold a bundled size+line-height+weight value), so reconciling their naming doesn't mean new classes for components to adopt — components keep using `.type-heading-2` etc. exactly as before. Instead, the values *inside* those eight rules now come from named, DataSpace-reconciled variables, root-only (never exposed as a Tailwind utility, so nothing invites picking an ad hoc size/weight/line-height outside the eight roles):
 
 | Token | CSS variable | Tailwind key | Value |
 |---|---|---|---|
@@ -214,6 +215,7 @@ The seven `.type-*` role classes above are hand-written CSS in `src/index.css` (
 | `fontSize.headingThree` | `--font-size-heading-three` | — | `1rem` |
 | `fontSize.headingTwo` | `--font-size-heading-two` | — | `1.25rem` |
 | `fontSize.headingOne` | `--font-size-heading-one` | — | `1.5rem` |
+| `fontSize.displayTwo` | `--font-size-display-two` | — | `1.625rem` |
 | `fontSize.display` | `--font-size-display` | — | `3rem` |
 
 | Token | CSS variable | Tailwind key | Value |
@@ -231,6 +233,7 @@ The seven `.type-*` role classes above are hand-written CSS in `src/index.css` (
 | `lineHeight.headingThree` | `--line-height-heading-three` | — | `1.25` |
 | `lineHeight.headingTwo` | `--line-height-heading-two` | — | `1.3` |
 | `lineHeight.headingOne` | `--line-height-heading-one` | — | `1.25` |
+| `lineHeight.displayTwo` | `--line-height-display-two` | — | `1.1` |
 | `lineHeight.display` | `--line-height-display` | — | `1.1` |
 
 `font.sans`/`font.mono` now also produce `--font-family-sans`/`--font-family-mono` alongside the unchanged `--font-sans`/`--font-mono` Tailwind keys, so the live `font-sans` utility class is unaffected.
@@ -261,7 +264,7 @@ These are intentionally **not** in `tokens.json` — the project uses Tailwind's
 | **Type scale** | Raw sizes are Tailwind v4 defaults, but usage is governed by the named type roles above (`.type-*` in `src/index.css`), not picked ad hoc per component. |
 | **Vertical rhythm** | `space.title-to-body` (small fixed gap) and `space.paragraph` (≥2× the paragraph's font size) replace ad hoc per-component margins. |
 | **Shadows** | Tailwind v4 default (`shadow-sm`, `shadow-lg`). |
-| **Breakpoints** | Tailwind v4 default (`sm` 640 / `md` 768 / `lg` 1024 / `xl` 1280 / `2xl` 1536). Two JS reads mirror these literally in `ManagementTable.tsx` (`min-width: 768px`, `min-width: 1024px`). |
+| **Breakpoints** | Tailwind v4 default (`sm` 640 / `md` 768 / `lg` 1024 / `xl` 1280 / `2xl` 1536). The few JS reads (e.g. `ManagementTable`, `ContributorSidebar`) go through `useBreakpointUp()` in `src/hooks/use-breakpoint.ts`, which holds the literal widths in one place. |
 | **Z-index, transitions** | Tailwind defaults + ad-hoc arbitrary values. |
 
 ---
@@ -347,12 +350,77 @@ Dialogs use one platform pattern: Radix `Dialog` with `center` / `right-drawer` 
 
 ## Responsive / layout conventions
 
-- **Container:** main content is `max-w-[1760px]` centered with `px-10 py-8`; sidebar + main become a row at `md` (`src/App.tsx`).
+- **Container:** main content is `max-w-[1760px]` centered with `py-8` and the shared responsive page gutter (`PAGE_GUTTER_X` in `src/lib/layout.ts` — see **Responsive Behaviour** below); sidebar + main become a row at `md` (`src/App.tsx`).
 - **Workspace height:** `src/lib/layout.ts` builds height classes from `var(--layout-chrome-offset)`. That var is measured at runtime (`ResizeObserver` on the top nav + breadcrumb + 64px main padding, in `App.tsx`) rather than the former hardcoded `188px`, so it stays correct if chrome height changes under text-resize / at narrow widths. A `188px` static fallback remains in `index.css`.
 - **Sticky chrome:** focusable targets carry `scroll-margin-top` (`:focus-visible` base rule) so keyboard focus is never fully hidden behind the sticky header/breadcrumb (WCAG 2.4.11).
-- **Tables:** `ManagementTable` computes column fit in JS via `useMediaQuery('(min-width: 768px)')` / `'(min-width: 1024px)'` and scrolls horizontally below the combined min width.
+- **Tables:** `ManagementTable` computes column fit in JS via `useBreakpointUp('md')` / `useBreakpointUp('lg')` and scrolls horizontally below the combined min width.
 - **Dialogs:** responsive widths (`w-[calc(100%-2rem)] max-w-*`), capped height (`max-h-[calc(100vh-4rem)]`), internal scroll regions.
 - **Stepper:** progress-only until Review is reached with all steps valid, then the whole stepper unlocks as clickable navigation.
+
+---
+
+## Responsive Behaviour
+
+CivicDataSpace uses responsive behaviour rather than separate mobile, tablet and desktop designs. Components adapt their layout, density and interaction patterns according to available viewport space while preserving the established design-system hierarchy.
+
+The design system stays the single source of truth for typography, colour, spacing, components and radius; this section only defines **how those existing components adapt**. It introduces no new tokens and no separate "mobile / tablet / desktop" system.
+
+> Not every component needs to respond at every breakpoint. A component should use the smallest number of breakpoint transitions necessary to preserve usability, hierarchy and layout.
+
+### Breakpoint foundation
+
+The existing Tailwind v4 defaults — there is no `xs` and no `3xl`. In CSS use the `sm:` / `md:` / `lg:` / `xl:` / `2xl:` variants. The few decisions that must be made in JS read the same values from one place, `BREAKPOINT_PX` / `useBreakpointUp()` in `src/hooks/use-breakpoint.ts` (no ad hoc `min-width` literals).
+
+| Breakpoint | Width | Primary use |
+|---|---:|---|
+| `sm` | 640px | Small responsive adjustments |
+| `md` | 768px | Tablet / major layout transition |
+| `lg` | 1024px | Desktop / navigation transition |
+| `xl` | 1280px | Standard desktop |
+| `2xl` | 1536px | Large desktop |
+
+### Responsive component behaviour
+
+**Global navigation** — <768px: compact navigation (menu button opening a right slide-in drawer with accordion sections). 768–1023px: compact navigation. ≥1024px: desktop navigation. Below 1024px the header is Logo → Log In / Sign Up → menu button (rightmost), with Language moved into the menu. Desktop items are never squeezed into smaller widths; dropdown surfaces use `min(56rem, 100vw − 2rem)` so they can never exceed the viewport.
+
+**Side navigation** (`ContributorSidebar`, also used for organisation workspaces) — <768px: a compact "Workspace menu" trigger opens the same navigation in a drawer (the existing `right-drawer` dialog variant). 768–1023px: collapsed icon rail. ≥1024px: expanded (the user's collapse preference still applies).
+
+**Containers / page layout** — a single shared page gutter (`PAGE_GUTTER_X`) is used by the header, breadcrumb strip, main content and footer so their edges always align: <768px 16px · 768–1023px 24px · 1024–1279px 32px · ≥1280px 40px. The existing `max-w-[1760px]` and page-specific max-width rules are unchanged.
+
+**Cards / grids** — <768px primarily 1 column. 768–1023px 2 columns where content permits. ≥1024px 2–4 columns according to available space and content.
+
+**Forms** — <768px single column. 768–1199px primarily single column. ≥1200px two-column layouts may be used where appropriate. Implemented as `FORM_TWO_COL_GRID` in `src/lib/layout.ts` using Tailwind's arbitrary `min-[1200px]` variant: 1200px is a documented form threshold, not a new named breakpoint.
+
+**Management tables** — ≥1024px the full management table. 768–1023px a compact/reduced treatment where required. <768px a table is not simply shrunk: use a compact list/card representation where the module supports it (until then it scrolls inside its card, never the page). The CivicDataSpace table standard is unchanged: 10 records/page, 56px rows, 48px header, 560px body, fixed pagination/footer, one-line truncated cells, no user-controlled density or page size.
+
+**Filters** — ≥1024px toolbar / inline controls where space permits. 768–1023px compact controls. <768px a drawer / sheet where required.
+
+**Side sheets** — desktop and tablet: the constrained width defined by the existing component. Mobile: near-full / full-width.
+
+**Dialogs** — desktop and tablet: the constrained width defined by the existing component (`w-[calc(100%-2rem)] max-w-*`). Mobile: near-full / full-width where required.
+
+**Stepper** — ≥768px the labelled stepper. <768px numbered markers with a one-line "Step n of N · label" summary.
+
+**Typography** — the existing type roles remain the source of truth. There is no responsive type scale and roles do not change with viewport size; responsive typography is introduced only where an existing semantic role genuinely requires it. Body text stays readable and is not reduced on mobile. The two display roles each step up once at `md` (Display 48→60px, Display 2 26→28px) as stated in the role table. The one genuine fluid exception is `.type-display`: its 48px size is capped at `9vw` so a long unbreakable word such as CivicDataSpace can never overflow a narrow phone viewport (no effect above ~533px).
+
+**Spacing** — responsive layout behaviour only, not a new spacing-token system: use the existing Tailwind spacing utilities.
+
+### Responsive behaviour matrix
+
+| Component | <768px | 768–1023px | 1024–1279px | ≥1280px |
+|---|---|---|---|---|
+| Global navigation | Compact (slide-in drawer) | Compact (slide-in drawer) | Desktop navigation | Desktop navigation |
+| Side navigation | Drawer from a compact trigger | Collapsed rail | Expanded | Expanded |
+| Page / container | 16px gutter | 24px gutter | 32px gutter | 40px gutter (max 1760px) |
+| Cards | 1 column | 2 columns where content permits | 2–4 columns | 2–4 columns |
+| Grid | 1 column | 2 columns | 2–4 columns | 2–4 columns |
+| Forms | Single column | Primarily single column | Primarily single column (two columns from 1200px) | Two columns where appropriate |
+| Management tables | List / card where supported, else scroll in card | Compact table where required | Full management table | Full management table |
+| Filters | Drawer / sheet where required | Compact controls | Toolbar / inline | Toolbar / inline |
+| Side sheets | Near-full / full width | Constrained component width | Constrained component width | Constrained component width |
+| Dialogs | Near-full / full width | Constrained component width | Constrained component width | Constrained component width |
+| Stepper | Markers + "Step n of N" | Labelled | Labelled | Labelled |
+| Typography | Unchanged roles | Unchanged roles | Unchanged roles | Unchanged roles |
 
 ---
 

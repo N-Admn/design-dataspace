@@ -10,7 +10,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
 import { WORKSPACE_HEIGHT_CLASS } from '@/lib/layout'
-import { useMediaQuery } from '@/hooks/use-media-query'
+import { useBreakpointUp } from '@/hooks/use-breakpoint'
 import { ViewTabs } from '@/components/shared/ViewTabs'
 
 // ---------- Shared row-geometry tokens (the validated Datasets reference values) ----------
@@ -175,8 +175,8 @@ function ManagementTable<T, S extends string>({
   loadError = false,
   onRetry,
 }: ManagementTableProps<T, S>) {
-  const isLgUp = useMediaQuery('(min-width: 1024px)')
-  const isMdUp = useMediaQuery('(min-width: 768px)')
+  const isLgUp = useBreakpointUp('lg')
+  const isMdUp = useBreakpointUp('md')
 
   const [statusTab, setStatusTab] = React.useState<S | 'all'>('all')
   const [query, setQuery] = React.useState('')
