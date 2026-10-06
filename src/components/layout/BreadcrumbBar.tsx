@@ -1,8 +1,15 @@
+import { X } from 'lucide-react'
 import { Link, useLocation } from 'react-router-dom'
 
 import { NAV_GROUPS, isNavItemActive } from '@/components/layout/nav-config'
 import { organisationNavGroups } from '@/components/layout/organisation-nav-config'
 import { useAppData } from '@/context/AppDataContext'
+import { useCloseSearch } from '@/hooks/use-close-search'
+import { PAGE_GUTTER_X } from '@/lib/layout'
+import { cn } from '@/lib/utils'
+
+/** The amber strip shares the shell's page gutter so its text lines up with the header and the content below. */
+const STRIP_CLASS = cn('w-full bg-breadcrumb-background py-2.5', PAGE_GUTTER_X)
 
 /** The public/consumer landing the site logo itself links to (see TopNav) —
  *  reused here so "Home" points at the same place everywhere. */
@@ -108,6 +115,7 @@ function Breadcrumbs({ crumbs }: { crumbs: CrumbSpec[] }) {
 
 function BreadcrumbBar() {
   const location = useLocation()
+  const closeSearch = useCloseSearch()
   const { organisationWorkspaces, datasets, useCases, events } = useAppData()
   const isDashboard = location.pathname === '/'
   const { pathname } = location
@@ -121,14 +129,29 @@ function BreadcrumbBar() {
   if (pathname === HOME_PATH) return null
 
   // Explore (/search) is a primary navigation destination, not a content page: no breadcrumb bar.
-  if (pathname === '/search') return null
+  // Global search is a mode, not a hierarchical page: no breadcrumbs. The strip carries a single control that
+  // returns to wherever Search was opened from.
+  if (pathname === '/search') {
+    return (
+      <div data-slot="breadcrumb" className={cn('flex w-full justify-end bg-breadcrumb-background py-1.5', PAGE_GUTTER_X)}>
+        <button
+          type="button"
+          onClick={closeSearch}
+          className="inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-sm font-medium text-primary transition-colors hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        >
+          Close search
+          <X className="size-4" aria-hidden="true" />
+        </button>
+      </div>
+    )
+  }
 
   const datasetMatch = DATASET_DETAIL_PATTERN.exec(pathname)
   if (datasetMatch) {
     const dataset = datasets.find((d) => d.id === datasetMatch[1])
     const datasetName = dataset?.form.metadata.name || 'Dataset'
     return (
-      <div data-slot="breadcrumb" className="w-full bg-breadcrumb-background px-8 py-2.5">
+      <div data-slot="breadcrumb" className={STRIP_CLASS}>
         <Breadcrumbs
           crumbs={[
             { label: 'Home', to: HOME_PATH },
@@ -147,7 +170,7 @@ function BreadcrumbBar() {
     const useCaseName =
       (record?.status === 'published' ? record.publishedForm?.metadata.title : undefined) || 'Use Case'
     return (
-      <div data-slot="breadcrumb" className="w-full bg-breadcrumb-background px-8 py-2.5">
+      <div data-slot="breadcrumb" className={STRIP_CLASS}>
         <Breadcrumbs
           crumbs={[
             { label: 'Home', to: HOME_PATH },
@@ -166,7 +189,7 @@ function BreadcrumbBar() {
     const record = events.find((e) => e.id === eventMatch[1])
     const eventName = (record?.status === 'published' ? record.publishedForm?.metadata.title : undefined) || 'Event'
     return (
-      <div data-slot="breadcrumb" className="w-full bg-breadcrumb-background px-8 py-2.5">
+      <div data-slot="breadcrumb" className={STRIP_CLASS}>
         <Breadcrumbs
           crumbs={[
             { label: 'Home', to: HOME_PATH },
@@ -182,7 +205,7 @@ function BreadcrumbBar() {
   const exploreListLabel = EXPLORE_LIST_LABELS[pathname]
   if (exploreListLabel) {
     return (
-      <div data-slot="breadcrumb" className="w-full bg-breadcrumb-background px-8 py-2.5">
+      <div data-slot="breadcrumb" className={STRIP_CLASS}>
         <Breadcrumbs
           crumbs={[{ label: 'Home', to: HOME_PATH }, { label: 'Explore', to: EXPLORE_PATH }, { label: exploreListLabel }]}
         />
@@ -193,7 +216,7 @@ function BreadcrumbBar() {
   const consumerPageLabel = CONSUMER_PAGE_LABELS[pathname]
   if (consumerPageLabel) {
     return (
-      <div data-slot="breadcrumb" className="w-full bg-breadcrumb-background px-8 py-2.5">
+      <div data-slot="breadcrumb" className={STRIP_CLASS}>
         <Breadcrumbs crumbs={[{ label: 'Home', to: HOME_PATH }, { label: consumerPageLabel }]} />
       </div>
     )
@@ -209,7 +232,7 @@ function BreadcrumbBar() {
 
   if (location.pathname === '/organisations') {
     return (
-      <div data-slot="breadcrumb" className="w-full bg-breadcrumb-background px-8 py-2.5">
+      <div data-slot="breadcrumb" className={STRIP_CLASS}>
         <Breadcrumbs crumbs={[...leadingCrumbs, { label: 'My Organisations' }]} />
       </div>
     )
@@ -232,7 +255,7 @@ function BreadcrumbBar() {
     if (moduleMatch && !isOrgDashboard) crumbs.push({ label: moduleMatch.item.label })
 
     return (
-      <div data-slot="breadcrumb" className="w-full bg-breadcrumb-background px-8 py-2.5">
+      <div data-slot="breadcrumb" className={STRIP_CLASS}>
         <Breadcrumbs crumbs={crumbs} />
       </div>
     )
@@ -258,7 +281,7 @@ function BreadcrumbBar() {
   }
 
   return (
-    <div data-slot="breadcrumb" className="w-full bg-breadcrumb-background px-8 py-2.5">
+    <div data-slot="breadcrumb" className={STRIP_CLASS}>
       <Breadcrumbs crumbs={crumbs} />
     </div>
   )

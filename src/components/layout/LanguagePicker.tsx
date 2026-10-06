@@ -1,7 +1,14 @@
 import { useState } from 'react'
-import { Check, Globe } from 'lucide-react'
+import { Check } from 'lucide-react'
 
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog'
 import { cn } from '@/lib/utils'
 
 /**
@@ -22,15 +29,59 @@ const LANGUAGES: { code: string; label: string }[] = [
 ]
 
 /**
+ * Indic-translate icon: a Devanagari "अ" tile overlapped by a Latin "A" tile — the language-switch glyph for an
+ * Indic/English product. Line style matches the lucide icons (1.5 stroke, currentColor); the front tile is filled
+ * with the surface colour behind the icon (header navy by default) so it cleanly overlaps the back one.
+ */
+export function IndicTranslateIcon({
+  className,
+  surface = 'var(--header-background)',
+}: {
+  className?: string
+  /** Fill of the front tile — must match the surface behind the icon (defaults to the dark header). */
+  surface?: string
+}) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      aria-hidden="true"
+      className={className}
+    >
+      <rect x="1.5" y="1.5" width="12.5" height="12.5" rx="2.5" />
+      <text x="6.2" y="10.6" textAnchor="middle" fontSize="8.6" fontWeight="600" fill="currentColor" stroke="none">
+        अ
+      </text>
+      <rect x="10.5" y="10.5" width="12" height="12" rx="2.5" fill={surface} />
+      <text x="16.5" y="19.3" textAnchor="middle" fontSize="9" fontWeight="600" fill="currentColor" stroke="none">
+        A
+      </text>
+    </svg>
+  )
+}
+
+/**
  * Header language control: a quiet globe-icon trigger that opens a "Select language" picker — a centred
  * dialog on larger screens, a full-width bottom sheet on small ones (reusing the shared Dialog,
  * so focus is trapped, Escape and outside-click close it, and × closes it). The list scrolls
  * inside the dialog; the title stays fixed.
  */
-function LanguagePicker() {
-  const [open, setOpen] = useState(false)
+function LanguagePicker({
+  open: openProp,
+  onOpenChange,
+}: {
+  /** Controlled mode: lets another control (the mobile menu's "Language" row) open the same picker. */
+  open?: boolean
+  onOpenChange?: (open: boolean) => void
+} = {}) {
+  const [internalOpen, setInternalOpen] = useState(false)
+  const open = openProp ?? internalOpen
+  const setOpen = onOpenChange ?? setInternalOpen
   const [selected, setSelected] = useState('en')
-  const selectedLabel = LANGUAGES.find((l) => l.code === selected)?.label ?? 'English'
+  const selectedLabel =
+    LANGUAGES.find((l) => l.code === selected)?.label ?? 'English'
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -41,7 +92,7 @@ function LanguagePicker() {
           aria-haspopup="dialog"
           className="flex h-11 min-w-8 items-center justify-center rounded-md px-1 text-sm font-medium text-primary-foreground/60 transition-colors hover:text-primary-foreground focus-visible:text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:min-w-9 sm:px-1.5"
         >
-          <Globe className="size-5" aria-hidden="true" />
+          <IndicTranslateIcon className="size-6" />
         </button>
       </DialogTrigger>
       <DialogContent
@@ -53,9 +104,14 @@ function LanguagePicker() {
       >
         <DialogHeader className="pr-14">
           <DialogTitle>Select language</DialogTitle>
-          <DialogDescription className="sr-only">Choose the language CivicDataSpace is shown in.</DialogDescription>
+          <DialogDescription className="sr-only">
+            Choose the language CivicDataSpace is shown in.
+          </DialogDescription>
         </DialogHeader>
-        <ul className="min-h-0 overflow-y-auto overscroll-contain p-2" aria-label="Languages">
+        <ul
+          className="min-h-0 overflow-y-auto overscroll-contain p-2"
+          aria-label="Languages"
+        >
           {LANGUAGES.map((language) => {
             const isSelected = selected === language.code
             return (
