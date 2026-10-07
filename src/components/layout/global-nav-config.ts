@@ -3,6 +3,9 @@ import {
   BookOpen,
   Building2,
   CircleHelp,
+  Cpu,
+  Database,
+  FileText,
   FolderKanban,
   Info,
   Mail,
@@ -12,10 +15,17 @@ import {
   type LucideIcon,
 } from 'lucide-react'
 
-/** Destinations for the global (consumer) navigation. Every route here already exists in `App.tsx`. */
+/** Destinations for the global (consumer) navigation. Every route here already exists in `App.tsx`. Publishers and
+ *  Organisations are not content types the Search page lists yet, so they keep their own existing routes. */
 
-export const EXPLORE_ROUTE = '/search'
-export const COLLABORATIVES_ROUTE = '/collaboratives'
+/** The primary "Search" item — the existing search results page. */
+export const SEARCH_ROUTE = '/search'
+/** The unified Search page is the one listing surface for every content type: a category click opens it with that
+ *  type's tab active, and only a specific item opens its own detail page. Values are the plural names the Search page
+ *  accepts for `type`. */
+export const searchRoute = (type: 'datasets' | 'publications' | 'ai-models' | 'use-cases' | 'collaboratives') =>
+  `/search?type=${type}`
+export const COLLABORATIVES_ROUTE = searchRoute('collaboratives')
 export const SIGN_IN_ROUTE = '/auth/sign-in'
 export const WORKSPACE_ROUTE = '/'
 
@@ -34,13 +44,40 @@ export interface NavGroup {
   items: NavItem[]
 }
 
+/** Discover browses content; every Knowledge and Stories item opens the unified Search page on that content type's tab.
+ *  "Resources" is deliberately not a category here — it lives under More. */
 export const DISCOVER_GROUPS: NavGroup[] = [
+  {
+    heading: 'Knowledge',
+    items: [
+      {
+        label: 'Datasets',
+        to: searchRoute('datasets'),
+        icon: Database,
+        description:
+          'Explore public datasets across sectors, places, and organisations.',
+      },
+      {
+        label: 'Publications',
+        to: searchRoute('publications'),
+        icon: FileText,
+        description: 'Read research, reports, and insights.',
+      },
+      {
+        label: 'AI Models',
+        to: searchRoute('ai-models'),
+        icon: Cpu,
+        description:
+          'Explore AI models built for civic and public-good applications.',
+      },
+    ],
+  },
   {
     heading: 'Stories',
     items: [
       {
         label: 'Use Cases',
-        to: '/explore/use-cases',
+        to: searchRoute('use-cases'),
         icon: FolderKanban,
         description:
           'Explore how civic data is used to solve real-world problems.',
@@ -60,15 +97,14 @@ export const DISCOVER_GROUPS: NavGroup[] = [
         label: 'Publishers',
         to: '/publishers',
         icon: Newspaper,
-        description:
-          'Explore organisations and contributors publishing civic data.',
+        description: 'Discover organisations publishing civic data.',
       },
       // The only existing "Organisations" destination is the organisation selector.
       {
         label: 'Organisations',
         to: '/organisations',
         icon: Building2,
-        description: 'Explore organisations contributing to CivicDataSpace.',
+        description: 'Explore organisations working with civic data.',
       },
     ],
   },
@@ -138,7 +174,7 @@ const mockThumbnail = (id: number, slug = `pexels-photo-${id}`) =>
   `https://images.pexels.com/photos/${id}/${slug}.jpeg?auto=compress&cs=tinysrgb&w=600&h=338&fit=crop`
 
 /** Curated featured collaboratives. Only `collaborative-1` exists as a record today; the other two
- *  have no record, image or detail page yet, so they fall back to the listing route. */
+ *  have no record, image or detail page yet, so they fall back to the Search page's Collaboratives tab. */
 export const FEATURED_COLLABORATIVES: FeaturedCollaborative[] = [
   {
     title: 'Asia-Pacific Climate and Health Data Collaborative',

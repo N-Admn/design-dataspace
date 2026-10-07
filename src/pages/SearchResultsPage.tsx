@@ -22,6 +22,16 @@ import {
   type SearchResultItem,
 } from '@/lib/global-search'
 
+/** Navigation links use plural type names (`?type=datasets`); the page's canonical filter values are singular. */
+const TYPE_PARAM_ALIASES: Record<string, TypeFilter> = {
+  datasets: 'dataset',
+  'use-cases': 'use-case',
+  publications: 'publication',
+  collaboratives: 'collaborative',
+  events: 'event',
+  'ai-models': 'ai-model',
+}
+
 const TYPE_FILTERS: { value: TypeFilter; label: string }[] = [
   { value: 'all', label: 'All' },
   { value: 'dataset', label: 'Datasets' },
@@ -184,7 +194,9 @@ function SearchResultsPage() {
 
   const query = searchParams.get('q') ?? ''
   const typeParam = searchParams.get('type')
-  const type: TypeFilter = TYPE_FILTERS.some((f) => f.value === typeParam) ? (typeParam as TypeFilter) : 'all'
+  const type: TypeFilter = TYPE_FILTERS.some((f) => f.value === typeParam)
+    ? (typeParam as TypeFilter)
+    : (TYPE_PARAM_ALIASES[typeParam ?? ''] ?? 'all')
   // A structured filter (e.g. clicking a dataset tag) — kept distinct from the
   // free-text `q` keyword search; see `filterByTag`.
   const tag = searchParams.get('tag') ?? ''

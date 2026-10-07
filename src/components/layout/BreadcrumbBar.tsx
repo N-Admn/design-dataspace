@@ -33,7 +33,7 @@ const ORG_ROUTE_PATTERN = /^\/organisations\/([^/]+)(?:\/(.*))?$/
 const DATASET_DETAIL_PATTERN = /^\/explore\/datasets\/([^/]+)$/
 const USE_CASE_DETAIL_PATTERN = /^\/explore\/use-cases\/([^/]+)$/
 const EVENT_DETAIL_PATTERN = /^\/explore\/events\/([^/]+)$/
-/** TopNav's Explore item opens the existing Search/Explore discovery page, so the "Explore" crumb points there. */
+/** TopNav's Search item opens the existing search page, so the "Search" crumb points there. */
 const EXPLORE_PATH = '/search'
 
 /** Labels for the other `/explore/*` list pages (list "coming soon" pages and
@@ -128,7 +128,7 @@ function BreadcrumbBar() {
   // adds nothing on the landing page itself).
   if (pathname === HOME_PATH) return null
 
-  // Explore (/search) is a primary navigation destination, not a content page: no breadcrumb bar.
+  // Search (/search) is a primary navigation destination, not a content page: no breadcrumb bar.
   // Global search is a mode, not a hierarchical page: no breadcrumbs. The strip carries a single control that
   // returns to wherever Search was opened from.
   if (pathname === '/search') {
@@ -155,7 +155,7 @@ function BreadcrumbBar() {
         <Breadcrumbs
           crumbs={[
             { label: 'Home', to: HOME_PATH },
-            { label: 'Explore', to: EXPLORE_PATH },
+            { label: 'Search', to: EXPLORE_PATH },
             { label: 'Datasets', to: '/explore/datasets' },
             { label: datasetName },
           ]}
@@ -174,7 +174,7 @@ function BreadcrumbBar() {
         <Breadcrumbs
           crumbs={[
             { label: 'Home', to: HOME_PATH },
-            { label: 'Explore', to: EXPLORE_PATH },
+            { label: 'Search', to: EXPLORE_PATH },
             // Use cases are browsed in global search (Use Cases tab), not the old list page.
             { label: 'Use Cases', to: '/search?type=use-case' },
             { label: useCaseName },
@@ -193,7 +193,7 @@ function BreadcrumbBar() {
         <Breadcrumbs
           crumbs={[
             { label: 'Home', to: HOME_PATH },
-            { label: 'Explore', to: EXPLORE_PATH },
+            { label: 'Search', to: EXPLORE_PATH },
             { label: 'Events', to: '/explore/events' },
             { label: eventName },
           ]}
@@ -207,7 +207,7 @@ function BreadcrumbBar() {
     return (
       <div data-slot="breadcrumb" className={STRIP_CLASS}>
         <Breadcrumbs
-          crumbs={[{ label: 'Home', to: HOME_PATH }, { label: 'Explore', to: EXPLORE_PATH }, { label: exploreListLabel }]}
+          crumbs={[{ label: 'Home', to: HOME_PATH }, { label: 'Search', to: EXPLORE_PATH }, { label: exploreListLabel }]}
         />
       </div>
     )
