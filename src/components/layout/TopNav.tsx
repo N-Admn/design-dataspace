@@ -17,7 +17,7 @@ import {
 import {
   COLLABORATIVES_ROUTE,
   DISCOVER_GROUPS,
-  EXPLORE_ROUTE,
+  SEARCH_ROUTE,
   FEATURED_COLLABORATIVES,
   MORE_GROUPS,
   SIGN_IN_ROUTE,
@@ -650,11 +650,12 @@ function TopNav() {
     navigate(isLoggedIn ? WORKSPACE_ROUTE : SIGN_IN_ROUTE)
   }
 
-  const discoverPaths = ['/explore/use-cases', '/publishers']
+  // Listing categories now open the Search page, so only Community's own destinations are Discover pages.
+  const discoverPaths = ['/publishers', '/organisations']
   const morePaths = ['/about', '/contact']
-  const isExploreActive = pathname === EXPLORE_ROUTE
+  const isSearchActive = pathname === SEARCH_ROUTE
   const isDiscoverActive = discoverPaths.includes(pathname)
-  const isCollaborativesActive = pathname === COLLABORATIVES_ROUTE
+  const isCollaborativesActive = pathname === '/collaboratives'
   const isMoreActive = morePaths.includes(pathname)
 
   return (
@@ -702,12 +703,12 @@ function TopNav() {
             className="hidden items-center gap-1 lg:flex"
           >
             <Link
-              to={EXPLORE_ROUTE}
+              to={SEARCH_ROUTE}
               onClick={closeAll}
-              aria-current={isExploreActive ? 'page' : undefined}
-              className={cn(TRIGGER, isExploreActive && TRIGGER_ACTIVE)}
+              aria-current={isSearchActive ? 'page' : undefined}
+              className={cn(TRIGGER, isSearchActive && TRIGGER_ACTIVE)}
             >
-              Explore
+              Search
             </Link>
             <NavMenu
               id="discover"
@@ -770,15 +771,15 @@ function TopNav() {
         >
           <DialogTitle className="sr-only">Menu</DialogTitle>
           <Link
-            to={EXPLORE_ROUTE}
+            to={SEARCH_ROUTE}
             onClick={closeAll}
-            aria-current={isExploreActive ? 'page' : undefined}
+            aria-current={isSearchActive ? 'page' : undefined}
             className={cn(
               ACCORDION_ROW,
               'aria-[current=page]:bg-surface-subdued',
             )}
           >
-            Explore
+            Search
           </Link>
 
           {/* Discover */}
