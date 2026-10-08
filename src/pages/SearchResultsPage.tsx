@@ -322,7 +322,7 @@ function SearchResultsPage() {
             initiated a search or browse — not on the pre-search landing
             state, per spec. */}
         {!isLanding && (
-          <div className="flex flex-wrap items-center gap-2 sm:flex-nowrap" role="group" aria-label="Filter results by content type">
+          <div className="flex flex-wrap items-center gap-2 lg:flex-nowrap" role="group" aria-label="Filter results by content type">
             {TYPE_FILTERS.map((f) => (
               <Chip
                 key={f.value}
@@ -333,7 +333,7 @@ function SearchResultsPage() {
                 // width; the rest share the remaining width evenly so the row
                 // lines up with the search bar above it.
                 icon={f.value === 'all' ? undefined : TYPE_ICON[f.value]}
-                className={f.value === 'all' ? 'shrink-0' : 'min-w-0 sm:flex-1'}
+                className={f.value === 'all' ? 'shrink-0' : 'min-w-0 whitespace-nowrap lg:flex-1'}
               />
             ))}
           </div>
@@ -375,7 +375,7 @@ function SearchResultsPage() {
             <h2 id="trending-searches-heading" className="type-heading-3 text-foreground">
               Popular topics
             </h2>
-            <div className="mt-3 flex flex-wrap gap-2 sm:flex-nowrap" role="group" aria-label="Trending searches">
+            <div className="mt-3 flex flex-wrap gap-2 lg:flex-nowrap" role="group" aria-label="Trending searches">
               {TRENDING_SEARCHES.map((topic) => (
                 <Chip
                   key={topic}
@@ -384,7 +384,7 @@ function SearchResultsPage() {
                     setDraft(topic)
                     updateParams({ q: topic })
                   }}
-                  className="min-w-0 sm:flex-1"
+                  className="min-w-0 whitespace-nowrap lg:flex-1"
                 />
               ))}
             </div>
