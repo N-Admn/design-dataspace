@@ -18,7 +18,7 @@ const FORM_TWO_COL_MIN = 1200
 type Viewport = (typeof VIEWPORTS)[number]
 
 /** The Tailwind band a width falls in (none of these breakpoints is new). */
-function bandOf(width: number): string {
+export function bandOf(width: number): string {
   if (width >= BREAKPOINT_PX['2xl']) return '2xl'
   if (width >= BREAKPOINT_PX.xl) return 'xl'
   if (width >= BREAKPOINT_PX.lg) return 'lg'
@@ -189,17 +189,17 @@ function DisplayDemo({ viewport }: { viewport: number }) {
 /* ------------------------------------------------------------------ matrix */
 
 type Status = 'implemented' | 'documented' | 'gap'
-const STATUS_BADGE: Record<Status, { label: string; variant: 'success' | 'secondary' | 'warning' }> = {
+export const STATUS_BADGE: Record<Status, { label: string; variant: 'success' | 'secondary' | 'warning' }> = {
   implemented: { label: 'Implemented', variant: 'success' },
   documented: { label: 'Documented · not currently needed', variant: 'secondary' },
   gap: { label: 'Future design-system gap', variant: 'warning' },
 }
 
-type Cell = { text: string; status: Status }
+export type Cell = { text: string; status: Status }
 const c = (text: string, status: Status = 'implemented'): Cell => ({ text, status })
 
-const MATRIX: { component: string; compact: Cell[]; intermediate: Cell[]; expanded: Cell[] }[] = [
-  { component: 'Navigation', compact: [c('Menu button + panel (<1024px)')], intermediate: [c('Same compact navigation (768–1023px)')], expanded: [c('Desktop navigation with dropdowns (≥1024px)')] },
+export const MATRIX: { component: string; compact: Cell[]; intermediate: Cell[]; expanded: Cell[] }[] = [
+  { component: 'Navigation', compact: [c('Menu button + right slide-in drawer (<1024px)')], intermediate: [c('Same compact navigation (768–1023px)')], expanded: [c('Desktop navigation with dropdowns (≥1024px)')] },
   { component: 'Sidebar', compact: [c('“Workspace menu” trigger + drawer (<768px)')], intermediate: [c('Collapsed 80px rail (768–1023px)')], expanded: [c('Expanded 232px (≥1024px)')] },
   { component: 'Stepper', compact: [c('Numbered markers + “Step n of N · label” (<768px)')], intermediate: [c('Labelled stepper')], expanded: [c('Labelled stepper')] },
   { component: 'Page layout', compact: [c('16px gutter (<768px)')], intermediate: [c('24px gutter (768–1023px)')], expanded: [c('32px (1024–1279px) · 40px (≥1280px) · max 1760px')] },
@@ -209,6 +209,8 @@ const MATRIX: { component: string; compact: Cell[]; intermediate: Cell[]; expand
   { component: 'Filters', compact: [c('Shared filter drawer / sheet', 'gap')], intermediate: [c('Controls wrap inline')], expanded: [c('Toolbar / inline controls')] },
   { component: 'Side sheets', compact: [c('Full width (<640px)')], intermediate: [c('70vw (640–767px) · 60vw (768–1023px)')], expanded: [c('50vw, min 560px, max 760px')] },
   { component: 'Dialogs', compact: [c('Viewport − 2rem')], intermediate: [c('max-w-2xl (672px)')], expanded: [c('max-w-2xl (672px)')] },
+  { component: 'Tabs', compact: [c('Tab strip scrolls horizontally when it overflows')], intermediate: [c('Tab strip scrolls only if it overflows')], expanded: [c('Tab strip fits inline')] },
+  { component: 'Search', compact: [c('Field fills the width · content-type pills wrap (<640px)')], intermediate: [c('Field fills the width · pills in one row (≥640px)')], expanded: [c('Field and pills share the content width')] },
   { component: 'Typography', compact: [c('Roles unchanged · Display capped at 9vw')], intermediate: [c('Roles unchanged')], expanded: [c('Roles unchanged · Display 60px from md')] },
 ]
 
@@ -237,7 +239,7 @@ export function ResponsiveBehaviourSection() {
 
   const navBehaviour =
     viewport >= BREAKPOINT_PX.lg
-      ? 'Desktop navigation: Explore, Discover ▾, Collaboratives ▾ and More ▾ with centred dropdowns.'
+      ? 'Desktop navigation: Search, Discover ▾, Collaboratives ▾ and More ▾ with centred dropdowns.'
       : 'Compact navigation: Logo → Log In / Sign Up → menu button; the menu button opens a right slide-in drawer (accordion sections) with every destination and Language (used up to 1023px).'
   const sidebarBehaviour =
     viewport >= BREAKPOINT_PX.lg

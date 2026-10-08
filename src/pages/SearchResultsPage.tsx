@@ -313,7 +313,9 @@ function SearchResultsPage() {
           placeholder="Search datasets, use cases, publications, and more"
           ariaLabel="Search CivicDataSpace"
           size="md"
-          autoFocus
+          // Not when embedded (e.g. the /design-system Responsive Playground frames): focusing inside an iframe scrolls the
+          // parent page to it.
+          autoFocus={window.self === window.top}
         />
 
         {/* Content-type pills only make sense once the user has actually
