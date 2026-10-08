@@ -1,6 +1,7 @@
 import * as React from 'react'
 import {
   Bell,
+  ChevronDown,
   Database,
   FileText,
   Inbox,
@@ -55,6 +56,7 @@ import { StatusBadge } from '@/components/shared/StatusBadge'
 import { TruncatedText } from '@/components/shared/TruncatedText'
 import { cn } from '@/lib/utils'
 import { ResponsiveBehaviourSection } from '@/pages/design-system/ResponsiveBehaviourSection'
+import { ResponsivePlayground } from '@/pages/design-system/ResponsivePlayground'
 
 /**
  * Living design-system reference. Everything on this page renders from the real
@@ -359,6 +361,7 @@ const TOC = [
   ['spacing', 'Spacing scale'],
   ['breakpoints', 'Breakpoints'],
   ['responsive', 'Responsive behaviour'],
+  ['responsive-playground', 'Responsive playground'],
   ['icons', 'Icons'],
   ['states', 'Semantic states'],
   ['button', 'Button'],
@@ -386,6 +389,94 @@ const TOC = [
 ] as const
 
 const SECTION_IDS = TOC.map(([id]) => id)
+
+/** The sidebar groups the flat TOC into categories (accordion). Every TOC id appears in exactly one group. */
+const TOC_GROUPS: { id: string; label: string; sections: string[] }[] = [
+  {
+    id: 'foundations',
+    label: 'Foundations',
+    sections: ['color-pairs', 'color-tint', 'color-base', 'color-chart', 'color-chrome', 'type-roles', 'type-families', 'radius', 'shadows', 'spacing', 'icons', 'states'],
+  },
+  { id: 'responsive', label: 'Responsive', sections: ['breakpoints', 'responsive', 'responsive-playground'] },
+  { id: 'inputs', label: 'Controls & inputs', sections: ['button', 'badge', 'form-controls', 'selects', 'tag-input', 'rich-text', 'upload'] },
+  { id: 'overlays', label: 'Overlays & feedback', sections: ['tooltip', 'popover', 'dialog', 'confirm', 'toast', 'leave-dialog'] },
+  { id: 'layout', label: 'Layout & content', sections: ['stepper', 'card', 'empty-state', 'truncated', 'circle-arrow'] },
+  { id: 'flow', label: 'Review & publish', sections: ['review-section', 'review-panel', 'preview-bar'] },
+  { id: 'reference', label: 'Reference', sections: ['reference-only'] },
+]
+const TOC_LABEL = Object.fromEntries(TOC) as Record<string, string>
+
+/** Sticky sections menu: a full-height white panel docked to the left edge (like a docs site's side navigation), with the
+ *  sections sorted into collapsible categories. The category
+ *  holding the section being read opens automatically; any category can still be toggled by hand. */
+function SectionsNav({ active }: { active: string }) {
+  const activeGroup = TOC_GROUPS.find((g) => g.sections.includes(active))?.id
+  const [open, setOpen] = React.useState<Set<string>>(() => new Set(activeGroup ? [activeGroup] : [TOC_GROUPS[0].id]))
+  React.useEffect(() => {
+    if (activeGroup) setOpen((current) => (current.has(activeGroup) ? current : new Set(current).add(activeGroup)))
+  }, [activeGroup])
+  const toggle = (id: string) =>
+    setOpen((current) => {
+      const next = new Set(current)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+
+  return (
+    <aside className="sticky top-0 hidden h-screen w-72 shrink-0 self-start overflow-y-auto border-r border-border bg-card px-4 py-6 lg:block">
+      <p className="type-caption px-3 pb-3 font-mono uppercase tracking-[0.025em] text-muted-foreground">Sections</p>
+      <nav aria-label="Design system sections" className="flex flex-col">
+        {TOC_GROUPS.map((group) => {
+          const expanded = open.has(group.id)
+          const holdsActive = group.id === activeGroup
+          return (
+            <div key={group.id} className="border-b border-border last:border-b-0">
+              <h2 className="m-0">
+                <button
+                  type="button"
+                  aria-expanded={expanded}
+                  aria-controls={`toc-${group.id}`}
+                  onClick={() => toggle(group.id)}
+                  className={cn(
+                    'type-heading-3 flex w-full items-center justify-between gap-2 rounded-md px-3 py-3 text-left transition-colors hover:bg-control-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                    holdsActive ? 'text-primary' : 'text-foreground',
+                  )}
+                >
+                  {group.label}
+                  <ChevronDown
+                    className={cn('size-4 shrink-0 text-muted-foreground transition-transform motion-reduce:transition-none', expanded && 'rotate-180')}
+                    aria-hidden="true"
+                  />
+                </button>
+              </h2>
+              {expanded && (
+                <ul id={`toc-${group.id}`} className="flex flex-col gap-0.5 pb-2">
+                  {group.sections.map((id) => (
+                    <li key={id}>
+                      <a
+                        href={`#${id}`}
+                        aria-current={active === id ? 'true' : undefined}
+                        className={cn(
+                          'type-caption block rounded-md px-3 py-1.5 transition-colors',
+                          active === id
+                            ? 'bg-secondary font-medium text-primary'
+                            : 'text-muted-foreground hover:bg-control-hover hover:text-foreground',
+                        )}
+                      >
+                        {TOC_LABEL[id]}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          )
+        })}
+      </nav>
+    </aside>
+  )
+}
 
 /* --------------------------------------------------------- demo sub-parts */
 
@@ -548,32 +639,12 @@ export function DesignSystemPage() {
   const active = useActiveSection(SECTION_IDS)
 
   return (
-    <div className="mx-auto flex max-w-6xl gap-10 pb-24">
-      {/* Sidebar nav — sticky, scroll-spied. Hidden below lg (compact nav in the header takes over). */}
-      <aside className="sticky top-32 hidden h-[calc(100vh-9rem)] w-52 shrink-0 overflow-y-auto pb-6 lg:block">
-        <p className="type-caption px-3 pb-2 font-mono uppercase tracking-[0.025em] text-muted-foreground">
-          Sections
-        </p>
-        <nav className="flex flex-col gap-0.5">
-          {TOC.map(([id, label]) => (
-            <a
-              key={id}
-              href={`#${id}`}
-              aria-current={active === id ? 'true' : undefined}
-              className={cn(
-                'type-caption rounded-md px-3 py-1.5 transition-colors',
-                active === id
-                  ? 'bg-secondary font-medium text-primary'
-                  : 'text-muted-foreground hover:bg-control-hover hover:text-foreground',
-              )}
-            >
-              {label}
-            </a>
-          ))}
-        </nav>
-      </aside>
+    <div className="flex items-start">
+      {/* Sidebar nav — sticky, scroll-spied, grouped into accordion categories. Hidden below lg (the flat list in the header takes over). */}
+      <SectionsNav active={active} />
 
-      <div className="min-w-0 max-w-3xl flex-1">
+      {/* Content: 40px padding from lg (the shared smaller gutters below it), filling the space beside the sidebar. */}
+      <div className="min-w-0 flex-1 px-4 pb-24 pt-10 md:px-6 lg:px-10">
         <header className="pb-8">
           <p className="type-caption font-mono uppercase tracking-[0.025em] text-muted-foreground">
             CivicDataSpace
@@ -802,6 +873,15 @@ export function DesignSystemPage() {
           subtitle="How the existing components adapt across the existing breakpoints — demonstrated with the real prototype."
         >
           <ResponsiveBehaviourSection />
+        </Section>
+
+        {/* ============================================ RESPONSIVE PLAYGROUND */}
+        <Section
+          id="responsive-playground"
+          title="Responsive playground"
+          subtitle="Compare live components and page compositions across representative viewport widths."
+        >
+          <ResponsivePlayground />
         </Section>
 
         {/* ============================================ ICONS */}

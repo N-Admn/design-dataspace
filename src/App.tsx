@@ -46,6 +46,7 @@ import { OrganisationMembersPage } from '@/pages/organisation/OrganisationMember
 import { OrganisationProfilePage } from '@/pages/organisation/OrganisationProfilePage'
 import { DesignSystemPage } from '@/pages/DesignSystemPage'
 import { DatasetHeaderPlayground } from '@/pages/playground/DatasetHeaderPlayground'
+import { PlaygroundPreviewPage } from '@/pages/design-system/PlaygroundPreviewPage'
 import { ComingSoonPage } from '@/pages/ComingSoonPage'
 import { DiscoverPage } from '@/pages/DiscoverPage'
 import { SearchResultsPage } from '@/pages/SearchResultsPage'
@@ -119,6 +120,16 @@ function AppLayout() {
     isConsumerRoute ||
     isOrganisationSelector
   const isAuthRoute = location.pathname.startsWith('/auth/')
+  // Chrome-less host for the /design-system Responsive Playground's overlay previews (open Dialog / side sheet).
+  const isPlaygroundPreview = location.pathname.startsWith('/design-system/preview/')
+
+  if (isPlaygroundPreview) {
+    return (
+      <Routes>
+        <Route path="/design-system/preview/:component" element={<PlaygroundPreviewPage />} />
+      </Routes>
+    )
+  }
 
   if (isAuthRoute) {
     return (
@@ -142,8 +153,10 @@ function AppLayout() {
 
       <main
         className={cn(
-          'mx-auto flex w-full max-w-[1760px] flex-1 flex-col gap-6 py-8',
-          PAGE_GUTTER_X,
+          'mx-auto flex w-full flex-1 flex-col',
+          // The design-system page is a docs layout: its sidebar sits flush against the left edge and it handles its own
+          // content padding, so it opts out of the shared page gutter, vertical padding and max width.
+          isDesignSystem ? 'max-w-none' : cn('max-w-[1760px] gap-6 py-8', PAGE_GUTTER_X),
           !hideSidebar && 'md:flex-row',
           // Consumer-facing pages (Explore, Search, Discover, Collaboratives,
           // Forum) sit on a white canvas rather than the app's default grey
