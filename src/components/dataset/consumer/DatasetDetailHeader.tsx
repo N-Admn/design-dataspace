@@ -28,6 +28,7 @@ import { Button } from '@/components/ui/button'
 import { SocialShareLinks } from '@/components/shared/SocialShareLinks'
 import { useToast } from '@/components/ui/toast'
 import { formatShortDate } from '@/lib/format'
+import { cn } from '@/lib/utils'
 import type { DatasetPublisher } from '@/lib/dataset-publisher'
 import {
   GEOGRAPHY_OPTIONS,
@@ -91,6 +92,8 @@ interface DatasetDetailHeaderProps {
   publisher: DatasetPublisher
   updatedAt: string
   downloadCount: number
+  /** Lets the page decide how the card sits in its layout (e.g. growing to fill the space above the tabs). */
+  className?: string
 }
 
 /** Establishes dataset identity before the Overview/Data/Visualisations views — a page-background identity card: name + Share/Download actions (with the download count as a muted secondary signal), then
@@ -101,6 +104,7 @@ function DatasetDetailHeader({
   publisher,
   updatedAt,
   downloadCount,
+  className,
 }: DatasetDetailHeaderProps) {
   const toast = useToast()
   const SectorIcon = metadata.sector
@@ -144,7 +148,12 @@ function DatasetDetailHeader({
   ]
 
   return (
-    <header className="flex flex-col gap-8 rounded-2xl bg-page-background p-6 text-primary sm:p-8 lg:gap-10 lg:p-10">
+    <header
+      className={cn(
+        'flex flex-col gap-8 rounded-2xl bg-page-background p-6 text-primary sm:p-8 lg:gap-10 lg:p-10',
+        className,
+      )}
+    >
       <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between lg:gap-8">
         <h1 className="type-display-2 min-w-0 break-words text-primary lg:w-[68%] lg:flex-none">
           {metadata.name || 'Untitled dataset'}

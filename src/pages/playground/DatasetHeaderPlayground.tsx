@@ -12,6 +12,7 @@ import {
 import { DatasetDetailHeader } from '@/components/dataset/consumer/DatasetDetailHeader'
 import { ViewTabs } from '@/components/shared/ViewTabs'
 import { useAppData } from '@/context/AppDataContext'
+import { DataDNAPlayground } from '@/pages/playground/data-dna/DataDNAPlayground'
 import {
   resolveDatasetPublisher,
   type DatasetPublisher,
@@ -377,7 +378,7 @@ const VERSIONS: {
   },
 ]
 
-function DatasetHeaderPlayground() {
+function HeaderComparison() {
   const { datasets, organisationWorkspaces } = useAppData()
   const record = datasets.find((d) => d.id === SAMPLE_DATASET_ID)
   const form = record?.publishedForm
@@ -399,7 +400,7 @@ function DatasetHeaderPlayground() {
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-[1400px] flex-col gap-10 py-2">
+    <div className="flex w-full flex-col gap-10 py-2">
       <div className="flex flex-col gap-1">
         <h2 className="type-heading-2 text-text-default">
           Dataset Details header — visual comparison
@@ -440,6 +441,22 @@ function DatasetHeaderPlayground() {
           ))}
         </React.Fragment>
       ))}
+    </div>
+  )
+}
+
+/** The Dataset playground: the header comparison, and the Data DNA metadata exploration. Both are prototypes. */
+const PLAYGROUND_TABS = [
+  { key: 'header', label: 'Header comparison' },
+  { key: 'data-dna', label: 'Data DNA' },
+]
+
+function DatasetHeaderPlayground() {
+  const [tab, setTab] = React.useState('header')
+  return (
+    <div className="mx-auto flex w-full max-w-[1400px] flex-col gap-6">
+      <ViewTabs items={PLAYGROUND_TABS} value={tab} onChange={setTab} idPrefix="dataset-playground" label="Dataset playground" />
+      {tab === 'header' ? <HeaderComparison /> : <DataDNAPlayground />}
     </div>
   )
 }

@@ -1,18 +1,57 @@
-import { useParams } from 'react-router-dom'
+import { useParams, useSearchParams } from 'react-router-dom'
 
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { DataDNA } from '@/pages/playground/data-dna/DataDNA'
+import { DataDNAV2 } from '@/pages/playground/data-dna/DataDNAV2'
+import { DataDNAV3 } from '@/pages/playground/data-dna/DataDNAV3'
+import { DataDNAV4 } from '@/pages/playground/data-dna/DataDNAV4'
+import { DataDNAV5 } from '@/pages/playground/data-dna/DataDNAV5'
+import { DataDNAV6 } from '@/pages/playground/data-dna/DataDNAV6'
+import { DataDNAV7 } from '@/pages/playground/data-dna/DataDNAV7'
+import { DataDNAV61 } from '@/pages/playground/data-dna/DataDNAV61'
+import type { Density } from '@/pages/playground/data-dna/data-dna-constants'
 
 /** Isolated host for the Responsive Playground's overlay previews. Dialogs and side sheets only exist while open, so
  *  they can't be shown by pointing a frame at a normal route; this renders the real shared `Dialog` (centre and
  *  right-drawer variants) already open, with no app chrome, so the frame's own width drives its responsive rules. */
 function PlaygroundPreviewPage() {
   const { component } = useParams<{ component: string }>()
+  const [params] = useSearchParams()
   const noop = () => {}
   // Moving focus into a frame scrolls the parent page to it, so the opened overlay doesn't take focus.
   const keepParentScroll = (event: Event) => event.preventDefault()
+
+  // The Data DNA playground frames: the profile alone, at the frame's own width (same gutters as a page).
+  if (component === 'data-dna') {
+    const density = (['rich', 'moderate', 'sparse'] as const).find((d) => d === params.get('density')) ?? 'rich'
+    const datasetId = params.get('dataset') ?? 'ds-1'
+    const minHeight = 'md:min-h-[calc(100dvh-3rem)]'
+    return (
+      <div className="min-h-screen bg-background px-4 py-6 md:px-6 lg:px-8">
+        {/* No chrome here, so the hero group is one screen minus this wrapper's own vertical padding (py-6 = 3rem). */}
+        {params.get('version') === 'v1' ? (
+          <DataDNA datasetId={datasetId} density={density as Density} minHeightClass={minHeight} />
+        ) : params.get('version') === 'v2' ? (
+          <DataDNAV2 datasetId={datasetId} density={density as Density} minHeightClass={minHeight} />
+        ) : params.get('version') === 'v3' ? (
+          <DataDNAV3 datasetId={datasetId} density={density as Density} minHeightClass={minHeight} />
+        ) : params.get('version') === 'v4' ? (
+          <DataDNAV4 datasetId={datasetId} density={density as Density} minHeightClass={minHeight} />
+        ) : params.get('version') === 'v5' ? (
+          <DataDNAV5 datasetId={datasetId} minHeightClass={minHeight} />
+        ) : params.get('version') === 'v6' ? (
+          <DataDNAV6 datasetId={datasetId} minHeightClass={minHeight} />
+        ) : params.get('version') === 'v7' ? (
+          <DataDNAV7 datasetId={datasetId} minHeightClass={minHeight} />
+        ) : (
+          <DataDNAV61 datasetId={datasetId} minHeightClass={minHeight} />
+        )}
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-background p-6">
