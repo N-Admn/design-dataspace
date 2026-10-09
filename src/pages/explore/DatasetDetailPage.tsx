@@ -4,7 +4,8 @@ import { ArrowLeft } from 'lucide-react'
 
 import { EmptyState } from '@/components/shared/EmptyState'
 import { ViewTabPanel, ViewTabs } from '@/components/shared/ViewTabs'
-import { DatasetDetailHeader } from '@/components/dataset/consumer/DatasetDetailHeader'
+import { DatasetActions } from '@/components/dataset/consumer/DatasetActions'
+import { DatasetDataDNA } from '@/components/dataset/consumer/DatasetDataDNA'
 import { DatasetOverview } from '@/components/dataset/consumer/DatasetOverview'
 import { DatasetDataExplorer } from '@/components/dataset/consumer/DatasetDataExplorer'
 import { DatasetVisualisations } from '@/components/dataset/consumer/DatasetVisualisations'
@@ -30,6 +31,10 @@ function DatasetDetailPage() {
   // it only ever appears embedded here).
   const requestedView = searchParams.get('view')
   const [view, setView] = React.useState(() => (VIEWS.some((v) => v.key === requestedView) ? requestedView! : 'overview'))
+  // The Data DNA card links to `?view=visualisations` on this same page, so follow the URL when it changes after mount.
+  React.useEffect(() => {
+    if (requestedView && VIEWS.some((v) => v.key === requestedView)) setView(requestedView)
+  }, [requestedView])
   // Goes back to whatever page actually linked here (Search results,
   // Discover, a tag filter, …) instead of always the Datasets list —
   // "/explore/datasets" is only the fallback when there's no history at all.
@@ -62,21 +67,20 @@ function DatasetDetailPage() {
 
   return (
     <div className="mx-auto flex w-full max-w-[1400px] flex-col gap-6 py-2">
-      <button
-        type="button"
-        onClick={goBack}
-        className="flex w-fit items-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-      >
-        <ArrowLeft className="size-4" />
-        Back
-      </button>
+      {/* Back and the dataset's own actions sit above the Data DNA card; the tabs follow it. */}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <button
+          type="button"
+          onClick={goBack}
+          className="flex w-fit items-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+        >
+          <ArrowLeft className="size-4" />
+          Back
+        </button>
+        <DatasetActions title={form.metadata.name} />
+      </div>
 
-      <DatasetDetailHeader
-        metadata={form.metadata}
-        publisher={publisher}
-        updatedAt={record.updatedAt}
-        downloadCount={record.downloadCount}
-      />
+      <DatasetDataDNA datasetId={record.id} />
 
       <ViewTabs items={VIEWS} value={view} onChange={setView} idPrefix="dataset-detail" label="Dataset views" />
 
