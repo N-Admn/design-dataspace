@@ -54,7 +54,7 @@ export const DNA_HIERARCHY: { step: string; question: string; answer: string }[]
   { step: '4', question: 'Can I trust or use it?', answer: 'Publisher, last updated, source, licence' },
 ]
 
-export type DNAVersion = 'v1' | 'v2' | 'v3' | 'v4' | 'v5' | 'v6' | 'v61' | 'v7'
+export type DNAVersion = 'v1' | 'v2' | 'v3' | 'v4' | 'v5' | 'v6' | 'v61' | 'v7' | 'v8' | 'v9'
 export const DNA_VERSIONS: { key: DNAVersion; label: string; note: string }[] = [
   {
     key: 'v1',
@@ -95,6 +95,16 @@ export const DNA_VERSIONS: { key: DNAVersion; label: string; note: string }[] = 
     key: 'v7',
     label: 'Version 7',
     note: 'Version 6.1 with an open provenance row (no white card): Last Updated and License on the left with their icons; Publisher and Source on the right with profile images (initials when no image is set). Density controls do not apply.',
+  },
+  {
+    key: 'v8',
+    label: 'Version 8',
+    note: 'Version 5’s KPI cards with the Visualisation card removed from the three-card list, and Version 6’s round Save button in the header. Density controls do not apply.',
+  },
+  {
+    key: 'v9',
+    label: 'Version 9',
+    note: 'Version 8 with the “What this data tells us” card on the brand blue and all of its text in white. Density controls do not apply.',
   },
 ]
 

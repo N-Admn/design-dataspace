@@ -257,6 +257,7 @@ const CHROME_SURFACES = [
 
 const TYPE_ROLES = [
   ['type-display', 'display', '48–60 / 1.1 / 600', 'One hero moment per screen'],
+  ['type-display-1', 'display1', '32–38 / 1.1 / 600', 'Page title with more presence than display 2'],
   ['type-display-2', 'display2', '26–28 / 1.1 / 600', 'Prominent feature / section title'],
   ['type-heading-1', 'heading1', '24 / 1.25 / 600', 'Page / section title'],
   ['type-heading-2', 'heading2', '20 / 1.3 / 600', 'Sub-section title'],
@@ -760,9 +761,11 @@ export function DesignSystemPage() {
                 <span className={cls}>
                   {name === 'display'
                     ? 'Civic data'
-                    : name === 'display2'
-                      ? 'Civic data — display 2'
-                      : `The quick brown fox — ${name}`}
+                    : name === 'display1'
+                      ? 'Civic data — display 1'
+                      : name === 'display2'
+                        ? 'Civic data — display 2'
+                        : `The quick brown fox — ${name}`}
                 </span>
                 <span className="type-caption font-mono text-muted-foreground">
                   .{cls} · {spec} · {purpose}
