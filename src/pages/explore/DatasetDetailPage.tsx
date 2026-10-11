@@ -14,13 +14,14 @@ import { useGoBack } from '@/hooks/use-go-back'
 import { resolveDatasetPublisher } from '@/lib/dataset-publisher'
 
 const VIEWS = [
-  { key: 'overview', label: 'Overview' },
   { key: 'data', label: 'Data' },
   { key: 'visualisations', label: 'Visualisations' },
+  // The key stays `overview` so existing `?view=overview` links keep working; only the label changed.
+  { key: 'overview', label: 'Metadata' },
 ]
 
 /** Consumer-facing Dataset Details page — Dataset Header, then the three primary
- *  views (Overview / Data / Visualisations). See the Dataset Module PRD for the
+ *  views (Data / Visualisations / Metadata). See the Dataset Module PRD for the
  *  full specification this implements. */
 function DatasetDetailPage() {
   const { id } = useParams<{ id: string }>()
@@ -30,7 +31,7 @@ function DatasetDetailPage() {
   // (e.g. from a freshly-published Chart, which has no page of its own —
   // it only ever appears embedded here).
   const requestedView = searchParams.get('view')
-  const [view, setView] = React.useState(() => (VIEWS.some((v) => v.key === requestedView) ? requestedView! : 'overview'))
+  const [view, setView] = React.useState(() => (VIEWS.some((v) => v.key === requestedView) ? requestedView! : 'data'))
   // The Data DNA card links to `?view=visualisations` on this same page, so follow the URL when it changes after mount.
   React.useEffect(() => {
     if (requestedView && VIEWS.some((v) => v.key === requestedView)) setView(requestedView)
@@ -84,16 +85,16 @@ function DatasetDetailPage() {
 
       <ViewTabs items={VIEWS} value={view} onChange={setView} idPrefix="dataset-detail" label="Dataset views" />
 
-      <ViewTabPanel id="overview" idPrefix="dataset-detail" active={view === 'overview'}>
-        <DatasetOverview form={form} publisher={publisher} updatedAt={record.updatedAt} />
-      </ViewTabPanel>
-
       <ViewTabPanel id="data" idPrefix="dataset-detail" active={view === 'data'}>
         <DatasetDataExplorer datasetId={record.id} files={form.files} />
       </ViewTabPanel>
 
       <ViewTabPanel id="visualisations" idPrefix="dataset-detail" active={view === 'visualisations'}>
         <DatasetVisualisations datasetId={record.id} files={form.files} />
+      </ViewTabPanel>
+
+      <ViewTabPanel id="overview" idPrefix="dataset-detail" active={view === 'overview'}>
+        <DatasetOverview form={form} publisher={publisher} updatedAt={record.updatedAt} />
       </ViewTabPanel>
     </div>
   )
