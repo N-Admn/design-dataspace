@@ -58,6 +58,8 @@ export interface DataDNAModel {
   geography: string
   updated: string
   story: string
+  /** The dataset's full description as written, for layouts that have room for more than the one-line story. */
+  description: string
   stats: DNAFact[]
   headline: DNAFact[]
   characteristics: DNAFact[]
@@ -320,6 +322,7 @@ export function useDataDNAModel(datasetId: string): DataDNAModel | null {
     geography,
     updated,
     story: storyFrom(metadata.description),
+    description: metadata.description.trim(),
     stats,
     headline,
     characteristics,

@@ -10,6 +10,8 @@ import { DataDNAV3 } from '@/pages/playground/data-dna/DataDNAV3'
 import { DataDNAV4 } from '@/pages/playground/data-dna/DataDNAV4'
 import { DataDNAV5 } from '@/pages/playground/data-dna/DataDNAV5'
 import { DataDNAV6 } from '@/pages/playground/data-dna/DataDNAV6'
+import { DataDNAV9 } from '@/pages/playground/data-dna/DataDNAV9'
+import { DataDNAV8 } from '@/pages/playground/data-dna/DataDNAV8'
 import { DataDNAV7 } from '@/pages/playground/data-dna/DataDNAV7'
 import { DataDNAV61 } from '@/pages/playground/data-dna/DataDNAV61'
 import type { Density } from '@/pages/playground/data-dna/data-dna-constants'
@@ -46,6 +48,10 @@ function PlaygroundPreviewPage() {
           <DataDNAV6 datasetId={datasetId} minHeightClass={minHeight} />
         ) : params.get('version') === 'v7' ? (
           <DataDNAV7 datasetId={datasetId} minHeightClass={minHeight} />
+        ) : params.get('version') === 'v8' ? (
+          <DataDNAV8 datasetId={datasetId} minHeightClass={minHeight} />
+        ) : params.get('version') === 'v9' ? (
+          <DataDNAV9 datasetId={datasetId} minHeightClass={minHeight} />
         ) : (
           <DataDNAV61 datasetId={datasetId} minHeightClass={minHeight} />
         )}

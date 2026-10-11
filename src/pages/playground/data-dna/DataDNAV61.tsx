@@ -1,7 +1,7 @@
 import { ArrowLeft } from 'lucide-react'
 
 import { DatasetActions } from '@/components/dataset/consumer/DatasetActions'
-import { DatasetDataDNA } from '@/components/dataset/consumer/DatasetDataDNA'
+import { DatasetDataDNAV61 } from '@/pages/playground/data-dna/DatasetDataDNAV61'
 import { useDataDNAModel } from '@/components/dataset/consumer/data-dna/use-data-dna'
 import { ViewTabs } from '@/components/shared/ViewTabs'
 import { cn } from '@/lib/utils'
@@ -31,7 +31,7 @@ function DataDNAV61({ datasetId, minHeightClass }: { datasetId: string; density?
         </button>
         <DatasetActions title={model.title} />
       </div>
-      <DatasetDataDNA datasetId={datasetId} />
+      <DatasetDataDNAV61 datasetId={datasetId} />
       <ViewTabs
         items={TABS}
         value="overview"
