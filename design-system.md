@@ -190,6 +190,7 @@ Categorical series colors for data visualizations — 8 distinct hues (blue, ora
 | Role | Class | Size | Line-height | Weight | Purpose |
 |---|---|---|---|---|---|
 | display | `.type-display` | 48–60px | 1.1× | 600 | one hero moment per screen |
+| display1 | `.type-display-1` | 32–38px | 1.1× | 600 | page-level titles that need more presence than Display 2 but less than Display (32px, 38px from `md`) |
 | display2 | `.type-display-2` | 26–28px | 1.1× | 600 | prominent feature or section titles where Heading 1 is too small and Display is too dominant (26px, 28px from `md`) |
 | heading1 | `.type-heading-1` | 24px | 1.25× | 600 | page/section title |
 | heading2 | `.type-heading-2` | 20px | 1.3× | 600 | sub-section title |
@@ -215,6 +216,7 @@ The eight `.type-*` role classes above are hand-written CSS in `src/index.css` (
 | `fontSize.headingThree` | `--font-size-heading-three` | — | `1rem` |
 | `fontSize.headingTwo` | `--font-size-heading-two` | — | `1.25rem` |
 | `fontSize.headingOne` | `--font-size-heading-one` | — | `1.5rem` |
+| `fontSize.displayOne` | `--font-size-display-one` | — | `2rem` |
 | `fontSize.displayTwo` | `--font-size-display-two` | — | `1.625rem` |
 | `fontSize.display` | `--font-size-display` | — | `3rem` |
 
@@ -233,6 +235,7 @@ The eight `.type-*` role classes above are hand-written CSS in `src/index.css` (
 | `lineHeight.headingThree` | `--line-height-heading-three` | — | `1.25` |
 | `lineHeight.headingTwo` | `--line-height-heading-two` | — | `1.3` |
 | `lineHeight.headingOne` | `--line-height-heading-one` | — | `1.25` |
+| `lineHeight.displayOne` | `--line-height-display-one` | — | `1.1` |
 | `lineHeight.displayTwo` | `--line-height-display-two` | — | `1.1` |
 | `lineHeight.display` | `--line-height-display` | — | `1.1` |
 

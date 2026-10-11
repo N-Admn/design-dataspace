@@ -256,6 +256,7 @@ ${mdTable(rowsFor('font'))}
 | Role | Class | Size | Line-height | Weight | Purpose |
 |---|---|---|---|---|---|
 | display | \`.type-display\` | 48–60px | 1.1× | 600 | one hero moment per screen |
+| display1 | \`.type-display-1\` | 32–38px | 1.1× | 600 | page-level titles that need more presence than Display 2 but less than Display (32px, 38px from \`md\`) |
 | display2 | \`.type-display-2\` | 26–28px | 1.1× | 600 | prominent feature or section titles where Heading 1 is too small and Display is too dominant (26px, 28px from \`md\`) |
 | heading1 | \`.type-heading-1\` | 24px | 1.25× | 600 | page/section title |
 | heading2 | \`.type-heading-2\` | 20px | 1.3× | 600 | sub-section title |

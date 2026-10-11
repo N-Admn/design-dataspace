@@ -91,6 +91,17 @@
       font-size: 3.75rem;
     }
   }
+  /* Display 1 — between Display and Display 2: 32px, 38px from md (the same two-step pattern as Display). */
+  .type-display-1 {
+    font-size: var(--font-size-display-one);
+    line-height: var(--line-height-display-one);
+    font-weight: var(--type-font-weight-semibold);
+  }
+  @media (min-width: 768px) {
+    .type-display-1 {
+      font-size: 2.375rem;
+    }
+  }
   /* Display 2 — between Display and Heading 1: 26px, 28px from md (the same two-step pattern as Display). */
   .type-display-2 {
     font-size: var(--font-size-display-two);
