@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { SearchableSelect } from '@/components/ui/searchable-select'
+import { usePersistedState } from '@/pages/playground/use-persisted-state'
 import { DataDNACardV10 } from '@/pages/playground/data-dna/DatasetDataDNAV10'
 import {
   CUSTOM_SCENARIO_ID,
@@ -161,8 +162,8 @@ const FRAMES = [
 ] as const
 type FrameKey = (typeof FRAMES)[number]['key']
 
-const previewSrc = (data: ScenarioData) =>
-  `/design-system/preview/data-dna?version=v10-scenario&cfg=${encodeURIComponent(encodeScenario(data))}`
+const previewSrc = (data: ScenarioData, exportMode = false) =>
+  `/design-system/preview/data-dna?version=v10-scenario&cfg=${encodeURIComponent(encodeScenario(data))}${exportMode ? '&export=1' : ''}`
 
 const SELECT_OPTIONS = [
   ...SCENARIOS.map((s) => ({ value: s.id, label: s.name })),
@@ -192,8 +193,8 @@ function DiagList({ title, items, empty }: { title: string; items: string[]; emp
 }
 
 function DataDNAScenarioLab() {
-  const [scenarioId, setScenarioId] = React.useState(DEFAULT_SCENARIO_ID)
-  const [frame, setFrame] = React.useState<FrameKey>('live')
+  const [scenarioId, setScenarioId] = usePersistedState('data-dna:lab-scenario', DEFAULT_SCENARIO_ID, (v): v is string => SELECT_OPTIONS.some((o) => o.value === v))
+  const [frame, setFrame] = usePersistedState<FrameKey>('data-dna:lab-frame', 'live', (v): v is FrameKey => FRAMES.some((f) => f.key === v))
   const [exportOpen, setExportOpen] = React.useState(false)
   const backRef = React.useRef<HTMLButtonElement>(null)
   const [form, setForm] = React.useState<CustomForm>(() => formFrom(CUSTOM_SEED))
@@ -221,7 +222,7 @@ function DataDNAScenarioLab() {
   const frameDef = FRAMES.find((f) => f.key === frame) ?? FRAMES[0]
   const debounced = useDebounced(data, 250)
   const frameSrc = React.useMemo(() => previewSrc(debounced), [debounced])
-  const exportSrc = React.useMemo(() => previewSrc(data), [data])
+  const exportSrc = React.useMemo(() => previewSrc(data, true), [data])
 
   const textField = (key: FieldKey, label: string, value: string, onChange: (v: string) => void) => (
     <FieldShell key={key} id={key} label={label} on={form.enabled[key]} onToggle={(c) => toggle(key, c)}>

@@ -39,7 +39,7 @@ function PlaygroundPreviewPage() {
     if (scenario) {
       return (
         <div className="min-h-screen bg-background px-4 py-6 md:px-6 lg:px-8">
-          <DataDNACardV10 view={resolveCard(scenario).view} />
+          <DataDNACardV10 view={resolveCard(scenario).view} exportMode={params.get('export') === '1'} />
         </div>
       )
     }

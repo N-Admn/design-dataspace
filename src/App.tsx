@@ -46,6 +46,8 @@ import { OrganisationMembersPage } from '@/pages/organisation/OrganisationMember
 import { OrganisationProfilePage } from '@/pages/organisation/OrganisationProfilePage'
 import { DesignSystemPage } from '@/pages/DesignSystemPage'
 import { DatasetHeaderPlayground } from '@/pages/playground/DatasetHeaderPlayground'
+import { PlaygroundHubPage } from '@/pages/playground/PlaygroundHubPage'
+import { PlaygroundPlaceholderPage } from '@/pages/playground/PlaygroundPlaceholderPage'
 import { PlaygroundPreviewPage } from '@/pages/design-system/PlaygroundPreviewPage'
 import { ComingSoonPage } from '@/pages/ComingSoonPage'
 import { DiscoverPage } from '@/pages/DiscoverPage'
@@ -95,7 +97,8 @@ function AppLayout() {
   const isEventPreview = /^\/dashboard\/events\/[^/]+\/preview$/.test(location.pathname)
   const isPublicationPreview = /^\/dashboard\/publications\/[^/]+\/preview$/.test(location.pathname)
   const isDesignSystem = location.pathname === '/design-system'
-  const isDatasetHeaderPlayground = location.pathname === '/playground/dataset-header'
+  // The Playground Hub and every playground under /playground share the consumer chrome.
+  const isPlayground = location.pathname === '/playground' || location.pathname.startsWith('/playground/')
   const isConsumerRoute =
     location.pathname.startsWith('/explore/') ||
     location.pathname === '/collaboratives' ||
@@ -104,7 +107,7 @@ function AppLayout() {
     location.pathname === '/about' ||
     location.pathname === '/contact' ||
     location.pathname === '/discover' ||
-    isDatasetHeaderPlayground ||
+    isPlayground ||
     location.pathname === '/search'
   const isOrganisationSelector = location.pathname === '/organisations'
   const organisationWorkspaceMatch = /^\/organisations\/([^/]+)/.exec(location.pathname)
@@ -149,7 +152,7 @@ function AppLayout() {
         !isAIModelPreview &&
         !isEventPreview &&
         !isPublicationPreview &&
-        !isDatasetHeaderPlayground && <BreadcrumbBar />}
+        !isPlayground && <BreadcrumbBar />}
 
       <main
         className={cn(
@@ -205,7 +208,9 @@ function AppLayout() {
             <Route path="/organisations/:organisationId/members" element={<OrganisationMembersPage />} />
             <Route path="/organisations/:organisationId/profile" element={<OrganisationProfilePage />} />
             <Route path="/design-system" element={<DesignSystemPage />} />
+            <Route path="/playground" element={<PlaygroundHubPage />} />
             <Route path="/playground/dataset-header" element={<DatasetHeaderPlayground />} />
+            <Route path="/playground/:playgroundId" element={<PlaygroundPlaceholderPage />} />
             <Route path="/discover" element={<DiscoverPage />} />
             <Route path="/search" element={<SearchResultsPage />} />
             <Route path="/explore/datasets" element={<ComingSoonPage title="Datasets" />} />
