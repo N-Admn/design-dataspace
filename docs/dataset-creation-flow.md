@@ -72,8 +72,8 @@ DatasetMetadata
 ├── name, description              required
 ├── sector                         required
 ├── geography, tags                optional
-├── sources?: DatasetSource[]      repeatable { id, name, websiteUrl, recordUrl }
-├── sourceWebsite, sourceRecordUrls?   deprecated — see "Source & Provenance" below
+├── sources?: DatasetSource[]      repeatable { id, name, websiteUrl }
+├── sourceWebsite                  deprecated — see "Source & Provenance" below
 ├── createDate                     "Dataset creation date" (when the data was originally created)
 ├── accessType                     required: 'open' | 'restricted'
 └── license                        required
@@ -106,13 +106,13 @@ Cards, in order ([Step1Metadata.tsx](../src/components/dataset/Step1Metadata.tsx
 
 ### Source & Provenance
 
-- The card header is the standard add-item pattern: title and description on the left, an outline **+ Add Source** button at the top right of the title. The button opens a right-hand drawer ([SourceSheet.tsx](../src/components/dataset/SourceSheet.tsx)) with **Source name**, **Source website URL** and **Dataset record URL**.
+- The card header is the standard add-item pattern: title and description on the left, an outline **+ Add Source** button at the top right of the title. The button opens a right-hand drawer ([SourceSheet.tsx](../src/components/dataset/SourceSheet.tsx)) with **Source name** and **Source website URL**.
 - Added sources are listed as compact rows with Edit and Remove icons; with none, the card shows "No sources added yet."
-- Every field is optional on its own, but a source with **nothing** in it cannot be saved. A link that is typed must be a valid `http(s)` URL; empty links are never an error and never block a draft.
+- Each field is optional on its own, but a source with **neither** a name nor a website cannot be saved. A website that is typed must be a valid `http(s)` URL; an empty one is never an error and never blocks a draft.
 - Each source has a stable `id`. When a dataset is stored, `normaliseSources` ([dataset-sources.ts](../src/lib/dataset-sources.ts)) drops empty entries and trims values.
 - The **Dataset creation date** field stays in this card (below the list). It is *when the data was originally created* and is unrelated to the **Created** date CivicDataSpace records automatically.
-- The **licence** is not duplicated here. It is shown next to the sources on Review and on the public page.
-- **Compatibility:** datasets saved before repeatable sources hold `sourceWebsite` (original source URL) and `sourceRecordUrls`. `getDatasetSources` turns those into source entries on read (the first entry gets the website and first record link; further record links become entries of their own), so nothing is lost. `sources`, once present, always wins.
+- The **licence** is not duplicated here. It is shown on Review and in the Dataset information grid of the public page.
+- **Compatibility:** datasets saved before repeatable sources hold a single `sourceWebsite`; `getDatasetSources` turns it into one source entry on read. `sources`, once present, always wins. Dataset record URLs (the old `sourceRecordUrls`, and the `recordUrl` some saved entries still carry) are no longer part of a source: they are ignored on read and dropped the next time the dataset is saved.
 
 ## 7. Step 3 — Review & Publish
 
@@ -120,7 +120,7 @@ Cards, in order ([Step1Metadata.tsx](../src/components/dataset/Step1Metadata.tsx
 
 - **Dataset type** badge.
 - **Metadata** — name, description, sector, geography, tags.
-- **Source & Provenance** — each source as a card (name, then Website and Dataset record links), the licence and the dataset creation date.
+- **Source & Provenance** — each source as a card (name, then its Website link), the licence and the dataset creation date.
 - **Publishing Settings** — access type.
 - **Uploaded Files** (or **Prompt files** for prompt datasets) with preview.
 - For prompt datasets, the **Prompt Dataset metadata** card.

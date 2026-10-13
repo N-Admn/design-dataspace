@@ -54,13 +54,12 @@ export interface DatasetFile {
   promptFileMetadata?: PromptFileMetadata
 }
 
-/** One documented origin of a dataset: who published it and where to find it. Every field is optional on its own; an entry
- *  with none of them is never kept. `id` is stable so entries can be edited and removed independently. */
+/** One documented origin of a dataset: who published it and, optionally, its website. Every field is optional on its own; an
+ *  entry with neither is never kept. `id` is stable so entries can be edited and removed independently. */
 export interface DatasetSource {
   id: string
   name: string
   websiteUrl: string
-  recordUrl: string
 }
 
 export interface DatasetMetadata {
@@ -70,15 +69,16 @@ export interface DatasetMetadata {
   geography: string
   tags: string[]
   /** The dataset's documented sources (never the CivicDataSpace page, which is only the host). When absent, the dataset
-   *  predates repeatable sources and `sourceWebsite` / `sourceRecordUrls` below are read instead (see `getDatasetSources`). */
+   *  predates repeatable sources and `sourceWebsite` below is read instead (see `getDatasetSources`). */
   sources?: DatasetSource[]
   /** @deprecated Previous single "Original source URL"; kept so saved drafts and sample data still load. */
   sourceWebsite: string
-  /** @deprecated Previous "Source record URL" list; kept so saved drafts and sample data still load. */
-  sourceRecordUrls?: string[]
   createDate: string
   accessType: AccessType | ''
   license: string
+  /** Link to the licence document or page. Asked for, and required, only when `license` is "other"; kept in the record
+   *  when a predefined licence is chosen later, so switching back and forth does not lose it. Absent on older records. */
+  licenseUrl?: string
 }
 
 export type DatasetResourceType = 'csv' | 'api' | 'link'
@@ -178,6 +178,7 @@ const emptyDatasetMetadata: DatasetMetadata = {
   createDate: '',
   accessType: '',
   license: '',
+  licenseUrl: '',
 }
 
 /** Backward-compatible default — always a standard Dataset. Use

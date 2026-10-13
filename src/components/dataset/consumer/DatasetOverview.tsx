@@ -19,11 +19,11 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
 import { formatIsoDateShort, formatShortDate } from '@/lib/format'
 import type { DatasetPublisher } from '@/lib/dataset-publisher'
+import { resolveLicenseUrl } from '@/lib/dataset-license'
 import { getDatasetSources, sourceDisplayName } from '@/lib/dataset-sources'
 import {
   GEOGRAPHY_OPTIONS,
   LICENSE_OPTIONS,
-  LICENSE_TERMS_URLS,
   PROMPT_DOMAIN_OPTIONS,
   SECTOR_OPTIONS,
   TARGET_LANGUAGE_OPTIONS,
@@ -121,19 +121,16 @@ function InfoField({
   )
 }
 
-/** One compact provenance row: an icon, a prominent title, and a line of descriptive links. Used for every source and
- *  for the licence, so icon size, alignment and spacing are identical across them. */
+/** One compact provenance row: an icon and a prominent title. With a link, the title itself is the link and ends in a small
+ *  external-link icon; without one it is plain text, never styled as clickable. */
 function ProvenanceRow({
   icon: Icon,
   title,
-  links,
-  note,
+  href,
 }: {
   icon: LucideIcon
   title: string
-  links: { label: string; href: string; ariaLabel: string }[]
-  /** Muted line shown when there is nothing to link to. */
-  note?: string
+  href?: string
 }) {
   return (
     <div className="flex items-start gap-4">
@@ -143,36 +140,28 @@ function ProvenanceRow({
         aria-hidden="true"
       />
       <div className="min-w-0 flex-1">
-        <p className="break-words text-base font-semibold text-text-default">
-          {title}
-        </p>
-        {links.length > 0 ? (
-          <p className="mt-0.5 flex flex-wrap gap-x-4 gap-y-0.5 text-sm">
-            {links.map((link) => (
-              <a
-                key={link.href}
-                href={link.href}
-                target="_blank"
-                rel="noreferrer"
-                title={link.href}
-                aria-label={link.ariaLabel}
-                className="inline-flex items-center gap-0.5 text-text-brand underline-offset-2 hover:underline focus-visible:underline"
-              >
-                {link.label}
-                <ArrowUpRight className="size-3.5" aria-hidden="true" />
-              </a>
-            ))}
-          </p>
+        {href ? (
+          <a
+            href={href}
+            target="_blank"
+            rel="noreferrer"
+            title={href}
+            aria-label={`${title} (opens in a new tab)`}
+            className="inline-flex max-w-full items-baseline gap-1 break-words text-base font-semibold text-text-brand underline-offset-2 hover:underline focus-visible:rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-focus"
+          >
+            <span className="min-w-0 break-words">{title}</span>
+            <ArrowUpRight className="size-4 shrink-0 self-center" aria-hidden="true" />
+          </a>
         ) : (
-          note && <p className="mt-0.5 text-sm text-text-subdued">{note}</p>
+          <p className="break-words text-base font-semibold text-text-default">{title}</p>
         )}
       </div>
     </div>
   )
 }
 
-/** The dataset's documented sources as compact rows with subtle dividers: the source's name, then "Visit source" and
- *  "View dataset record" links for whichever exist. More than two collapse behind "View all sources". */
+/** The dataset's documented sources as compact rows with subtle dividers. A source with a website has its name as the link;
+ *  one without is plain text. More than two collapse behind "View all sources". */
 const SOURCES_SHOWN_COLLAPSED = 2
 function SourcesList({ sources }: { sources: DatasetSource[] }) {
   const [expanded, setExpanded] = useState(false)
@@ -180,34 +169,15 @@ function SourcesList({ sources }: { sources: DatasetSource[] }) {
   return (
     <div className="flex min-w-0 flex-col gap-3">
       <ul className="flex min-w-0 flex-col divide-y divide-border-default">
-        {visible.map((source) => {
-          const name = sourceDisplayName(source)
-          return (
-            <li key={source.id} className="min-w-0 py-3 first:pt-0 last:pb-0">
-              <ProvenanceRow
-                icon={Globe2}
-                title={name}
-                links={[
-                  source.websiteUrl && {
-                    label: 'Visit source',
-                    href: source.websiteUrl,
-                    ariaLabel: `Visit source: ${name}`,
-                  },
-                  source.recordUrl && {
-                    label: 'View dataset record',
-                    href: source.recordUrl,
-                    ariaLabel: `View dataset record: ${name}`,
-                  },
-                ].filter(
-                  (
-                    l,
-                  ): l is { label: string; href: string; ariaLabel: string } =>
-                    Boolean(l),
-                )}
-              />
-            </li>
-          )
-        })}
+        {visible.map((source) => (
+          <li key={source.id} className="min-w-0 py-3 first:pt-0 last:pb-0">
+            <ProvenanceRow
+              icon={Globe2}
+              title={sourceDisplayName(source)}
+              href={source.websiteUrl || undefined}
+            />
+          </li>
+        ))}
       </ul>
       {sources.length > SOURCES_SHOWN_COLLAPSED && (
         <button
@@ -241,31 +211,26 @@ const PLACEHOLDER_SOURCES: DatasetSource[] = [
     id: 'ph-1',
     name: 'data.gov.in',
     websiteUrl: 'https://data.gov.in',
-    recordUrl: 'https://data.gov.in/catalog/gross-domestic-product',
   },
   {
     id: 'ph-2',
     name: 'Reserve Bank of India',
     websiteUrl: 'https://www.rbi.org.in',
-    recordUrl: '',
   },
   {
     id: 'ph-3',
     name: 'Ministry of Statistics and Programme Implementation',
     websiteUrl: '',
-    recordUrl: 'https://mospi.gov.in/data',
   },
   {
     id: 'ph-4',
     name: 'National Sample Survey Office',
     websiteUrl: '',
-    recordUrl: '',
   },
   {
     id: 'ph-5',
     name: 'World Bank Open Data',
     websiteUrl: 'https://data.worldbank.org',
-    recordUrl: '',
   },
 ]
 
@@ -274,9 +239,7 @@ function DatasetOverview({ form, publisher, updatedAt }: DatasetOverviewProps) {
   const isPromptDataset = datasetType === 'prompt_dataset'
   const savedSources = getDatasetSources(metadata)
   const sources = savedSources.length >= 4 ? savedSources : PLACEHOLDER_SOURCES
-  const licenseUrl = metadata.license
-    ? LICENSE_TERMS_URLS[metadata.license]
-    : undefined
+  const licenseUrl = resolveLicenseUrl(metadata)
 
   return (
     <div className="flex flex-col gap-6 py-6">
@@ -421,7 +384,7 @@ function DatasetOverview({ form, publisher, updatedAt }: DatasetOverviewProps) {
               {sources.length > 0 ? (
                 <SourcesList sources={sources} />
               ) : (
-                <ProvenanceRow icon={Globe2} title="—" links={[]} />
+                <ProvenanceRow icon={Globe2} title="—" />
               )}
             </div>
           </section>
