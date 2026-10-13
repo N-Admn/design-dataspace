@@ -58,6 +58,8 @@ export interface CardRow<I extends string> {
   label: string
   value: string
   icon: I
+  /** Additional items beyond the one shown in `value`, rendered as a compact `+N`. */
+  more?: number
 }
 export interface UsagePart {
   kind: 'use-cases' | 'collaboratives' | 'visualisations'
@@ -87,7 +89,8 @@ export interface Diagnostics {
   adjustments: string[]
 }
 
-const GLANCE_MAX = 4
+/** Three rows is what fits beside the metrics card inside the card's fixed height. */
+const GLANCE_MAX = 3
 const hostOf = (url: string) => {
   try {
     return new URL(url).host
@@ -216,10 +219,11 @@ export function resolveCard(data: ScenarioData): { view: CardView; diag: Diagnos
     provenance.push({
       id: 'source',
       label: rest.length ? 'Sources' : 'Source',
-      value: rest.length ? `${sourceName(first)} +${rest.length} more` : sourceName(first),
+      value: sourceName(first),
       icon: 'source',
+      more: rest.length || undefined,
     })
-    if (rest.length) adjustments.push(`${data.sources.length} sources summarised as “first source +${rest.length} more”.`)
+    if (rest.length) adjustments.push(`${data.sources.length} sources summarised as the first name and “+${rest.length}”.`)
   } else hidden.push('Source item')
   if (data.updated) provenance.push({ id: 'updated', label: 'Last Updated', value: data.updated, icon: 'updated' })
   else hidden.push('Last-updated item')

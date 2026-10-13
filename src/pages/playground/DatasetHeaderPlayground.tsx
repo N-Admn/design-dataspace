@@ -12,6 +12,8 @@ import {
 import { DatasetDetailHeader } from '@/components/dataset/consumer/DatasetDetailHeader'
 import { ViewTabs } from '@/components/shared/ViewTabs'
 import { useAppData } from '@/context/AppDataContext'
+import { useSearchParams } from 'react-router-dom'
+import { PlaygroundHubLink } from '@/pages/playground/PlaygroundHubLink'
 import { DataDNAPlayground } from '@/pages/playground/data-dna/DataDNAPlayground'
 import {
   resolveDatasetPublisher,
@@ -452,9 +454,13 @@ const PLAYGROUND_TABS = [
 ]
 
 function DatasetHeaderPlayground() {
-  const [tab, setTab] = React.useState('header')
+  // The tab lives in the URL (`?tab=header|data-dna`), so the Playground Hub can open either one directly.
+  const [params, setParams] = useSearchParams()
+  const tab = PLAYGROUND_TABS.some((t) => t.key === params.get('tab')) ? params.get('tab')! : 'header'
+  const setTab = (key: string) => setParams({ tab: key }, { replace: true })
   return (
     <div className="mx-auto flex w-full max-w-[1400px] flex-col gap-6">
+      <PlaygroundHubLink />
       <ViewTabs items={PLAYGROUND_TABS} value={tab} onChange={setTab} idPrefix="dataset-playground" label="Dataset playground" />
       {tab === 'header' ? <HeaderComparison /> : <DataDNAPlayground />}
     </div>

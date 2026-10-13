@@ -1,7 +1,7 @@
-import * as React from 'react'
 import { Dna } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
+import { usePersistedState } from '@/pages/playground/use-persisted-state'
 import { DataDNAScenarioLab } from '@/pages/playground/data-dna/DataDNAScenarioLab'
 import { SearchableSelect } from '@/components/ui/searchable-select'
 import { useAppData } from '@/context/AppDataContext'
@@ -60,10 +60,11 @@ function Segmented<T extends string>({
 
 function DataDNAPlayground() {
   const { datasets } = useAppData()
-  const [datasetId, setDatasetId] = React.useState(DEFAULT_DATASET)
-  const [density, setDensity] = React.useState<Density>('rich')
-  const [version, setVersion] = React.useState<DNAVersion>('v61')
-  const [view, setView] = React.useState<ViewChoice>('desktop')
+  // Selections are kept while visiting the Playground Hub or another playground (same browser tab).
+  const [datasetId, setDatasetId] = usePersistedState('data-dna:dataset', DEFAULT_DATASET, (v): v is string => typeof v === 'string')
+  const [density, setDensity] = usePersistedState<Density>('data-dna:density', 'rich', (v): v is Density => DENSITIES.some((d) => d.key === v))
+  const [version, setVersion] = usePersistedState<DNAVersion>('data-dna:version', 'v61', (v): v is DNAVersion => DNA_VERSIONS.some((d) => d.key === v))
+  const [view, setView] = usePersistedState<ViewChoice>('data-dna:view', 'desktop', (v): v is ViewChoice => v === 'all' || PREVIEW_VIEWPORTS.some((p) => p.key === v))
 
   const options = datasets
     .filter((d) => d.status === 'published' && d.publishedForm)
