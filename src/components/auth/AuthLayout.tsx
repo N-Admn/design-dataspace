@@ -17,7 +17,7 @@ function BackToHome() {
 function Logo({ large = false }: { large?: boolean }) {
   return (
     <img
-      src="/brand/CDS-Logo.png"
+      src="/brand/civicdataspace-logo.svg"
       alt="CivicDataSpace"
       className={large ? 'h-48 w-auto' : 'h-9 w-auto'}
     />

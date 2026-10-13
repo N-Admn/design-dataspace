@@ -25,7 +25,9 @@ The architecture stays lightweight. A skill gets extra files or folders only whe
     │   │   └── SKILL.md
     │   ├── design-system/
     │   │   └── SKILL.md
-    │   └── accessibility-audit/
+    │   ├── accessibility-audit/
+    │   │   └── SKILL.md
+    │   └── contributor-form-patterns/
     │       └── SKILL.md
     │
     ├── ux/
@@ -57,6 +59,7 @@ The architecture stays lightweight. A skill gets extra files or folders only whe
 | `ui/ui-review` | UI | Review UI changes | Placeholder |
 | `ui/design-system` | UI | Work with the design system and tokens | Placeholder |
 | `ui/accessibility-audit` | UI | Audit accessibility | Placeholder |
+| `ui/contributor-form-patterns` | UI | Guard the standardised contributor-form patterns (add-item drawer, upload dropzone, …) and keep their Standards log | **Implemented** |
 | `ux/ux-audit` | UX | Audit UX | Placeholder |
 | `ux/flow-analysis` | UX | Analyse user flows | Placeholder |
 | `documentation` | Docs | Write and maintain documentation | Placeholder |

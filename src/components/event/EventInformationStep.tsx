@@ -450,7 +450,6 @@ function EventInformationStep({ metadata, errors, onChange }: EventInformationSt
             onChange={(asset) => onChange('coverImage', asset)}
             extensions={SUPPORTED_IMAGE_EXTENSIONS}
             maxBytes={MAX_IMAGE_BYTES}
-            variant="dropzone"
           />
           <p className="text-xs text-muted-foreground">
             Thumbnail for listing cards is generated automatically from this image.

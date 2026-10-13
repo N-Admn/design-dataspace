@@ -97,7 +97,6 @@ function AddOrganisationForm({ open, onOpenChange, onCreate }: AddOrganisationFo
               maxBytes={MAX_IMAGE_BYTES}
               error={errors.logo}
               fallbackIcon={Building2}
-              variant="dropzone"
               dropzoneTitle="Drag and drop a logo here, or click to browse."
             />
 

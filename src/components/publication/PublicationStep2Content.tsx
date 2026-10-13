@@ -9,7 +9,7 @@ import { FieldError } from '@/components/ui/field-error'
 import { DropzoneUploadField } from '@/components/shared/DropzoneUploadField'
 import { ResourcePreviewDialog, assetToPreviewResource, type PreviewResource } from '@/components/shared/ResourcePreviewDialog'
 import { PublicationFileDetailsSheet } from '@/components/publication/PublicationFileDetailsSheet'
-import { buildUploadedAsset, formatUploadLimit, validateAssetFile } from '@/lib/generic-upload'
+import { buildUploadedAsset, validateAssetFile } from '@/lib/generic-upload'
 import { getPublicationFileTitle } from '@/lib/publication-file'
 import { getYouTubeThumbnailUrl, isValidYouTubeUrl } from '@/lib/youtube'
 import { cn } from '@/lib/utils'
@@ -220,8 +220,6 @@ function PublicationStep2Content({ blocks, onBlocksChange }: PublicationStep2Con
             maxBytes={MAX_PUBLICATION_FILE_BYTES}
             multiple
             onFiles={handleFiles}
-            showExtensionBadges
-            formatHint={`Maximum file size limit: ${formatUploadLimit(MAX_PUBLICATION_FILE_BYTES)}`}
           />
 
           {uploadErrors.length > 0 && (

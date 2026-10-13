@@ -534,7 +534,6 @@ function ChartStep1Build({
               maxBytes={MAX_IMAGE_BYTES}
               error={errors.image}
               fallbackIcon={ImagePlus}
-              variant="dropzone"
               dropzoneTitle="Drag and drop a chart image here, or click to browse."
             />
           </CardContent>

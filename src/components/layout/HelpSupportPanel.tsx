@@ -378,7 +378,6 @@ function HelpSupportPanel({ open, onOpenChange }: { open: boolean; onOpenChange:
                   extensions={SUPPORT_ATTACHMENT_EXTENSIONS}
                   maxBytes={MAX_SUPPORT_ATTACHMENT_BYTES}
                   fallbackIcon={Paperclip}
-                  uploadLabel="Add attachment"
                 />
 
                 <div>

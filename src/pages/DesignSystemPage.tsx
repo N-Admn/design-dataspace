@@ -1311,18 +1311,28 @@ export function DesignSystemPage() {
         <Section
           id="upload"
           title="Upload fields"
-          subtitle="DropzoneUploadField is the raw drag-and-drop surface (caller owns validation). FileUploadField wraps it with a Label, helper text, FieldError and a single-asset preview/replace row."
+          subtitle="One standard for every file upload — forms, side sheets, modals, dialogs. The empty state is always this dropzone: icon, instruction, supported-type badges, Browse File and the size limit. Never a bare Upload button or a custom box."
         >
           <Demo>
             <DropzoneUploadField
               extensions={['CSV', 'XLSX', 'JSON']}
               maxBytes={10 * 1024 * 1024}
+              multiple
               onFiles={() => {}}
-              title="Drag a data file here"
-              browseLabel="Browse files"
-              showExtensionBadges
             />
           </Demo>
+          <ul className="mt-4 flex list-disc flex-col gap-1.5 pl-5 text-sm text-text-default">
+            <li>
+              <strong>FileUploadField</strong> for a single-asset field (label, helper text, error → dropzone → preview row with
+              Replace / Remove). <strong>DropzoneUploadField</strong> directly for multi-file surfaces where the caller owns the list.
+            </li>
+            <li>
+              Only the instruction wording changes ("Drag and drop a logo here, or click to browse."). Icon, badges, the Browse File
+              label and the "Maximum file size limit" caption are fixed.
+            </li>
+            <li>Extensions and the size limit come from the field's own validation constants, so the badges and caption always match what is accepted.</li>
+            <li>No compact or button-only upload variant, and no bespoke dashed boxes.</li>
+          </ul>
         </Section>
 
         {/* ============================================ LEAVE DIALOG */}

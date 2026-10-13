@@ -109,7 +109,6 @@ function AddContributorForm({
               maxBytes={MAX_IMAGE_BYTES}
               fallbackIcon={User}
               roundedFull
-              variant="dropzone"
               dropzoneTitle="Drag and drop a photo here, or click to browse."
             />
 

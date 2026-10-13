@@ -235,7 +235,7 @@ function DatasetDataDNAV9({ datasetId }: { datasetId: string }) {
               {firstSentence(model.description) || model.story || 'No description has been provided.'}
             </p>
             {/* The CivicDataSpace logo (as in the nav bar), lower right, so a saved card says where it came from. */}
-            <img src="/brand/CDS-Logo.png" alt="CivicDataSpace" className="mt-auto h-10 w-auto shrink-0 self-end" />
+            <img src="/brand/civicdataspace-logo.svg" alt="CivicDataSpace" className="mt-auto h-10 w-auto shrink-0 self-end" />
           </section>
 
           <section

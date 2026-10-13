@@ -383,6 +383,15 @@ Located in \`src/components/ui/\` (design-system primitives) and \`src/component
 
 **Shared composites:** \`ManagementTable\`, \`StatusBadge\`, \`ResourcePreviewDialog\`, \`LeaveCreationDialog\`, \`ReviewSection\`, \`FileUploadField\` / \`DropzoneUploadField\`, \`TruncatedText\`, \`OrganisationSearchField\`, \`DatasetConnectionsCard\`.
 
+**Upload fields (one standard, everywhere).** Every place a user adds a file — forms, side sheets, modals, dialogs, inline editors — uses the same drag-and-drop surface, never a bare "Upload" button or a bespoke dashed box:
+
+- A dashed rounded box (\`border-2 border-dashed\`, \`border-border-default\`, \`bg-surface-subdued/40\`; brand-tinted while dragging) with, centred top to bottom: the cloud-upload icon (36px, subdued) · one instruction line, "Drag and drop a file here, or click to browse." (only the noun changes: "a logo", "a photo", "files") · "Supported file types:" with one muted badge per extension · an outline **Browse File** button · the caption "Maximum file size limit: 500MB" (the field's real limit).
+- Use \`FileUploadField\` for a single-asset field (label, helper text, error, then the dropzone; once a file is chosen it becomes a preview row with Replace / Remove). Use \`DropzoneUploadField\` directly for multi-file surfaces where the caller owns the list. Both render the identical dropzone; do not add a compact or button-only variant, a custom icon or a custom button label.
+- The only per-use wording is the \`title\` / \`dropzoneTitle\`. Extensions and the size limit always come from the field's own validation constants so the badges and caption can never disagree with what is accepted.
+- A hidden \`<input type="file">\` is allowed only to power a Replace action on an already-uploaded item.
+
+**Adding an item (contributor flows).** Anything a contributor can add more than one of opens a right-hand drawer from an outline \`+ Add <Thing>\` button at the **top right of the card title** — the card header is a \`flex-row items-center justify-between\` row with the title (and description) left and the button right. The card body lists the added items as compact rows with Edit and Remove icon buttons, or a dashed "No <things> added yet." empty state; repeatable input fields are never placed inline in the card. The drawer is \`Dialog\` \`right-drawer\`: title and description at the top, a self-scrolling body, and a fixed footer with **Cancel** (ghost, left) and the primary action (right); closing with unsaved input asks for confirmation. The full rule set lives in the \`ui/contributor-form-patterns\` skill.
+
 Dialogs use one platform pattern: Radix \`Dialog\` with \`center\` / \`right-drawer\` / \`anchored\` variants (\`src/components/ui/dialog.tsx\`).
 
 ---
