@@ -46,6 +46,7 @@ import { OrganisationMembersPage } from '@/pages/organisation/OrganisationMember
 import { OrganisationProfilePage } from '@/pages/organisation/OrganisationProfilePage'
 import { DesignSystemPage } from '@/pages/DesignSystemPage'
 import { DatasetHeaderPlayground } from '@/pages/playground/DatasetHeaderPlayground'
+import { CollaborativeDetailPlayground } from '@/pages/playground/collaborative-detail/CollaborativeDetailPlayground'
 import { PlaygroundHubPage } from '@/pages/playground/PlaygroundHubPage'
 import { PlaygroundPlaceholderPage } from '@/pages/playground/PlaygroundPlaceholderPage'
 import { PlaygroundPreviewPage } from '@/pages/design-system/PlaygroundPreviewPage'
@@ -55,6 +56,7 @@ import { SearchResultsPage } from '@/pages/SearchResultsPage'
 import { UseCasesExplorePage } from '@/pages/explore/UseCasesExplorePage'
 import { UseCaseDetailPage } from '@/pages/explore/UseCaseDetailPage'
 import { DatasetDetailPage } from '@/pages/explore/DatasetDetailPage'
+import { CollaborativeDetailPage } from '@/pages/explore/CollaborativeDetailPage'
 import { EventDetailPage } from '@/pages/explore/EventDetailPage'
 import { SignInPage } from '@/pages/auth/SignInPage'
 import { RegisterPage } from '@/pages/auth/RegisterPage'
@@ -125,6 +127,16 @@ function AppLayout() {
   const isAuthRoute = location.pathname.startsWith('/auth/')
   // Chrome-less host for the /design-system Responsive Playground's overlay previews (open Dialog / side sheet).
   const isPlaygroundPreview = location.pathname.startsWith('/design-system/preview/')
+
+  // The Collaborative Detail Page playground is a full-page prototype with its own header, so it has no app chrome.
+  const isCollaborativeDetailPlayground = location.pathname === '/playground/collaborative-detail'
+  if (isCollaborativeDetailPlayground) {
+    return (
+      <Routes>
+        <Route path="/playground/collaborative-detail" element={<CollaborativeDetailPlayground />} />
+      </Routes>
+    )
+  }
 
   if (isPlaygroundPreview) {
     return (
@@ -215,6 +227,7 @@ function AppLayout() {
             <Route path="/search" element={<SearchResultsPage />} />
             <Route path="/explore/datasets" element={<ComingSoonPage title="Datasets" />} />
             <Route path="/explore/datasets/:id" element={<DatasetDetailPage />} />
+            <Route path="/explore/collaboratives/:id" element={<CollaborativeDetailPage />} />
             <Route path="/explore/use-cases" element={<UseCasesExplorePage />} />
             <Route path="/explore/use-cases/:id" element={<UseCaseDetailPage />} />
             <Route path="/explore/ai-models" element={<ComingSoonPage title="AI Models and Prompts" />} />
