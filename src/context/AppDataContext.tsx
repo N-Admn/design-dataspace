@@ -20,6 +20,7 @@ import type { CollaborativeFormState, CollaborativeRecord, CollaborativeStatus }
 import type { AIModelFormState, AIModelRecord, AIModelStatus } from '@/types/ai-model'
 import type { PublicationFormState, PublicationMetadata, PublicationRecord, PublicationStatus } from '@/types/publication'
 import type { ChartFormState, ChartRecord, ChartStatus } from '@/types/chart'
+import { normaliseSources } from '@/lib/dataset-sources'
 import { MOCK_ORGANISATION_WORKSPACES } from '@/lib/mock-organisation-workspaces'
 import {
   CURRENT_USER_PERSON_ID,
@@ -441,12 +442,13 @@ function AppDataProvider({ children }: { children: React.ReactNode }) {
   const upsertDataset = React.useCallback(
     (id: string | null, status: DatasetStatus, form: DatasetFormState, organisationId?: string) => {
       const updatedAt = formatTimestamp(new Date())
+      const stored = normaliseSources(form)
       const recordId = id ?? `dataset-${(datasetIdCounter += 1)}`
       setDatasets((prev) => {
         const existing = prev.find((d) => d.id === recordId)
-        const { status: nextStatus, publishedForm } = resolveLifecycle(existing, status === 'published' ? 'publish' : 'save', form)
+        const { status: nextStatus, publishedForm } = resolveLifecycle(existing, status === 'published' ? 'publish' : 'save', stored)
         if (existing) {
-          return prev.map((d) => (d.id === recordId ? { ...d, status: nextStatus, updatedAt, form, publishedForm } : d))
+          return prev.map((d) => (d.id === recordId ? { ...d, status: nextStatus, updatedAt, form: stored, publishedForm } : d))
         }
         return [
           {
@@ -454,7 +456,7 @@ function AppDataProvider({ children }: { children: React.ReactNode }) {
             status: nextStatus,
             updatedAt,
             downloadCount: 0,
-            form,
+            form: stored,
             publishedForm,
             organisationId,
             createdBy: organisationId ? currentUserDisplayName : undefined,

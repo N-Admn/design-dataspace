@@ -10,6 +10,7 @@ import {
 } from 'lucide-react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 
+import { ContactSupportSheet } from '@/components/layout/ContactSupportSheet'
 import {
   IndicTranslateIcon,
   LanguagePicker,
@@ -293,10 +294,13 @@ function NavTile({
   item,
   active,
   onNavigate,
+  onAction,
 }: {
   item: NavLink
   active: boolean
   onNavigate: () => void
+  /** Called for an item that opens something in place (see `NavLink.action`). */
+  onAction?: (action: NonNullable<NavLink['action']>) => void
 }) {
   const Icon = item.icon
   const body = (
@@ -310,11 +314,22 @@ function NavTile({
         </span>
         <span className="type-caption text-text-subdued">
           {item.description}
-          {!item.to && <span className="font-medium"> · Coming soon</span>}
+          {!item.to && !item.action && <span className="font-medium"> · Coming soon</span>}
         </span>
       </span>
     </>
   )
+  if (item.action) {
+    return (
+      <button
+        type="button"
+        onClick={() => onAction?.(item.action!)}
+        className="group flex w-full items-start gap-3 rounded-lg p-3 text-left transition-colors hover:bg-surface-hovered focus-visible:bg-surface-hovered focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      >
+        {body}
+      </button>
+    )
+  }
   if (!item.to) {
     return (
       <div
@@ -369,12 +384,14 @@ function CategoryMenu({
   pathname,
   onNavigate,
   onContribute,
+  onAction,
 }: {
   groups: NavGroup[]
   ariaLabel: string
   pathname: string
   onNavigate: () => void
   onContribute: () => void
+  onAction?: (action: NonNullable<NavLink['action']>) => void
 }) {
   const [active, setActive] = useState(0)
   const baseId = useId()
@@ -446,6 +463,7 @@ function CategoryMenu({
                   item={item}
                   active={pathname === item.to}
                   onNavigate={onNavigate}
+                  onAction={onAction}
                 />
               </li>
             ))}
@@ -637,12 +655,19 @@ function TopNav() {
     if (!mobileOpen) setOpenSection(null)
   }, [mobileOpen])
   const [languageOpen, setLanguageOpen] = useState(false)
+  const [contactOpen, setContactOpen] = useState(false)
   const { pathname } = useLocation()
   const navigate = useNavigate()
 
   const closeAll = () => {
     menus.close()
     setMobileOpen(false)
+  }
+  // Items that open something in place rather than navigating. Today only Contact, which opens the support drawer; the
+  // menu (or the mobile menu) closes first so the drawer is the only layer on screen.
+  const runAction = (action: NonNullable<NavLink['action']>) => {
+    closeAll()
+    if (action === 'contact') setContactOpen(true)
   }
   // Signed in → workspace; otherwise the authentication page.
   const contribute = () => {
@@ -674,7 +699,7 @@ function TopNav() {
           className="flex shrink-0 items-center gap-2 rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
           <img
-            src="/brand/CDS-Logo.png"
+            src="/brand/civicdataspace-logo.svg"
             alt="CivicDataSpace — home"
             className="h-10 w-auto"
           />
@@ -739,6 +764,7 @@ function TopNav() {
                 pathname={pathname}
                 onNavigate={closeAll}
                 onContribute={contribute}
+                onAction={runAction}
               />
             </NavMenu>
           </nav>
@@ -753,7 +779,13 @@ function TopNav() {
             />
           </span>
           {isLoggedIn ? (
-            <UserMenu onSignOut={() => setIsLoggedIn(false)} />
+            <UserMenu
+              onSignOut={() => {
+                setIsLoggedIn(false)
+                closeAll()
+                navigate(SIGN_IN_ROUTE)
+              }}
+            />
           ) : (
             <AuthButton onLogIn={() => setIsLoggedIn(true)} />
           )}
@@ -801,6 +833,7 @@ function TopNav() {
                         item={item}
                         active={pathname === item.to}
                         onNavigate={closeAll}
+                        onAction={runAction}
                       />
                     </li>
                   ))}
@@ -879,6 +912,7 @@ function TopNav() {
                         item={item}
                         active={pathname === item.to}
                         onNavigate={closeAll}
+                        onAction={runAction}
                       />
                     </li>
                   ))}
@@ -905,6 +939,12 @@ function TopNav() {
           </button>
         </DialogContent>
       </Dialog>
+
+      <ContactSupportSheet
+        open={contactOpen}
+        onOpenChange={setContactOpen}
+        signedInEmail={isLoggedIn ? CURRENT_USER.email : null}
+      />
     </div>
   )
 }

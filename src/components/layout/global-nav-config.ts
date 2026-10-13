@@ -33,6 +33,8 @@ export interface NavLink {
   label: string
   /** Omitted when the destination does not exist yet: the tile is then shown as "Coming soon" and does not navigate. */
   to?: string
+  /** An item that opens something in place instead of navigating: `contact` opens the Contact Support drawer. */
+  action?: 'contact'
   icon: LucideIcon
   description: string
 }
@@ -122,7 +124,7 @@ export const MORE_GROUPS: NavGroup[] = [
       },
       {
         label: 'Contact',
-        to: '/contact',
+        action: 'contact',
         icon: Mail,
         description: 'Get in touch with CivicDataSpace.',
       },
