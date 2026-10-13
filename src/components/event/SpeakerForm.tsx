@@ -113,7 +113,6 @@ function SpeakerForm({ open, onOpenChange, onSave, initial }: SpeakerFormProps) 
               maxBytes={MAX_IMAGE_BYTES}
               fallbackIcon={Mic2}
               roundedFull
-              variant="dropzone"
               dropzoneTitle="Drag and drop a photo here, or click to browse."
             />
 

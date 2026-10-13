@@ -1,12 +1,12 @@
 import * as React from 'react'
-import { UploadCloud, type LucideIcon } from 'lucide-react'
+import { type LucideIcon } from 'lucide-react'
 
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { FieldError } from '@/components/ui/field-error'
 import { DropzoneUploadField } from '@/components/shared/DropzoneUploadField'
 import { cn } from '@/lib/utils'
-import { validateAssetFile, buildUploadedAsset, formatUploadHint, type UploadedAsset } from '@/lib/generic-upload'
+import { validateAssetFile, buildUploadedAsset, type UploadedAsset } from '@/lib/generic-upload'
 
 interface FileUploadFieldProps {
   id?: string
@@ -19,7 +19,7 @@ interface FileUploadFieldProps {
   onChange: (asset: UploadedAsset | null) => void
   extensions: string[]
   maxBytes: number
-  /** Overrides the auto-generated "JPG, PNG or WEBP. Max 20MB." caption. */
+  /** Overrides the default "Maximum file size limit: 500MB" caption. */
   formatHint?: string
   error?: string
   /** Icon shown when the asset has no image preview (documents, attachments). Ignored once a dataUrl exists. */
@@ -27,15 +27,8 @@ interface FileUploadFieldProps {
   /** True circular preview (avatars) vs the default rounded-square. */
   roundedFull?: boolean
   previewSizeClassName?: string
-  uploadLabel?: string
   disabled?: boolean
-  /** Shown beside the Upload button in the empty state, e.g. initials for an avatar field. */
-  emptyPreview?: React.ReactNode
-  /** 'dropzone' promotes this to the large drag-and-drop box — use for a screen's primary/hero
-   * image (Thumbnail, Cover Image). 'compact' (default) is for secondary fields embedded in a
-   * larger form (logos, avatars, attachments). Both share the exact same filled-state row. */
-  variant?: 'compact' | 'dropzone'
-  /** Dropzone variant only — overrides the default "Drag and drop an image here, or click to browse." */
+  /** Wording for the dropzone instruction ("Drag and drop <what> here, or click to browse."), e.g. "a logo". */
   dropzoneTitle?: string
 }
 
@@ -53,10 +46,7 @@ function FileUploadField({
   fallbackIcon: FallbackIcon,
   roundedFull,
   previewSizeClassName = 'size-12',
-  uploadLabel = 'Upload',
   disabled,
-  emptyPreview,
-  variant = 'compact',
   dropzoneTitle,
 }: FileUploadFieldProps) {
   const inputRef = React.useRef<HTMLInputElement>(null)
@@ -74,7 +64,7 @@ function FileUploadField({
   }
 
   const shownError = error ?? localError
-  const isEmptyDropzone = variant === 'dropzone' && !value
+  const isEmpty = !value
 
   return (
     <div>
@@ -118,12 +108,12 @@ function FileUploadField({
               Remove
             </Button>
           </div>
-        ) : variant === 'dropzone' ? (
+        ) : (
+          // Every empty upload field is the same dropzone (see the design system's "Upload fields").
           <DropzoneUploadField
             extensions={extensions}
             maxBytes={maxBytes}
-            title={dropzoneTitle ?? 'Drag and drop an image here, or click to browse.'}
-            browseLabel={uploadLabel === 'Upload' ? 'Browse File' : uploadLabel}
+            title={dropzoneTitle ?? 'Drag and drop a file here, or click to browse.'}
             formatHint={formatHint}
             disabled={disabled}
             onFiles={(files) => {
@@ -131,16 +121,8 @@ function FileUploadField({
               if (file) handleFile(file)
             }}
           />
-        ) : (
-          <div className="flex items-center gap-3">
-            {emptyPreview}
-            <Button type="button" variant="outline" size="sm" disabled={disabled} onClick={() => inputRef.current?.click()}>
-              <UploadCloud className="size-4" />
-              {uploadLabel}
-            </Button>
-          </div>
         )}
-        {!isEmptyDropzone && (
+        {!isEmpty && (
           <input
             ref={inputRef}
             id={id}
@@ -157,8 +139,6 @@ function FileUploadField({
         )}
       </div>
       <FieldError message={shownError} />
-      {/* The dropzone box already shows its own hint inline — avoid showing it twice. */}
-      {!isEmptyDropzone && <p className="mt-1.5 text-xs text-text-subdued">{formatHint ?? formatUploadHint(extensions, maxBytes)}</p>}
     </div>
   )
 }

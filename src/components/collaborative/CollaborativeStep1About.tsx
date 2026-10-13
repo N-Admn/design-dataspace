@@ -48,7 +48,6 @@ function CollaborativeStep1About({ metadata, errors, onChange }: CollaborativeSt
             onChange={(asset) => onChange('image', asset)}
             extensions={COLLABORATIVE_IMAGE_EXTENSIONS}
             maxBytes={MAX_IMAGE_BYTES}
-            variant="dropzone"
           />
 
           <div>

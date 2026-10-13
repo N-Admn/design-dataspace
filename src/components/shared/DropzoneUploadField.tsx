@@ -1,10 +1,10 @@
 import * as React from 'react'
-import { UploadCloud, type LucideIcon } from 'lucide-react'
+import { UploadCloud } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
-import { formatUploadHint } from '@/lib/generic-upload'
+import { formatUploadLimit } from '@/lib/generic-upload'
 
 interface DropzoneUploadFieldProps {
   extensions: string[]
@@ -12,13 +12,10 @@ interface DropzoneUploadFieldProps {
   multiple?: boolean
   /** Raw files straight from the input/drop event — caller owns validation and state. */
   onFiles: (files: FileList | File[]) => void
+  /** What is being dropped, e.g. "a logo". The look is fixed (see the design system's "Upload fields"): only this wording varies. */
   title?: string
-  browseLabel?: string
-  icon?: LucideIcon
-  /** Overrides the auto-generated "JPG, PNG or WEBP. Max 20MB." caption. */
+  /** Overrides the default "Maximum file size limit: 500MB" caption. */
   formatHint?: string
-  /** Show supported extensions as a badge row instead of folding them into formatHint. */
-  showExtensionBadges?: boolean
   disabled?: boolean
 }
 
@@ -28,10 +25,7 @@ function DropzoneUploadField({
   multiple = false,
   onFiles,
   title,
-  browseLabel = 'Browse File',
-  icon: Icon = UploadCloud,
   formatHint,
-  showExtensionBadges,
   disabled,
 }: DropzoneUploadFieldProps) {
   const [isDragging, setIsDragging] = React.useState(false)
@@ -59,10 +53,11 @@ function DropzoneUploadField({
         disabled && 'pointer-events-none opacity-60',
       )}
     >
-      <Icon className="size-9 text-text-subdued" />
+      <UploadCloud className="size-9 text-text-subdued" />
       <p className="text-sm text-text-default">{resolvedTitle}</p>
 
-      {showExtensionBadges ? (
+      {/* The standard upload surface: icon, instruction, supported types as badges, Browse File, size limit. */}
+      {extensions.length > 0 && (
         <div className="mt-1 text-xs text-text-subdued">
           <p className="font-medium text-text-default">Supported file types:</p>
           <div className="mt-1.5 flex flex-wrap items-center justify-center gap-1.5">
@@ -73,7 +68,7 @@ function DropzoneUploadField({
             ))}
           </div>
         </div>
-      ) : null}
+      )}
 
       <input
         ref={inputRef}
@@ -88,10 +83,10 @@ function DropzoneUploadField({
         }}
       />
       <Button type="button" variant="outline" size="sm" disabled={disabled} onClick={() => inputRef.current?.click()}>
-        {browseLabel}
+        Browse File
       </Button>
 
-      <p className="text-xs text-text-subdued">{formatHint ?? formatUploadHint(extensions, maxBytes)}</p>
+      <p className="text-xs text-text-subdued">{formatHint ?? `Maximum file size limit: ${formatUploadLimit(maxBytes)}`}</p>
     </div>
   )
 }

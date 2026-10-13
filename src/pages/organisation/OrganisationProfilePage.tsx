@@ -140,7 +140,6 @@ function OrganisationProfilePage() {
                 extensions={LOGO_EXTENSIONS}
                 maxBytes={MAX_IMAGE_BYTES}
                 roundedFull
-                uploadLabel="Upload logo"
                 fallbackIcon={Building2}
               />
 

@@ -136,7 +136,6 @@ function PublicationForm({ open, onOpenChange, onAdd, initial }: PublicationForm
               maxBytes={MAX_DOCUMENT_BYTES}
               error={errors.file}
               fallbackIcon={FileText}
-              variant="dropzone"
               dropzoneTitle="Drag and drop a file here, or click to browse."
             />
 

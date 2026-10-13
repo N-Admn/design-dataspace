@@ -52,8 +52,6 @@ function ProfileEditForm({ profile, onSave }: ProfileEditFormProps) {
   const [errors, setErrors] = React.useState<FormErrors>({})
   const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false)
 
-  const initials = (firstName[0] ?? '').toUpperCase() + (lastName[0] ?? '').toUpperCase() || 'U'
-
   const publishedDatasets = datasets.filter((d) => d.status === 'published')
   const publishedEvents = events.filter((e) => e.status === 'published')
   const areas = Array.from(
@@ -240,13 +238,7 @@ function ProfileEditForm({ profile, onSave }: ProfileEditFormProps) {
                 extensions={AVATAR_EXTENSIONS}
                 maxBytes={MAX_IMAGE_BYTES}
                 roundedFull
-                uploadLabel="Upload picture"
                 fallbackIcon={User}
-                emptyPreview={
-                  <div className="flex size-12 shrink-0 items-center justify-center rounded-full bg-muted text-sm font-semibold text-muted-foreground">
-                    {initials}
-                  </div>
-                }
               />
             </CardContent>
           </Card>

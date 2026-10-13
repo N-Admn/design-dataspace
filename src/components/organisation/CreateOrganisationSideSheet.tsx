@@ -179,7 +179,6 @@ function CreateOrganisationSideSheet({ open, onOpenChange, onCreated }: CreateOr
                 roundedFull
                 error={visibleErrors.logo}
                 fallbackIcon={Building2}
-                variant="dropzone"
                 dropzoneTitle="Drag and drop a logo here, or click to browse."
               />
 

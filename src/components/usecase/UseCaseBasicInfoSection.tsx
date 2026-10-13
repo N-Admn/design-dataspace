@@ -36,7 +36,6 @@ function UseCaseBasicInfoSection({ metadata, errors, onChange }: UseCaseBasicInf
           extensions={SUPPORTED_IMAGE_EXTENSIONS}
           maxBytes={MAX_IMAGE_BYTES}
           error={errors.thumbnail}
-          variant="dropzone"
         />
 
         <div>

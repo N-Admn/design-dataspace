@@ -15,7 +15,6 @@ import {
   Plus,
   Search,
   Trash2,
-  UploadCloud,
 } from 'lucide-react'
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -27,7 +26,8 @@ import { UseCaseBasicInfoSection } from '@/components/usecase/UseCaseBasicInfoSe
 import { UseCaseDashboardSection } from '@/components/usecase/UseCaseDashboardSection'
 import { useAppData } from '@/context/AppDataContext'
 import { cn } from '@/lib/utils'
-import { validateAssetFile, buildUploadedAsset, formatUploadHint } from '@/lib/generic-upload'
+import { DropzoneUploadField } from '@/components/shared/DropzoneUploadField'
+import { validateAssetFile, buildUploadedAsset } from '@/lib/generic-upload'
 import { FieldError } from '@/components/ui/field-error'
 import { SUPPORTED_IMAGE_EXTENSIONS, MAX_IMAGE_BYTES } from '@/types/event'
 import type { UploadedAsset } from '@/lib/generic-upload'
@@ -546,17 +546,15 @@ function ImageBlockCanvas({
           </div>
         </div>
       ) : (
-        <button
-          type="button"
-          onClick={() => inputRef.current?.click()}
-          className="flex h-40 w-full flex-col items-center justify-center gap-1.5 rounded-lg border border-dashed border-border bg-muted/40 text-sm text-muted-foreground transition-colors hover:bg-muted/60"
-        >
-          <UploadCloud className="size-5" />
-          Upload image
-          <span className="text-xs text-muted-foreground">
-            {formatUploadHint(SUPPORTED_IMAGE_EXTENSIONS, MAX_IMAGE_BYTES)}
-          </span>
-        </button>
+        <DropzoneUploadField
+          extensions={SUPPORTED_IMAGE_EXTENSIONS}
+          maxBytes={MAX_IMAGE_BYTES}
+          title="Drag and drop an image here, or click to browse."
+          onFiles={(files) => {
+            const file = files[0]
+            if (file) void handleFile(file)
+          }}
+        />
       )}
       <FieldError message={uploadError} />
       <input

@@ -23,7 +23,6 @@ import {
   validateIncomingFiles,
 } from '@/lib/file-validation'
 import { promptFileMetadataStatus } from '@/lib/prompt-file-validation'
-import { formatUploadLimit } from '@/lib/generic-upload'
 import { formatTimestamp } from '@/lib/format'
 import {
   PLATFORM_LABELS,
@@ -427,8 +426,6 @@ function Step2DataFiles({
               maxBytes={MAX_FILE_SIZE_BYTES}
               multiple
               onFiles={handleIncoming}
-              showExtensionBadges
-              formatHint={`Maximum file size limit: ${formatUploadLimit(MAX_FILE_SIZE_BYTES)}`}
             />
 
             {uploadErrors.length > 0 && (
