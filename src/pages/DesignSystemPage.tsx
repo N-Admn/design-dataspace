@@ -40,6 +40,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { SearchableSelect } from '@/components/ui/searchable-select'
 import { Stepper } from '@/components/ui/stepper'
+import { Tag, TAG_SIZES, type TagSize } from '@/components/ui/tag'
 import { TagInput } from '@/components/ui/tag-input'
 import { Textarea } from '@/components/ui/textarea'
 import { RichTextEditor } from '@/components/ui/rich-text-editor'
@@ -367,6 +368,7 @@ const TOC = [
   ['states', 'Semantic states'],
   ['button', 'Button'],
   ['badge', 'Badge'],
+  ['tag', 'Tag (interactive)'],
   ['form-controls', 'Form controls'],
   ['selects', 'Selects & pickers'],
   ['tag-input', 'Tag input'],
@@ -399,7 +401,7 @@ const TOC_GROUPS: { id: string; label: string; sections: string[] }[] = [
     sections: ['color-pairs', 'color-tint', 'color-base', 'color-chart', 'color-chrome', 'type-roles', 'type-families', 'radius', 'shadows', 'spacing', 'icons', 'states'],
   },
   { id: 'responsive', label: 'Responsive', sections: ['breakpoints', 'responsive', 'responsive-playground'] },
-  { id: 'inputs', label: 'Controls & inputs', sections: ['button', 'badge', 'form-controls', 'selects', 'tag-input', 'rich-text', 'upload'] },
+  { id: 'inputs', label: 'Controls & inputs', sections: ['button', 'badge', 'tag', 'form-controls', 'selects', 'tag-input', 'rich-text', 'upload'] },
   { id: 'overlays', label: 'Overlays & feedback', sections: ['tooltip', 'popover', 'dialog', 'confirm', 'toast', 'leave-dialog'] },
   { id: 'layout', label: 'Layout & content', sections: ['stepper', 'card', 'empty-state', 'truncated', 'circle-arrow'] },
   { id: 'flow', label: 'Review & publish', sections: ['review-section', 'review-panel', 'preview-bar'] },
@@ -968,6 +970,67 @@ export function DesignSystemPage() {
             <StatusBadge status="draft" />
             <Badge variant="warning">Unsaved changes</Badge>
           </div>
+        </Section>
+
+        {/* ============================================ TAG */}
+        <Section
+          id="tag"
+          title="Tag (interactive)"
+          subtitle="src/components/ui/tag.tsx. A clickable pill (link or button), the interactive counterpart of Badge. Four sizes, each 20% bigger than the one before."
+        >
+          <div className="flex flex-wrap items-end gap-x-6 gap-y-4">
+            {(Object.keys(TAG_SIZES) as TagSize[]).map((size) => (
+              <div key={size} className="flex flex-col items-start gap-2">
+                <Tag size={size} to={`/search?type=dataset&tag=${size}`}>
+                  Climate action
+                </Tag>
+                <span className="type-caption font-mono text-muted-foreground">
+                  {size} · {TAG_SIZES[size].fontPx}px · ×{TAG_SIZES[size].scale}
+                </span>
+              </div>
+            ))}
+          </div>
+          <p className="type-caption mt-6 font-mono text-muted-foreground">Variants: link (to / href) · button (onClick)</p>
+          <div className="mt-2 flex flex-wrap items-center gap-2">
+            <Tag to="/search?type=dataset&tag=GDP">In-app link</Tag>
+            <Tag href="https://www.un.org/sustainabledevelopment/" target="_blank" rel="noreferrer">
+              External link
+            </Tag>
+            <Tag onClick={() => {}}>Button</Tag>
+          </div>
+          <p className="type-caption mt-6 font-mono text-muted-foreground">Where each size is used</p>
+          <ul className="mt-2 grid gap-2 sm:grid-cols-2">
+            <li className="flex flex-wrap items-center gap-3 rounded-lg border border-border-default px-3 py-2.5">
+              <span className="flex flex-wrap gap-1.5">
+                <Tag size="sm" to="/search?type=dataset&tag=GDP">GDP</Tag>
+                <Tag size="sm" to="/search?type=dataset&tag=Economy">Economy</Tag>
+              </span>
+              <span className="type-caption text-text-subdued">sm — Dataset Details tags row (compact metadata)</span>
+            </li>
+            <li className="flex flex-wrap items-center gap-3 rounded-lg border border-border-default px-3 py-2.5">
+              <span className="flex flex-wrap gap-2">
+                <Tag size="lg" to="/search?type=collaboratives&tag=Health">Health</Tag>
+                <Tag size="lg" to="/search?type=collaboratives&tag=Environment">Environment</Tag>
+              </span>
+              <span className="type-caption text-text-subdued">lg — Collaborative hero (tags under a display title)</span>
+            </li>
+          </ul>
+          <ul className="mt-5 flex list-disc flex-col gap-1.5 pl-5 text-sm text-text-default">
+            <li>
+              <strong>sm</strong> is the established tag (12px text, 10px × 2px padding, 22px tall). <strong>md</strong>, <strong>lg</strong> and{' '}
+              <strong>xl</strong> are ×1.2, ×1.44 and ×1.728 of it: each step is 20% bigger than the one before. Padding and gap are in{' '}
+              <code>em</code>, so the whole pill scales, while the border stays 1px.
+            </li>
+            <li>
+              Pick the size by the text it sits under: <strong>sm</strong> beside body text and metadata, <strong>md</strong> under headings,{' '}
+              <strong>lg</strong> under a display or hero title, <strong>xl</strong> for a standalone feature tag. Keep one size per group.
+            </li>
+            <li>
+              Use it for a value that goes somewhere or filters something: a link (<code>to</code> for in-app routes, <code>href</code> for
+              external ones) or a button (<code>onClick</code>). Hover fills with the accent surface; focus shows the standard ring.
+            </li>
+            <li>Use Badge for labels that are not clickable (status, type), never Tag.</li>
+          </ul>
         </Section>
 
         {/* ============================================ FORM CONTROLS */}

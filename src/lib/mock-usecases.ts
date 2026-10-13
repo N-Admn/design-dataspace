@@ -1,3 +1,4 @@
+import { EXTRA_USE_CASES } from '@/lib/mock-collaborative-content'
 import { MOCK_ORGANISATIONS } from '@/lib/mock-organisations'
 import type { UploadedAsset } from '@/lib/generic-upload'
 import type { UseCaseFormState, UseCaseRecord } from '@/types/usecase'
@@ -158,4 +159,5 @@ export const MOCK_USE_CASE_RECORDS: UseCaseRecord[] = [
     organisationId: 'org-workspace-1',
     createdBy: 'Rahul Mehta',
   },
+  ...EXTRA_USE_CASES,
 ]

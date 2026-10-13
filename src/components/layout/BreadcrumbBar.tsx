@@ -32,6 +32,7 @@ function findNavMatch(groups: typeof NAV_GROUPS, pathname: string) {
 const ORG_ROUTE_PATTERN = /^\/organisations\/([^/]+)(?:\/(.*))?$/
 const DATASET_DETAIL_PATTERN = /^\/explore\/datasets\/([^/]+)$/
 const USE_CASE_DETAIL_PATTERN = /^\/explore\/use-cases\/([^/]+)$/
+const COLLABORATIVE_DETAIL_PATTERN = /^\/explore\/collaboratives\/([^/]+)$/
 const EVENT_DETAIL_PATTERN = /^\/explore\/events\/([^/]+)$/
 /** TopNav's Search item opens the existing search page, so the "Search" crumb points there. */
 const EXPLORE_PATH = '/search'
@@ -116,7 +117,7 @@ function Breadcrumbs({ crumbs }: { crumbs: CrumbSpec[] }) {
 function BreadcrumbBar() {
   const location = useLocation()
   const closeSearch = useCloseSearch()
-  const { organisationWorkspaces, datasets, useCases, events } = useAppData()
+  const { organisationWorkspaces, datasets, useCases, events, collaboratives } = useAppData()
   const isDashboard = location.pathname === '/'
   const { pathname } = location
 
@@ -178,6 +179,25 @@ function BreadcrumbBar() {
             // Use cases are browsed in global search (Use Cases tab), not the old list page.
             { label: 'Use Cases', to: '/search?type=use-case' },
             { label: useCaseName },
+          ]}
+        />
+      </div>
+    )
+  }
+
+  const collaborativeMatch = COLLABORATIVE_DETAIL_PATTERN.exec(pathname)
+  if (collaborativeMatch) {
+    const record = collaboratives.find((c) => c.id === collaborativeMatch[1])
+    const collaborativeName =
+      (record?.status === 'published' ? record.publishedForm?.metadata.name : undefined) || 'Collaborative'
+    return (
+      <div data-slot="breadcrumb" className={STRIP_CLASS}>
+        <Breadcrumbs
+          crumbs={[
+            { label: 'Home', to: HOME_PATH },
+            { label: 'Search', to: EXPLORE_PATH },
+            { label: 'Collaboratives', to: '/search?type=collaboratives' },
+            { label: collaborativeName },
           ]}
         />
       </div>

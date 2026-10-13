@@ -9,7 +9,7 @@ import { TagInput } from '@/components/ui/tag-input'
 import { RichTextEditor } from '@/components/ui/rich-text-editor'
 import { FileUploadField } from '@/components/shared/FileUploadField'
 import { GEOGRAPHY_OPTIONS, SECTOR_OPTIONS } from '@/types/dataset'
-import { SDG_GOAL_OPTIONS } from '@/types/usecase'
+import { SDG_GOALS } from '@/lib/sdg-goals'
 import { SUPPORTED_IMAGE_EXTENSIONS, MAX_IMAGE_BYTES } from '@/types/event'
 import { cn } from '@/lib/utils'
 import {
@@ -18,6 +18,13 @@ import {
   type CollaborativeMetadata,
 } from '@/types/collaborative'
 import { richTextLength, type CollaborativeAboutErrors } from '@/lib/collaborative-validation'
+
+/** All 17 goals, each with its official UN icon beside the title (the stored values and titles are unchanged). */
+const SDG_SELECT_OPTIONS = SDG_GOALS.map((g) => ({
+  value: g.value,
+  label: `${g.number}. ${g.title}`,
+  icon: <img src={g.imageUrl} alt="" className="size-6 shrink-0 rounded-[1px]" />,
+}))
 
 const COLLABORATIVE_IMAGE_EXTENSIONS = [...SUPPORTED_IMAGE_EXTENSIONS, 'svg']
 
@@ -165,7 +172,7 @@ function CollaborativeStep1About({ metadata, errors, onChange }: CollaborativeSt
             <div className="mt-1.5">
               <MultiSelect
                 id="collaborative-sdg-goals"
-                options={SDG_GOAL_OPTIONS}
+                options={SDG_SELECT_OPTIONS}
                 values={metadata.sdgGoals}
                 onChange={(values) => onChange('sdgGoals', values)}
                 placeholder="Select SDG goals..."

@@ -74,6 +74,30 @@ function loadStoredUseCases(): UseCaseRecord[] | null {
   }
 }
 
+/** Bump when the bundled sample Use Cases / Collaboratives change. A browser holding an older copy then gets the new samples
+ * once (records with a sample id are replaced, missing ones added) while records people created themselves are kept. */
+const SEED_VERSION = '2026-10-13-collaborative-samples'
+const SEED_VERSION_KEY = 'civicdataspace:seed-version'
+
+function reconcileWithSeed<T extends { id: string }>(stored: T[] | null, seed: T[]): T[] {
+  if (!stored) return seed
+  try {
+    if (window.localStorage.getItem(SEED_VERSION_KEY) === SEED_VERSION) return stored
+  } catch {
+    return stored
+  }
+  const seedIds = new Set(seed.map((r) => r.id))
+  return [...seed, ...stored.filter((r) => !seedIds.has(r.id))]
+}
+
+function markSeedCurrent() {
+  try {
+    window.localStorage.setItem(SEED_VERSION_KEY, SEED_VERSION)
+  } catch {
+    /* storage unavailable: samples simply stay as bundled */
+  }
+}
+
 function bumpUseCaseIdCounter(records: UseCaseRecord[]) {
   for (const record of records) {
     const match = /^usecase-(\d+)$/.exec(record.id)
@@ -291,13 +315,14 @@ function AppDataProvider({ children }: { children: React.ReactNode }) {
   const [organisations, setOrganisations] = React.useState<Organisation[]>(MOCK_ORGANISATIONS)
   const [useCases, setUseCases] = React.useState<UseCaseRecord[]>(() => {
     const stored = loadStoredUseCases()
-    const initial = stored ?? MOCK_USE_CASE_RECORDS
+    const initial = reconcileWithSeed(stored, MOCK_USE_CASE_RECORDS)
     bumpUseCaseIdCounter(initial)
     return initial
   })
   const [collaboratives, setCollaboratives] = React.useState<CollaborativeRecord[]>(() => {
     const stored = loadStoredCollaboratives()
-    const initial = stored ?? MOCK_COLLABORATIVE_RECORDS
+    const initial = reconcileWithSeed(stored, MOCK_COLLABORATIVE_RECORDS)
+    markSeedCurrent()
     bumpCollaborativeIdCounter(initial)
     return initial
   })

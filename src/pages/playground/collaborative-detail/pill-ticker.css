@@ -1,0 +1,39 @@
+/* The pill ticker's motion. Kept beside the component (not in the app's global styles) because it belongs to this playground only. */
+@keyframes pill-ticker-scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.pill-ticker-track {
+  display: flex;
+  width: max-content;
+  animation: pill-ticker-scroll var(--ticker-duration, 80s) linear infinite;
+  animation-delay: var(--ticker-delay, 0s);
+}
+.pill-ticker-track[data-reverse='true'] {
+  animation-direction: reverse;
+}
+/* Hovering or focusing inside the ticker, or the page-level pause button, holds it still. */
+.pill-ticker:hover .pill-ticker-track,
+.pill-ticker:focus-within .pill-ticker-track,
+.pill-ticker[data-paused='true'] .pill-ticker-track {
+  animation-play-state: paused;
+}
+
+/* Reduced motion: no animation at all. The pills wrap into a plain, static list, and the copies that exist only for the loop
+   are not shown. */
+@media (prefers-reduced-motion: reduce) {
+  .pill-ticker-track {
+    animation: none;
+    width: auto;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+  .pill-ticker-loop-copy {
+    display: none;
+  }
+}

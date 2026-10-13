@@ -257,7 +257,8 @@ export function buildSearchIndex({
       title: c.form.metadata.name || 'Untitled Collaborative',
       organisation: orgNames[0],
       meta: c.form.metadata.sectors.map((s) => optionLabel(SECTOR_OPTIONS, s)).filter(Boolean).join(', ') || undefined,
-      href: `/dashboard/collaboratives/${c.id}/preview`,
+      // The public page: it shows the published snapshot only (the owner's preview shows the working copy and publish controls).
+      href: `/explore/collaboratives/${c.id}`,
       thumbnailUrl: c.form.metadata.image?.dataUrl ?? null,
       tags: c.form.metadata.tags,
       cardMeta: {
