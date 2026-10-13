@@ -54,13 +54,28 @@ export interface DatasetFile {
   promptFileMetadata?: PromptFileMetadata
 }
 
+/** One documented origin of a dataset: who published it and where to find it. Every field is optional on its own; an entry
+ *  with none of them is never kept. `id` is stable so entries can be edited and removed independently. */
+export interface DatasetSource {
+  id: string
+  name: string
+  websiteUrl: string
+  recordUrl: string
+}
+
 export interface DatasetMetadata {
   name: string
   description: string
   sector: string
   geography: string
   tags: string[]
+  /** The dataset's documented sources (never the CivicDataSpace page, which is only the host). When absent, the dataset
+   *  predates repeatable sources and `sourceWebsite` / `sourceRecordUrls` below are read instead (see `getDatasetSources`). */
+  sources?: DatasetSource[]
+  /** @deprecated Previous single "Original source URL"; kept so saved drafts and sample data still load. */
   sourceWebsite: string
+  /** @deprecated Previous "Source record URL" list; kept so saved drafts and sample data still load. */
+  sourceRecordUrls?: string[]
   createDate: string
   accessType: AccessType | ''
   license: string
@@ -211,6 +226,14 @@ export const GEOGRAPHY_OPTIONS = [
   { value: 'bhutan', label: 'Bhutan' },
   { value: 'global', label: 'Global' },
 ]
+
+/** Where each licence's terms are published, for the options that have a canonical page. Others show the name without a link. */
+export const LICENSE_TERMS_URLS: Record<string, string> = {
+  'cc-by-4.0': 'https://creativecommons.org/licenses/by/4.0/',
+  'cc-by-sa-4.0': 'https://creativecommons.org/licenses/by-sa/4.0/',
+  'cc0-1.0': 'https://creativecommons.org/publicdomain/zero/1.0/',
+  'odc-by': 'https://opendatacommons.org/licenses/by/1-0/',
+}
 
 export const LICENSE_OPTIONS = [
   { value: 'cc-by-4.0', label: 'CC BY 4.0' },

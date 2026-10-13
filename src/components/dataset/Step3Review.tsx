@@ -13,6 +13,7 @@ import { PublicVisibilityNotice } from '@/components/dataset/PublicVisibilityNot
 import { formatFileSize } from '@/lib/format'
 import { getResourceTitle } from '@/lib/file-validation'
 import { isMetadataValid, isPromptDatasetMetadataValid } from '@/lib/validation'
+import { getDatasetSources, sourceDisplayName } from '@/lib/dataset-sources'
 import { promptFileMetadataStatus } from '@/lib/prompt-file-validation'
 import { useAppData } from '@/context/AppDataContext'
 import { CHART_TYPE_OPTIONS, type ChartType } from '@/types/chart'
@@ -144,6 +145,22 @@ function optionLabel(options: { value: string; label: string }[], value: string)
   return options.find((o) => o.value === value)?.label ?? '—'
 }
 
+/** A source URL in the review: a clickable link that truncates, or a dash when it wasn't entered. */
+function reviewLink(url: string): ReactNode {
+  if (!url.trim()) return '—'
+  return (
+    <a
+      href={url}
+      target="_blank"
+      rel="noreferrer"
+      title={url}
+      className="block max-w-full truncate text-text-brand underline-offset-2 hover:underline focus-visible:underline"
+    >
+      {url}
+    </a>
+  )
+}
+
 function ReviewField({ label, value }: { label: string; value: ReactNode }) {
   return (
     <div>
@@ -273,6 +290,7 @@ function ReadinessChecklist({ items }: { items: ReadinessItem[] }) {
 
 function Step3Review({ form, datasetId, canPublish, hasLiveVersion, onEditStep, onPublish }: Step3ReviewProps) {
   const { metadata, files, datasetType } = form
+  const reviewSources = getDatasetSources(metadata)
   const isPromptDataset = datasetType === 'prompt_dataset'
   const totalBytes = files.reduce((sum, f) => sum + f.sizeBytes, 0)
   const [preview, setPreview] = React.useState<PreviewResource | null>(null)
@@ -337,8 +355,51 @@ function Step3Review({ form, datasetId, canPublish, hasLiveVersion, onEditStep, 
               }
             />
           </div>
-          <ReviewField label="Source Website" value={metadata.sourceWebsite || '—'} />
-          <ReviewField label="Create Date" value={metadata.createDate || '—'} />
+        </div>
+      </ReviewSection>
+
+      <ReviewSection title="Source & Provenance" defaultOpen onEdit={() => onEditStep(2)}>
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+          <div className="sm:col-span-2">
+            <ReviewField
+              label="Sources"
+              value={
+                reviewSources.length > 0 ? (
+                  <ul className="flex flex-col gap-3">
+                    {reviewSources.map((source, index) => (
+                      <li key={source.id} className="min-w-0 rounded-lg border border-border-default px-3 py-2.5">
+                        <p className="text-sm font-medium text-text-default">
+                          {sourceDisplayName(source)}
+                          <span className="ml-2 text-xs font-normal text-text-subdued">Source {index + 1}</span>
+                        </p>
+                        <dl className="mt-1 flex flex-col gap-0.5 text-sm">
+                          {source.websiteUrl && (
+                            <div className="flex min-w-0 gap-2">
+                              <dt className="w-28 shrink-0 text-text-subdued">Website</dt>
+                              <dd className="min-w-0 flex-1">{reviewLink(source.websiteUrl)}</dd>
+                            </div>
+                          )}
+                          {source.recordUrl && (
+                            <div className="flex min-w-0 gap-2">
+                              <dt className="w-28 shrink-0 text-text-subdued">Dataset record</dt>
+                              <dd className="min-w-0 flex-1">{reviewLink(source.recordUrl)}</dd>
+                            </div>
+                          )}
+                        </dl>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  '—'
+                )
+              }
+            />
+          </div>
+          <ReviewField
+            label="License"
+            value={metadata.license ? optionLabel(LICENSE_OPTIONS, metadata.license) : '—'}
+          />
+          <ReviewField label="Dataset Creation Date" value={metadata.createDate || '—'} />
         </div>
       </ReviewSection>
 
@@ -353,10 +414,6 @@ function Step3Review({ form, datasetId, canPublish, hasLiveVersion, onEditStep, 
                   ? 'Restricted Access'
                   : '—'
             }
-          />
-          <ReviewField
-            label="License"
-            value={metadata.license ? optionLabel(LICENSE_OPTIONS, metadata.license) : '—'}
           />
         </div>
       </ReviewSection>

@@ -1,3 +1,5 @@
+import * as React from 'react'
+
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -19,8 +21,13 @@ import {
   type DatasetMetadata,
   type DatasetType,
   type PromptDatasetMetadata,
+  type DatasetSource,
 } from '@/types/dataset'
 import type { MetadataErrors, PromptDatasetMetadataErrors } from '@/lib/validation'
+import { SourceSheet } from '@/components/dataset/SourceSheet'
+import { getDatasetSources, sourceDisplayName } from '@/lib/dataset-sources'
+import { Pencil, Plus, Trash2 } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 import { FORM_TWO_COL_GRID } from '@/lib/layout'
 
 interface Step1MetadataProps {
@@ -126,6 +133,20 @@ function PromptDatasetMetadataFields({
 }
 
 function Step1Metadata({ datasetType, metadata, errors, onChange, promptMetadata, promptErrors, onPromptChange }: Step1MetadataProps) {
+  // Sources are added and edited in a right-hand drawer, like every other "add an item" action in the contributor flows.
+  const sources = getDatasetSources(metadata)
+  const [sourceSheet, setSourceSheet] = React.useState<{ open: boolean; source: DatasetSource | null }>({
+    open: false,
+    source: null,
+  })
+  const openAddSource = () => setSourceSheet({ open: true, source: null })
+  const openEditSource = (source: DatasetSource) => setSourceSheet({ open: true, source })
+  const saveSource = (saved: DatasetSource) =>
+    onChange(
+      'sources',
+      sources.some((s) => s.id === saved.id) ? sources.map((s) => (s.id === saved.id ? saved : s)) : [...sources, saved],
+    )
+
   return (
     <div className="flex flex-col gap-6">
       <Card>
@@ -225,30 +246,80 @@ function Step1Metadata({ datasetType, metadata, errors, onChange, promptMetadata
       </Card>
 
       <Card>
-        <CardHeader>
-          <CardTitle>Source Information</CardTitle>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-5 sm:flex-row">
-          <div className="flex-1">
-            <Label htmlFor="source-website">Source website</Label>
-            <Input
-              id="source-website"
-              className="mt-1.5"
-              placeholder="http://data.city.name.gov/dataset"
-              value={metadata.sourceWebsite}
-              onChange={(e) => onChange('sourceWebsite', e.target.value)}
-            />
+        <CardHeader className="flex-row items-center justify-between">
+          <div>
+            <CardTitle>Source &amp; Provenance</CardTitle>
+            <p className="mt-1 text-sm font-normal text-text-subdued">
+              Add the original sources and links associated with this dataset.
+            </p>
           </div>
-          <div className="flex-1">
-            <Label htmlFor="create-date">Dataset creation date</Label>
-            <Input
-              id="create-date"
-              type="date"
-              className="mt-1.5"
-              placeholder="dd/mm/yyyy"
-              value={metadata.createDate}
-              onChange={(e) => onChange('createDate', e.target.value)}
-            />
+          <Button type="button" variant="outline" size="sm" onClick={openAddSource}>
+            <Plus className="size-4" />
+            Add Source
+          </Button>
+        </CardHeader>
+        <CardContent className="flex flex-col gap-5">
+          {sources.length === 0 ? (
+            <p className="rounded-lg border border-dashed border-border-default py-6 text-center text-sm text-text-subdued">
+              No sources added yet.
+            </p>
+          ) : (
+            <ul className="flex flex-col gap-3">
+              {sources.map((source) => (
+                <li
+                  key={source.id}
+                  className="flex items-start gap-3 rounded-lg border border-border-default px-3 py-2.5"
+                >
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-medium text-text-default">{sourceDisplayName(source)}</p>
+                    {source.websiteUrl && (
+                      <p className="truncate text-xs text-text-subdued" title={source.websiteUrl}>
+                        Website · {source.websiteUrl}
+                      </p>
+                    )}
+                    {source.recordUrl && (
+                      <p className="truncate text-xs text-text-subdued" title={source.recordUrl}>
+                        Dataset record · {source.recordUrl}
+                      </p>
+                    )}
+                  </div>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    aria-label={`Edit ${sourceDisplayName(source)}`}
+                    onClick={() => openEditSource(source)}
+                  >
+                    <Pencil className="size-4" />
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    aria-label={`Remove ${sourceDisplayName(source)}`}
+                    onClick={() => onChange('sources', sources.filter((s) => s.id !== source.id))}
+                  >
+                    <Trash2 className="size-4" />
+                  </Button>
+                </li>
+              ))}
+            </ul>
+          )}
+          <div className={cn('gap-5 border-t border-border-default pt-5', FORM_TWO_COL_GRID)}>
+            <div>
+              <Label htmlFor="create-date">Dataset creation date</Label>
+              <Input
+                id="create-date"
+                type="date"
+                className="mt-1.5"
+                placeholder="dd/mm/yyyy"
+                value={metadata.createDate}
+                onChange={(e) => onChange('createDate', e.target.value)}
+              />
+              <p className="mt-1.5 text-xs text-text-subdued">
+                When the data was originally created. CivicDataSpace records its own created date automatically.
+              </p>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -340,6 +411,12 @@ function Step1Metadata({ datasetType, metadata, errors, onChange, promptMetadata
           onPromptChange={onPromptChange}
         />
       )}
+      <SourceSheet
+        open={sourceSheet.open}
+        onOpenChange={(open) => setSourceSheet((s) => ({ ...s, open }))}
+        source={sourceSheet.source}
+        onSave={saveSource}
+      />
     </div>
   )
 }
