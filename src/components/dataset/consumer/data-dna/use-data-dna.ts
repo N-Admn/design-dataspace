@@ -18,6 +18,7 @@ import {
 
 import { useAppData } from '@/context/AppDataContext'
 import { resolveDatasetPublisher } from '@/lib/dataset-publisher'
+import { getDatasetSources } from '@/lib/dataset-sources'
 import { formatShortDate } from '@/lib/format'
 import { GEOGRAPHY_OPTIONS, LICENSE_OPTIONS, SECTOR_OPTIONS, type DatasetRecord } from '@/types/dataset'
 
@@ -79,7 +80,7 @@ function formatSize(bytes: number): string {
 /** A concise one-line statement from the description: the first sentence, cut at its first clause boundary (a comma, or
  *  "covering" / "including" / "with"), then closed with the sentence's own trailing scope ("across India", "from 2020 to
  *  2026") when it has one. Everything comes from the text — nothing is added. */
-function storyFrom(description: string, max = 90): string {
+export function storyFrom(description: string, max = 90): string {
   const first = description.split(/(?<=[.!?])\s/)[0]?.trim() ?? ''
   if (!first) return ''
   const clause = first.split(/,|;|\s(?:covering|including|with)\s/)[0].replace(/[.,;:\s]+$/, '')
@@ -107,11 +108,14 @@ export function useDataDNAModel(datasetId: string): DataDNAModel | null {
   const records = filesWithRows.reduce((sum, f) => sum + (f.rowCount ?? 0), 0)
   const formats = [...new Set(files.map((f) => f.extension).filter(Boolean))]
   const licence = metadata.license ? label(LICENSE_OPTIONS, metadata.license) : ''
+  // The first documented source, as the site it points to (a source name alone has no address to show).
+  const firstSource = getDatasetSources(metadata).find((s) => s.websiteUrl || s.recordUrl)
+  const sourceAddress = firstSource ? firstSource.websiteUrl || firstSource.recordUrl : ''
   const host = (() => {
     try {
-      return metadata.sourceWebsite ? new URL(metadata.sourceWebsite).host : ''
+      return sourceAddress ? new URL(sourceAddress).host : ''
     } catch {
-      return metadata.sourceWebsite
+      return sourceAddress
     }
   })()
 

@@ -2,6 +2,7 @@ import * as React from 'react'
 import { Dna } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
+import { DataDNAScenarioLab } from '@/pages/playground/data-dna/DataDNAScenarioLab'
 import { SearchableSelect } from '@/components/ui/searchable-select'
 import { useAppData } from '@/context/AppDataContext'
 import {
@@ -87,6 +88,8 @@ function DataDNAPlayground() {
           connected to them.
         </p>
       </div>
+
+      {version === 'v10' && <DataDNAScenarioLab />}
 
       <div className="grid gap-5 rounded-xl border border-border-default bg-card p-5 lg:grid-cols-[minmax(0,2fr)_auto_auto_auto]">
         <div className="flex min-w-0 flex-col gap-2">
