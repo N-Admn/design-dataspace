@@ -7,6 +7,8 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 export interface MultiSelectOption {
   value: string
   label: string
+  /** Optional leading visual (an icon or image) shown beside the label in the list. */
+  icon?: React.ReactNode
 }
 
 interface MultiSelectProps {
@@ -18,6 +20,8 @@ interface MultiSelectProps {
   emptyText?: string
   id?: string
   invalid?: boolean
+  /** Show the selected values as removable chips under the control (default). Turn off where space is tight. */
+  showSelected?: boolean
 }
 
 function MultiSelect({
@@ -29,6 +33,7 @@ function MultiSelect({
   emptyText = 'No results found.',
   id,
   invalid,
+  showSelected = true,
 }: MultiSelectProps) {
   const [open, setOpen] = React.useState(false)
   const [query, setQuery] = React.useState('')
@@ -96,8 +101,11 @@ function MultiSelect({
                     isSelected && 'bg-surface-subdued',
                   )}
                 >
-                  <span>{option.label}</span>
-                  {isSelected && <Check className="size-4 text-text-brand" />}
+                  <span className="flex min-w-0 items-center gap-2">
+                    {option.icon}
+                    <span>{option.label}</span>
+                  </span>
+                  {isSelected && <Check className="size-4 shrink-0 text-text-brand" />}
                 </button>
               )
             })}
@@ -105,7 +113,7 @@ function MultiSelect({
         </PopoverContent>
       </Popover>
 
-      {values.length > 0 && (
+      {showSelected && values.length > 0 && (
         <div className="flex flex-wrap gap-1.5">
           {values.map((value) => {
             const option = options.find((o) => o.value === value)

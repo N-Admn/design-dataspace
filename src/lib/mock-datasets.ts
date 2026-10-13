@@ -1,3 +1,4 @@
+import { EXTRA_DATASETS } from '@/lib/mock-collaborative-content'
 import { emptyPromptDatasetMetadata, type DatasetFormState, type DatasetRecord } from '@/types/dataset'
 
 function mb(value: number) {
@@ -470,4 +471,5 @@ export const MOCK_DATASETS: DatasetRecord[] = [
   { id: 'ds-7', status: 'draft', updatedAt: '09/08/2026 12:10:00', downloadCount: 0, form: ds7Form, publishedForm: null, organisationId: 'org-workspace-1', createdBy: 'Sana Khan' },
   { id: 'ds-8', status: 'draft', updatedAt: '08/08/2026 09:05:00', downloadCount: 0, form: ds8Form, publishedForm: null, organisationId: 'org-workspace-1', createdBy: 'John Doe' },
   { id: 'ds-9', status: 'published', updatedAt: '20/08/2026 10:05:00', downloadCount: 97, form: ds9Form, publishedForm: ds9Form },
+  ...EXTRA_DATASETS,
 ]

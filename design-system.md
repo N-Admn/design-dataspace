@@ -347,6 +347,8 @@ Located in `src/components/ui/` (design-system primitives) and `src/components/s
 
 **Shared composites:** `ManagementTable`, `StatusBadge`, `ResourcePreviewDialog`, `LeaveCreationDialog`, `ReviewSection`, `FileUploadField` / `DropzoneUploadField`, `TruncatedText`, `OrganisationSearchField`, `DatasetConnectionsCard`.
 
+**Tag (interactive).** `Tag` (`src/components/ui/tag.tsx`) is the clickable pill for a value that links somewhere or filters something; `Badge` stays for labels that are not clickable. It renders a real link (`to` in-app, `href` external) or button (`onClick`). Four sizes, each 20% bigger than the one before: `sm` (the established tag: 12px text, 10px × 2px padding, 22px tall), `md` (×1.2, 14.4px), `lg` (×1.44, 17.28px), `xl` (×1.728, 20.74px). Padding and gap are in `em`, so the whole pill scales; the border stays 1px.
+
 **Upload fields (one standard, everywhere).** Every place a user adds a file — forms, side sheets, modals, dialogs, inline editors — uses the same drag-and-drop surface, never a bare "Upload" button or a bespoke dashed box:
 
 - A dashed rounded box (`border-2 border-dashed`, `border-border-default`, `bg-surface-subdued/40`; brand-tinted while dragging) with, centred top to bottom: the cloud-upload icon (36px, subdued) · one instruction line, "Drag and drop a file here, or click to browse." (only the noun changes: "a logo", "a photo", "files") · "Supported file types:" with one muted badge per extension · an outline **Browse File** button · the caption "Maximum file size limit: 500MB" (the field's real limit).
