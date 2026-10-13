@@ -13,6 +13,7 @@ import { PublicVisibilityNotice } from '@/components/dataset/PublicVisibilityNot
 import { formatFileSize } from '@/lib/format'
 import { getResourceTitle } from '@/lib/file-validation'
 import { isMetadataValid, isPromptDatasetMetadataValid } from '@/lib/validation'
+import { CUSTOM_LICENSE_VALUE, resolveLicenseUrl } from '@/lib/dataset-license'
 import { getDatasetSources, sourceDisplayName } from '@/lib/dataset-sources'
 import { promptFileMetadataStatus } from '@/lib/prompt-file-validation'
 import { useAppData } from '@/context/AppDataContext'
@@ -379,12 +380,6 @@ function Step3Review({ form, datasetId, canPublish, hasLiveVersion, onEditStep, 
                               <dd className="min-w-0 flex-1">{reviewLink(source.websiteUrl)}</dd>
                             </div>
                           )}
-                          {source.recordUrl && (
-                            <div className="flex min-w-0 gap-2">
-                              <dt className="w-28 shrink-0 text-text-subdued">Dataset record</dt>
-                              <dd className="min-w-0 flex-1">{reviewLink(source.recordUrl)}</dd>
-                            </div>
-                          )}
                         </dl>
                       </li>
                     ))}
@@ -399,6 +394,25 @@ function Step3Review({ form, datasetId, canPublish, hasLiveVersion, onEditStep, 
             label="License"
             value={metadata.license ? optionLabel(LICENSE_OPTIONS, metadata.license) : '—'}
           />
+          {metadata.license === CUSTOM_LICENSE_VALUE && (
+            <ReviewField
+              label="License URL"
+              value={
+                resolveLicenseUrl(metadata) ? (
+                  <a
+                    href={resolveLicenseUrl(metadata)}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="break-all text-text-brand underline-offset-2 hover:underline focus-visible:underline"
+                  >
+                    {metadata.licenseUrl?.trim()}
+                  </a>
+                ) : (
+                  '—'
+                )
+              }
+            />
+          )}
           <ReviewField label="Dataset Creation Date" value={metadata.createDate || '—'} />
         </div>
       </ReviewSection>

@@ -1,15 +1,16 @@
 import type { DatasetFormState, DatasetMetadata, DatasetSource } from '@/types/dataset'
 
+/** Picks the fields by name (not `...source`), so a source saved when entries also had a dataset record URL loses that
+ *  leftover value the next time it is read or stored. */
 const trimmed = (source: DatasetSource): DatasetSource => ({
-  ...source,
+  id: source.id,
   name: source.name.trim(),
   websiteUrl: source.websiteUrl.trim(),
-  recordUrl: source.recordUrl.trim(),
 })
 
 /** An entry with nothing in it. These are shown while a contributor is filling the form but are never kept as records. */
 export function isSourceEmpty(source: DatasetSource): boolean {
-  return !source.name.trim() && !source.websiteUrl.trim() && !source.recordUrl.trim()
+  return !source.name.trim() && !source.websiteUrl.trim()
 }
 
 let sourceIdCounter = 0
@@ -20,33 +21,27 @@ export function newSourceId(): string {
 }
 
 export function emptySource(): DatasetSource {
-  return { id: newSourceId(), name: '', websiteUrl: '', recordUrl: '' }
+  return { id: newSourceId(), name: '', websiteUrl: '' }
 }
 
-/** The dataset's source entries as saved (empty ones dropped). Datasets saved before repeatable sources carry an
- *  `Original source URL` and `Source record URL`(s) instead; those are turned into entries here so nothing is lost:
- *  the first entry holds the original source and the first record link, any further record links become entries of
- *  their own. */
+/** The dataset's source entries as saved (empty ones dropped). Datasets saved before repeatable sources carry a single
+ *  `Original source URL`, which becomes one entry here so nothing is lost. Their old "Source record URL"s, and the
+ *  dataset record URL some saved entries hold, are not part of a source any more and are ignored. */
 export function getDatasetSources(metadata: DatasetMetadata): DatasetSource[] {
   if (metadata.sources) return metadata.sources.filter((s) => !isSourceEmpty(s)).map(trimmed)
-  const records = (metadata.sourceRecordUrls ?? []).map((u) => u.trim()).filter(Boolean)
   const website = metadata.sourceWebsite.trim()
-  if (!website && records.length === 0) return []
-  const [firstRecord = '', ...otherRecords] = records
-  return [
-    { id: 'legacy-source-0', name: '', websiteUrl: website, recordUrl: firstRecord },
-    ...otherRecords.map((recordUrl, i) => ({ id: `legacy-source-${i + 1}`, name: '', websiteUrl: '', recordUrl })),
-  ]
+  return website ? [{ id: 'legacy-source-0', name: '', websiteUrl: website }] : []
 }
 
 /** A readable label for an entry: its name, otherwise the site it points to. */
 export function sourceDisplayName(source: DatasetSource): string {
   if (source.name.trim()) return source.name.trim()
-  for (const url of [source.websiteUrl, source.recordUrl]) {
+  const url = source.websiteUrl.trim()
+  if (url) {
     try {
-      if (url.trim()) return new URL(url.trim()).host
+      return new URL(url).host
     } catch {
-      return url.trim()
+      return url
     }
   }
   return 'Source'

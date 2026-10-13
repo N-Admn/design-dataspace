@@ -18,6 +18,7 @@ import {
 
 import { useAppData } from '@/context/AppDataContext'
 import { resolveDatasetPublisher } from '@/lib/dataset-publisher'
+import { CUSTOM_LICENSE_VALUE, resolveLicenseUrl } from '@/lib/dataset-license'
 import { getDatasetSources } from '@/lib/dataset-sources'
 import { formatShortDate } from '@/lib/format'
 import { GEOGRAPHY_OPTIONS, LICENSE_OPTIONS, SECTOR_OPTIONS, type DatasetRecord } from '@/types/dataset'
@@ -38,6 +39,8 @@ export interface DNAFact {
   available: boolean
   /** core: always shown · extra: moderate and rich · optional: rich only. */
   tier: 'core' | 'extra' | 'optional'
+  /** Where the value links to, when it has an address of its own (a custom licence's link). */
+  href?: string
 }
 
 export type RelationKind = 'use-cases' | 'collaboratives' | 'events' | 'visualisations'
@@ -66,6 +69,8 @@ export interface DataDNAModel {
   characteristics: DNAFact[]
   relations: DNARelation[]
   provenance: DNAFact[]
+  /** How many sources the dataset documents (the source fact shows only the first). */
+  sourceCount: number
 }
 
 const label = (options: { value: string; label: string }[], value: string) =>
@@ -108,9 +113,9 @@ export function useDataDNAModel(datasetId: string): DataDNAModel | null {
   const records = filesWithRows.reduce((sum, f) => sum + (f.rowCount ?? 0), 0)
   const formats = [...new Set(files.map((f) => f.extension).filter(Boolean))]
   const licence = metadata.license ? label(LICENSE_OPTIONS, metadata.license) : ''
-  // The first documented source, as the site it points to (a source name alone has no address to show).
-  const firstSource = getDatasetSources(metadata).find((s) => s.websiteUrl || s.recordUrl)
-  const sourceAddress = firstSource ? firstSource.websiteUrl || firstSource.recordUrl : ''
+  // The first documented source with a website, as the site it points to (a source name alone has no address to show).
+  const sources = getDatasetSources(metadata)
+  const sourceAddress = sources.find((s) => s.websiteUrl)?.websiteUrl ?? ''
   const host = (() => {
     try {
       return sourceAddress ? new URL(sourceAddress).host : ''
@@ -251,6 +256,8 @@ export function useDataDNAModel(datasetId: string): DataDNAModel | null {
       id: 'licence',
       overline: 'Licence',
       value: licence || 'Not recorded',
+      // Only a custom ("Other") licence is linked: it has no name that says what it is, so the link is the information.
+      href: metadata.license === CUSTOM_LICENSE_VALUE ? resolveLicenseUrl(metadata) : undefined,
       icon: Scale,
       available: Boolean(licence),
       tier: 'extra',
@@ -332,6 +339,7 @@ export function useDataDNAModel(datasetId: string): DataDNAModel | null {
     characteristics,
     relations,
     provenance,
+    sourceCount: sources.length,
   }
 }
 

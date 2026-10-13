@@ -229,9 +229,6 @@ function ContactSupportSheet({ open, onOpenChange, signedInEmail }: ContactSuppo
                 onChange={(e) => setMessage(e.target.value)}
                 onBlur={() => setTouched((t) => ({ ...t, message: true }))}
               />
-              <p className="mt-1.5 text-xs text-muted-foreground">
-                Include any details that may help us understand the issue.
-              </p>
               <FieldError message={errors.message} />
             </div>
 

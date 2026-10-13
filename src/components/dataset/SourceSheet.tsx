@@ -35,8 +35,7 @@ function SourceSheet({ open, onOpenChange, source, onSave }: SourceSheetProps) {
   const empty = isSourceEmpty(draft)
   const dirty =
     draft.name !== (source?.name ?? '') ||
-    draft.websiteUrl !== (source?.websiteUrl ?? '') ||
-    draft.recordUrl !== (source?.recordUrl ?? '')
+    draft.websiteUrl !== (source?.websiteUrl ?? '')
 
   const requestClose = async () => {
     if (dirty) {
@@ -53,8 +52,8 @@ function SourceSheet({ open, onOpenChange, source, onSave }: SourceSheetProps) {
 
   const handleSave = () => {
     setShowErrors(true)
-    if (empty || urlErrors.websiteUrl || urlErrors.recordUrl) return
-    onSave({ ...draft, name: draft.name.trim(), websiteUrl: draft.websiteUrl.trim(), recordUrl: draft.recordUrl.trim() })
+    if (empty || urlErrors.websiteUrl) return
+    onSave({ id: draft.id, name: draft.name.trim(), websiteUrl: draft.websiteUrl.trim() })
     onOpenChange(false)
   }
 
@@ -64,7 +63,7 @@ function SourceSheet({ open, onOpenChange, source, onSave }: SourceSheetProps) {
         <DialogHeader className="shrink-0">
           <DialogTitle>{source ? 'Edit Source' : 'Add Source'}</DialogTitle>
           <DialogDescription>
-            Where this data was originally published, and links to it. Every field is optional, but add at least one.
+            Where this data was originally published, and a link to it. Every field is optional, but add at least one.
           </DialogDescription>
         </DialogHeader>
 
@@ -93,20 +92,7 @@ function SourceSheet({ open, onOpenChange, source, onSave }: SourceSheetProps) {
               />
               <FieldError message={urlErrors.websiteUrl} />
             </div>
-            <div>
-              <Label htmlFor="source-record">Dataset record URL</Label>
-              <Input
-                id="source-record"
-                type="url"
-                className="mt-1.5"
-                placeholder="https://data.gov.in/resource/example"
-                value={draft.recordUrl}
-                aria-invalid={Boolean(urlErrors.recordUrl)}
-                onChange={(e) => setDraft((d) => ({ ...d, recordUrl: e.target.value }))}
-              />
-              <FieldError message={urlErrors.recordUrl} />
-            </div>
-            {showErrors && empty && <FieldError message="Add a name or at least one link." />}
+            {showErrors && empty && <FieldError message="Add a name or a website link." />}
           </div>
         </div>
 

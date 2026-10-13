@@ -14,26 +14,35 @@ export function isValidHttpUrl(value: string): boolean {
   }
 }
 
-const SOURCE_URL_ERROR = 'Enter a valid URL, starting with http:// or https://.'
+const URL_FORMAT_ERROR = 'Enter a valid URL, starting with http:// or https://.'
 
-/** Format errors for one source entry's optional links. Empty is never an error, so nothing here can block a draft. */
-export function validateSourceEntry(source: Pick<DatasetSource, 'websiteUrl' | 'recordUrl'>): {
-  websiteUrl?: string
-  recordUrl?: string
-} {
+/** Format error for one source entry's optional website link. Empty is never an error, so nothing here can block a draft. */
+export function validateSourceEntry(source: Pick<DatasetSource, 'websiteUrl'>): { websiteUrl?: string } {
   return {
-    websiteUrl: source.websiteUrl.trim() && !isValidHttpUrl(source.websiteUrl) ? SOURCE_URL_ERROR : undefined,
-    recordUrl: source.recordUrl.trim() && !isValidHttpUrl(source.recordUrl) ? SOURCE_URL_ERROR : undefined,
+    websiteUrl: source.websiteUrl.trim() && !isValidHttpUrl(source.websiteUrl) ? URL_FORMAT_ERROR : undefined,
   }
 }
 
 /** Source & Provenance is optional: the only rule is that a link that was typed has to be a real URL. */
 export function validateSourceUrls(metadata: Pick<DatasetMetadata, 'sources'>): MetadataErrors {
   const bad = (metadata.sources ?? []).some((s) => {
-    const e = validateSourceEntry(s)
-    return e.websiteUrl || e.recordUrl
+    return Boolean(validateSourceEntry(s).websiteUrl)
   })
   return bad ? { sources: 'Fix the invalid source links.' } : {}
+}
+
+/** The licence link is required, and has to be a real URL, only when the licence is "Other". Format errors are also exposed on
+ *  their own so the form can show them as the user types. */
+export function licenseUrlFormatError(value: string): string | undefined {
+  return value.trim() && !isValidHttpUrl(value) ? URL_FORMAT_ERROR : undefined
+}
+
+export function validateLicenseUrl(metadata: Pick<DatasetMetadata, 'license' | 'licenseUrl'>): MetadataErrors {
+  if (metadata.license !== 'other') return {}
+  const url = metadata.licenseUrl ?? ''
+  if (!url.trim()) return { licenseUrl: 'Enter a link to the license.' }
+  const format = licenseUrlFormatError(url)
+  return format ? { licenseUrl: format } : {}
 }
 
 export function validateMetadata(metadata: DatasetMetadata): MetadataErrors {
@@ -44,6 +53,7 @@ export function validateMetadata(metadata: DatasetMetadata): MetadataErrors {
   if (!metadata.sector) errors.sector = 'Select a sector.'
   if (!metadata.accessType) errors.accessType = 'Select an access type.'
   if (!metadata.license) errors.license = 'Select a license.'
+  Object.assign(errors, validateLicenseUrl(metadata))
   Object.assign(errors, validateSourceUrls(metadata))
 
   return errors

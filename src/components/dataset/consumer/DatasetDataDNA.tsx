@@ -45,14 +45,31 @@ function ValueLabel({
   value,
   label,
   valueClass = 'type-heading-3',
+  href,
 }: {
   value: string
   label: string
   valueClass?: string
+  /** Makes the value a link that opens in a new tab. */
+  href?: string
 }) {
   return (
     <div className="min-w-0">
-      <p className={cn(valueClass, 'break-words text-text-brand')}>{value}</p>
+      <p className={cn(valueClass, 'break-words text-text-brand')}>
+        {href ? (
+          <a
+            href={href}
+            target="_blank"
+            rel="noreferrer"
+            title={href}
+            className="underline decoration-border-strong underline-offset-2 hover:decoration-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-focus"
+          >
+            {value}
+          </a>
+        ) : (
+          value
+        )}
+      </p>
       <p className="type-caption text-text-subdued">{label}</p>
     </div>
   )
@@ -88,6 +105,7 @@ interface Row {
   label: string
   value: string
   icon: LucideIcon
+  href?: string
 }
 const present = <T,>(r: T | null): r is T => r !== null
 const fact = (facts: DNAFact[], id: string) => facts.find((f) => f.id === id)
@@ -184,7 +202,7 @@ function DatasetDataDNA({ datasetId }: { datasetId: string }) {
   const source = fact(model.provenance, 'source')
   // The publisher carries a profile image: its logo/avatar when one is set, otherwise initials.
   const provenance: Row[] = [
-    licence?.available ? { id: 'licence', label: 'License', value: licence.value, icon: Scale } : null,
+    licence?.available ? { id: 'licence', label: 'License', value: licence.value, icon: Scale, href: licence.href } : null,
     source?.available ? { id: 'source', label: 'Source', value: source.value, icon: Globe2 } : null,
     {
       id: 'updated',
@@ -333,10 +351,10 @@ function DatasetDataDNA({ datasetId }: { datasetId: string }) {
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-4">
         <section aria-label="Provenance and trust" className={cn(CARD, WHITE, 'p-6 lg:col-span-3')}>
           <ul className="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2 lg:grid-cols-3">
-            {provenance.map(({ id, label, value, icon }) => (
+            {provenance.map(({ id, label, value, icon, href }) => (
               <li key={id} className="flex min-w-0 items-center gap-3">
                 <SoftDisc icon={icon} />
-                <ValueLabel value={value} label={label} />
+                <ValueLabel value={value} label={label} href={href} />
               </li>
             ))}
           </ul>

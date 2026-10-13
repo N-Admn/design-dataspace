@@ -23,7 +23,8 @@ import {
   type PromptDatasetMetadata,
   type DatasetSource,
 } from '@/types/dataset'
-import type { MetadataErrors, PromptDatasetMetadataErrors } from '@/lib/validation'
+import { licenseUrlFormatError, type MetadataErrors, type PromptDatasetMetadataErrors } from '@/lib/validation'
+import { CUSTOM_LICENSE_VALUE } from '@/lib/dataset-license'
 import { SourceSheet } from '@/components/dataset/SourceSheet'
 import { getDatasetSources, sourceDisplayName } from '@/lib/dataset-sources'
 import { Pencil, Plus, Trash2 } from 'lucide-react'
@@ -139,6 +140,11 @@ function Step1Metadata({ datasetType, metadata, errors, onChange, promptMetadata
     open: false,
     source: null,
   })
+  // The required message follows the form's usual rule (shown once submit was attempted); a malformed link is flagged as soon as
+  // the field has been left, or immediately once submit was attempted.
+  const [licenseUrlTouched, setLicenseUrlTouched] = React.useState(false)
+  const licenseUrlError =
+    errors.licenseUrl ?? (licenseUrlTouched ? licenseUrlFormatError(metadata.licenseUrl ?? '') : undefined)
   const openAddSource = () => setSourceSheet({ open: true, source: null })
   const openEditSource = (source: DatasetSource) => setSourceSheet({ open: true, source })
   const saveSource = (saved: DatasetSource) =>
@@ -277,11 +283,6 @@ function Step1Metadata({ datasetType, metadata, errors, onChange, promptMetadata
                         Website · {source.websiteUrl}
                       </p>
                     )}
-                    {source.recordUrl && (
-                      <p className="truncate text-xs text-text-subdued" title={source.recordUrl}>
-                        Dataset record · {source.recordUrl}
-                      </p>
-                    )}
                   </div>
                   <Button
                     type="button"
@@ -401,6 +402,32 @@ function Step1Metadata({ datasetType, metadata, errors, onChange, promptMetadata
               </p>
             )}
           </div>
+
+          {/* "Other" has no canonical page, so the contributor supplies the link. Choosing a predefined licence hides this
+              field but keeps whatever was typed, so switching back restores it. */}
+          {metadata.license === CUSTOM_LICENSE_VALUE && (
+            <div>
+              <Label htmlFor="dataset-license-url">
+                License URL <span className="text-text-critical-strong">*</span>
+              </Label>
+              <Input
+                id="dataset-license-url"
+                type="url"
+                inputMode="url"
+                className="mt-1.5"
+                placeholder="https://..."
+                value={metadata.licenseUrl ?? ''}
+                aria-invalid={Boolean(licenseUrlError)}
+                aria-describedby="dataset-license-url-help"
+                onChange={(e) => onChange('licenseUrl', e.target.value)}
+                onBlur={() => setLicenseUrlTouched(true)}
+              />
+              <FieldError message={licenseUrlError} />
+              <p id="dataset-license-url-help" className="mt-1.5 text-xs text-text-subdued">
+                Add a link to the license document or website, such as a Google Drive document or custom license page.
+              </p>
+            </div>
+          )}
         </CardContent>
       </Card>
 
