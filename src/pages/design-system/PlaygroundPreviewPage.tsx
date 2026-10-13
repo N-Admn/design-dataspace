@@ -10,10 +10,13 @@ import { DataDNAV3 } from '@/pages/playground/data-dna/DataDNAV3'
 import { DataDNAV4 } from '@/pages/playground/data-dna/DataDNAV4'
 import { DataDNAV5 } from '@/pages/playground/data-dna/DataDNAV5'
 import { DataDNAV6 } from '@/pages/playground/data-dna/DataDNAV6'
+import { DataDNAV10 } from '@/pages/playground/data-dna/DataDNAV10'
 import { DataDNAV9 } from '@/pages/playground/data-dna/DataDNAV9'
 import { DataDNAV8 } from '@/pages/playground/data-dna/DataDNAV8'
 import { DataDNAV7 } from '@/pages/playground/data-dna/DataDNAV7'
 import { DataDNAV61 } from '@/pages/playground/data-dna/DataDNAV61'
+import { DataDNACardV10 } from '@/pages/playground/data-dna/DatasetDataDNAV10'
+import { decodeScenario, resolveCard } from '@/pages/playground/data-dna/data-dna-scenarios'
 import type { Density } from '@/pages/playground/data-dna/data-dna-constants'
 
 /** Isolated host for the Responsive Playground's overlay previews. Dialogs and side sheets only exist while open, so
@@ -31,6 +34,15 @@ function PlaygroundPreviewPage() {
     const density = (['rich', 'moderate', 'sparse'] as const).find((d) => d === params.get('density')) ?? 'rich'
     const datasetId = params.get('dataset') ?? 'ds-1'
     const minHeight = 'md:min-h-[calc(100dvh-3rem)]'
+    // A Test Scenarios preview: just the card, built from the scenario carried in the URL.
+    const scenario = params.get('version') === 'v10-scenario' ? decodeScenario(params.get('cfg')) : null
+    if (scenario) {
+      return (
+        <div className="min-h-screen bg-background px-4 py-6 md:px-6 lg:px-8">
+          <DataDNACardV10 view={resolveCard(scenario).view} />
+        </div>
+      )
+    }
     return (
       <div className="min-h-screen bg-background px-4 py-6 md:px-6 lg:px-8">
         {/* No chrome here, so the hero group is one screen minus this wrapper's own vertical padding (py-6 = 3rem). */}
@@ -50,6 +62,8 @@ function PlaygroundPreviewPage() {
           <DataDNAV7 datasetId={datasetId} minHeightClass={minHeight} />
         ) : params.get('version') === 'v8' ? (
           <DataDNAV8 datasetId={datasetId} minHeightClass={minHeight} />
+        ) : params.get('version') === 'v10' ? (
+          <DataDNAV10 datasetId={datasetId} minHeightClass={minHeight} />
         ) : params.get('version') === 'v9' ? (
           <DataDNAV9 datasetId={datasetId} minHeightClass={minHeight} />
         ) : (
