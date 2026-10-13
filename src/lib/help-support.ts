@@ -14,6 +14,15 @@ export const SUPPORT_TOPIC_OPTIONS = [
   { value: 'other', label: 'Other' },
 ]
 
+/** Topics for the public Contact Support drawer in the global navigation (the contributor Help panel keeps its own list above). */
+export const CONTACT_TOPIC_OPTIONS = [
+  { value: 'finding-datasets', label: 'Finding or using datasets' },
+  { value: 'account', label: 'Account or access' },
+  { value: 'contributing', label: 'Contributing content' },
+  { value: 'technical', label: 'Technical issue' },
+  { value: 'other', label: 'Other' },
+]
+
 export const SUPPORT_ATTACHMENT_EXTENSIONS = ['png', 'jpg', 'jpeg', 'webp', 'pdf', 'txt', 'csv', 'docx']
 /** Accepts documents alongside images, so it uses the 500 MB document ceiling. */
 export const MAX_SUPPORT_ATTACHMENT_BYTES = MAX_DOCUMENT_BYTES
