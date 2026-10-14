@@ -143,6 +143,15 @@
     line-height: var(--line-height-caption);
     font-weight: var(--type-font-weight-regular);
   }
+  /* Eyebrow — the small uppercase label that sits above a heading or beside a value
+   * ("DESCRIPTION", field labels in review/detail sheets). Colour stays a utility. */
+  .type-eyebrow {
+    font-size: var(--font-size-caption);
+    line-height: var(--line-height-caption);
+    font-weight: var(--type-font-weight-medium);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
 
   /* Rich-text HTML inside a Use Case story (text blocks). The markup comes from the
    * editor, so it can't carry .type-* classes — these rules apply the same roles by

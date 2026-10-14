@@ -58,6 +58,10 @@ export const COLLABORATIVE = {
     'The collaborative links datasets on heat, air quality, disease risk and health services with the people and organisations who use them. ' +
     'Members share data, document how it was collected, and apply it to real decisions, from early warning for extreme heat to planning health facilities that can withstand floods and storms. ' +
     'Contributors are welcome to add datasets or use cases that build on this shared evidence.',
+  /** The initiative's own website and when the record was last updated: both optional, so the sparse mode leaves them out, as it does the geography. */
+  externalUrl: 'https://example.org/climate-health-data-collaborative',
+  geographies: ['India', 'Bangladesh'],
+  updatedOn: '12 Oct 2026',
   chips: ['Health', 'Environment', 'Climate action', 'Asia-Pacific'],
   /** The SDG goals this collaborative works towards, as stored values (`sdg-1` … `sdg-17`, as the provider form saves them). The
    *  titles, statements and official icons come from `@/lib/sdg-goals`. The playground lets you change the selection. */

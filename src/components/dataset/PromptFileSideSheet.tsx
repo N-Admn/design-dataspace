@@ -116,7 +116,7 @@ function PromptFileSideSheet({
             </div>
 
             <div className="rounded-lg border border-border-default p-3">
-              <p className="text-xs font-medium uppercase tracking-wide text-text-subdued">
+              <p className="type-eyebrow text-text-subdued">
                 File associated with this prompt file
               </p>
               <div className="mt-2 flex items-center gap-2">

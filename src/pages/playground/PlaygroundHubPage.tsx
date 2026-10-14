@@ -53,7 +53,7 @@ function PlaygroundCard({ entry }: { entry: PlaygroundEntry }) {
           <h2 id={titleId} className="type-heading-3 text-text-brand">
             {entry.name}
           </h2>
-          <p className="text-xs font-medium uppercase tracking-wide text-text-subdued">{categoryLabel(entry.category)}</p>
+          <p className="type-eyebrow text-text-subdued">{categoryLabel(entry.category)}</p>
           <p className="line-clamp-3 text-sm text-text-default">{entry.description}</p>
         </div>
         <div className="flex items-center justify-between gap-3 border-t border-border-default pt-4">

@@ -60,14 +60,23 @@ function StatPanel({
         <IconBadge icon={icon} className={iconClassName} />
         <p className="type-heading-1 tabular-nums text-text-brand">{total.toLocaleString()}</p>
       </div>
-      <p className="type-body text-text-default">{label}</p>
+      {/* The "&" always starts the second line: "People" / "& organisations". */}
+      <p className="type-body text-text-default">
+        {label.split(' & ').map((part, i) => (
+          <span key={i} className="block">
+            {i > 0 && '& '}
+            {part}
+          </span>
+        ))}
+      </p>
     </section>
   )
 }
 
 /** At most this many squares are drawn in the card; with more goals selected the last slot becomes a "+N" square. */
 const SDG_SLOTS = 5
-const SDG_SIZE = 45
+const SDG_SIZE = 58 // 30% larger than the 45px icon badges of the other panels
+const SDG_OVERLAP = 18 // the resting overlap between squares (was 14px at 45px)
 
 /** The SDG panel: the selected goals' official icons as overlapping squares (the size of the other panels' icons) above the
  *  subtitle "SDG Goals". Hovering or focusing the stack spreads the icons apart, and each icon shows its goal's title and the UN's
@@ -79,14 +88,14 @@ function SdgPanel({ goals }: { goals: SdgGoal[] }) {
   const rest = overflow ? goals.slice(SDG_SLOTS - 1) : []
   const slots = shown.length + (overflow ? 1 : 0)
   return (
-    <section aria-label="SDG Goals" className={cn(PANEL, 'flex-col justify-center gap-3')}>
+    <section aria-label="SDG Goals" className={cn(PANEL, 'flex-col justify-between gap-3')}>
       {/* The stack's spread is limited to the card's width: the margin between squares is whatever makes them just fit (never more
           than 2px apart, never tighter than the resting overlap). */}
-      <div className="@container">
+      <div className="@container w-full">
         <ul
           className="group flex items-center"
           aria-label="Goals"
-          style={{ '--spread': `clamp(-14px, calc((100cqw - ${slots * SDG_SIZE}px) / ${Math.max(1, slots - 1)}), 2px)` } as React.CSSProperties}
+          style={{ '--spread': `clamp(-${SDG_OVERLAP}px, calc((100cqw - ${slots * SDG_SIZE}px) / ${Math.max(1, slots - 1)}), 2px)` } as React.CSSProperties}
         >
           {shown.map((g, i) => (
             <li
@@ -94,7 +103,7 @@ function SdgPanel({ goals }: { goals: SdgGoal[] }) {
               style={{ zIndex: slots - i }}
               className={cn(
                 'shrink-0 transition-[margin] duration-200 ease-out motion-reduce:transition-none',
-                i > 0 && '-ml-3.5 group-focus-within:[margin-left:var(--spread)] group-hover:[margin-left:var(--spread)]',
+                i > 0 && '-ml-[18px] group-focus-within:[margin-left:var(--spread)] group-hover:[margin-left:var(--spread)]',
               )}
             >
               {/* Not hoverable: the squares sit side by side, and a hoverable tooltip's grace area would hold the previous goal's
@@ -104,9 +113,9 @@ function SdgPanel({ goals }: { goals: SdgGoal[] }) {
                   <span
                     tabIndex={0}
                     aria-label={`Goal ${g.number}: ${g.title}`}
-                    className="block rounded-[1px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-focus"
+                    className="block rounded-[6px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-focus"
                   >
-                    <img src={g.imageUrl} alt="" className="size-[45px] rounded-[1px] object-cover ring-2 ring-secondary" />
+                    <img src={g.imageUrl} alt="" style={{ width: SDG_SIZE, height: SDG_SIZE }} className="rounded-[6px] object-cover ring-2 ring-secondary" />
                   </span>
                 </TooltipTrigger>
                 <TooltipContent side="top" className="max-w-[min(22rem,90vw)] whitespace-normal">
@@ -121,14 +130,15 @@ function SdgPanel({ goals }: { goals: SdgGoal[] }) {
           {overflow && (
             <li
               style={{ zIndex: 0 }}
-              className="-ml-3.5 shrink-0 transition-[margin] duration-200 ease-out group-focus-within:[margin-left:var(--spread)] group-hover:[margin-left:var(--spread)] motion-reduce:transition-none"
+              className="-ml-[18px] shrink-0 transition-[margin] duration-200 ease-out group-focus-within:[margin-left:var(--spread)] group-hover:[margin-left:var(--spread)] motion-reduce:transition-none"
             >
               <Tooltip disableHoverableContent>
                 <TooltipTrigger asChild>
                   <span
                     tabIndex={0}
                     aria-label={`and ${rest.length} more goals: ${rest.map((g) => `Goal ${g.number}: ${g.title}`).join(', ')}`}
-                    className="flex size-[45px] items-center justify-center rounded-[1px] bg-card text-sm font-semibold text-text-brand ring-2 ring-secondary focus-visible:outline-none focus-visible:ring-border-focus"
+                    style={{ width: SDG_SIZE, height: SDG_SIZE }}
+                    className="flex items-center justify-center rounded-[6px] bg-card text-sm font-semibold text-text-brand ring-2 ring-secondary focus-visible:outline-none focus-visible:ring-border-focus"
                   >
                     +{rest.length}
                   </span>
@@ -148,7 +158,11 @@ function SdgPanel({ goals }: { goals: SdgGoal[] }) {
           )}
         </ul>
       </div>
-      <p className="type-body text-text-default">SDG Goals</p>
+      <p className="type-heading-3 self-end text-right font-normal text-text-default">
+        The <strong className="font-semibold">SDG goals</strong>
+        <br />
+        this collaborative works towards
+      </p>
     </section>
   )
 }
@@ -193,9 +207,10 @@ function CollaborativeHero({
     // Side by side from xl, the left column taking 39.5% (49.4% × 0.8) of the width. Below that it takes the full width, with the
     // statistics and the image following. The hero is 651px tall at xl (statistics cards 155px, the image takes the rest).
     <div className="grid gap-4 xl:grid-cols-[39.5fr_60.5fr]">
-      {/* Left column: two cards, the title and tags taking 80% of the height and the call to action 20% (from xl, where the column
-          has a fixed height: two grid rows, 4fr and 1fr, so padding does not skew the split; below that each takes its content's height). */}
-      <div className={cn('flex min-w-0 flex-col gap-4 xl:grid', cta ? 'xl:grid-rows-[4fr_1fr]' : 'xl:grid-rows-1')}>
+      {/* Left column: two cards, the title and tags above a call to action that is 20% shorter than the original 80/20 split (from xl, where
+          the column has a fixed height: two grid rows, 4.2fr and 0.8fr, so padding does not skew the split; below that each takes its
+          content's height, and the call to action's vertical padding is trimmed to match). */}
+      <div className={cn('flex min-w-0 flex-col gap-4 xl:grid', cta ? 'xl:grid-rows-[4.2fr_0.8fr]' : 'xl:grid-rows-1')}>
         <div className="@container flex min-w-0 flex-col rounded-2xl bg-secondary p-6 text-secondary-foreground sm:p-8 xl:p-6">
           {/* The .type-display role; from md up its size is also capped by the card's own width (the card is a size container, 100cqw):
               the longest word, "Collaborative", is about 6.4 × the font size wide, so a narrow card shrinks the title a little instead
@@ -218,9 +233,9 @@ function CollaborativeHero({
         </div>
 
         {cta && (
-          <section aria-label="Collaborate" className="flex min-w-0 flex-col justify-center gap-3 rounded-2xl bg-secondary p-5 text-secondary-foreground sm:flex-row sm:items-center sm:justify-between sm:gap-6 sm:p-6 xl:p-5">
+          <section aria-label="Collaborate" className="flex min-w-0 flex-col justify-center gap-3 rounded-2xl bg-secondary px-5 py-3.5 text-secondary-foreground sm:flex-row sm:items-center sm:justify-between sm:gap-6 sm:px-6 sm:py-3.5 xl:px-5 xl:py-3">
             {/* Tagline on the left, button on the right; stacked on phones, where a row would leave the text too narrow. */}
-            <p className="type-heading-1 min-w-0 text-black">{cta.tagline}</p>
+            <p className="type-heading-2 min-w-0 text-black">{cta.tagline}</p>
             <div className="shrink-0">
               {cta.href ? (
                 <Button asChild size="lg" className="rounded-full">
@@ -241,7 +256,13 @@ function CollaborativeHero({
       </div>
 
       <div className="flex min-w-0 flex-col gap-4">
-        <div className={cn('grid gap-4', sdgGoals.length > 0 ? 'min-[640px]:grid-cols-3' : 'min-[520px]:grid-cols-2')}>
+        {/* The two statistics panels are 30% narrower than an equal split; the SDG panel (or empty space) takes what is left. */}
+        <div
+          className={cn(
+            'grid gap-4',
+            sdgGoals.length > 0 ? 'min-[640px]:grid-cols-[0.7fr_0.7fr_1.6fr]' : 'min-[520px]:grid-cols-[0.7fr_0.7fr_0.6fr]',
+          )}
+        >
           <StatPanel
             icon={Users}
             iconClassName="bg-chart-1/10 text-chart-1"

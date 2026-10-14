@@ -161,7 +161,7 @@ function ResourcePreviewDialog({ resource, onOpenChange }: ResourcePreviewDialog
                   <table className="w-full min-w-[720px] border-collapse text-sm">
                     <caption className="sr-only">Read-only preview of representative rows from {resource.title}</caption>
                     <thead>
-                      <tr className="border-b border-border-default bg-surface-subdued/40 text-left text-xs font-medium uppercase tracking-wide text-text-subdued">
+                      <tr className="border-b border-border-default bg-surface-subdued/40 text-left type-eyebrow text-text-subdued">
                         {TABULAR_COLUMNS.map((col) => (
                           <th key={col} scope="col" className="px-4 py-2.5 font-medium">
                             {col}

@@ -73,7 +73,7 @@ function ResourcePreview({ resource, kind, onClose }: { resource: Resource | nul
                   .filter(([, v]) => v)
                   .map(([k, v]) => (
                     <div key={k}>
-                      <dt className="text-xs font-medium uppercase tracking-wide text-text-subdued">{k}</dt>
+                      <dt className="type-eyebrow text-text-subdued">{k}</dt>
                       <dd className="mt-0.5 break-words text-text-default">{v}</dd>
                     </div>
                   ))}
@@ -129,6 +129,9 @@ function CollaborativeDetailPlayground() {
     tags: mode === 'sparse' ? [] : COLLABORATIVE.chips,
     thumbnail: mode === 'sparse' ? null : COLLABORATIVE.thumbnail,
     description: { text: COLLABORATIVE.description },
+    externalUrl: mode === 'sparse' ? undefined : COLLABORATIVE.externalUrl,
+    geographies: mode === 'sparse' ? undefined : COLLABORATIVE.geographies,
+    updatedOn: mode === 'sparse' ? undefined : COLLABORATIVE.updatedOn,
     sdgGoals,
     organisations: organisations.map((o) => ({ id: o.id, name: o.name, relationship: o.relationship, imageUrl: o.imageUrl })),
     people: people.map((p) => ({ id: p.id, name: p.name, relationship: p.relationship, imageUrl: p.imageUrl })),
@@ -182,6 +185,7 @@ function CollaborativeDetailPlayground() {
         <Shell className="py-10">
           <CollaborativeDetailView
             data={data}
+            unifiedSearch
             cta={{
               tagline: COLLABORATIVE.cta.tagline,
               label: COLLABORATIVE.cta.label,

@@ -37,7 +37,7 @@ function InferredField({
   const hasValue = value !== undefined && value !== null && value !== ''
   return (
     <div>
-      <p className="text-xs font-medium uppercase tracking-wide text-text-subdued">{label}</p>
+      <p className="type-eyebrow text-text-subdued">{label}</p>
       {hasValue ? (
         <div className="mt-1 break-words text-sm text-text-default">{value}</div>
       ) : (
@@ -128,7 +128,7 @@ function FileDetailsSheet({ file, onOpenChange, onTitleChange, onDescriptionChan
 
                 {/* --- System-inferred, read-only --- */}
                 <div className="border-t border-border-default pt-5">
-                  <div className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-text-subdued">
+                  <div className="flex items-center gap-1.5 type-eyebrow text-text-subdued">
                     <Lock className="size-3" />
                     Read from the file — not editable
                   </div>

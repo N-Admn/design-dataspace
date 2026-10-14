@@ -4,7 +4,8 @@ import { Loader2, Send } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { PreviewActionBar } from '@/components/shared/PreviewActionBar'
-import { CollaborativePreview } from '@/components/collaborative/CollaborativePreview'
+import { CollaborativeDetailView } from '@/pages/playground/collaborative-detail/CollaborativeDetailView'
+import { buildCollaborativeDetailFromForm } from '@/lib/collaborative-detail-data'
 import { useToast } from '@/components/ui/toast'
 import { useConfirm } from '@/components/ui/confirm-dialog'
 import { useAppData } from '@/context/AppDataContext'
@@ -14,7 +15,7 @@ import { clearCollaborativeDraftSnapshot, loadCollaborativeDraftSnapshot } from 
 function CollaborativePreviewPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-  const { collaboratives, upsertCollaborative } = useAppData()
+  const { datasets, useCases, collaboratives, events, aiModels, organisationWorkspaces, charts, upsertCollaborative } = useAppData()
   const confirm = useConfirm()
   const toast = useToast()
   const [isSubmitting, setIsSubmitting] = React.useState(false)
@@ -57,6 +58,8 @@ function CollaborativePreviewPage() {
     )
   }
 
+  // The very page consumers will see: the draft's content, with the published datasets and use cases it connects.
+  const detail = buildCollaborativeDetailFromForm(form, record?.updatedAt, { datasets, useCases, collaboratives, events, aiModels, organisationWorkspaces, charts })
   const ready = isCollaborativeReadyToPublish(form, takenCollaborativeSlugs(collaboratives, id))
 
   const handlePublish = async () => {
@@ -92,7 +95,7 @@ function CollaborativePreviewPage() {
   }
 
   return (
-    <div className="mx-auto flex max-w-4xl flex-col gap-6 py-6">
+    <div className="mx-auto flex w-full max-w-[1400px] flex-col gap-6 py-6">
       <PreviewActionBar>
         <div>
           <p className="text-sm font-semibold text-foreground">
@@ -155,7 +158,13 @@ function CollaborativePreviewPage() {
         </p>
       )}
 
-      <CollaborativePreview form={form} updatedAt={record?.updatedAt} />
+      <CollaborativeDetailView
+        data={detail}
+        hideEmptySections
+        unifiedSearch
+        cta={detail.externalUrl ? { tagline: 'Want to be part of this collaborative?', label: 'Collaborate', href: detail.externalUrl } : undefined}
+        onOpenResource={(resource) => resource.href && navigate(resource.href)}
+      />
     </div>
   )
 }

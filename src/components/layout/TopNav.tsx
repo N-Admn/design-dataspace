@@ -701,7 +701,7 @@ function TopNav() {
           <img
             src="/brand/civicdataspace-logo.svg"
             alt="CivicDataSpace — home"
-            className="h-10 w-auto"
+            className="h-[52px] w-auto"
           />
         </Link>
 

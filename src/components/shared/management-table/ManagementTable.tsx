@@ -385,7 +385,7 @@ function ManagementTable<T, S extends string>({
       <div role="table" className="flex min-h-0 flex-1 flex-col overflow-x-auto text-sm">
         <div
           role="row"
-          className="grid shrink-0 items-center border-b border-border bg-muted/40 text-left text-xs font-medium uppercase tracking-wide text-muted-foreground"
+          className="grid shrink-0 items-center border-b border-border bg-muted/40 text-left type-eyebrow text-muted-foreground"
           style={{ gridTemplateColumns: columnTemplate, height: HEADER_HEIGHT_REM, minWidth: `${rowMinWidthRem}rem` }}
         >
           <div role="columnheader" className="px-4" aria-sort={sort.key === primaryColumn.key ? (sort.direction === 'asc' ? 'ascending' : 'descending') : undefined}>
