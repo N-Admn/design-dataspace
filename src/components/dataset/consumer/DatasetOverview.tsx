@@ -17,6 +17,7 @@ import {
 import { badgeVariants } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
+import { InfoField } from '@/components/shared/InfoField'
 import { formatIsoDateShort, formatShortDate } from '@/lib/format'
 import type { DatasetPublisher } from '@/lib/dataset-publisher'
 import { resolveLicenseUrl } from '@/lib/dataset-license'
@@ -86,39 +87,6 @@ function labelsFor(
   return values.length > 0
     ? values.map((v) => optionLabel(options, v)).join(', ')
     : '—'
-}
-
-/** A label/value pair. With an `icon`, the icon sits beside the pair and is vertically centred on it. */
-function InfoField({
-  label,
-  value,
-  className,
-  icon: Icon,
-}: {
-  label: string
-  value: ReactNode
-  className?: string
-  icon?: LucideIcon
-}) {
-  const content = (
-    <div className="min-w-0">
-      <p className="text-xs font-medium uppercase tracking-wide text-text-subdued">
-        {label}
-      </p>
-      <div className="mt-1 min-w-0 text-sm text-text-default">{value}</div>
-    </div>
-  )
-  if (!Icon) return <div className={className}>{content}</div>
-  return (
-    <div className={cn('flex items-center gap-4', className)}>
-      <Icon
-        className="size-6 shrink-0 text-[var(--border-strong)]"
-        strokeWidth={1.5}
-        aria-hidden="true"
-      />
-      {content}
-    </div>
-  )
 }
 
 /** One compact provenance row: an icon and a prominent title. With a link, the title itself is the link and ends in a small

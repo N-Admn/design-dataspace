@@ -1,12 +1,14 @@
 import * as React from 'react'
-import { Building2, Database, ExternalLink, GitBranch, Pause, Play, Target, Users } from 'lucide-react'
+import { Building2, CalendarDays, Database, GitBranch, Globe2, MapPin, Pause, Play, Target, Users } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
+import { InfoField } from '@/components/shared/InfoField'
 import { RELATIONSHIP_OPTIONS, type CollaborativeRelationship } from '@/types/collaborative'
 import type { SdgGoal } from '@/lib/sdg-goals'
 import { cn } from '@/lib/utils'
 import type { Resource } from '@/pages/playground/collaborative-detail/collaborative-sample-data'
 import { CollaborativeHero } from '@/pages/playground/collaborative-detail/CollaborativeHero'
+import { CollaborativeSearch, partyMatches, resourceMatches, searchTerms, type SearchCounts, type SearchFilter, type SearchKind } from '@/pages/playground/collaborative-detail/CollaborativeSearch'
 import { EcosystemTimeline } from '@/pages/playground/collaborative-detail/EcosystemTimeline'
 import { PillTicker } from '@/pages/playground/collaborative-detail/PillTicker'
 import { ResourceExplorer } from '@/pages/playground/collaborative-detail/ResourceExplorer'
@@ -29,8 +31,10 @@ export interface CollaborativeDetailData {
   /** Plain text (the playground) or already-sanitised HTML (the real record's rich-text description). */
   description: { text?: string; html?: string }
   externalUrl?: string
-  /** e.g. "Last updated 10 Aug 2026". Left out when absent. */
-  updatedLabel?: string
+  /** Display names of the geographies it covers. Left out when empty. */
+  geographies?: string[]
+  /** e.g. "10 Aug 2026". Left out when absent. */
+  updatedOn?: string
   sdgGoals: SdgGoal[]
   organisations: ConnectedParty[]
   people: ConnectedParty[]
@@ -61,15 +65,46 @@ function Section({
     <section id={id} aria-labelledby={`${id}-heading`} className="scroll-mt-28 border-t border-border-default py-10 lg:py-14">
       <div className="flex flex-col gap-8 lg:gap-10">
         <div className={fullWidthIntro ? undefined : 'max-w-3xl'}>
-          <p className="text-xs font-medium uppercase tracking-[0.2em] text-text-subdued">{eyebrow}</p>
+          <p className="type-eyebrow text-text-subdued">{eyebrow}</p>
           <h2 id={`${id}-heading`} tabIndex={-1} className="type-display-1 mt-3 text-text-brand focus-visible:outline-none">
             {title}
           </h2>
-          {intro && <div className={cn('mt-4 text-base text-text-subdued', !fullWidthIntro && 'max-w-2xl')}>{intro}</div>}
+          {intro && <div className={cn('mt-4 type-body text-text-subdued', !fullWidthIntro && 'max-w-2xl')}>{intro}</div>}
         </div>
         <div className="min-w-0">{children}</div>
       </div>
     </section>
+  )
+}
+
+/** Website, geography and last updated under the description, each as an icon + label + value, separated by a vertical grey rule.
+ *  Only what the record holds is shown; with none of the three, nothing renders. */
+function CollaborativeFacts({ data }: { data: CollaborativeDetailData }) {
+  const geography = data.geographies?.join(', ')
+  if (!data.externalUrl && !geography && !data.updatedOn) return null
+  return (
+    <div className="mb-10 mt-2 flex flex-col gap-5 lg:mb-16 lg:mt-6 sm:grid sm:auto-cols-fr sm:grid-flow-col sm:items-center sm:gap-0 sm:divide-x sm:divide-border-default">
+      {data.externalUrl && (
+        <InfoField
+          icon={Globe2}
+          label="Website"
+          className="min-w-0 sm:px-8 sm:first:pl-0"
+          value={
+            <a
+              href={data.externalUrl}
+              target="_blank"
+              rel="noreferrer"
+              title={data.externalUrl}
+              className="block truncate rounded-sm text-text-brand underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-focus"
+            >
+              {data.externalUrl}
+            </a>
+          }
+        />
+      )}
+      {geography && <InfoField icon={MapPin} label="Geography" value={geography} className="min-w-0 sm:px-8 sm:first:pl-0" />}
+      {data.updatedOn && <InfoField icon={CalendarDays} label="Last updated" value={data.updatedOn} className="min-w-0 sm:px-8 sm:first:pl-0" />}
+    </div>
   )
 }
 
@@ -93,12 +128,37 @@ interface CollaborativeDetailViewProps {
   onOpenResource: (resource: Resource, kind: 'dataset' | 'use-case') => void
   /** The public page leaves out a section with nothing in it; the playground keeps it, with an empty state, so that case can be seen. */
   hideEmptySections?: boolean
+  /** Adds the Collaborative-wide search section, which narrows the sections below it. Every page that shows a collaborative turns it on. */
+  unifiedSearch?: boolean
 }
 
-function CollaborativeDetailView({ data, cta, onOpenResource, hideEmptySections = false }: CollaborativeDetailViewProps) {
+function CollaborativeDetailView({ data, cta, onOpenResource, hideEmptySections = false, unifiedSearch = false }: CollaborativeDetailViewProps) {
   const [tickerPaused, setTickerPaused] = React.useState(false)
   const { organisations, people, datasets, useCases, sdgGoals } = data
   const show = (n: number) => !hideEmptySections || n > 0
+
+  // The Collaborative-wide search narrows the sections below it: the words typed filter each section's items, and a chip shows one
+  // kind of section only. Off, nothing is ever filtered.
+  const [query, setQuery] = React.useState('')
+  const [filter, setFilter] = React.useState<SearchFilter>('all')
+  const terms = unifiedSearch ? searchTerms(query) : []
+  const searching = terms.length > 0
+  const partyOf = (p: ConnectedParty) => ({ id: p.id, name: p.name, subtitle: relationshipLabel(p.relationship) })
+  const matchedUseCases = useCases.filter((r) => resourceMatches(r, terms))
+  const matchedDatasets = datasets.filter((r) => resourceMatches(r, terms))
+  const matchedOrganisations = organisations.filter((o) => partyMatches(partyOf(o), terms))
+  const matchedPeople = people.filter((p) => partyMatches(partyOf(p), terms))
+  const counts: SearchCounts = {
+    datasets: { matches: matchedDatasets.length, total: datasets.length },
+    'use-cases': { matches: matchedUseCases.length, total: useCases.length },
+    organisations: { matches: matchedOrganisations.length, total: organisations.length },
+    people: { matches: matchedPeople.length, total: people.length },
+  }
+  const showKind = (kind: SearchKind, n: number) => show(n) && (!unifiedSearch || filter === 'all' || filter === kind)
+  /** The count in a section's eyebrow: "3 of 12" while a search narrows it. */
+  const countLabel = (matches: number, total: number) => (searching ? `${matches} of ${total}` : String(total))
+  const noMatch = (noun: string) => `No ${noun} match “${query.trim()}”.`
+
   const hasDescription = Boolean(data.description.html || data.description.text)
 
   return (
@@ -137,22 +197,7 @@ function CollaborativeDetailView({ data, cta, onOpenResource, hideEmptySections 
           ) : undefined
         }
       >
-        {(data.externalUrl || data.updatedLabel) && (
-          <div className="mb-8 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm">
-            {data.externalUrl && (
-              <a
-                href={data.externalUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex max-w-full items-center gap-1.5 rounded-sm font-medium text-text-brand underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-focus"
-              >
-                <ExternalLink className="size-4 shrink-0" aria-hidden="true" />
-                <span className="truncate">{data.externalUrl}</span>
-              </a>
-            )}
-            {data.updatedLabel && <span className="text-text-subdued">{data.updatedLabel}</span>}
-          </div>
-        )}
+        <CollaborativeFacts data={data} />
         <EcosystemTimeline
           label="Collaborative ecosystem"
           nodes={[
@@ -169,64 +214,76 @@ function CollaborativeDetailView({ data, cta, onOpenResource, hideEmptySections 
         />
       </Section>
 
-      {show(organisations.length) && (
-        <Section id="organisations" eyebrow={`Organisations · ${organisations.length}`} title="Organisations working together." intro="Organisations connected to this collaborative.">
-          <TickerControls paused={tickerPaused} onToggle={() => setTickerPaused((p) => !p)} />
-          {organisations.length === 0 ? (
-            <p className={EMPTY}>No organisations are listed for this collaborative yet.</p>
+      {/* One search over everything connected to this collaborative. */}
+      {unifiedSearch && organisations.length + people.length + datasets.length + useCases.length > 0 && (
+        <Section
+          id="explore"
+          eyebrow="Explore this collaborative"
+          title="Find connections across this initiative."
+          intro="Search datasets, use cases, organisations and people connected to this collaborative."
+        >
+          <CollaborativeSearch query={query} onQueryChange={setQuery} filter={filter} onFilterChange={setFilter} counts={counts} />
+        </Section>
+      )}
+
+      {showKind('use-cases', useCases.length) && (
+        <Section id="use-cases" eyebrow="Use cases" title="Applications in practice." intro="Explore the use cases connected to this collaborative.">
+          <ResourceExplorer
+            idPrefix="collab-use-cases"
+            noun={{ singular: 'use case', plural: 'use cases' }}
+            items={matchedUseCases}
+            kind="use-case"
+            recentLabel="Newest first"
+            reveal={{ mode: 'all', initial: 3, label: 'View all use cases' }}
+            emptyCollection={searching ? noMatch('use cases') : 'No use cases are connected to this collaborative yet.'}
+            onOpen={(resource) => onOpenResource(resource, 'use-case')}
+          />
+        </Section>
+      )}
+
+      {showKind('organisations', organisations.length) && (
+        <Section id="organisations" eyebrow={`Organisations · ${countLabel(matchedOrganisations.length, organisations.length)}`} title="Organisations working together." intro="Organisations connected to this collaborative.">
+          {matchedOrganisations.length > 0 && <TickerControls paused={tickerPaused} onToggle={() => setTickerPaused((p) => !p)} />}
+          {matchedOrganisations.length === 0 ? (
+            <p className={EMPTY}>{searching ? noMatch('organisations') : 'No organisations are listed for this collaborative yet.'}</p>
           ) : (
             <PillTicker
               label="Organisations"
               rows={2}
               paused={tickerPaused}
-              items={organisations.map((o) => ({ id: o.id, name: o.name, subtitle: relationshipLabel(o.relationship), imageUrl: o.imageUrl, tone: 'organisation' as const }))}
+              items={matchedOrganisations.map((o) => ({ id: o.id, name: o.name, subtitle: relationshipLabel(o.relationship), imageUrl: o.imageUrl, tone: 'organisation' as const }))}
             />
           )}
         </Section>
       )}
 
-      {show(people.length) && (
-        <Section id="people" eyebrow={`People · ${people.length}`} title="People working together." intro="People connected to this collaborative.">
-          <TickerControls paused={tickerPaused} onToggle={() => setTickerPaused((p) => !p)} />
-          {people.length === 0 ? (
-            <p className={EMPTY}>No people are listed for this collaborative yet.</p>
+      {showKind('people', people.length) && (
+        <Section id="people" eyebrow={`People · ${countLabel(matchedPeople.length, people.length)}`} title="People working together." intro="People connected to this collaborative.">
+          {matchedPeople.length > 0 && <TickerControls paused={tickerPaused} onToggle={() => setTickerPaused((p) => !p)} />}
+          {matchedPeople.length === 0 ? (
+            <p className={EMPTY}>{searching ? noMatch('people') : 'No people are listed for this collaborative yet.'}</p>
           ) : (
             <PillTicker
               label="People"
               rows={3}
               paused={tickerPaused}
-              items={people.map((p) => ({ id: p.id, name: p.name, subtitle: relationshipLabel(p.relationship), imageUrl: p.imageUrl, tone: 'person' as const }))}
+              items={matchedPeople.map((p) => ({ id: p.id, name: p.name, subtitle: relationshipLabel(p.relationship), imageUrl: p.imageUrl, tone: 'person' as const }))}
             />
           )}
         </Section>
       )}
 
-      {show(datasets.length) && (
+      {showKind('datasets', datasets.length) && (
         <Section id="datasets" eyebrow="Datasets" title="Evidence and data." intro="Browse the datasets connected to this collaborative and open any of them for a closer look.">
           <ResourceExplorer
             idPrefix="collab-datasets"
             noun={{ singular: 'dataset', plural: 'datasets' }}
-            items={datasets}
+            items={matchedDatasets}
             kind="dataset"
             recentLabel="Recently updated"
             reveal={{ mode: 'more', initial: 6, step: 6, label: 'Load more datasets' }}
-            emptyCollection="No datasets are connected to this collaborative yet."
+            emptyCollection={searching ? noMatch('datasets') : 'No datasets are connected to this collaborative yet.'}
             onOpen={(resource) => onOpenResource(resource, 'dataset')}
-          />
-        </Section>
-      )}
-
-      {show(useCases.length) && (
-        <Section id="use-cases" eyebrow="Use cases" title="Applications in practice." intro="Explore the use cases connected to this collaborative.">
-          <ResourceExplorer
-            idPrefix="collab-use-cases"
-            noun={{ singular: 'use case', plural: 'use cases' }}
-            items={useCases}
-            kind="use-case"
-            recentLabel="Newest first"
-            reveal={{ mode: 'all', initial: 3, label: 'View all use cases' }}
-            emptyCollection="No use cases are connected to this collaborative yet."
-            onOpen={(resource) => onOpenResource(resource, 'use-case')}
           />
         </Section>
       )}

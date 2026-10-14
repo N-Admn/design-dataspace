@@ -87,7 +87,7 @@ function RailOrgGroup({ title, organisations }: { title: string; organisations: 
   const overflow = organisations.length - visible.length
   return (
     <div className="flex flex-col gap-2 border-t border-border-default pt-4">
-      <p className="text-xs font-medium uppercase tracking-wide text-text-subdued">{title}</p>
+      <p className="type-eyebrow text-text-subdued">{title}</p>
       {visible.map((org) => (
         <RailOrgRow key={org.id} organisation={org} />
       ))}

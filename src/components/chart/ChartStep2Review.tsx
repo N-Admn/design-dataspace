@@ -55,11 +55,11 @@ function ChartStep2Review({ form, otherCharts, onNameChange, onEditBuild, onPubl
       <ReviewSection title="Dataset & Source" defaultOpen onEdit={onEditBuild}>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
-            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Dataset</p>
+            <p className="type-eyebrow text-muted-foreground">Dataset</p>
             <p className="mt-1 text-sm text-foreground">{dataset?.form.metadata.name || '—'}</p>
           </div>
           <div>
-            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">File / Resource</p>
+            <p className="type-eyebrow text-muted-foreground">File / Resource</p>
             <p className="mt-1 text-sm text-foreground">{file?.name || '—'}</p>
           </div>
         </div>
@@ -69,7 +69,7 @@ function ChartStep2Review({ form, otherCharts, onNameChange, onEditBuild, onPubl
         <ReviewSection title="Chart Image" defaultOpen onEdit={onEditBuild}>
           <div className="flex items-center justify-between gap-3">
             <div className="min-w-0">
-              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Image</p>
+              <p className="type-eyebrow text-muted-foreground">Image</p>
               <p className="mt-1 truncate text-sm text-foreground">{form.uploadedImage?.name || '—'}</p>
             </div>
             {form.uploadedImage && (
@@ -92,14 +92,14 @@ function ChartStep2Review({ form, otherCharts, onNameChange, onEditBuild, onPubl
         <ReviewSection title="Chart Type & Configuration" defaultOpen onEdit={onEditBuild}>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
-              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Chart Type</p>
+              <p className="type-eyebrow text-muted-foreground">Chart Type</p>
               <p className="mt-1 text-sm text-foreground">
                 {form.chartType ? CHART_TYPE_OPTIONS.find((o) => o.value === form.chartType)?.label : '—'}
               </p>
             </div>
             {form.chartType && form.chartType !== 'big-number' && (
               <div>
-                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                <p className="type-eyebrow text-muted-foreground">
                   {categoryFieldLabel(form.chartType)}
                 </p>
                 <p className="mt-1 text-sm text-foreground">
@@ -108,7 +108,7 @@ function ChartStep2Review({ form, otherCharts, onNameChange, onEditBuild, onPubl
               </div>
             )}
             <div>
-              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{valueFieldLabel(form.chartType)}</p>
+              <p className="type-eyebrow text-muted-foreground">{valueFieldLabel(form.chartType)}</p>
               {values.length === 0 ? (
                 <p className="mt-1 text-sm text-foreground">—</p>
               ) : (
@@ -121,7 +121,7 @@ function ChartStep2Review({ form, otherCharts, onNameChange, onEditBuild, onPubl
             </div>
             {isAxisChart && form.config.splitField && values.length === 1 && (
               <div>
-                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Split by colour</p>
+                <p className="type-eyebrow text-muted-foreground">Split by colour</p>
                 <p className="mt-1 text-sm text-foreground">
                   {columns.find((c) => c.name === form.config.splitField)?.label ?? form.config.splitField}
                 </p>

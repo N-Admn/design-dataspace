@@ -48,7 +48,7 @@ interface ResourceExplorerProps {
   noun: { singular: string; plural: string }
   items: Resource[]
   /** Both kinds use the Search results content card, as a grid of cards: use cases with their cover image and publisher avatars
-   *  when they have them, and without an image area when they don't. */
+   *  when they have them, and a grey placeholder when they don't. */
   kind: 'dataset' | 'use-case'
   recentLabel: string
   reveal: Reveal

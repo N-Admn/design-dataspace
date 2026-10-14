@@ -266,6 +266,7 @@ const TYPE_ROLES = [
   ['type-body', 'body', '14 / 1.5 / 400', 'Multi-line reading copy, helper text'],
   ['type-label', 'label', '14 / 1.25 / 500', 'Form labels, buttons (backs Label)'],
   ['type-caption', 'caption', '12 / 1.33 / 400–500', 'Metadata, timestamps, table headers'],
+  ['type-eyebrow', 'eyebrow', '12 / 1.33 / 500 uppercase +0.05em', 'Small label above a heading or beside a value'],
 ] as const
 
 const RADII = [

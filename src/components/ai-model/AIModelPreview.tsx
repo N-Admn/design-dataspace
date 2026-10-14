@@ -27,7 +27,7 @@ function AIModelPreview({ form }: { form: AIModelFormState }) {
   return (
     <div className="overflow-hidden rounded-xl border border-border bg-card">
       <div className="border-b border-border px-6 py-6">
-        <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+        <div className="flex items-center gap-2 type-eyebrow text-muted-foreground">
           <Sparkles className="size-3.5" />
           AI Model
         </div>

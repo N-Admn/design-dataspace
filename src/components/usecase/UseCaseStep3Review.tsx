@@ -42,7 +42,7 @@ function optionLabel(options: { value: string; label: string }[], value: string)
 function ReviewField({ label, value }: { label: string; value: ReactNode }) {
   return (
     <div>
-      <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{label}</p>
+      <p className="type-eyebrow text-muted-foreground">{label}</p>
       <div className="mt-1 text-sm text-foreground">{value}</div>
     </div>
   )
@@ -51,7 +51,7 @@ function ReviewField({ label, value }: { label: string; value: ReactNode }) {
 function BadgeGroup({ icon: Icon, label, items }: { icon: LucideIcon; label: string; items: string[] }) {
   return (
     <div>
-      <p className="mb-1.5 flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+      <p className="mb-1.5 flex items-center gap-1.5 type-eyebrow text-muted-foreground">
         <Icon className="size-3.5" />
         {label}
       </p>
@@ -194,7 +194,7 @@ function UseCaseStep3Review({ form, onEditStep, hasLiveVersion, onPublish }: Use
                     <Icon className="size-4" />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                    <p className="type-eyebrow text-muted-foreground">
                       {BLOCK_TYPE_LABEL[block.type]}
                     </p>
                     <p className="truncate text-sm text-foreground">{blockSummary(block)}</p>

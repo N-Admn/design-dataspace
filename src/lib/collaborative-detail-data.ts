@@ -1,9 +1,11 @@
 import { formatShortDate, parseAppTimestamp } from '@/lib/format'
 import { buildCardMetadata } from '@/lib/content-card'
 import { buildSearchIndex, type GlobalSearchSource, type SearchResultItem } from '@/lib/global-search'
+import { optionLabel } from '@/components/usecase/UseCaseSections'
+import { GEOGRAPHY_OPTIONS } from '@/types/dataset'
 import { getSdgGoal, type SdgGoal } from '@/lib/sdg-goals'
 import { sanitizeHtml } from '@/lib/sanitize-html'
-import type { CollaborativeRecord } from '@/types/collaborative'
+import type { CollaborativeFormState, CollaborativeRecord } from '@/types/collaborative'
 import type { Resource } from '@/pages/playground/collaborative-detail/collaborative-sample-data'
 import type { CollaborativeDetailData, ConnectedParty } from '@/pages/playground/collaborative-detail/CollaborativeDetailView'
 
@@ -41,6 +43,11 @@ function resourceFromItem(item: SearchResultItem): Resource {
 export function buildCollaborativeDetail(record: CollaborativeRecord, source: GlobalSearchSource): CollaborativeDetailData | null {
   const form = record.status === 'published' ? record.publishedForm : null
   if (!form) return null
+  return buildCollaborativeDetailFromForm(form, record.updatedAt, source)
+}
+
+/** The same page content from any form state: the contributor's preview shows a draft this way, before it is published. */
+export function buildCollaborativeDetailFromForm(form: CollaborativeFormState, updatedAt: string | undefined, source: GlobalSearchSource): CollaborativeDetailData {
   const { metadata, connections } = form
 
   const index = buildSearchIndex(source)
@@ -60,7 +67,8 @@ export function buildCollaborativeDetail(record: CollaborativeRecord, source: Gl
     thumbnail: metadata.image?.dataUrl ? { url: metadata.image.dataUrl, alt: '' } : null,
     description: { html: sanitizeHtml(metadata.descriptionHtml) },
     externalUrl: metadata.externalUrl.trim() || undefined,
-    updatedLabel: record.updatedAt ? `Last updated ${formatShortDate(record.updatedAt)}` : undefined,
+    geographies: metadata.geographies.map((g) => optionLabel(GEOGRAPHY_OPTIONS, g)),
+    updatedOn: updatedAt ? formatShortDate(updatedAt) : undefined,
     sdgGoals: metadata.sdgGoals.map(getSdgGoal).filter((g): g is SdgGoal => Boolean(g)),
     organisations: all.filter((p) => p.kind === 'organisation'),
     people: all.filter((p) => p.kind === 'person'),

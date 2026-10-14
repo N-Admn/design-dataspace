@@ -240,7 +240,7 @@ function DataFilePreview({ file, columns, rows, onOpenDetails }: DataFilePreview
       </div>
 
       <div className="border-t border-border-default pt-4">
-        <p className="mb-3 text-xs font-medium uppercase tracking-wide text-text-subdued">Data preview</p>
+        <p className="mb-3 type-eyebrow text-text-subdued">Data preview</p>
 
         {loading ? (
           <EmptyState variant="filled">
@@ -266,7 +266,7 @@ function DataFilePreview({ file, columns, rows, onOpenDetails }: DataFilePreview
                 <table className="w-full min-w-[720px] border-collapse text-sm">
                   <caption className="sr-only">Preview of rows from {title}</caption>
                   <thead>
-                    <tr className="h-10 text-left text-xs font-medium uppercase tracking-wide text-text-subdued">
+                    <tr className="h-10 text-left type-eyebrow text-text-subdued">
                       {columns.map((col, i) => (
                         <th
                           key={col.name}

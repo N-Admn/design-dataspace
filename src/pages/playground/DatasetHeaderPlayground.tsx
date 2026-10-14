@@ -197,7 +197,7 @@ function MetaCard({ icon: Icon, label, value, tone = 'navy' }: MetaCardProps) {
       />
       <div className="flex min-w-0 flex-col gap-0.5">
         <span
-          className={`text-xs font-medium uppercase tracking-wide ${t.label}`}
+          className={`type-eyebrow ${t.label}`}
         >
           {label}
         </span>

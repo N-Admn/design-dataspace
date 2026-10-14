@@ -26,7 +26,7 @@ function DetailField({ label, value }: { label: string; value: ReactNode }) {
   const hasValue = value !== undefined && value !== null && value !== ''
   return (
     <div>
-      <p className="text-xs font-medium uppercase tracking-wide text-text-subdued">{label}</p>
+      <p className="type-eyebrow text-text-subdued">{label}</p>
       {hasValue ? (
         <div className="mt-1 break-words text-sm text-text-default">{value}</div>
       ) : (
@@ -95,7 +95,7 @@ function ResourceDetailsSheet({ file, onOpenChange }: ResourceDetailsSheetProps)
 
                 {promptMeta && (
                   <div className="border-t border-border-default pt-5">
-                    <p className="text-xs font-medium uppercase tracking-wide text-text-subdued">Prompt file metadata</p>
+                    <p className="type-eyebrow text-text-subdued">Prompt file metadata</p>
                     <div className="mt-3 flex flex-col gap-5">
                       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
                         <DetailField
@@ -135,7 +135,7 @@ function ResourceDetailsSheet({ file, onOpenChange }: ResourceDetailsSheetProps)
                     Download button in the main preview header (which downloads the
                     file's actual content and isn't backed by real storage yet). */}
                 <div className="border-t border-border-default pt-5">
-                  <p className="text-xs font-medium uppercase tracking-wide text-text-subdued">Download metadata</p>
+                  <p className="type-eyebrow text-text-subdued">Download metadata</p>
                   <p className="mt-1 text-sm text-text-subdued">Downloads this file's metadata, not the file itself.</p>
                   <div className="mt-3 flex items-center gap-2">
                     <Popover open={formatOpen} onOpenChange={setFormatOpen}>

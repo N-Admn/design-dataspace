@@ -54,12 +54,12 @@ function EditMemberRoleSideSheet({ organisation, member, onOpenChange }: EditMem
         <div className="min-h-0 flex-1 overflow-y-auto px-6 py-5">
           <div className="flex flex-col gap-5">
             <div>
-              <p className="text-xs font-medium uppercase tracking-wide text-text-subdued">Member</p>
+              <p className="type-eyebrow text-text-subdued">Member</p>
               <p className="mt-1 text-sm font-semibold text-text-default">{member.name}</p>
             </div>
 
             <div>
-              <p className="text-xs font-medium uppercase tracking-wide text-text-subdued">Current role</p>
+              <p className="type-eyebrow text-text-subdued">Current role</p>
               <p className="mt-1 text-sm text-text-default">{organisationRoleLabel(member.role)}</p>
             </div>
 

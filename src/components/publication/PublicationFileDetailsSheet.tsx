@@ -18,7 +18,7 @@ interface InferredFieldProps {
 function InferredField({ label, value }: InferredFieldProps) {
   return (
     <div>
-      <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{label}</p>
+      <p className="type-eyebrow text-muted-foreground">{label}</p>
       <div className="mt-1 break-words text-sm text-foreground">{value ?? '—'}</div>
     </div>
   )
@@ -107,7 +107,7 @@ function PublicationFileDetailsSheet({ block, onOpenChange, onTitleChange, onDes
                 </div>
 
                 <div className="border-t border-border pt-5">
-                  <div className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                  <div className="flex items-center gap-1.5 type-eyebrow text-muted-foreground">
                     <Lock className="size-3" />
                     Read from the file — not editable
                   </div>

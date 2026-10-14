@@ -165,7 +165,7 @@ function reviewLink(url: string): ReactNode {
 function ReviewField({ label, value }: { label: string; value: ReactNode }) {
   return (
     <div>
-      <p className="text-xs font-medium uppercase tracking-wide text-text-subdued">{label}</p>
+      <p className="type-eyebrow text-text-subdued">{label}</p>
       <div className="mt-1 text-sm text-text-default">{value}</div>
     </div>
   )
@@ -321,7 +321,7 @@ function Step3Review({ form, datasetId, canPublish, hasLiveVersion, onEditStep, 
         description="Check your information before making this content available publicly."
       />
       <div className="flex items-center gap-2">
-        <span className="text-xs font-medium uppercase tracking-wide text-text-subdued">Dataset Type</span>
+        <span className="type-eyebrow text-text-subdued">Dataset Type</span>
         <Badge variant="accent">{datasetTypeLabel(datasetType)}</Badge>
       </div>
 

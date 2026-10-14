@@ -198,6 +198,9 @@ Categorical series colors for data visualizations — 8 distinct hues (blue, ora
 | body | `.type-body` | 14px | 1.5× | 400 | multi-line reading copy, helper text |
 | label | `.type-label` | 14px | 1.25× | 500 | form labels, buttons (backs `Label`) |
 | caption | `.type-caption` | 12px | 1.33× | 400/500 | metadata, timestamps, table headers — single-line only |
+| eyebrow | `.type-eyebrow` | 12px | 1.33× | 500 | small uppercase label above a heading or beside a value (+0.05em tracking; colour via utility, usually `text-text-subdued`) |
+
+**Editorial section rhythm** (public detail pages, e.g. the Collaborative detail view): `border-t border-border-default py-10 lg:py-14`; eyebrow (`.type-eyebrow`) → `mt-3` → heading (`.type-display-1`, `text-text-brand`) → `mt-4` → intro (`.type-body`, `text-text-subdued`); `gap-8 lg:gap-10` between that header block and the section content.
 
 12px (`.type-caption`) is the system-wide floor — nothing renders essential content smaller (the former 10–11px chart/map data labels are raised to it).
 

@@ -306,7 +306,7 @@ function ProfileEditForm({ profile, onSave }: ProfileEditFormProps) {
               </p>
               {areas.length > 0 && (
                 <div>
-                  <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                  <p className="type-eyebrow text-muted-foreground">
                     Areas of contribution
                   </p>
                   <div className="mt-1.5 flex flex-wrap gap-1.5">

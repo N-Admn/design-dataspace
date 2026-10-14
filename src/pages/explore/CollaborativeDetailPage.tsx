@@ -38,6 +38,7 @@ function CollaborativeDetailPage() {
       <CollaborativeDetailView
         data={data}
         hideEmptySections
+        unifiedSearch
         // The button goes to the initiative's own website when it has one; with nowhere to go the call-to-action card is left out.
         cta={externalUrl ? { tagline: 'Want to be part of this collaborative?', label: 'Collaborate', href: externalUrl } : undefined}
         onOpenResource={(resource) => resource.href && navigate(resource.href)}

@@ -76,7 +76,7 @@ function MetaCard({ icon: Icon, label, value }: MetaCardProps) {
         aria-hidden="true"
       />
       <div className="flex min-w-0 flex-col gap-0.5">
-        <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+        <span className="type-eyebrow text-muted-foreground">
           {label}
         </span>
         <span className="truncate text-sm font-semibold text-[var(--border-strong)]">

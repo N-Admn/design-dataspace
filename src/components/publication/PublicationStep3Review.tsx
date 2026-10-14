@@ -25,7 +25,7 @@ function optionLabel(options: { value: string; label: string }[], value: string)
 function SummaryRow({ label, value }: { label: string; value: ReactNode }) {
   return (
     <div className="flex flex-col gap-1 py-2.5 sm:flex-row sm:items-start sm:gap-4">
-      <p className="w-40 shrink-0 text-xs font-medium uppercase tracking-wide text-muted-foreground">{label}</p>
+      <p className="w-40 shrink-0 type-eyebrow text-muted-foreground">{label}</p>
       <div className="min-w-0 flex-1 text-sm text-foreground">{value}</div>
     </div>
   )
@@ -55,7 +55,7 @@ function PublicationStep3Review({ form, onEditStep, onPreview }: PublicationStep
                 <div className="flex items-start gap-2">
                   <AlertTriangle className="mt-0.5 size-4 shrink-0 text-warning-foreground" />
                   <div>
-                    <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{issue.section}</p>
+                    <p className="type-eyebrow text-muted-foreground">{issue.section}</p>
                     <p className="text-sm text-foreground">{issue.message}</p>
                   </div>
                 </div>

@@ -214,7 +214,7 @@ function EventPreview({ form }: { form: EventFormState }) {
 function RelatedGroup({ icon: Icon, label, items }: { icon: typeof Database; label: string; items: string[] }) {
   return (
     <div>
-      <p className="mb-1.5 flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+      <p className="mb-1.5 flex items-center gap-1.5 type-eyebrow text-muted-foreground">
         <Icon className="size-3.5" />
         {label}
       </p>

@@ -28,7 +28,7 @@ const LOGO_EXTENSIONS = ['jpg', 'jpeg', 'png']
 function ReadOnlyField({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <p className="text-xs font-medium uppercase tracking-wide text-text-subdued">{label}</p>
+      <p className="type-eyebrow text-text-subdued">{label}</p>
       <p className="mt-1 text-sm text-text-default">{value || '—'}</p>
     </div>
   )
@@ -37,7 +37,7 @@ function ReadOnlyField({ label, value }: { label: string; value: string }) {
 function ReadOnlyLinkField({ label, url }: { label: string; url: string }) {
   return (
     <div>
-      <p className="text-xs font-medium uppercase tracking-wide text-text-subdued">{label}</p>
+      <p className="type-eyebrow text-text-subdued">{label}</p>
       {url ? (
         <a href={url} target="_blank" rel="noreferrer" className="mt-1 block truncate text-sm text-text-brand hover:underline">
           {url}

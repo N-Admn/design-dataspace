@@ -1,4 +1,5 @@
 import { Fragment, type ReactNode } from 'react'
+import { ImageIcon } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'
 
 import { Badge } from '@/components/ui/badge'
@@ -29,8 +30,10 @@ export interface ContentCardProps {
   metadata: ContentCardMetadataItem[]
   /** Omitted/empty when the record genuinely has no attribution to show. */
   publishers?: ContentCardPublisher[]
-  /** Landscape/~16:9 cover image. `null`/`undefined` collapses the image
-   *  area entirely rather than leaving empty space or a placeholder. */
+  /** Landscape/~16:9 cover image. For the types whose contributor flow has a
+   *  cover-image field (`THUMBNAIL_TYPES`), `null`/`undefined` shows a grey
+   *  placeholder with an image icon so the card keeps its layout; for every
+   *  other type the image area collapses entirely. */
   thumbnailUrl?: string | null
   href?: string
   /** Optional secondary control (e.g. an icon button) — rendered so its own
@@ -252,8 +255,21 @@ function ClickableShell({ href, ariaLabel, className, children }: { href: string
   )
 }
 
+/** Only these content types can be created with a cover image (Use Case
+ *  `thumbnail`, Collaborative `image`, Event `coverImage`). */
+const THUMBNAIL_TYPES: SearchResultType[] = ['use-case', 'collaborative', 'event']
+
+/** Grey stand-in shown when a record has no cover image. */
+function ThumbnailPlaceholder({ className }: { className: string }) {
+  return (
+    <div aria-hidden="true" className={cn('flex items-center justify-center bg-muted text-muted-foreground/60', className)}>
+      <ImageIcon className="size-8" strokeWidth={1.5} />
+    </div>
+  )
+}
+
 function ContentCard({ type, title, description, metadata, publishers = [], thumbnailUrl, href, action, variant, tintedMetadata }: ContentCardProps) {
-  const hasThumbnail = Boolean(thumbnailUrl)
+  const hasThumbnailSlot = Boolean(thumbnailUrl) || THUMBNAIL_TYPES.includes(type)
   const actionSlot = action && (
     <div onClick={(event) => event.stopPropagation()} className="shrink-0">
       {action}
@@ -263,13 +279,17 @@ function ContentCard({ type, title, description, metadata, publishers = [], thum
   const body =
     variant === 'grid' ? (
       <>
-        {hasThumbnail && (
+        {hasThumbnailSlot && (
           // A fixed height (not `aspect-video`, which would scale taller in a
           // wider column) so every grid thumbnail is the same height
           // regardless of the card's own width.
-          <div className="h-44 w-full overflow-hidden">
-            <img src={thumbnailUrl!} alt="" className="size-full object-cover" />
-          </div>
+          thumbnailUrl ? (
+            <div className="h-44 w-full overflow-hidden">
+              <img src={thumbnailUrl} alt="" className="size-full object-cover" />
+            </div>
+          ) : (
+            <ThumbnailPlaceholder className="h-44 w-full" />
+          )
         )}
         {/* Two separate wrappers — title+description, and metadata+footer —
             with a plain `gap-3` (12px) between them as the standing default.
@@ -293,7 +313,12 @@ function ContentCard({ type, title, description, metadata, publishers = [], thum
       </>
     ) : (
       <div className="flex items-center gap-4 p-[18px]">
-        {hasThumbnail && <img src={thumbnailUrl!} alt="" className="h-24 w-36 shrink-0 rounded-md object-cover" />}
+        {hasThumbnailSlot &&
+          (thumbnailUrl ? (
+            <img src={thumbnailUrl} alt="" className="h-24 w-36 shrink-0 rounded-md object-cover" />
+          ) : (
+            <ThumbnailPlaceholder className="h-24 w-36 shrink-0 rounded-md" />
+          ))}
         <div className="flex min-w-0 flex-1 flex-col gap-3">
           <div>
             <div className="flex items-start justify-between gap-3">

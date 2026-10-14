@@ -24,7 +24,7 @@ function PlaygroundPlaceholderPage() {
           </span>
           <div className="flex flex-wrap items-center gap-2">
             <Badge variant={PLAYGROUND_STATUSES[entry.status].variant}>{PLAYGROUND_STATUSES[entry.status].label}</Badge>
-            <span className="text-xs font-medium uppercase tracking-wide text-text-subdued">{categoryLabel(entry.category)}</span>
+            <span className="type-eyebrow text-text-subdued">{categoryLabel(entry.category)}</span>
           </div>
           <h1 className="type-heading-1 text-text-brand">{entry.name}</h1>
           <p className="max-w-2xl text-sm text-text-default">{entry.description}</p>
