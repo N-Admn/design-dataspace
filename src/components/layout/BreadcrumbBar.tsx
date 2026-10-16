@@ -6,6 +6,8 @@ import { organisationNavGroups } from '@/components/layout/organisation-nav-conf
 import { useAppData } from '@/context/AppDataContext'
 import { useCloseSearch } from '@/hooks/use-close-search'
 import { PAGE_GUTTER_X } from '@/lib/layout'
+import { MOCK_PUBLIC_PEOPLE } from '@/lib/mock-community'
+import { CURRENT_USER_PERSON_ID } from '@/types/organisation-workspace'
 import { cn } from '@/lib/utils'
 
 /** The amber strip shares the shell's page gutter so its text lines up with the header and the content below. */
@@ -29,6 +31,8 @@ function findNavMatch(groups: typeof NAV_GROUPS, pathname: string) {
   return null
 }
 
+const PUBLIC_ORGANISATION_PATTERN = /^\/explore\/organisations\/([^/]+)$/
+const PUBLISHER_PROFILE_PATTERN = /^\/publishers\/([^/]+)$/
 const ORG_ROUTE_PATTERN = /^\/organisations\/([^/]+)(?:\/(.*))?$/
 const DATASET_DETAIL_PATTERN = /^\/explore\/datasets\/([^/]+)$/
 const USE_CASE_DETAIL_PATTERN = /^\/explore\/use-cases\/([^/]+)$/
@@ -56,6 +60,7 @@ const CONSUMER_PAGE_LABELS: Record<string, string> = {
   '/collaboratives': 'Collaboratives',
   '/forum': 'Forum',
   '/publishers': 'Publishers',
+  '/community': 'Community',
   '/about': 'About',
   '/contact': 'Contact Us',
 }
@@ -117,7 +122,7 @@ function Breadcrumbs({ crumbs }: { crumbs: CrumbSpec[] }) {
 function BreadcrumbBar() {
   const location = useLocation()
   const closeSearch = useCloseSearch()
-  const { organisationWorkspaces, datasets, useCases, events, collaboratives } = useAppData()
+  const { organisationWorkspaces, datasets, useCases, events, collaboratives, profile } = useAppData()
   const isDashboard = location.pathname === '/'
   const { pathname } = location
 
@@ -229,6 +234,32 @@ function BreadcrumbBar() {
         <Breadcrumbs
           crumbs={[{ label: 'Home', to: HOME_PATH }, { label: 'Search', to: EXPLORE_PATH }, { label: exploreListLabel }]}
         />
+      </div>
+    )
+  }
+
+  const publicOrganisationMatch = PUBLIC_ORGANISATION_PATTERN.exec(pathname)
+  if (publicOrganisationMatch) {
+    const org = organisationWorkspaces.find((o) => o.id === publicOrganisationMatch[1])
+    return (
+      <div data-slot="breadcrumb" className={STRIP_CLASS}>
+        <Breadcrumbs
+          crumbs={[{ label: 'Home', to: HOME_PATH }, { label: 'Organisations', to: '/community?tab=organisations' }, { label: org?.metadata.name || 'Organisation' }]}
+        />
+      </div>
+    )
+  }
+
+  const publisherProfileMatch = PUBLISHER_PROFILE_PATTERN.exec(pathname)
+  if (publisherProfileMatch) {
+    // The signed-in user, or one of the sample public people (see lib/community.ts).
+    const name =
+      publisherProfileMatch[1] === CURRENT_USER_PERSON_ID
+        ? `${profile.firstName} ${profile.lastName}`.trim()
+        : (MOCK_PUBLIC_PEOPLE.find((p) => p.id === publisherProfileMatch[1])?.name ?? '')
+    return (
+      <div data-slot="breadcrumb" className={STRIP_CLASS}>
+        <Breadcrumbs crumbs={[{ label: 'Home', to: HOME_PATH }, { label: 'Publishers', to: '/community?tab=publishers' }, { label: name || 'Publisher' }]} />
       </div>
     )
   }

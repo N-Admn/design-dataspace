@@ -24,6 +24,7 @@ const CATEGORY_TINT: Record<PlaygroundCategory, string> = {
   'data-discovery': 'bg-chart-1/10 text-chart-1',
   'contribution-flows': 'bg-chart-4/15 text-text-warning',
   collaboratives: 'bg-chart-3/10 text-chart-3',
+  community: 'bg-chart-2/10 text-chart-2',
 }
 
 type CategoryFilter = PlaygroundCategory | 'all'

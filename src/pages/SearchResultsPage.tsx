@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { ChevronDown, LayoutGrid, LayoutList, SearchX, TrendingUp } from 'lucide-react'
+import { SearchX, TrendingUp } from 'lucide-react'
 import { Link, useSearchParams } from 'react-router-dom'
 
 import { EmptyState } from '@/components/shared/EmptyState'
@@ -8,9 +8,8 @@ import { Chip } from '@/components/discover/Chip'
 import { GlobalSearchField } from '@/components/discover/GlobalSearchField'
 import { SearchResultCard, TYPE_ICON } from '@/components/discover/SearchResultCard'
 import { FilterRail } from '@/components/discover/FilterRail'
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { SortMenu, ViewToggle, type ResultView } from '@/components/discover/ResultsToolbar'
 import { useAppData } from '@/context/AppDataContext'
-import { cn } from '@/lib/utils'
 import { parseAppTimestamp } from '@/lib/format'
 import { FILTER_GROUPS_BY_TYPE, type TypeFilter } from '@/lib/search-filters'
 import {
@@ -111,8 +110,6 @@ function sortResults(items: SearchResultItem[], sort: SortKey): SearchResultItem
   return sorted
 }
 
-type ResultView = 'list' | 'grid'
-
 function ResultsGrid({ items, view }: { items: SearchResultItem[]; view: ResultView }) {
   return (
     <div className={view === 'grid' ? 'grid grid-cols-1 gap-4 sm:grid-cols-2' : 'flex flex-col gap-3'}>
@@ -120,71 +117,6 @@ function ResultsGrid({ items, view }: { items: SearchResultItem[]; view: ResultV
         <SearchResultCard key={`${item.type}-${item.id}`} item={item} layout={view} tintedMetadata />
       ))}
     </div>
-  )
-}
-
-function ViewToggle({ view, onChange }: { view: ResultView; onChange: (view: ResultView) => void }) {
-  const options: { value: ResultView; label: string; icon: typeof LayoutList }[] = [
-    { value: 'list', label: 'List view', icon: LayoutList },
-    { value: 'grid', label: 'Grid view', icon: LayoutGrid },
-  ]
-  return (
-    <div className="flex shrink-0 gap-1 rounded-lg border border-border bg-muted/40 p-1" role="group" aria-label="Result view">
-      {options.map((option) => {
-        const Icon = option.icon
-        const active = view === option.value
-        return (
-          <button
-            key={option.value}
-            type="button"
-            aria-pressed={active}
-            aria-label={option.label}
-            onClick={() => onChange(option.value)}
-            className={cn(
-              'flex items-center justify-center rounded-md p-1.5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-              active ? 'bg-background text-primary shadow-sm' : 'text-muted-foreground hover:text-foreground',
-            )}
-          >
-            <Icon className="size-4" />
-          </button>
-        )
-      })}
-    </div>
-  )
-}
-
-function SortMenu({ sort, onChange }: { sort: SortKey; onChange: (sort: SortKey) => void }) {
-  const [open, setOpen] = React.useState(false)
-  return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <button
-          type="button"
-          className="flex shrink-0 items-center gap-1 rounded-sm text-sm font-medium text-foreground hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-        >
-          Sort: {SORT_OPTIONS.find((o) => o.value === sort)?.label}
-          <ChevronDown className="size-4" />
-        </button>
-      </PopoverTrigger>
-      <PopoverContent align="end" className="w-40 p-1">
-        <div className="flex flex-col">
-          {SORT_OPTIONS.map((option) => (
-            <button
-              key={option.value}
-              type="button"
-              aria-pressed={sort === option.value}
-              onClick={() => {
-                onChange(option.value)
-                setOpen(false)
-              }}
-              className="flex w-full items-center rounded-md px-2.5 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted"
-            >
-              {option.label}
-            </button>
-          ))}
-        </div>
-      </PopoverContent>
-    </Popover>
   )
 }
 
@@ -455,7 +387,7 @@ function SearchResultsPage() {
                     {results.length} {type === 'all' ? 'Results' : TYPE_FILTERS.find((f) => f.value === type)?.label}
                   </p>
                   <div className="flex items-center gap-4">
-                    <SortMenu sort={sort} onChange={setSort} />
+                    <SortMenu sort={sort} options={SORT_OPTIONS} onChange={setSort} />
                     <ViewToggle view={view} onChange={setView} />
                   </div>
                 </div>
