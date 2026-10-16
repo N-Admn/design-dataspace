@@ -44,7 +44,7 @@ import { OrganisationChartsPage } from '@/pages/organisation/OrganisationChartsP
 import { OrganisationEventsPage } from '@/pages/organisation/OrganisationEventsPage'
 import { OrganisationMembersPage } from '@/pages/organisation/OrganisationMembersPage'
 import { OrganisationProfilePage } from '@/pages/organisation/OrganisationProfilePage'
-import { DesignSystemPage } from '@/pages/DesignSystemPage'
+import { DocsIndexRedirect, DocsLayout } from '@/pages/design-system/docs/DocsLayout'
 import { DatasetHeaderPlayground } from '@/pages/playground/DatasetHeaderPlayground'
 import { CollaborativeDetailPlayground } from '@/pages/playground/collaborative-detail/CollaborativeDetailPlayground'
 import { CommunityProfilePlayground } from '@/pages/playground/community-profile/CommunityProfilePlayground'
@@ -102,7 +102,8 @@ function AppLayout() {
   const isAIModelPreview = /^\/dashboard\/ai-models\/[^/]+\/preview$/.test(location.pathname)
   const isEventPreview = /^\/dashboard\/events\/[^/]+\/preview$/.test(location.pathname)
   const isPublicationPreview = /^\/dashboard\/publications\/[^/]+\/preview$/.test(location.pathname)
-  const isDesignSystem = location.pathname === '/design-system'
+  // The design system is a docs site: /design-system opens its first page and /design-system/<page> each topic.
+  const isDesignSystem = location.pathname === '/design-system' || location.pathname.startsWith('/design-system/')
   // The Playground Hub and every playground under /playground share the consumer chrome.
   const isPlayground = location.pathname === '/playground' || location.pathname.startsWith('/playground/')
   const isConsumerRoute =
@@ -234,7 +235,8 @@ function AppLayout() {
             <Route path="/organisations/:organisationId/events" element={<OrganisationEventsPage />} />
             <Route path="/organisations/:organisationId/members" element={<OrganisationMembersPage />} />
             <Route path="/organisations/:organisationId/profile" element={<OrganisationProfilePage />} />
-            <Route path="/design-system" element={<DesignSystemPage />} />
+            <Route path="/design-system" element={<DocsIndexRedirect />} />
+            <Route path="/design-system/:slug" element={<DocsLayout />} />
             <Route path="/playground" element={<PlaygroundHubPage />} />
             <Route path="/playground/dataset-header" element={<DatasetHeaderPlayground />} />
             <Route path="/playground/:playgroundId" element={<PlaygroundPlaceholderPage />} />
