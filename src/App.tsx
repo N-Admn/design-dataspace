@@ -47,10 +47,14 @@ import { OrganisationProfilePage } from '@/pages/organisation/OrganisationProfil
 import { DesignSystemPage } from '@/pages/DesignSystemPage'
 import { DatasetHeaderPlayground } from '@/pages/playground/DatasetHeaderPlayground'
 import { CollaborativeDetailPlayground } from '@/pages/playground/collaborative-detail/CollaborativeDetailPlayground'
+import { CommunityProfilePlayground } from '@/pages/playground/community-profile/CommunityProfilePlayground'
 import { PlaygroundHubPage } from '@/pages/playground/PlaygroundHubPage'
 import { PlaygroundPlaceholderPage } from '@/pages/playground/PlaygroundPlaceholderPage'
 import { PlaygroundPreviewPage } from '@/pages/design-system/PlaygroundPreviewPage'
 import { ComingSoonPage } from '@/pages/ComingSoonPage'
+import { CommunityPage } from '@/pages/community/CommunityPage'
+import { PublicOrganisationProfilePage } from '@/pages/community/PublicOrganisationProfilePage'
+import { PublisherProfilePage } from '@/pages/community/PublisherProfilePage'
 import { DiscoverPage } from '@/pages/DiscoverPage'
 import { SearchResultsPage } from '@/pages/SearchResultsPage'
 import { UseCasesExplorePage } from '@/pages/explore/UseCasesExplorePage'
@@ -105,7 +109,9 @@ function AppLayout() {
     location.pathname.startsWith('/explore/') ||
     location.pathname === '/collaboratives' ||
     location.pathname === '/forum' ||
+    location.pathname === '/community' ||
     location.pathname === '/publishers' ||
+    location.pathname.startsWith('/publishers/') ||
     location.pathname === '/about' ||
     location.pathname === '/contact' ||
     location.pathname === '/discover' ||
@@ -134,6 +140,15 @@ function AppLayout() {
     return (
       <Routes>
         <Route path="/playground/collaborative-detail" element={<CollaborativeDetailPlayground />} />
+      </Routes>
+    )
+  }
+
+  // The Community profile playground is a full-page prototype with its own toolbar, so it has no app chrome either.
+  if (location.pathname === '/playground/community-profile') {
+    return (
+      <Routes>
+        <Route path="/playground/community-profile" element={<CommunityProfilePlayground />} />
       </Routes>
     )
   }
@@ -236,7 +251,14 @@ function AppLayout() {
             <Route path="/explore/events/:id" element={<EventDetailPage />} />
             <Route path="/collaboratives" element={<ComingSoonPage title="Collaboratives" />} />
             <Route path="/forum" element={<ComingSoonPage title="Forum" />} />
-            <Route path="/publishers" element={<ComingSoonPage title="Publishers" />} />
+            {/* One Community page with All / Organisations / Publishers tabs; the older URLs open the matching tab. */}
+            <Route path="/community" element={<CommunityPage />} />
+            <Route path="/publishers" element={<Navigate to="/community?tab=publishers" replace />} />
+            <Route path="/publishers/:personId" element={<PublisherProfilePage />} />
+            {/* The public Organisations directory and profiles sit under /explore: /organisations is the contributor's own
+                "My Organisations" workspace area. */}
+            <Route path="/explore/organisations" element={<Navigate to="/community?tab=organisations" replace />} />
+            <Route path="/explore/organisations/:organisationId" element={<PublicOrganisationProfilePage />} />
             <Route path="/about" element={<ComingSoonPage title="About" />} />
             <Route path="/contact" element={<ComingSoonPage title="Contact Us" />} />
             <Route path="*" element={<Navigate to="/dashboard/datasets" replace />} />

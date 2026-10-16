@@ -342,7 +342,10 @@ function AppDataProvider({ children }: { children: React.ReactNode }) {
   const [profile, setProfile] = React.useState<ContributorProfile>(MOCK_PROFILE)
   const [organisationWorkspaces, setOrganisationWorkspaces] = React.useState<OrganisationRecord[]>(() => {
     const stored = loadStoredOrganisationWorkspaces()
-    const initial = stored ?? MOCK_ORGANISATION_WORKSPACES
+    // Workspaces saved in this browser before a seed organisation existed would otherwise hide it: add the missing seeds.
+    const initial = stored
+      ? [...stored, ...MOCK_ORGANISATION_WORKSPACES.filter((seed) => !stored.some((o) => o.id === seed.id))]
+      : MOCK_ORGANISATION_WORKSPACES
     bumpOrganisationWorkspaceIdCounter(initial)
     bumpOrganisationMemberIdCounter(initial)
     bumpOrganisationInvitationIdCounter(initial)

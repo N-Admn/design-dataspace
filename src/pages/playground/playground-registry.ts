@@ -1,15 +1,16 @@
-import { BriefcaseBusiness, Database, Dna, UploadCloud, Users, type LucideIcon } from 'lucide-react'
+import { Building2, BriefcaseBusiness, Database, Dna, UploadCloud, Users, type LucideIcon } from 'lucide-react'
 
 /** The Playground Hub's catalogue. Adding a playground is adding one entry here (plus a route in `App.tsx` if it is a new page):
  *  the hub, its search, its category filters and the "not built yet" page all read from this list. */
 
-export type PlaygroundCategory = 'data-discovery' | 'contribution-flows' | 'collaboratives'
+export type PlaygroundCategory = 'data-discovery' | 'contribution-flows' | 'collaboratives' | 'community'
 export type PlaygroundStatus = 'in-progress' | 'ready-for-review' | 'archived'
 
 export const PLAYGROUND_CATEGORIES: { key: PlaygroundCategory; label: string }[] = [
   { key: 'data-discovery', label: 'Data Discovery' },
   { key: 'contribution-flows', label: 'Contribution Flows' },
   { key: 'collaboratives', label: 'Collaboratives' },
+  { key: 'community', label: 'Community' },
 ]
 
 export const PLAYGROUND_STATUSES: Record<PlaygroundStatus, { label: string; variant: 'warning' | 'success' | 'muted' }> = {
@@ -58,6 +59,17 @@ export const PLAYGROUNDS: PlaygroundEntry[] = [
     status: 'in-progress',
     icon: Users,
     href: '/playground/collaborative-detail',
+    built: true,
+  },
+  {
+    id: 'community-profile',
+    name: 'Organisation and Publisher Profiles',
+    description:
+      'Explore the public profile of an organisation or an individual publisher: the bento header, what they have published, and how people and organisations connect.',
+    category: 'community',
+    status: 'in-progress',
+    icon: Building2,
+    href: '/playground/community-profile',
     built: true,
   },
   {

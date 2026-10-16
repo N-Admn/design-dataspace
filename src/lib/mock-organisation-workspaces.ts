@@ -14,6 +14,115 @@ function fakeLogo(url: string, name: string): UploadedAsset {
   }
 }
 
+/** Fictional organisations that round out the public Organisations directory. The current user ('me') is not a member of any
+ *  of them, so "My Organisations" is unaffected. None has published content: they show how an organisation with a valid public
+ *  profile stays in the Organisations directory but is left out of Publishers. Names, links and text are invented. */
+function directoryOrganisation(
+  n: number,
+  metadata: Partial<OrganisationRecord['metadata']> & Pick<OrganisationRecord['metadata'], 'name' | 'type'>,
+): OrganisationRecord {
+  return {
+    id: `org-workspace-${n}`,
+    metadata: {
+      description: '',
+      website: '',
+      contactEmail: '',
+      logo: null,
+      linkedin: '',
+      github: '',
+      x: '',
+      location: '',
+      ...metadata,
+    },
+    members: [
+      {
+        id: `org${n}-member-1`,
+        personId: `directory-member-${n}`,
+        name: 'Directory member',
+        role: 'admin',
+        joinedAt: '05/02/2026 10:00:00',
+        updatedAt: '05/02/2026 10:00:00',
+      },
+    ],
+    invitations: [],
+    createdAt: '05/02/2026 10:00:00',
+    updatedAt: `1${n % 10}/06/2026 10:00:00`,
+  }
+}
+
+const DIRECTORY_SEED_ORGANISATIONS: OrganisationRecord[] = [
+  directoryOrganisation(2, {
+    name: 'Meridian Institute for Public Policy',
+    type: 'research',
+    description:
+      'An independent research institute studying how public data can improve policy design, from municipal budgeting to school education. Its analysts publish methods alongside findings so that other teams can reuse them, and run a fellowship for early-career researchers working with government data.',
+    website: 'https://meridian-policy.example.org',
+    location: 'New Delhi, India',
+    linkedin: 'https://linkedin.com/company/meridian-policy',
+  }),
+  directoryOrganisation(3, {
+    name: 'Urban Commons Lab',
+    type: 'non-profit',
+    description: 'Helps neighbourhood groups map and monitor shared public spaces, services and infrastructure in growing cities.',
+    website: 'https://urbancommons.example.org',
+    location: 'Pune, India',
+  }),
+  directoryOrganisation(4, {
+    name: 'State Open Data Cell',
+    type: 'state-government',
+    description: 'The state government unit responsible for releasing departmental datasets under an open licence and supporting departments in doing so.',
+    website: 'https://opendata.state.example.gov',
+    location: 'Thiruvananthapuram, India',
+  }),
+  directoryOrganisation(5, {
+    name: 'Riverbend Health Foundation',
+    type: 'non-profit',
+    description: 'Works with district health teams to collect, clean and share maternal and child health indicators from primary care centres.',
+    website: 'https://riverbendhealth.example.org',
+    location: 'Bhubaneswar, India',
+    github: 'https://github.com/riverbend-health',
+  }),
+  directoryOrganisation(6, {
+    name: 'Open Budget Collective',
+    type: 'community',
+    description: 'A volunteer community that turns published budget documents into open, comparable tables and explains them in plain language.',
+    website: 'https://openbudget.example.org',
+    location: 'Bengaluru, India',
+    x: 'https://x.com/openbudgetcollective',
+  }),
+  directoryOrganisation(7, {
+    name: 'Institute of Applied Statistics',
+    type: 'academic',
+    description: 'A university department teaching and researching official statistics, survey methods and the responsible use of administrative data.',
+    website: 'https://ias.example.edu',
+    location: 'Hyderabad, India',
+  }),
+  directoryOrganisation(8, {
+    name: 'National Water Data Authority',
+    type: 'government',
+    description: 'Maintains national records on rainfall, groundwater and river flow, and publishes them for planners, researchers and the public.',
+    website: 'https://waterdata.example.gov',
+    location: 'New Delhi, India',
+  }),
+  directoryOrganisation(9, {
+    name: 'Lakeshore Civic Technologies',
+    type: 'private',
+    description: 'A small company building accessible dashboards and reporting tools for local governments.',
+    website: 'https://lakeshore-civic.example.com',
+    location: 'Kochi, India',
+  }),
+  directoryOrganisation(10, {
+    name: "Northern Plains Farmers' Network",
+    type: 'community',
+    description: 'A cooperative of farming households sharing field-level weather and price observations.',
+  }),
+  directoryOrganisation(11, {
+    name: 'Centre for Transparent Governance and Participatory Public Finance Research',
+    type: 'research',
+    location: 'Guwahati, India',
+  }),
+]
+
 /** Prototype-only seed data — the current user ('me') belongs to CivicDataLab as
  * Admin, demonstrating the full permission range. Kept isolated from presentation
  * components; a real backend would replace this with an API response of the same
@@ -102,4 +211,5 @@ export const MOCK_ORGANISATION_WORKSPACES: OrganisationRecord[] = [
     createdAt: '10/01/2026 09:00:00',
     updatedAt: '20/08/2026 10:00:00',
   },
+  ...DIRECTORY_SEED_ORGANISATIONS,
 ]

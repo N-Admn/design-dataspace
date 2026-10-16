@@ -676,10 +676,10 @@ function TopNav() {
   }
 
   // Listing categories now open the Search page, so only Community's own destinations are Discover pages.
-  const discoverPaths = ['/publishers', '/organisations']
+  const discoverPaths = ['/community', '/publishers', '/explore/organisations']
   const morePaths = ['/about', '/contact']
   const isSearchActive = pathname === SEARCH_ROUTE
-  const isDiscoverActive = discoverPaths.includes(pathname)
+  const isDiscoverActive = discoverPaths.some((path) => pathname === path || pathname.startsWith(`${path}/`))
   const isCollaborativesActive = pathname === '/collaboratives'
   const isMoreActive = morePaths.includes(pathname)
 

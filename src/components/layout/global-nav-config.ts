@@ -2,6 +2,7 @@ import {
   Accessibility,
   BookOpen,
   Building2,
+  CalendarDays,
   CircleHelp,
   Cpu,
   Database,
@@ -16,16 +17,20 @@ import {
 } from 'lucide-react'
 
 /** Destinations for the global (consumer) navigation. Every route here already exists in `App.tsx`. Publishers and
- *  Organisations are not content types the Search page lists yet, so they keep their own existing routes. */
+ *  Organisations are not content types the Search page lists yet, so they have their own directory pages. */
 
 /** The primary "Search" item — the existing search results page. */
 export const SEARCH_ROUTE = '/search'
 /** The unified Search page is the one listing surface for every content type: a category click opens it with that
  *  type's tab active, and only a specific item opens its own detail page. Values are the plural names the Search page
  *  accepts for `type`. */
-export const searchRoute = (type: 'datasets' | 'publications' | 'ai-models' | 'use-cases' | 'collaboratives') =>
+export const searchRoute = (type: 'datasets' | 'publications' | 'ai-models' | 'use-cases' | 'collaboratives' | 'events') =>
   `/search?type=${type}`
 export const COLLABORATIVES_ROUTE = searchRoute('collaboratives')
+export const EVENTS_ROUTE = searchRoute('events')
+/** The Community page opens on a tab: /organisations itself is the contributor's "My Organisations" area. */
+export const COMMUNITY_ORGANISATIONS_ROUTE = '/community?tab=organisations'
+export const COMMUNITY_PUBLISHERS_ROUTE = '/community?tab=publishers'
 export const SIGN_IN_ROUTE = '/auth/sign-in'
 export const WORKSPACE_ROUTE = '/'
 
@@ -96,15 +101,21 @@ export const DISCOVER_GROUPS: NavGroup[] = [
     heading: 'Community',
     items: [
       {
-        label: 'Publishers',
-        to: '/publishers',
-        icon: Newspaper,
-        description: 'Discover organisations publishing civic data.',
+        label: 'Events',
+        to: EVENTS_ROUTE,
+        icon: CalendarDays,
+        description: 'Find workshops, talks and gatherings from the civic data community.',
       },
-      // The only existing "Organisations" destination is the organisation selector.
+      {
+        label: 'Publishers',
+        to: COMMUNITY_PUBLISHERS_ROUTE,
+        icon: Newspaper,
+        description: 'Discover the people and organisations publishing civic data.',
+      },
+      // The public directory: /organisations itself is the contributor's "My Organisations" area.
       {
         label: 'Organisations',
-        to: '/organisations',
+        to: COMMUNITY_ORGANISATIONS_ROUTE,
         icon: Building2,
         description: 'Explore organisations working with civic data.',
       },
