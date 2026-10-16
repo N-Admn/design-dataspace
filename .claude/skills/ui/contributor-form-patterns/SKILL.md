@@ -54,7 +54,7 @@ Every upload — in forms, side sheets, modals, dialogs, inline editors — is t
 - Only the instruction wording (`dropzoneTitle` / `title`) may vary ("…a logo…", "…a photo…", "…files…").
 - Never add a bare "Upload" button, a compact variant, a custom icon or button label, or a bespoke dashed box. Extensions and the size limit come from the field's own validation constants.
 - A hidden `<input type="file">` is allowed only to power a Replace action on an item already uploaded.
-- Spec: "Upload fields" in the design system page and `design-system.md`.
+- Spec: the "Upload fields" page of the design system site (`/design-system/upload-fields`) and `design-system.md`.
 
 ## Pattern 3 — Smaller rules that go with the above
 
@@ -68,7 +68,7 @@ Every upload — in forms, side sheets, modals, dialogs, inline editors — is t
 1. Before building a form section, read the pattern that applies and copy a canonical example.
 2. Build with the shared components (`Card`, `Dialog`, `Button`, `Input`, `Label`, `FieldError`, `FileUploadField`, `useConfirm`); do not restyle them.
 3. Check the result against this file: button placement, drawer type, footer order, empty state, upload look.
-4. If the user standardises something new, add it to the **Standards log** and, if it is a visual rule, to the design system page / generator prose too.
+4. If the user standardises something new, add it to the **Standards log** and, if it is a visual rule, to the design system site (`src/pages/design-system/docs/`, see its README) / generator prose too.
 
 ## Standards log
 
