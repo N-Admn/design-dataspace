@@ -1,4 +1,5 @@
 import type { UploadedAsset } from '@/lib/generic-upload'
+import type { EventPublication } from '@/types/event'
 
 export type CollaborativeStatus = 'draft' | 'published'
 
@@ -42,6 +43,8 @@ export interface CollaborativePerson {
 export interface CollaborativeConnectedDataset {
   id: string
   title: string
+  /** Set when the dataset was created from this Collaborative's Add Resource (so it can be edited there). */
+  source?: 'created'
 }
 
 export interface CollaborativeConnectedUseCase {
@@ -49,10 +52,23 @@ export interface CollaborativeConnectedUseCase {
   title: string
 }
 
+/** A connected publication or event: its id in the search index and the title at the time it was connected. */
+export interface CollaborativeConnectedItem {
+  id: string
+  title: string
+  /** Set when it was created from this Collaborative's Add Resource rather than connected from CivicDataSpace. */
+  source?: 'created'
+  /** A created publication has no event to live in, so its details are kept here. */
+  publication?: EventPublication
+}
+
 export interface CollaborativeConnections {
   people: CollaborativePerson[]
   datasets: CollaborativeConnectedDataset[]
   useCases: CollaborativeConnectedUseCase[]
+  /** Optional so drafts saved before these existed still load; read them as empty when absent. */
+  publications?: CollaborativeConnectedItem[]
+  events?: CollaborativeConnectedItem[]
 }
 
 export interface CollaborativeFormState {
@@ -93,5 +109,7 @@ export const emptyCollaborativeForm: CollaborativeFormState = {
     people: [],
     datasets: [],
     useCases: [],
+    publications: [],
+    events: [],
   },
 }

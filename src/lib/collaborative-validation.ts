@@ -69,6 +69,7 @@ export interface CollaborativeContentErrors {
   content?: string
 }
 
+/** The Resources part of the Connections step: at least one dataset or use case. (People & organisations are optional.) */
 export function validateCollaborativeContent(form: CollaborativeFormState): CollaborativeContentErrors {
   const errors: CollaborativeContentErrors = {}
   const { connections } = form
@@ -79,9 +80,10 @@ export function validateCollaborativeContent(form: CollaborativeFormState): Coll
 }
 
 export interface CollaborativeReadinessIssue {
-  section: 'About' | 'People' | 'Content'
+  section: 'About' | 'Resources'
   message: string
-  step: 1 | 2 | 3
+  /** The wizard step that fixes it: 1 About, 2 Connections. */
+  step: 1 | 2
 }
 
 export function getCollaborativeReadinessIssues(form: CollaborativeFormState, takenSlugs: string[] = []): CollaborativeReadinessIssue[] {
@@ -91,7 +93,7 @@ export function getCollaborativeReadinessIssues(form: CollaborativeFormState, ta
     if (message) issues.push({ section: 'About', message, step: 1 })
   })
   Object.values(validateCollaborativeContent(form)).forEach((message) => {
-    if (message) issues.push({ section: 'Content', message, step: 3 })
+    if (message) issues.push({ section: 'Resources', message, step: 2 })
   })
 
   return issues

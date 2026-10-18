@@ -1,10 +1,10 @@
 import * as React from 'react'
-import { Database, FileText, Layers, Sparkles, Users2, type LucideIcon } from 'lucide-react'
+import { Calendar, Database, FileText, Layers, Sparkles, Users2, type LucideIcon } from 'lucide-react'
 
 import { cn } from '@/lib/utils'
 import { SearchInput, SearchResultList, SearchResultRow } from '@/components/shared/SearchResultList'
 
-export type ResourceKind = 'dataset' | 'use-case' | 'collaborative' | 'ai-model' | 'publication'
+export type ResourceKind = 'dataset' | 'use-case' | 'collaborative' | 'ai-model' | 'publication' | 'event'
 
 export interface ResourceCandidate {
   id: string
@@ -14,6 +14,8 @@ export interface ResourceCandidate {
   organisation?: string
   /** Publication type value — carried through so a connected publication keeps its badge. */
   publicationType?: string
+  /** Extra line that tells similarly named items apart (e.g. sector · geography); shown instead of `organisation` when set. */
+  detail?: string
 }
 
 export const RESOURCE_KIND_LABEL: Record<ResourceKind, string> = {
@@ -22,6 +24,7 @@ export const RESOURCE_KIND_LABEL: Record<ResourceKind, string> = {
   collaborative: 'Collaborative',
   'ai-model': 'AI Model',
   publication: 'Publication',
+  event: 'Event',
 }
 
 export const RESOURCE_KIND_ICON: Record<ResourceKind, LucideIcon> = {
@@ -30,6 +33,7 @@ export const RESOURCE_KIND_ICON: Record<ResourceKind, LucideIcon> = {
   collaborative: Users2,
   'ai-model': Sparkles,
   publication: FileText,
+  event: Calendar,
 }
 
 type Filter = 'all' | ResourceKind
@@ -41,20 +45,29 @@ const FILTERS: { value: Filter; label: string }[] = [
   { value: 'collaborative', label: 'Collaboratives' },
   { value: 'ai-model', label: 'AI Models' },
   { value: 'publication', label: 'Publications' },
+  { value: 'event', label: 'Events' },
 ]
 
 interface ResourceSearchFieldProps {
   /** All connectable resources, already stripped of anything selected. */
   candidates: ResourceCandidate[]
   onSelect: (candidate: ResourceCandidate) => void
+  /** Limits the type filter chips to these kinds (and drops "All" when only one is left). Defaults to every kind. */
+  kinds?: ResourceKind[]
+  placeholder?: string
 }
 
 /** Secondary line under a result: "Type · Organisation", organisation dropped when absent. */
 function candidateDetail(candidate: ResourceCandidate): string {
-  return [RESOURCE_KIND_LABEL[candidate.kind], candidate.organisation].filter(Boolean).join(' · ')
+  return [RESOURCE_KIND_LABEL[candidate.kind], candidate.detail ?? candidate.organisation].filter(Boolean).join(' · ')
 }
 
-function ResourceSearchField({ candidates, onSelect }: ResourceSearchFieldProps) {
+function ResourceSearchField({ candidates, onSelect, kinds, placeholder = 'Search resources by name…' }: ResourceSearchFieldProps) {
+  // With `kinds`, the pills follow that order; without it, every kind except Event (the Event flow never offers events) in the usual order.
+  const filters =
+    kinds && kinds.length > 0
+      ? [FILTERS[0], ...kinds.map((k) => FILTERS.find((f) => f.value === k)!)]
+      : FILTERS.filter((f) => f.value !== 'event')
   const [query, setQuery] = React.useState('')
   const [filter, setFilter] = React.useState<Filter>('all')
 
@@ -69,12 +82,12 @@ function ResourceSearchField({ candidates, onSelect }: ResourceSearchFieldProps)
 
   return (
     <div className="flex flex-col gap-3">
-      <SearchInput value={query} onChange={setQuery} placeholder="Search resources by name…" />
+      <SearchInput value={query} onChange={setQuery} placeholder={placeholder} />
 
       {active && (
         <>
           <div className="flex flex-wrap gap-1.5">
-            {FILTERS.map((f) => (
+            {filters.map((f) => (
               <button
                 key={f.value}
                 type="button"
@@ -112,4 +125,4 @@ function ResourceSearchField({ candidates, onSelect }: ResourceSearchFieldProps)
   )
 }
 
-export { ResourceSearchField }
+export { ResourceSearchField, candidateDetail }

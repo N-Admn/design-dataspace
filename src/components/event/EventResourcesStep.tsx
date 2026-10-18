@@ -29,14 +29,14 @@ interface EventResourcesStepProps {
 }
 
 /** Non-publication kinds map 1:1 onto a `relatedContent` bucket. */
-const RELATED_BUCKET: Record<Exclude<ResourceKind, 'publication'>, keyof EventFormState['relatedContent']> = {
+const RELATED_BUCKET: Record<Exclude<ResourceKind, 'publication' | 'event'>, keyof EventFormState['relatedContent']> = {
   dataset: 'datasets',
   'use-case': 'useCases',
   collaborative: 'collaboratives',
   'ai-model': 'aiModels',
 }
 
-const RELATED_TYPE: Record<Exclude<ResourceKind, 'publication'>, RelatedContentType> = {
+const RELATED_TYPE: Record<Exclude<ResourceKind, 'publication' | 'event'>, RelatedContentType> = {
   dataset: 'dataset',
   'use-case': 'use-case',
   collaborative: 'collaborative',
@@ -124,7 +124,7 @@ function EventResourcesStep({ form, onChange }: EventResourcesStepProps) {
     ].filter((c) => !selectedIds.has(c.id))
   }, [allDatasets, selectedIds])
 
-  const addRelated = (kind: Exclude<ResourceKind, 'publication'>, item: RelatedContentItem) => {
+  const addRelated = (kind: Exclude<ResourceKind, 'publication' | 'event'>, item: RelatedContentItem) => {
     const bucket = RELATED_BUCKET[kind]
     onChange((prev) => ({
       ...prev,
@@ -132,7 +132,7 @@ function EventResourcesStep({ form, onChange }: EventResourcesStepProps) {
     }))
   }
 
-  const removeRelated = (kind: Exclude<ResourceKind, 'publication'>, id: string) => {
+  const removeRelated = (kind: Exclude<ResourceKind, 'publication' | 'event'>, id: string) => {
     const bucket = RELATED_BUCKET[kind]
     onChange((prev) => ({
       ...prev,
@@ -153,6 +153,8 @@ function EventResourcesStep({ form, onChange }: EventResourcesStepProps) {
 
   // Selecting a search result connects it immediately, into the right type section.
   const handleSelect = (candidate: ResourceCandidate) => {
+    // The Event flow never offers events as candidates; the kind exists only for other flows sharing the search field.
+    if (candidate.kind === 'event') return
     if (candidate.kind === 'publication') {
       addPublication({
         id: candidate.id,
