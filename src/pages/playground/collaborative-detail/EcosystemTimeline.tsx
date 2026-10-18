@@ -23,6 +23,8 @@ export interface EcosystemHub {
   /** The collaborative's name. It is not drawn in the circle (only the icon is), but it names the circle for screen readers. */
   title: string
   icon: LucideIcon
+  /** Drawn in the circle in place of the icon, when given. */
+  illustration?: React.ReactNode
 }
 
 const LINE = 'bg-border-strong/60'
@@ -61,7 +63,7 @@ function Hub({ hub, className }: { hub: EcosystemHub; className?: string }) {
         />
       ))}
       <div className="relative flex size-full items-center justify-center rounded-full bg-primary text-primary-foreground">
-        <Icon className="size-[34%]" strokeWidth={1.5} aria-hidden="true" />
+        {hub.illustration ?? <Icon className="size-[34%]" strokeWidth={1.5} aria-hidden="true" />}
         <span className="sr-only">{hub.title}</span>
       </div>
     </div>
