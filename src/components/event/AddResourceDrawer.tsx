@@ -4,18 +4,23 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 
 export type AddResourceChoice = 'dataset' | 'publication'
 
-interface AddResourceDrawerProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  onChoose: (choice: AddResourceChoice) => void
-}
-
-const OPTIONS: {
-  choice: AddResourceChoice
+export interface AddResourceOption<C extends string = AddResourceChoice> {
+  choice: C
   icon: typeof Database
   title: string
   description: string
-}[] = [
+}
+
+interface AddResourceDrawerProps<C extends string = AddResourceChoice> {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  onChoose: (choice: C) => void
+  /** Other flows reuse this chooser with their own options and wording; the Event flow passes neither. */
+  options?: AddResourceOption<C>[]
+  description?: string
+}
+
+const OPTIONS: AddResourceOption[] = [
   {
     choice: 'dataset',
     icon: Database,
@@ -30,18 +35,24 @@ const OPTIONS: {
   },
 ]
 
-function AddResourceDrawer({ open, onOpenChange, onChoose }: AddResourceDrawerProps) {
+function AddResourceDrawer<C extends string = AddResourceChoice>({
+  open,
+  onOpenChange,
+  onChoose,
+  options = OPTIONS as unknown as AddResourceOption<C>[],
+  description = 'Create a new resource and connect it to this event.',
+}: AddResourceDrawerProps<C>) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent variant="right-drawer" className="gap-0 p-0">
         <DialogHeader className="shrink-0">
           <DialogTitle>Add Resource</DialogTitle>
-          <DialogDescription>Create a new resource and connect it to this event.</DialogDescription>
+          <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
 
         <div className="min-h-0 flex-1 overflow-y-auto px-6 py-5">
           <div className="flex flex-col gap-3">
-            {OPTIONS.map((option) => {
+            {options.map((option) => {
               const Icon = option.icon
               return (
                 <button

@@ -11,7 +11,7 @@ function CollaborativesPage() {
   const toast = useToast()
   const confirm = useConfirm()
 
-  const openCollaborative = (id: string, initialStep: 1 | 4) => {
+  const openCollaborative = (id: string, initialStep: 1 | 3) => {
     navigate('/dashboard/collaboratives/new', { state: { collaborativeId: id, initialStep } })
   }
 
@@ -49,7 +49,7 @@ function CollaborativesPage() {
     <CollaborativeListView
       collaboratives={collaboratives}
       onAddCollaborative={() => navigate('/dashboard/collaboratives/new')}
-      onViewCollaborative={(id) => openCollaborative(id, 4)}
+      onViewCollaborative={(id) => openCollaborative(id, 3)}
       onEditCollaborative={(id) => openCollaborative(id, 1)}
       onDeleteCollaborative={handleDeleteCollaborative}
       onUnpublishCollaborative={handleUnpublishCollaborative}

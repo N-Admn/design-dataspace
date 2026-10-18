@@ -102,6 +102,15 @@ const collaborative1Form: CollaborativeFormState = {
       { id: 'usecase-4', title: 'Early Warning for Heat-Related Illness' },
       { id: 'usecase-7', title: 'Flood Risk Mapping for Health Facilities' },
     ],
+    publications: [
+      { id: 'evt-1-evt1-pub-1', title: 'Event Summary Report' },
+      { id: 'evt-1-evt1-pub-2', title: 'Speaker Presentation Deck' },
+      { id: 'evt-2-evt2-pub-4', title: 'Post-Event Policy Brief' },
+    ],
+    events: [
+      { id: 'evt-1', title: 'Open Data Summit 2026' },
+      { id: 'evt-2', title: 'AI for Public Good Workshop' },
+    ],
   },
 }
 

@@ -1,8 +1,11 @@
+import { BookOpen } from 'lucide-react'
+
 import { formatShortDate, parseAppTimestamp } from '@/lib/format'
 import { buildCardMetadata } from '@/lib/content-card'
 import { buildSearchIndex, type GlobalSearchSource, type SearchResultItem } from '@/lib/global-search'
 import { optionLabel } from '@/components/usecase/UseCaseSections'
 import { GEOGRAPHY_OPTIONS } from '@/types/dataset'
+import { PUBLICATION_TYPE_OPTIONS } from '@/types/event'
 import { getSdgGoal, type SdgGoal } from '@/lib/sdg-goals'
 import { sanitizeHtml } from '@/lib/sanitize-html'
 import type { CollaborativeFormState, CollaborativeRecord } from '@/types/collaborative'
@@ -74,5 +77,15 @@ export function buildCollaborativeDetailFromForm(form: CollaborativeFormState, u
     people: all.filter((p) => p.kind === 'person'),
     datasets: byTypeAndId('dataset', connections.datasets.map((d) => d.id)).map(resourceFromItem),
     useCases: byTypeAndId('use-case', connections.useCases.map((u) => u.id)).map(resourceFromItem),
+    publications: (connections.publications ?? []).flatMap((p) => {
+      // A publication created from this Collaborative carries its own details; one connected from an event is read from the index.
+      if (p.publication) {
+        const type = optionLabel(PUBLICATION_TYPE_OPTIONS, p.publication.publicationType)
+        return [{ id: p.id, title: p.title, description: p.publication.description || undefined, tags: [], topic: '', geography: '', cardMetadata: [{ icon: BookOpen, label: type }] }]
+      }
+      const item = index.find((i) => i.type === 'publication' && i.id === p.id)
+      return item ? [resourceFromItem(item)] : []
+    }),
+    events: byTypeAndId('event', (connections.events ?? []).map((e) => e.id)).map(resourceFromItem),
   }
 }

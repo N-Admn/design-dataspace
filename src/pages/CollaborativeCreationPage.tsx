@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { FileText, ListChecks, Share2, Users } from 'lucide-react'
+import { FileText, ListChecks, Share2 } from 'lucide-react'
 
 import { Card } from '@/components/ui/card'
 import { Stepper } from '@/components/ui/stepper'
@@ -8,9 +8,8 @@ import { WorkspaceHeader } from '@/components/dataset/WorkspaceHeader'
 import { WizardFooter } from '@/components/dataset/WizardFooter'
 import { PublicVisibilityBadge } from '@/components/dataset/PublicVisibilityNotice'
 import { CollaborativeStep1About } from '@/components/collaborative/CollaborativeStep1About'
-import { CollaborativeStep2People } from '@/components/collaborative/CollaborativeStep2People'
-import { CollaborativeStep3Content } from '@/components/collaborative/CollaborativeStep3Content'
-import { CollaborativeStep4Review } from '@/components/collaborative/CollaborativeStep4Review'
+import { CollaborativeStep2Connections } from '@/components/collaborative/CollaborativeStep2Connections'
+import { CollaborativeStep3Review } from '@/components/collaborative/CollaborativeStep3Review'
 import { LeaveCreationDialog } from '@/components/shared/LeaveCreationDialog'
 import { OrganisationContextBanner } from '@/components/organisation/OrganisationContextBanner'
 import { useToast } from '@/components/ui/toast'
@@ -26,20 +25,17 @@ import {
 import { hasUnsavedEdits } from '@/lib/content-status'
 import { emptyCollaborativeForm, type CollaborativeFormState, type CollaborativeMetadata } from '@/types/collaborative'
 
-type CollaborativeStep = 1 | 2 | 3 | 4
+type CollaborativeStep = 1 | 2 | 3
 
 const COLLABORATIVE_STEPS = [
   { step: 1, label: 'About', description: 'What is this?', icon: FileText },
-  { step: 2, label: 'People & Organisations', description: 'Who is involved?', icon: Users },
-  { step: 3, label: 'Content', description: 'What is connected?', icon: Share2 },
-  { step: 4, label: 'Review & Publish', description: 'Check readiness', icon: ListChecks },
+  { step: 2, label: 'Connections', description: 'Who and what is connected?', icon: Share2 },
+  { step: 3, label: 'Review & Publish', description: 'Check readiness', icon: ListChecks },
 ]
 
 interface CollaborativeNavState {
   collaborativeId?: string
   initialStep?: CollaborativeStep
-  /** Set by the Use Case creation flow when it returns here after "Create New Use Case". */
-  createdUseCaseId?: string
   organisationId?: string
   returnTo?: string
 }
@@ -47,7 +43,7 @@ interface CollaborativeNavState {
 function CollaborativeCreationPage() {
   const navigate = useNavigate()
   const location = useLocation()
-  const { collaboratives, useCases, upsertCollaborative, organisationWorkspaces } = useAppData()
+  const { collaboratives, upsertCollaborative, organisationWorkspaces } = useAppData()
   const { setContextLabel } = useHelpContext()
   const toast = useToast()
 
@@ -73,24 +69,6 @@ function CollaborativeCreationPage() {
   useEffect(() => {
     setContextLabel(`Collaboratives → ${stepLabel}`)
   }, [stepLabel, setContextLabel])
-
-  // Returning from "Create New Use Case" with a newly created id — connect it once and
-  // drop the marker from history state so a back-navigation doesn't re-trigger it.
-  const handledCreatedUseCaseId = useRef<string | null>(null)
-  useEffect(() => {
-    const createdId = navState?.createdUseCaseId
-    if (!createdId || handledCreatedUseCaseId.current === createdId) return
-    handledCreatedUseCaseId.current = createdId
-    const record = useCases.find((u) => u.id === createdId)
-    const title = record?.form.metadata.title || 'Untitled Use Case'
-    setForm((prev) => {
-      if (prev.connections.useCases.some((u) => u.id === createdId)) return prev
-      return { ...prev, connections: { ...prev.connections, useCases: [...prev.connections.useCases, { id: createdId, title }] } }
-    })
-    toast({ title: 'Use case connected', description: `"${title}" was created and connected to this Collaborative.`, variant: 'success' })
-    navigate(location.pathname, { replace: true, state: { collaborativeId: navState?.collaborativeId ?? editingId, initialStep: 3 } })
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [navState?.createdUseCaseId])
 
   const hasUnsavedChanges = hasUnsavedEdits(form, lastSavedForm)
 
@@ -139,8 +117,8 @@ function CollaborativeCreationPage() {
   const aboutErrors = validateCollaborativeAbout(form, takenSlugs)
   const allStepsValid = isCollaborativeReadyToPublish(form, takenSlugs)
   useEffect(() => {
-    if (step === 4) setShowAboutErrors(true)
-    if (step === 4 && allStepsValid) setStepperUnlocked(true)
+    if (step === 3) setShowAboutErrors(true)
+    if (step === 3 && allStepsValid) setStepperUnlocked(true)
   }, [step, allStepsValid])
 
   const editingRecord = editingId ? collaboratives.find((c) => c.id === editingId) : undefined
@@ -176,18 +154,6 @@ function CollaborativeCreationPage() {
     window.open(`/dashboard/collaboratives/${id}/preview`, '_blank')
   }
 
-  const handleCreateUseCase = () => {
-    let id = editingId
-    if (!id) {
-      id = upsertCollaborative(null, 'draft', form, organisationId)
-      setEditingId(id)
-      setLastSavedForm(form)
-    }
-    navigate('/dashboard/use-cases/new', {
-      state: { returnTo: '/dashboard/collaboratives/new', returnState: { collaborativeId: id, initialStep: 3 } },
-    })
-  }
-
   return (
     <Card>
       <WorkspaceHeader
@@ -217,26 +183,19 @@ function CollaborativeCreationPage() {
           />
         )}
         {step === 2 && (
-          <CollaborativeStep2People
+          <CollaborativeStep2Connections
             connections={form.connections}
             onChange={(connections) => setForm((prev) => ({ ...prev, connections }))}
           />
         )}
         {step === 3 && (
-          <CollaborativeStep3Content
-            connections={form.connections}
-            onChange={(connections) => setForm((prev) => ({ ...prev, connections }))}
-            onCreateUseCase={handleCreateUseCase}
-          />
-        )}
-        {step === 4 && (
-          <CollaborativeStep4Review form={form} takenSlugs={takenSlugs} onEditStep={goToStep} onPreview={handlePreview} />
+          <CollaborativeStep3Review form={form} takenSlugs={takenSlugs} onEditStep={goToStep} onPreview={handlePreview} />
         )}
       </div>
       <div className="border-t border-border">
         <WizardFooter
           showPrevious={step > 1}
-          showContinue={step < 4}
+          showContinue={step < 3}
           onPrevious={handlePrevious}
           onContinue={() => goToStep((step + 1) as CollaborativeStep)}
           onSaveDraft={handleSaveDraft}
