@@ -1,11 +1,14 @@
 import * as React from 'react'
-import { ArrowDown, ArrowRight, BarChart3, Calendar, Database, FileText, MapPin } from 'lucide-react'
+import { ArrowDown, ArrowRight, BarChart3, BookOpen, Calendar, Database, FileText, MapPin } from 'lucide-react'
 
 import { ContentCard } from '@/components/discover/ContentCard'
 import { Button } from '@/components/ui/button'
 import type { ContentCardMetadataItem } from '@/lib/content-card'
 import { cn } from '@/lib/utils'
 import type { Resource } from '@/pages/playground/collaborative-detail/collaborative-sample-data'
+
+/** The kinds of connected content that render as Search content cards. */
+export type ResourceKind = 'dataset' | 'use-case' | 'publication' | 'event'
 
 /** A sortable list of the resources connected to the collaborative, shown as the same content cards the Search results page
  *  uses (a grid for datasets, full-width list cards for use cases). The count always reflects what is listed, optional fields
@@ -43,13 +46,36 @@ function useCaseCardMetadata(r: Resource): ContentCardMetadataItem[] {
   return rows
 }
 
+/** A publication: the year and the type, as on the Search card. */
+function publicationCardMetadata(r: Resource): ContentCardMetadataItem[] {
+  const rows: ContentCardMetadataItem[] = []
+  if (r.year) rows.push({ icon: Calendar, label: String(r.year) })
+  if (r.publicationType) rows.push({ icon: BookOpen, label: r.publicationType })
+  return rows
+}
+
+/** An event: its date range and venue, as on the Search card. */
+function eventCardMetadata(r: Resource): ContentCardMetadataItem[] {
+  const rows: ContentCardMetadataItem[] = []
+  if (r.dateRange) rows.push({ icon: Calendar, label: r.dateRange })
+  if (r.location) rows.push({ icon: MapPin, label: r.location })
+  return rows
+}
+
+const CARD_METADATA: Record<ResourceKind, (r: Resource) => ContentCardMetadataItem[]> = {
+  dataset: datasetCardMetadata,
+  'use-case': useCaseCardMetadata,
+  publication: publicationCardMetadata,
+  event: eventCardMetadata,
+}
+
 interface ResourceExplorerProps {
   idPrefix: string
   noun: { singular: string; plural: string }
   items: Resource[]
   /** Both kinds use the Search results content card, as a grid of cards: use cases with their cover image and publisher avatars
    *  when they have them, and a grey placeholder when they don't. */
-  kind: 'dataset' | 'use-case'
+  kind: ResourceKind
   recentLabel: string
   reveal: Reveal
   emptyCollection: string
@@ -142,7 +168,7 @@ function ResourceExplorer({
                 type={kind}
                 title={r.title}
                 description={r.description}
-                metadata={r.cardMetadata ?? (kind === 'dataset' ? datasetCardMetadata(r) : useCaseCardMetadata(r))}
+                metadata={r.cardMetadata ?? CARD_METADATA[kind](r)}
                 thumbnailUrl={r.thumbnailUrl ?? null}
                 publishers={r.publishers}
                 tintedMetadata

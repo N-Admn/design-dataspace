@@ -162,7 +162,15 @@ function CollaborativePreviewPage() {
         data={detail}
         hideEmptySections
         unifiedSearch
-        cta={detail.externalUrl ? { tagline: 'Want to be part of this collaborative?', label: 'Collaborate', href: detail.externalUrl } : undefined}
+        cta={
+          detail.externalUrl
+            ? { tagline: 'Want to be part of this collaborative?', label: 'Collaborate', href: detail.externalUrl }
+            : {
+                tagline: 'Want to be part of this collaborative?',
+                label: 'Collaborate',
+                onClick: () => toast({ title: 'No collaboration link yet', description: 'Add a website in About so visitors have somewhere to go.' }),
+              }
+        }
         onOpenResource={(resource) => resource.href && navigate(resource.href)}
       />
     </div>

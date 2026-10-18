@@ -12,12 +12,15 @@ import { cn } from '@/lib/utils'
 import {
   COLLABORATIVE,
   DATASETS,
+  EVENTS,
   ORGANISATIONS,
   PEOPLE,
+  PUBLICATIONS,
   USE_CASES,
   type Resource,
 } from '@/pages/playground/collaborative-detail/collaborative-sample-data'
 import { CollaborativeDetailView, type CollaborativeDetailData } from '@/pages/playground/collaborative-detail/CollaborativeDetailView'
+import type { ResourceKind } from '@/pages/playground/collaborative-detail/ResourceExplorer'
 import { PLAYGROUND_HUB_PATH } from '@/pages/playground/playground-registry'
 
 /** Collaborative Detail Page: a playground prototype of how a Data Collaborative could be presented. It stands alone: local
@@ -45,9 +48,14 @@ function Shell({ children, className }: { children: React.ReactNode; className?:
   )
 }
 
-function ResourcePreview({ resource, kind, onClose }: { resource: Resource | null; kind: 'dataset' | 'use-case'; onClose: () => void }) {
+function ResourcePreview({ resource, kind, onClose }: { resource: Resource | null; kind: ResourceKind; onClose: () => void }) {
+  const noun = kind === 'use-case' ? 'use case' : kind
   const meta: [string, string | undefined][] = resource
-    ? [
+    ? kind === 'publication'
+      ? [['Type', resource.publicationType], ['Year', resource.year ? String(resource.year) : undefined]]
+      : kind === 'event'
+        ? [['Date', resource.dateRange], ['Location', resource.location]]
+        : [
         ['Topic', resource.topic],
         ['Geography', resource.geography],
         [kind === 'dataset' ? 'Format' : 'Sector', kind === 'dataset' ? resource.format : resource.sector],
@@ -88,7 +96,7 @@ function ResourcePreview({ resource, kind, onClose }: { resource: Resource | nul
                 </ul>
               )}
               <p className="rounded-lg bg-surface-subdued px-3 py-2 text-xs text-text-subdued">
-                This is a playground preview. It is not linked to a production {kind === 'dataset' ? 'dataset' : 'use case'} page.
+                This is a playground preview. It is not linked to a production {noun} page.
               </p>
               <div className="flex justify-end gap-2">
                 {kind === 'dataset' && (
@@ -114,6 +122,8 @@ function CollaborativeDetailPlayground() {
   const connected = mode !== 'empty'
   const datasets = connected ? DATASETS : []
   const useCases = connected ? USE_CASES : []
+  const publications = connected ? PUBLICATIONS : []
+  const events = connected ? EVENTS : []
   const organisations = connected ? ORGANISATIONS : []
   const people = connected ? PEOPLE : []
 
@@ -137,8 +147,10 @@ function CollaborativeDetailPlayground() {
     people: people.map((p) => ({ id: p.id, name: p.name, relationship: p.relationship, imageUrl: p.imageUrl })),
     datasets,
     useCases,
+    publications,
+    events,
   }
-  const [preview, setPreview] = React.useState<{ resource: Resource; kind: 'dataset' | 'use-case' } | null>(null)
+  const [preview, setPreview] = React.useState<{ resource: Resource; kind: ResourceKind } | null>(null)
   return (
     <div className="min-h-screen bg-background text-text-default">
       {/* Playground toolbar: outside the prototype's own header, so it is clear what is chrome and what is the page. */}

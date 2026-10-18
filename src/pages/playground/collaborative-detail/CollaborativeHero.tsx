@@ -1,14 +1,13 @@
 import * as React from 'react'
-import { ArrowRight, Database, ImageOff, Users, type LucideIcon } from 'lucide-react'
+import { BookOpen, Database, ImageOff, Users, type LucideIcon } from 'lucide-react'
 
 import { Tag } from '@/components/ui/tag'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
-import { Button } from '@/components/ui/button'
 import type { SdgGoal } from '@/lib/sdg-goals'
 import { cn } from '@/lib/utils'
 
-/** The Collaborative's editorial hero: on the left a title-and-tags card above a call-to-action card, statistics panels and the
- *  thumbnail on the right. The description lives in the About section below. Everything is passed in: the title is required,
+/** The Collaborative's editorial hero: on the left a title-and-tags card above the SDG goals, statistics panels and the
+ *  thumbnail on the right. The description lives in the About section below. The actions (Collaborate, Follow, Share, Download…) sit in a bar above it. Everything is passed in: the title is required,
  *  tags and the thumbnail are optional and simply leave no gap when absent, and every figure is computed from the connected records by the caller (never typed in here). */
 
 export interface CollaborativeHeroProps {
@@ -20,11 +19,11 @@ export interface CollaborativeHeroProps {
   organisations: number
   datasets: number
   useCases: number
+  /** Publications and events connected to the collaborative (both optional; the panel shows their total). */
+  publications?: number
+  events?: number
   /** The SDG goals the collaborative works towards; the SDG panel is left out when there are none. */
   sdgGoals?: SdgGoal[]
-  /** The call-to-action card under the title: tagline, button label, and either a link (`href`, opens in a new tab) or a handler.
-   *  Left out when there is nowhere for the button to go, and the title card then takes the whole column. */
-  cta?: { tagline: string; label: string; href?: string; onClick?: () => void }
   /** Id given to the heading, so section navigation can move focus to it. */
   headingId?: string
 }
@@ -199,8 +198,9 @@ function CollaborativeHero({
   organisations,
   datasets,
   useCases,
+  publications = 0,
+  events = 0,
   sdgGoals = [],
-  cta,
   headingId = 'collaborative-heading',
 }: CollaborativeHeroProps) {
   return (
@@ -210,8 +210,8 @@ function CollaborativeHero({
       {/* Left column: two cards, the title and tags above a call to action that is 20% shorter than the original 80/20 split (from xl, where
           the column has a fixed height: two grid rows, 4.2fr and 0.8fr, so padding does not skew the split; below that each takes its
           content's height, and the call to action's vertical padding is trimmed to match). */}
-      <div className={cn('flex min-w-0 flex-col gap-4 xl:grid', cta ? 'xl:grid-rows-[4.2fr_0.8fr]' : 'xl:grid-rows-1')}>
-        <div className="@container flex min-w-0 flex-col rounded-2xl bg-secondary p-6 text-secondary-foreground sm:p-8 xl:p-6">
+      <div className="flex min-w-0 flex-col gap-4">
+        <div className="@container flex min-w-0 flex-1 flex-col rounded-2xl bg-secondary p-6 text-secondary-foreground sm:p-8 xl:p-6">
           {/* The .type-display role; from md up its size is also capped by the card's own width (the card is a size container, 100cqw):
               the longest word, "Collaborative", is about 6.4 × the font size wide, so a narrow card shrinks the title a little instead
               of breaking a word. Where the card is wide enough the cap is not reached and the role's 60px applies. */}
@@ -232,50 +232,15 @@ function CollaborativeHero({
           )}
         </div>
 
-        {cta && (
-          <section aria-label="Collaborate" className="flex min-w-0 flex-col justify-center gap-3 rounded-2xl bg-secondary px-5 py-3.5 text-secondary-foreground sm:flex-row sm:items-center sm:justify-between sm:gap-6 sm:px-6 sm:py-3.5 xl:px-5 xl:py-3">
-            {/* Tagline on the left, button on the right; stacked on phones, where a row would leave the text too narrow. */}
-            <p className="type-heading-2 min-w-0 text-black">{cta.tagline}</p>
-            <div className="shrink-0">
-              {cta.href ? (
-                <Button asChild size="lg" className="rounded-full">
-                  <a href={cta.href} target="_blank" rel="noreferrer">
-                    {cta.label}
-                    <ArrowRight />
-                  </a>
-                </Button>
-              ) : (
-                <Button type="button" size="lg" className="rounded-full" onClick={cta.onClick}>
-                  {cta.label}
-                  <ArrowRight />
-                </Button>
-              )}
-            </div>
-          </section>
-        )}
+        {sdgGoals.length > 0 && <SdgPanel goals={sdgGoals} />}
       </div>
 
       <div className="flex min-w-0 flex-col gap-4">
-        {/* The two statistics panels are 30% narrower than an equal split; the SDG panel (or empty space) takes what is left. */}
-        <div
-          className={cn(
-            'grid gap-4',
-            sdgGoals.length > 0 ? 'min-[640px]:grid-cols-[0.7fr_0.7fr_1.6fr]' : 'min-[520px]:grid-cols-[0.7fr_0.7fr_0.6fr]',
-          )}
-        >
-          <StatPanel
-            icon={Users}
-            iconClassName="bg-chart-1/10 text-chart-1"
-            total={people + organisations}
-            label="People & organisations"
-          />
-          <StatPanel
-            icon={Database}
-            iconClassName="bg-chart-3/15 text-chart-3"
-            total={datasets + useCases}
-            label="Datasets & use cases"
-          />
-          {sdgGoals.length > 0 && <SdgPanel goals={sdgGoals} />}
+        {/* Three statistics panels in an equal row; the SDG goals sit under the title instead. */}
+        <div className="grid gap-4 min-[520px]:grid-cols-3">
+          <StatPanel icon={Users} iconClassName="bg-chart-1/10 text-chart-1" total={people + organisations} label="People & organisations" />
+          <StatPanel icon={Database} iconClassName="bg-chart-3/15 text-chart-3" total={datasets + useCases} label="Datasets & use cases" />
+          <StatPanel icon={BookOpen} iconClassName="bg-chart-4/15 text-chart-4" total={publications + events} label="Publications & events" />
         </div>
         <Thumbnail thumbnail={thumbnail} />
       </div>

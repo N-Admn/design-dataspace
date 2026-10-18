@@ -31,6 +31,11 @@ export interface Resource {
   thumbnailUrl?: string
   /** Use cases: who published it, shown as small avatars on the card. */
   publishers?: { name: string; avatarUrl?: string }[]
+  /** Publications: the type (Report, Presentation…). */
+  publicationType?: string
+  /** Events: the date range and venue, as the Search card shows them. */
+  dateRange?: string
+  location?: string
   /** Where opening the card goes (the real page); the playground uses a local preview instead. */
   href?: string
   /** The card's metadata row, when it is built elsewhere (the real page uses the Search card's own builder). */
@@ -173,4 +178,48 @@ export const PEOPLE: Person[] = [
   { id: 'p16', name: 'Wen Zhao', relationship: 'contributor', imageUrl: photo(27896377) },
   { id: 'p17', name: 'Olivia Brandt', relationship: 'contributor' },
   { id: 'p18', name: 'Dr. Ravi Shankar', relationship: 'contributor', imageUrl: photo(32721690) },
+]
+
+const CIVICDATALAB = [{ name: 'CivicDataLab', avatarUrl: photo(1092644) }]
+
+const pub = (id: number, title: string, description: string | undefined, publicationType: string, year: number | undefined, publishers: Resource['publishers'] = CIVICDATALAB): Resource => ({
+  id: `pub-${id}`,
+  title,
+  description,
+  publicationType,
+  year,
+  publishers,
+  topic: 'Climate and health',
+  geography: 'Asia-Pacific',
+  tags: [publicationType],
+})
+
+/** Connected publications: the Search card for a publication shows the year and the type, and no cover image. */
+export const PUBLICATIONS: Resource[] = [
+  pub(1, 'Heat and Health: A Regional Evidence Review', 'A review of what the evidence says about heat exposure and health outcomes across South and Southeast Asia.', 'Report', 2026, [{ name: 'World Health Organization', avatarUrl: photo(30313887) }, { name: 'CivicDataLab', avatarUrl: photo(1092644) }]),
+  pub(2, 'Policy Brief: Preparing Health Facilities for Extreme Weather', 'A short brief on the policy choices that keep facilities running through floods, cyclones and heatwaves.', 'Policy Brief', 2026),
+  pub(3, 'Climate and Health Data Collaborative: Launch Presentation', 'Slides introducing the collaborative, its members and the shared evidence base.', 'Presentation', 2025),
+  pub(4, 'Reading List: Climate Risk and Public Health', 'Curated readings for new members of the collaborative.', 'Reading Material', 2025, []),
+  pub(5, 'Annual Progress Report 2025', undefined, 'Report', undefined),
+]
+
+const ev = (id: number, title: string, description: string, dateRange: string, location: string | undefined, thumbnailUrl: string | undefined, updated: string): Resource => ({
+  id: `ev-${id}`,
+  title,
+  description,
+  dateRange,
+  location,
+  thumbnailUrl,
+  updated,
+  publishers: CIVICDATALAB,
+  topic: 'Climate and health',
+  geography: location ?? 'Online',
+  tags: [],
+})
+
+/** Connected events: the Search card for an event shows a cover image, the date range and the venue. */
+export const EVENTS: Resource[] = [
+  ev(1, 'Open Data Summit 2026', 'Building trusted public data ecosystems for better governance.', 'Sep 18, 2026 – Sep 19, 2026', 'New Delhi, India', photo(2774556, 1200), '2026-09-19'),
+  ev(2, 'AI for Public Good Workshop', 'Practical approaches to responsible AI in public services.', 'Aug 12, 2026', undefined, photo(4065876, 1200), '2026-08-12'),
+  ev(3, 'Heat Resilience Roundtable', 'Health and meteorological agencies compare early warning practice.', 'Jun 4, 2026', 'Dhaka, Bangladesh', photo(3184465, 1200), '2026-06-04'),
 ]
