@@ -1,18 +1,23 @@
 # Organisation logos
 
-Local copies of the logos of the real organisations used in the prototype's sample data, one file per website domain (`who.int.webp`, `unicef.org.webp`, …), 256px WebP.
-`manifest.json` lists each file with the organisation's name and the `etag` Logo.dev returned for it.
+Where the app gets organisation logos. Nothing is requested from an outside service.
 
-## Where they came from
+An organisation's logo is, in order:
 
-Downloaded through the Logo.dev API (`GET /v2/brands/logo`, authorised with a secret key, then the returned file fetched), which is the route Logo.dev's
-docs give for storing logo files; they were not saved from the image CDN. Do not re-download from `img.logo.dev` to refresh them. To refresh one, call the
-API again and keep the new `etag`.
+1. the one it uploaded;
+2. a local copy of its real logo in this folder, matched by its website domain (`who.int.webp` is the logo for who.int);
+3. a mock logo from `mock/` (`mock-01.png` to `mock-25.png`), picked from the organisation's name, so the same organisation always gets the same one.
+
+The picking is in `src/lib/org-logo.ts`. To give an organisation a particular logo, save it here as `<website domain>.webp`; to change the set of mock logos, add
+or replace files in `mock/` (the originals are kept in `visuals/org-logo`).
+
+## The local copies of real logos
+
+24 organisations used in the sample data (WHO, UNICEF, UNEP and others), 256px WebP, listed in `manifest.json` with the organisation's name. They were
+downloaded once through the Logo.dev API (with a secret key, the route its docs give for storing files); the app does not use Logo.dev.
 
 ## Things to know
 
-- The logos are the organisations' own marks and remain their trademarks. They are here to illustrate sample data, and should not be taken to mean that any
-  organisation endorses or takes part in the prototype.
-- The app uses this folder first (see `src/lib/org-logo.ts`): an organisation whose website matches a file here gets that logo with no outside request. Only an organisation without a file here falls back to Logo.dev, and only when `VITE_LOGO_DEV_TOKEN` is set.
-- To add one, save the file as `<website domain>.webp` here; it is picked up automatically.
-- `wateraid.org` is not here: the file Logo.dev returned for it was blank.
+- The logos are the organisations' own marks and remain their trademarks; they illustrate sample data and do not imply that any organisation endorses or takes
+  part in the prototype.
+- The mock logos are placeholders for organisations that have no real logo here: they are not those organisations' logos.

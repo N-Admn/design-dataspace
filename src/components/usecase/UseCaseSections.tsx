@@ -1,4 +1,5 @@
 import { useMemo, type ReactNode } from 'react'
+import { orgLogoFor } from '@/lib/org-logo'
 import { Link } from 'react-router-dom'
 import { BarChart3, Database, ExternalLink } from 'lucide-react'
 
@@ -169,7 +170,7 @@ export function UseCaseRail({
                 <EntityRow key={c.id} name={c.name} imageUrl={c.image?.dataUrl} detail={c.designation} />
               ))}
               {connections.organizations.map((o) => (
-                <EntityRow key={o.id} name={o.name} imageUrl={o.logo?.dataUrl} detail="Organisation" />
+                <EntityRow key={o.id} name={o.name} imageUrl={orgLogoFor(o.name, o.logo?.dataUrl, o.url)} detail="Organisation" />
               ))}
             </div>
           )}

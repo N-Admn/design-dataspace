@@ -1,5 +1,5 @@
 import type { DatasetRecord } from '@/types/dataset'
-import { organisationLogoUrl } from '@/lib/org-logo'
+import { orgLogoFor, organisationLogoUrl } from '@/lib/org-logo'
 import { GEOGRAPHY_OPTIONS, SECTOR_OPTIONS } from '@/types/dataset'
 import type { UseCaseRecord } from '@/types/usecase'
 import type { CollaborativeRecord } from '@/types/collaborative'
@@ -212,7 +212,7 @@ export function buildSearchIndex({
     // from the record, never invented.
     const useCasePublishers: SearchResultItem['publishers'] =
       u.form.connections.organizations.length > 0
-        ? u.form.connections.organizations.map((o) => ({ name: o.name, avatarUrl: o.logo?.dataUrl ?? null }))
+        ? u.form.connections.organizations.map((o) => ({ name: o.name, avatarUrl: orgLogoFor(o.name, o.logo?.dataUrl, o.url) }))
         : u.form.connections.contributors.slice(0, 1).map((c) => ({ name: c.name, avatarUrl: c.image?.dataUrl ?? null }))
     items.push({
       id: u.id,
@@ -250,7 +250,7 @@ export function buildSearchIndex({
     // any connected person when the collaborative has none — still real
     // attribution from the record.
     const collaborativePublishers = (orgPeople.length > 0 ? orgPeople : c.form.connections.people.slice(0, 1)).map(
-      (p) => ({ name: p.name, avatarUrl: p.logo?.dataUrl ?? null }),
+      (p) => ({ name: p.name, avatarUrl: p.kind === 'organisation' ? orgLogoFor(p.name, p.logo?.dataUrl) : (p.logo?.dataUrl ?? null) }),
     )
     items.push({
       id: c.id,
@@ -298,7 +298,7 @@ export function buildSearchIndex({
       },
       publishers:
         e.form.organisers.length > 0
-          ? e.form.organisers.map((o) => ({ name: o.name, avatarUrl: o.logo?.dataUrl ?? null }))
+          ? e.form.organisers.map((o) => ({ name: o.name, avatarUrl: orgLogoFor(o.name, o.logo?.dataUrl, o.url) }))
           : undefined,
       // No "Geography" facet: events have a venue city/country, not a value
       // from the shared GEOGRAPHY_OPTIONS list the other modules use.
@@ -332,7 +332,7 @@ export function buildSearchIndex({
         // logo field of its own (unlike Dataset/Event's Organisation record).
         // The organisation is only a name on the publication, but when it is one of the organisation workspaces its logo can be shown.
         publishers: pub.organisation
-          ? [{ name: pub.organisation, avatarUrl: ((w) => (w ? organisationLogoUrl(w.metadata) : null))(organisationWorkspaces.find((o) => o.metadata.name === pub.organisation)) }]
+          ? [{ name: pub.organisation, avatarUrl: ((w) => (w ? organisationLogoUrl(w.metadata) : orgLogoFor(pub.organisation)))(organisationWorkspaces.find((o) => o.metadata.name === pub.organisation)) }]
           : undefined,
         // No "Sector"/"Geography": a publication carries neither field — only
         // its parent event might, and that isn't the same thing as the

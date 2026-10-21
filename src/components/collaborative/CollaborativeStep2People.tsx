@@ -1,4 +1,5 @@
 import * as React from 'react'
+import { logoFit, orgLogoFor } from '@/lib/org-logo'
 import { Building2, Plus, Trash2, User, Users } from 'lucide-react'
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -95,9 +96,12 @@ function CollaborativeStep2People({ connections, onChange }: CollaborativeStep2P
             <div className="flex flex-col gap-2">
               {connections.people.map((person) => (
                 <div key={person.refId} className="flex items-center gap-3 rounded-lg border border-border p-3">
-                  {person.logo?.dataUrl ? (
+                  {person.kind === 'organisation' ? (
+                    <img src={orgLogoFor(person.name, person.logo?.dataUrl)} alt="" className={`size-9 shrink-0 rounded-full border border-border ${logoFit(orgLogoFor(person.name, person.logo?.dataUrl), 'p-1')}`} />
+                  ) : person.logo?.dataUrl ? (
                     <img src={person.logo.dataUrl} alt="" className="size-9 shrink-0 rounded-full border border-border object-cover" />
                   ) : (
+                    // A person without a photo: an icon, as before; organisations always have a logo.
                     <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
                       {person.kind === 'person' ? <User className="size-4" /> : <Building2 className="size-4" />}
                     </div>

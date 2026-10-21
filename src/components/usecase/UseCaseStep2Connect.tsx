@@ -1,5 +1,6 @@
 import * as React from 'react'
-import { Building2, Plus, Trash2, User } from 'lucide-react'
+import { logoFit, orgLogoFor } from '@/lib/org-logo'
+import { Plus, Trash2, User } from 'lucide-react'
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
@@ -26,13 +27,7 @@ interface UseCaseStep2ConnectProps {
 function OrganisationRow({ org, onRemove }: { org: Organisation; onRemove: () => void }) {
   return (
     <div className="flex items-center gap-3 rounded-lg border border-border p-3">
-      {org.logo?.dataUrl ? (
-        <img src={org.logo.dataUrl} alt="" className="size-9 shrink-0 rounded-md border border-border object-cover" />
-      ) : (
-        <div className="flex size-9 shrink-0 items-center justify-center rounded-md bg-muted text-muted-foreground">
-          <Building2 className="size-4" />
-        </div>
-      )}
+      <img src={orgLogoFor(org.name, org.logo?.dataUrl, org.url)} alt="" className={`size-9 shrink-0 rounded-md border border-border ${logoFit(orgLogoFor(org.name, org.logo?.dataUrl, org.url), 'p-1')}`} />
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm font-medium text-foreground">{org.name}</p>
         <p className="text-xs text-muted-foreground">{org.isRegistered ? 'Registered organisation' : 'New organisation'}</p>
