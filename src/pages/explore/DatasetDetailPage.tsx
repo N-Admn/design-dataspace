@@ -19,7 +19,7 @@ const VIEWS = [
   { key: 'visualisations', label: 'Visualisations' },
   // The key stays `overview` so existing `?view=overview` links keep working; only the label changed.
   { key: 'overview', label: 'Metadata' },
-  { key: 'applications', label: 'Applications' },
+  { key: 'applications', label: 'Connected to' },
 ]
 
 /** Consumer-facing Dataset Details page — Dataset Header, then the three primary
