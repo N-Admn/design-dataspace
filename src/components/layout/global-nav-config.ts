@@ -149,10 +149,11 @@ export const MORE_GROUPS: NavGroup[] = [
   },
   {
     heading: 'Resources',
-    // None of these pages exist yet (the in-app help dialog is not routable), so none has a destination.
+    // Documentation has a page; the others do not exist yet (the in-app help dialog is not routable), so they have no destination.
     items: [
       {
         label: 'Documentation',
+        to: '/documentation',
         icon: BookOpen,
         description: 'Learn how CivicDataSpace works and how to use it.',
       },
