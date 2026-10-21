@@ -1,0 +1,146 @@
+{
+  "who.int": {
+    "name": "World Health Organization",
+    "file": "who.int.webp",
+    "etag": "1d75d5004640e390a646902ce0ff3145dbb7863886196615cf36886b22b1e2a4",
+    "bytes": 58578
+  },
+  "unicef.org": {
+    "name": "UNICEF",
+    "file": "unicef.org.webp",
+    "etag": "c8344fbb3cbb23c8c003a837a49509a11814fa7bb7bcbe54bfc283dfd9a671a4",
+    "bytes": 35582
+  },
+  "wellcome.org": {
+    "name": "Wellcome Trust",
+    "file": "wellcome.org.webp",
+    "etag": "0a2f3dcfe655e7ed2191a58606d74383711c05ef67525e334b75e4eb13065019",
+    "bytes": 59300
+  },
+  "lshtm.ac.uk": {
+    "name": "London School of Hygiene & Tropical Medicine",
+    "file": "lshtm.ac.uk.webp",
+    "etag": "b1221c412047a2d5bb0255533578890962f386ce98eb07d496d303417fc2149d",
+    "bytes": 21436
+  },
+  "niti.gov.in": {
+    "name": "NITI Aayog",
+    "file": "niti.gov.in.webp",
+    "etag": "80a7a54386ab39803f1fdd29ba1aaa0fa58f08c22b6715c5542a7cc1266de45d",
+    "bytes": 51792
+  },
+  "gatesfoundation.org": {
+    "name": "Gates Foundation",
+    "file": "gatesfoundation.org.webp",
+    "etag": "9059ecfa5c86c3472fb91ba2180f8edf09430ff7c14e9c6dfe68c358a4627480",
+    "bytes": 12664
+  },
+  "fao.org": {
+    "name": "Food and Agriculture Organization of the United Nations",
+    "file": "fao.org.webp",
+    "etag": "95ff569623c211879922166d617b8813d2d87dd21d6bf7e2e711e4d3a66cfff4",
+    "bytes": 24212
+  },
+  "undp.org": {
+    "name": "United Nations Development Programme",
+    "file": "undp.org.webp",
+    "etag": "d83f51967382ee97e6b781c8e0f2c794ea80bbe1f29ff8e1f5cf236369cdd581",
+    "bytes": 32138
+  },
+  "worldbank.org": {
+    "name": "World Bank",
+    "file": "worldbank.org.webp",
+    "etag": "50ce1f00981cd40f8f338b067c89c61a314cc1fd4368c0d34a368e7b9dbfabc1",
+    "bytes": 19952
+  },
+  "unwomen.org": {
+    "name": "UN Women",
+    "file": "unwomen.org.webp",
+    "etag": "151ef3662c5a437367693ba7a282976687a90331432614695ce5e237b39826e0",
+    "bytes": 17780
+  },
+  "msf.org": {
+    "name": "Médecins Sans Frontières",
+    "file": "msf.org.webp",
+    "etag": "3c953056ffea9194a08adb185e375a6da96f344c01b19d448c562fae5cbfc5ad",
+    "bytes": 13230
+  },
+  "theodi.org": {
+    "name": "Open Data Institute",
+    "file": "theodi.org.webp",
+    "etag": "d286df63b77bce6ce01af5d93e70506e5de933f98f605fada861476936324258",
+    "bytes": 2312
+  },
+  "ifad.org": {
+    "name": "International Fund for Agricultural Development",
+    "file": "ifad.org.webp",
+    "etag": "b0442b703a87e32a03c915fb66fe4ba95bee2befe68e5e4664c1bd21cd33eb8c",
+    "bytes": 6820
+  },
+  "wfp.org": {
+    "name": "World Food Programme",
+    "file": "wfp.org.webp",
+    "etag": "8183080bdba3f2acd814f3a574fef4f312019c89994485bd5b8e2181ad298f8a",
+    "bytes": 26690
+  },
+  "unhabitat.org": {
+    "name": "UN-Habitat",
+    "file": "unhabitat.org.webp",
+    "etag": "f804b2f4ce6da963b8d5bc03ccfe9c9670e6eec885bea001ebc41f1a1568f83f",
+    "bytes": 33778
+  },
+  "ox.ac.uk": {
+    "name": "University of Oxford",
+    "file": "ox.ac.uk.webp",
+    "etag": "6bfc0c3b35f9bc93ba913f48bb8a460de0f7db269b212307f83336b1127839ce",
+    "bytes": 15682
+  },
+  "unep.org": {
+    "name": "UN Environment Programme",
+    "file": "unep.org.webp",
+    "etag": "63d87b92109b5fabc83b77aaa8994ea8b22918437caeccace08128359e640b41",
+    "bytes": 32356
+  },
+  "mohfw.gov.in": {
+    "name": "Ministry of Health and Family Welfare, Government of India",
+    "file": "mohfw.gov.in.webp",
+    "etag": "f1a9fb6bf94a888ef91c543248b7d7c740a1588c4b70258967b423582c9ad8c0",
+    "bytes": 26438
+  },
+  "civicdatalab.in": {
+    "name": "CivicDataLab",
+    "file": "civicdatalab.in.webp",
+    "etag": "28fc1655531458f9ff183a308f1114cde390982feece1e52063c749505d620f5",
+    "bytes": 9098
+  },
+  "wmo.int": {
+    "name": "World Meteorological Organization",
+    "file": "wmo.int.webp",
+    "etag": "e4c9031149cf321d1a6a4d4e431c2421f63d289bc19e3d8b2ee4d9db8adf39cf",
+    "bytes": 34884
+  },
+  "opengovpartnership.org": {
+    "name": "Open Government Partnership",
+    "file": "opengovpartnership.org.webp",
+    "etag": "0548d829246473624ecddcb4c4cfcf73a39736b32c4f37c2ee225ef539a70d86",
+    "bytes": 12480
+  },
+  "itdp.org": {
+    "name": "Institute for Transportation and Development Policy",
+    "file": "itdp.org.webp",
+    "etag": "6b5776caef114d485c5ad6ac9281e7c24702fb664b946e596beae3585d865452",
+    "bytes": 75430
+  },
+  "cgiar.org": {
+    "name": "CGIAR",
+    "file": "cgiar.org.webp",
+    "etag": "5f90764ae48e2dd77497914a3b1c49178a26e60fe077e277830c890d135c8041",
+    "bytes": 5642
+  },
+  "iwmi.org": {
+    "name": "International Water Management Institute",
+    "file": "iwmi.org.webp",
+    "etag": "c3aa5629c5e533eff6129572e7c1efa2c64caac56a266b58fd54ebee19158422",
+    "bytes": 21974
+  }
+}
