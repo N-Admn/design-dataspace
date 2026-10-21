@@ -243,16 +243,17 @@ function AppLayout() {
             <Route path="/playground/:playgroundId" element={<PlaygroundPlaceholderPage />} />
             <Route path="/discover" element={<DiscoverPage />} />
             <Route path="/search" element={<SearchResultsPage />} />
-            <Route path="/explore/datasets" element={<ComingSoonPage title="Datasets" />} />
+            {/* Each content type is listed in Search; the old list URLs open its tab there. */}
+            <Route path="/explore/datasets" element={<Navigate to="/search?type=datasets" replace />} />
             <Route path="/explore/datasets/:id" element={<DatasetDetailPage />} />
             <Route path="/explore/collaboratives/:id" element={<CollaborativeDetailPage />} />
             <Route path="/explore/use-cases" element={<UseCasesExplorePage />} />
             <Route path="/explore/use-cases/:id" element={<UseCaseDetailPage />} />
-            <Route path="/explore/ai-models" element={<ComingSoonPage title="AI Models and Prompts" />} />
-            <Route path="/explore/publications" element={<ComingSoonPage title="Publications" />} />
-            <Route path="/explore/events" element={<ComingSoonPage title="Events" />} />
+            <Route path="/explore/ai-models" element={<Navigate to="/search?type=ai-models" replace />} />
+            <Route path="/explore/publications" element={<Navigate to="/search?type=publications" replace />} />
+            <Route path="/explore/events" element={<Navigate to="/search?type=events" replace />} />
             <Route path="/explore/events/:id" element={<EventDetailPage />} />
-            <Route path="/collaboratives" element={<ComingSoonPage title="Collaboratives" />} />
+            <Route path="/collaboratives" element={<Navigate to="/search?type=collaboratives" replace />} />
             <Route path="/forum" element={<ComingSoonPage title="Forum" />} />
             {/* One Community page with All / Organisations / Publishers tabs; the older URLs open the matching tab. */}
             <Route path="/community" element={<CommunityPage />} />
