@@ -43,7 +43,18 @@ const iconButton =
 
 /** Row of share targets (X, LinkedIn, Facebook, email, copy link) for a public
  * page. `url` is the link being shared — defaults to the current page. */
-function SocialShareLinks({ url, title, className }: { url?: string; title: string; className?: string }) {
+function SocialShareLinks({
+  url,
+  title,
+  className,
+  showCopy = true,
+}: {
+  url?: string
+  title: string
+  className?: string
+  /** Leave out the copy-link icon when the surrounding menu already has a Copy link row. */
+  showCopy?: boolean
+}) {
   const toast = useToast()
   const shareUrl = url ?? window.location.href
   const u = encodeURIComponent(shareUrl)
@@ -80,9 +91,11 @@ function SocialShareLinks({ url, title, className }: { url?: string; title: stri
           {target.icon}
         </a>
       ))}
-      <button type="button" onClick={handleCopy} aria-label="Copy link" title="Copy link" className={iconButton}>
-        <Link2 className="size-4" />
-      </button>
+      {showCopy && (
+        <button type="button" onClick={handleCopy} aria-label="Copy link" title="Copy link" className={iconButton}>
+          <Link2 className="size-4" />
+        </button>
+      )}
     </div>
   )
 }

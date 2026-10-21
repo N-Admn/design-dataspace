@@ -48,7 +48,7 @@ export interface DNARelation {
   kind: RelationKind
   label: string
   items: { id: string; title: string; href: string }[]
-  /** Where the whole category opens: the Search page on that content type's tab (the dataset's Visualisations tab for charts). */
+  /** Where the whole category opens: the dataset's own Applications tab at that section (its Visualisations tab for charts). */
   listingHref: string
 }
 
@@ -280,7 +280,7 @@ export function useDataDNAModel(datasetId: string): DataDNAModel | null {
     {
       kind: 'use-cases',
       label: 'Use Cases',
-      listingHref: '/search?type=use-cases',
+      listingHref: `/explore/datasets/${datasetId}?view=applications#use-cases`,
       items: useCases.flatMap((r) => {
         const f = live(r)
         return f && f.connections.datasets.some((d) => d.id === datasetId)
@@ -291,7 +291,7 @@ export function useDataDNAModel(datasetId: string): DataDNAModel | null {
     {
       kind: 'collaboratives',
       label: 'Collaboratives',
-      listingHref: '/search?type=collaboratives',
+      listingHref: `/explore/datasets/${datasetId}?view=applications#collaboratives`,
       items: collaboratives.flatMap((r) => {
         const f = live(r)
         return f && f.connections.datasets.some((d) => d.id === datasetId)
@@ -302,7 +302,7 @@ export function useDataDNAModel(datasetId: string): DataDNAModel | null {
     {
       kind: 'events',
       label: 'Events',
-      listingHref: '/search?type=events',
+      listingHref: `/explore/datasets/${datasetId}?view=applications#events`,
       items: events.flatMap((r) => {
         const f = live(r)
         return f && f.relatedContent.datasets.some((d) => d.id === datasetId)
