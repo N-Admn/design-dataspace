@@ -76,7 +76,7 @@ function loadStoredUseCases(): UseCaseRecord[] | null {
 
 /** Bump when the bundled sample Use Cases / Collaboratives change. A browser holding an older copy then gets the new samples
  * once (records with a sample id are replaced, missing ones added) while records people created themselves are kept. */
-const SEED_VERSION = '2026-10-18-collaborative-publications-events'
+const SEED_VERSION = '2026-10-21-sample-portraits-and-org-logos'
 const SEED_VERSION_KEY = 'civicdataspace:seed-version'
 
 function reconcileWithSeed<T extends { id: string }>(stored: T[] | null, seed: T[]): T[] {
@@ -343,8 +343,18 @@ function AppDataProvider({ children }: { children: React.ReactNode }) {
   const [organisationWorkspaces, setOrganisationWorkspaces] = React.useState<OrganisationRecord[]>(() => {
     const stored = loadStoredOrganisationWorkspaces()
     // Workspaces saved in this browser before a seed organisation existed would otherwise hide it: add the missing seeds.
+    // The directory-only seed organisations (ids 2 to 11) hold no user content, so a browser that saved older copies of them gets the
+    // current ones; CivicDataLab (id 1) and anything people created are kept as saved.
+    const isDirectorySeed = (id: string) => /^org-workspace-(?:[2-9]|1[01])$/.test(id)
     const initial = stored
-      ? [...stored, ...MOCK_ORGANISATION_WORKSPACES.filter((seed) => !stored.some((o) => o.id === seed.id))]
+      ? [
+          ...stored.map((o) => {
+            if (isDirectorySeed(o.id)) return MOCK_ORGANISATION_WORKSPACES.find((seed) => seed.id === o.id) ?? o
+            // CivicDataLab used to carry a stock photo as its sample logo, saved into this browser; drop that one so its real logo shows.
+            return o.metadata.logo?.name === 'civicdatalab-logo.jpg' ? { ...o, metadata: { ...o.metadata, logo: null } } : o
+          }),
+          ...MOCK_ORGANISATION_WORKSPACES.filter((seed) => !stored.some((o) => o.id === seed.id)),
+        ]
       : MOCK_ORGANISATION_WORKSPACES
     bumpOrganisationWorkspaceIdCounter(initial)
     bumpOrganisationMemberIdCounter(initial)

@@ -1,4 +1,5 @@
 import type { DatasetRecord } from '@/types/dataset'
+import { organisationLogoUrl } from '@/lib/org-logo'
 import type { OrganisationRecord } from '@/types/organisation-workspace'
 import { MOCK_PROFILE } from '@/types/profile'
 
@@ -36,7 +37,7 @@ export function resolveDatasetPublisher(
       website: org.metadata.website,
       location: org.metadata.location,
       isIndividual: false,
-      avatarUrl: org.metadata.logo?.dataUrl ?? null,
+      avatarUrl: organisationLogoUrl(org.metadata),
     }
   }
 
@@ -59,7 +60,7 @@ export function resolvePublisherByOrganisation(
   organisationWorkspaces: OrganisationRecord[],
 ): { name: string; avatarUrl: string | null } {
   const org = organisationId ? organisationWorkspaces.find((o) => o.id === organisationId) : undefined
-  if (org) return { name: org.metadata.name, avatarUrl: org.metadata.logo?.dataUrl ?? null }
+  if (org) return { name: org.metadata.name, avatarUrl: organisationLogoUrl(org.metadata) }
   return {
     name: createdBy || `${MOCK_PROFILE.firstName} ${MOCK_PROFILE.lastName}`,
     avatarUrl: MOCK_PROFILE.avatarDataUrl,

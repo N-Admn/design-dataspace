@@ -22,12 +22,12 @@ function OrganisationProfileView({
   org,
   cards,
   showBack = true,
-  contentLayout = 'sections',
+  contentLayout = 'tabs',
 }: {
   org: OrganisationEntry
   cards: Map<string, SearchResultItem>
   showBack?: boolean
-  /** How the published content is laid out: one section after another, or a kind on each tab. */
+  /** How the published content is laid out: a kind on each tab (the default), or one section after another. */
   contentLayout?: 'sections' | 'tabs'
 }) {
   const links: ProfileLink[] = [
@@ -74,7 +74,7 @@ function PublisherProfileView({
   person,
   cards,
   showBack = true,
-  contentLayout = 'sections',
+  contentLayout = 'tabs',
 }: {
   person: IndividualEntry
   cards: Map<string, SearchResultItem>
@@ -83,7 +83,7 @@ function PublisherProfileView({
 }) {
   return (
     <div className="mx-auto flex w-full max-w-[1400px] flex-col gap-10 py-2">
-      {showBack && <BackLink fallbackTo="/community?tab=publishers" label="Back to Community" />}
+      {showBack && <BackLink fallbackTo="/community?tab=people" label="Back to Community" />}
 
       <ProfileHero
         kind="individual"

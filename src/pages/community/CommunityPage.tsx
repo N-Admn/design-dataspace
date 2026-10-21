@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { Link } from 'react-router-dom'
-import { Building2, Layers, MapPin, Newspaper, Users, type LucideIcon } from 'lucide-react'
+import { Building2, MapPin, Users, type LucideIcon } from 'lucide-react'
 
 import { Chip } from '@/components/discover/Chip'
 import { GlobalSearchField } from '@/components/discover/GlobalSearchField'
@@ -20,9 +20,9 @@ import { useDirectoryParams } from '@/hooks/use-directory-params'
 import {
   CONTRIBUTION_LABEL,
   CONTRIBUTION_TYPES,
-  describeCounts,
+  describeTotal,
+  personMatches,
   organisationMatches,
-  publisherMatches,
   searchTerms,
   type ContributionType,
   type PublisherEntry,
@@ -31,43 +31,43 @@ import { ORGANISATION_TYPE_OPTIONS } from '@/types/organisation-workspace'
 
 /**
  * The Community directory (Discover → Community): organisations and publishers on one page, laid out like the Search results page.
- * Three tabs choose what is listed:
- *  - All: every organisation, plus the individuals who have published something.
+ * Two tabs, two different kinds of record, which never overlap:
  *  - Organisations: every organisation with a public profile, whether or not it has published anything.
- *  - Publishers: organisations and individuals with at least one published contribution of their own.
- * All of it is derived from the same records (see `lib/community.ts`). State lives in the URL, so a refresh, a shared link and
+ *  - People: individuals with at least one published contribution, affiliated with an organisation or publishing independently.
+ *    An organisation is never listed here, and a person is never listed under Organisations.
+ * Each tab's search, filters, sorting and count work on its own records only. All of it is derived from the same records (see `lib/community.ts`). State lives in the URL, so a refresh, a shared link and
  * back/forward return to the same view.
  */
 
-type Tab = 'all' | 'organisations' | 'publishers'
+type Tab = 'organisations' | 'people'
 type SortKey = 'az' | 'recent'
 
-const DEFAULTS = { q: '', tab: 'all', kind: '', otype: '', content: '', updated: '', sort: 'az' }
+const DEFAULTS = { q: '', tab: 'organisations', kind: '', otype: '', content: '', updated: '', sort: 'az' }
 
 const TABS: { value: Tab; label: string; icon?: LucideIcon }[] = [
-  { value: 'all', label: 'All' },
   { value: 'organisations', label: 'Organisations', icon: Building2 },
-  { value: 'publishers', label: 'Publishers', icon: Newspaper },
+  { value: 'people', label: 'People', icon: Users },
 ]
 
+/** Links made before the split: “Publishers” was the people (and the organisations that publish) and “All” the combined list. */
+const LEGACY_TABS: Record<string, Tab> = { publishers: 'people', all: 'organisations' }
+
 const INTRO: Record<Tab, { heading: string; description: string; cta?: { label: string; to: string } }> = {
-  all: { heading: 'Community', description: 'Explore the organisations and people working with civic data and publishing on CivicDataSpace.' },
   organisations: {
     heading: 'Organisations',
     description: 'Explore the organisations working with civic data, research and public-sector innovation.',
     cta: { label: 'Create Organisation', to: '/organisations' },
   },
-  publishers: {
-    heading: 'Publishers',
-    description: 'Discover the people and organisations publishing data and knowledge on CivicDataSpace.',
+  people: {
+    heading: 'People',
+    description: 'Discover the people publishing data and knowledge on CivicDataSpace, with or without an organisation.',
     cta: { label: 'Start Publishing', to: '/dashboard/datasets' },
   },
 }
 
 const PLACEHOLDER: Record<Tab, string> = {
-  all: 'Search organisations and publishers by name, area of work or contribution…',
   organisations: 'Search organisations by name, sector or area of work…',
-  publishers: 'Search publishers by name, organisation or contribution…',
+  people: 'Search people by name, organisation or area of expertise…',
 }
 
 const SORT_OPTIONS: { value: SortKey; label: string }[] = [
@@ -84,11 +84,10 @@ const UPDATED_OPTIONS = [
 
 const list = (value: string) => (value ? value.split(',') : [])
 
-type Active = Record<'kind' | 'otype' | 'content' | 'updated', string[]>
+type Active = Record<'otype' | 'content' | 'updated', string[]>
 
 /** Each filter group: does an entry pass it, given the values ticked. A group with nothing ticked passes everything. */
 const TESTS: Record<keyof Active, (entry: PublisherEntry, values: string[]) => boolean> = {
-  kind: (e, v) => v.includes(e.kind),
   // Only organisations have a type: with a type ticked, individuals are not shown.
   otype: (e, v) => e.kind === 'organisation' && v.includes(e.type),
   content: (e, v) => v.some((t) => (e.counts[t as ContributionType] ?? 0) > 0),
@@ -101,13 +100,11 @@ const TESTS: Record<keyof Active, (entry: PublisherEntry, values: string[]) => b
 const passes = (entry: PublisherEntry, active: Active, except?: keyof Active) =>
   (Object.keys(TESTS) as (keyof Active)[]).every((key) => key === except || active[key].length === 0 || TESTS[key](entry, active[key]))
 
-/** What a tab's search looks at: Organisations by their own profile; Publishers also by the titles of what they published. */
+/** What a tab's search looks at: an organisation's own profile, or a person's own profile (including who they are affiliated with). */
 function makeMatcher(tab: Tab, q: string) {
   const terms = searchTerms(q)
   return (entry: PublisherEntry) =>
-    tab === 'organisations' || (tab === 'all' && entry.kind === 'organisation')
-      ? entry.kind === 'organisation' && organisationMatches(entry, terms)
-      : publisherMatches(entry, terms)
+    tab === 'organisations' ? entry.kind === 'organisation' && organisationMatches(entry, terms) : entry.kind === 'individual' && personMatches(entry, terms)
 }
 
 function CommunityPage() {
@@ -116,11 +113,11 @@ function CommunityPage() {
   const resultsRef = React.useRef<HTMLDivElement>(null)
   const [view, setView] = React.useState<ResultView>('list')
 
-  const tab: Tab = TABS.some((t) => t.value === values.tab) ? (values.tab as Tab) : 'all'
+  const tab: Tab = TABS.some((t) => t.value === values.tab) ? (values.tab as Tab) : (LEGACY_TABS[values.tab] ?? 'organisations')
   const sort: SortKey = values.sort === 'recent' ? 'recent' : 'az'
   const active: Active = React.useMemo(
-    () => ({ kind: list(values.kind), otype: list(values.otype), content: list(values.content), updated: list(values.updated) }),
-    [values.kind, values.otype, values.content, values.updated],
+    () => ({ otype: list(values.otype), content: list(values.content), updated: list(values.updated) }),
+    [values.otype, values.content, values.updated],
   )
 
   // Local copy of the query so typing doesn't change the URL per keystroke: submitting (Enter or the button) applies it.
@@ -130,20 +127,18 @@ function CommunityPage() {
   const individuals = React.useMemo(() => publishers.filter((p) => p.kind === 'individual'), [publishers])
   const pools = React.useMemo(
     () => ({
-      all: [...organisations, ...individuals] as PublisherEntry[],
       organisations: organisations as PublisherEntry[],
-      publishers,
+      people: individuals as PublisherEntry[],
     }),
-    [organisations, individuals, publishers],
+    [organisations, individuals],
   )
 
   // The pool for the current tab after the search, before any filter group narrows it (the rail's counts start from here).
   const matched = React.useMemo(() => pools[tab].filter(makeMatcher(tab, values.q)), [pools, tab, values.q])
   const tabCounts = React.useMemo(
     () => ({
-      all: pools.all.filter(makeMatcher('all', values.q)).length,
       organisations: pools.organisations.filter(makeMatcher('organisations', values.q)).length,
-      publishers: pools.publishers.filter(makeMatcher('publishers', values.q)).length,
+      people: pools.people.filter(makeMatcher('people', values.q)).length,
     }),
     [pools, values.q],
   )
@@ -156,15 +151,13 @@ function CommunityPage() {
   // never its own.
   const groups: RailGroup[] = React.useMemo(() => {
     const countIn = (key: keyof Active, test: (e: PublisherEntry) => boolean) => matched.filter((e) => passes(e, active, key) && test(e)).length
-    const kinds = (['organisation', 'individual'] as const).map((k) => ({ value: k, label: KIND_LABEL[k], count: countIn('kind', (e) => e.kind === k) })).filter((o) => o.count > 0)
     const types = ORGANISATION_TYPE_OPTIONS.map((o) => ({ value: o.value, label: o.label, count: countIn('otype', (e) => e.kind === 'organisation' && e.type === o.value) })).filter((o) => o.count > 0)
     const content = CONTRIBUTION_TYPES.map((t) => ({ value: t, label: CONTRIBUTION_LABEL[t].plural, count: countIn('content', (e) => (e.counts[t] ?? 0) > 0) })).filter((o) => o.count > 0)
     const updatedPool = matched.filter((e) => passes(e, active, 'updated'))
     const updated = UPDATED_OPTIONS.map((o) => ({ value: o.value, label: o.label, count: updatedPool.filter((e) => TESTS.updated(e, [o.value])).length })).filter((o) => o.count > 0)
     return [
-      // The publisher kind is only a choice where both kinds are listed.
-      ...(tab === 'organisations' ? [] : [{ key: 'kind', label: 'Publisher type', kind: 'multi' as const, options: kinds }]),
-      { key: 'otype', label: 'Organisation type', kind: 'multi', options: types },
+      // Only organisations have a type.
+      ...(tab === 'organisations' ? [{ key: 'otype', label: 'Organisation type', kind: 'multi' as const, options: types }] : []),
       { key: 'content', label: 'Published content', kind: 'multi', options: content },
       { key: 'updated', label: 'Last updated', kind: 'single', options: updated, anyLabel: 'Any time', anyCount: updatedPool.length },
     ]
@@ -176,14 +169,14 @@ function CommunityPage() {
   const hasFilters = Object.values(active).some((v) => v.length > 0)
 
   const setFilter = (key: string, next: string[]) => update({ [key]: next.join(',') })
-  const clearFilters = () => update({ kind: '', otype: '', content: '', updated: '' })
+  const clearFilters = () => update({ otype: '', content: '', updated: '' })
   const goToPage = (next: number) => {
     update({ page: String(next) })
     resultsRef.current?.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' })
   }
 
   const intro = INTRO[tab]
-  const noun = tab === 'organisations' ? 'Organisations' : tab === 'publishers' ? 'Publishers' : 'Results'
+  const noun = tab === 'organisations' ? 'Organisations' : 'People'
 
   return (
     <div className="mx-auto flex w-full max-w-[1400px] flex-col gap-9">
@@ -207,7 +200,7 @@ function CommunityPage() {
               pressed={tab === t.value}
               onClick={() => update({ tab: t.value })}
               icon={t.icon}
-              className={t.value === 'all' ? 'shrink-0' : 'min-w-0 whitespace-nowrap lg:flex-1'}
+              className="min-w-0 whitespace-nowrap lg:flex-1"
             />
           ))}
         </div>
@@ -232,8 +225,13 @@ function CommunityPage() {
         <div className="hidden shrink-0 self-stretch border-l border-border sm:block" aria-hidden="true" />
 
         <div ref={resultsRef} className="min-w-0 flex-1 scroll-mt-28">
-          {pools.all.length === 0 ? (
-            <EmptyState icon={Users} title="Nothing to show yet" description="Organisations and publishers appear here once they have a public profile." className="py-14" />
+          {pools[tab].length === 0 ? (
+            <EmptyState
+              icon={Users}
+              title={tab === 'organisations' ? 'No organisations yet' : 'No people yet'}
+              description={tab === 'organisations' ? 'Organisations appear here once they have a public profile.' : 'People appear here once they have published something.'}
+              className="py-14"
+            />
           ) : results.length === 0 ? (
             <NoResults
               title={values.q.trim() ? `No results for “${values.q.trim()}”` : 'No results'}
@@ -264,7 +262,6 @@ function CommunityPage() {
                     // A person's public organisations, and an organisation's people: the two sides of the same connection.
                     ...(entry.kind === 'individual' && entry.affiliations.length > 0 ? [{ icon: Building2, text: entry.affiliations.map((a) => a.name).join(', ') }] : []),
                     ...(entry.kind === 'organisation' && entry.members.length > 0 ? [{ icon: Users, text: `${entry.members.length} ${entry.members.length === 1 ? 'person' : 'people'}` }] : []),
-                    ...(entry.total > 0 ? [{ icon: Layers, text: `${entry.total} published` }] : []),
                   ]
                   return (
                     <li key={`${entry.kind}:${entry.id}`} className="min-w-0">
@@ -277,7 +274,7 @@ function CommunityPage() {
                         typeLabel={KIND_LABEL[entry.kind]}
                         description={(entry.kind === 'individual' ? entry.headline : entry.description) || undefined}
                         metadata={metadata}
-                        summary={describeCounts(entry.counts) || undefined}
+                        summary={describeTotal(entry.total) || (entry.kind === 'organisation' ? 'No published contributions yet' : undefined)}
                       />
                     </li>
                   )

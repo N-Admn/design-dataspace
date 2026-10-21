@@ -1,4 +1,5 @@
 import { useState, type ReactNode } from 'react'
+import { logoFit } from '@/lib/org-logo'
 import { Link } from 'react-router-dom'
 import {
   ArrowUpRight,
@@ -66,7 +67,7 @@ function PublisherAvatar({ publisher }: { publisher: DatasetPublisher }) {
       <img
         src={publisher.avatarUrl}
         alt=""
-        className="size-16 shrink-0 rounded-full object-cover"
+        className={`size-16 shrink-0 rounded-full ${logoFit(publisher.avatarUrl, 'p-2.5')}`}
       />
     )
   }

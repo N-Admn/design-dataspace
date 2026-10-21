@@ -1,4 +1,5 @@
 import { ContributorSidebar } from '@/components/layout/ContributorSidebar'
+import { organisationLogoUrl } from '@/lib/org-logo'
 import { organisationNavGroups } from '@/components/layout/organisation-nav-config'
 import { organisationRoleLabel } from '@/types/organisation-workspace'
 import { useAppData } from '@/context/AppDataContext'
@@ -20,7 +21,7 @@ function OrganisationSidebar({ organisationId, className }: { organisationId: st
       groups={organisationNavGroups(organisationId)}
       identity={{
         avatarLabel: initialsFor(org.metadata.name),
-        avatarUrl: org.metadata.logo?.dataUrl,
+        avatarUrl: organisationLogoUrl(org.metadata) ?? undefined,
         name: org.metadata.name,
         subtitle: role ? organisationRoleLabel(role) : undefined,
       }}

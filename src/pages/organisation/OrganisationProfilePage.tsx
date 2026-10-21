@@ -1,4 +1,5 @@
 import * as React from 'react'
+import { logoFit, organisationLogoUrl } from '@/lib/org-logo'
 import { Building2, Pencil } from 'lucide-react'
 
 import { useOrganisation } from '@/hooks/use-organisation'
@@ -179,8 +180,8 @@ function OrganisationProfilePage() {
           ) : (
             <>
               <div className="flex items-center gap-4">
-                {meta.logo?.dataUrl ? (
-                  <img src={meta.logo.dataUrl} alt="" className="size-16 rounded-full border border-border-default object-cover" />
+                {organisationLogoUrl(meta) ? (
+                  <img src={organisationLogoUrl(meta) ?? undefined} alt="" className={`size-16 rounded-full border border-border-default ${logoFit(organisationLogoUrl(meta), 'p-2.5')}`} />
                 ) : (
                   <div className="flex size-16 items-center justify-center rounded-full bg-surface-accent text-text-on-accent">
                     <Building2 className="size-7" />

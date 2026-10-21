@@ -1,4 +1,5 @@
 import { Fragment, type ReactNode } from 'react'
+import { logoFit } from '@/lib/org-logo'
 import { ImageIcon } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'
 
@@ -64,11 +65,11 @@ function Avatar({ publisher }: { publisher: ContentCardPublisher }) {
           className="inline-flex shrink-0 rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
           {publisher.avatarUrl ? (
-            <img src={publisher.avatarUrl} alt="" className="size-6 rounded-full object-cover ring-2 ring-card" />
+            <img src={publisher.avatarUrl} alt="" className={`size-6 rounded-full border border-border ring-2 ring-card ${logoFit(publisher.avatarUrl, 'p-[3px]')}`} />
           ) : (
             <span
               aria-hidden="true"
-              className="flex size-6 items-center justify-center rounded-full bg-surface-accent text-[10px] font-semibold text-text-on-accent ring-2 ring-card"
+              className="flex size-6 items-center justify-center rounded-full border border-border bg-surface-accent text-[10px] font-semibold text-text-on-accent ring-2 ring-card"
             >
               {initialsFor(publisher.name)}
             </span>
@@ -104,7 +105,7 @@ function PublisherGroup({ publishers }: { publishers: ContentCardPublisher[] }) 
             <span
               tabIndex={0}
               aria-label={`and ${overflow.length} more: ${overflow.map((p) => p.name).join(', ')}`}
-              className="flex size-6 items-center justify-center rounded-full bg-muted text-[10px] font-semibold text-muted-foreground ring-2 ring-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="flex size-6 items-center justify-center rounded-full border border-border bg-muted text-[10px] font-semibold text-muted-foreground ring-2 ring-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               +{overflow.length}
             </span>

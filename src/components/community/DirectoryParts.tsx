@@ -20,7 +20,22 @@ export const DIRECTORY_PAGE_SIZE = 9
 type EntityKind = 'organisation' | 'individual'
 
 /** An organisation's logo or a person's photo, or initials when none has been set. A failed image falls back to initials. */
-function EntityImage({ kind, name, imageUrl, className, initialsClassName }: { kind: EntityKind; name: string; imageUrl: string | null; className?: string; initialsClassName?: string }) {
+function EntityImage({
+  kind,
+  name,
+  imageUrl,
+  className,
+  initialsClassName,
+  square = false,
+}: {
+  kind: EntityKind
+  name: string
+  imageUrl: string | null
+  className?: string
+  initialsClassName?: string
+  /** Set when the frame is a square rather than a circle: a logo then needs only a small margin, not the larger one a circle's curve calls for. */
+  square?: boolean
+}) {
   const [failed, setFailed] = React.useState(false)
   React.useEffect(() => setFailed(false), [imageUrl])
   if (imageUrl && !failed) {
@@ -29,8 +44,8 @@ function EntityImage({ kind, name, imageUrl, className, initialsClassName }: { k
         src={imageUrl}
         alt={kind === 'organisation' ? `${name} logo` : `Photo of ${name}`}
         onError={() => setFailed(true)}
-        // A logo is shown whole inside its circle; a photo fills it.
-        className={cn('size-full', kind === 'organisation' ? 'object-contain p-5' : 'object-cover', className)}
+        // A logo is shown whole inside its circle, with the margin that keeps a square logo's corners inside it; a photo fills it.
+        className={cn('size-full', kind === 'organisation' ? 'bg-white object-contain p-5' : 'object-cover', className, kind === 'organisation' && (square ? 'p-1.5' : 'p-[15%]'))}
       />
     )
   }
@@ -65,7 +80,7 @@ interface DirectoryCardProps {
   summary?: string
 }
 
-/** One card for every entry in the directory, laid out like a Search result: a round image (a band behind it in grid), the title, a clamped description, the
+/** One card for every entry in the directory: a square image (top left, above the title in grid; at the left in list), the title, a clamped description, the
  *  metadata rows, then a footer with the type badge on the right. Optional parts are left out when empty, never replaced by a
  *  placeholder or an invented value. The whole card is the link. */
 function DirectoryCard({ href, kind, name, imageUrl, layout = 'grid', typeLabel, description, metadata = [], summary }: DirectoryCardProps) {
@@ -94,8 +109,8 @@ function DirectoryCard({ href, kind, name, imageUrl, layout = 'grid', typeLabel,
     return (
       <Link to={href} aria-label={name} className={frame}>
         <div className="flex items-center gap-4 p-[18px]">
-          <div className="size-[67px] shrink-0 overflow-hidden rounded-full border border-border bg-card">
-            <EntityImage kind={kind} name={name} imageUrl={imageUrl} className={kind === 'organisation' ? 'p-2' : undefined} initialsClassName="text-xl" />
+          <div className="size-16 shrink-0 overflow-hidden rounded-lg border border-border bg-card">
+            <EntityImage square kind={kind} name={name} imageUrl={imageUrl} initialsClassName="text-xl" />
           </div>
           <div className="flex min-w-0 flex-1 flex-col gap-3">
             <div>
@@ -112,14 +127,13 @@ function DirectoryCard({ href, kind, name, imageUrl, layout = 'grid', typeLabel,
     )
   }
 
+  // Grid: no image band. A square avatar sits at the top left, above the name, and the card reads as one block of text.
   return (
     <Link to={href} aria-label={name} className={cn(frame, 'flex flex-col')}>
-      <div className="flex h-44 w-full shrink-0 items-center justify-center bg-muted">
-        <div className="size-[123px] overflow-hidden rounded-full border border-border bg-card">
-          <EntityImage kind={kind} name={name} imageUrl={imageUrl} className={kind === 'organisation' ? 'p-3' : undefined} initialsClassName="text-3xl" />
+      <div className="flex flex-1 flex-col gap-4 p-5">
+        <div className="size-16 shrink-0 overflow-hidden rounded-lg border border-border bg-card">
+          <EntityImage square kind={kind} name={name} imageUrl={imageUrl} initialsClassName="text-xl" />
         </div>
-      </div>
-      <div className="flex flex-1 flex-col gap-3 p-[18px]">
         <div>
           {title}
           {description && <p className="mt-1 truncate text-sm text-muted-foreground">{description}</p>}

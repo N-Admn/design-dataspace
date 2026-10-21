@@ -1,4 +1,5 @@
 import type { DatasetRecord } from '@/types/dataset'
+import { organisationLogoUrl } from '@/lib/org-logo'
 import { GEOGRAPHY_OPTIONS, SECTOR_OPTIONS } from '@/types/dataset'
 import type { UseCaseRecord } from '@/types/usecase'
 import type { CollaborativeRecord } from '@/types/collaborative'
@@ -329,7 +330,10 @@ export function buildSearchIndex({
         },
         // No avatar: a publication's `organisation` is a plain string with no
         // logo field of its own (unlike Dataset/Event's Organisation record).
-        publishers: pub.organisation ? [{ name: pub.organisation }] : undefined,
+        // The organisation is only a name on the publication, but when it is one of the organisation workspaces its logo can be shown.
+        publishers: pub.organisation
+          ? [{ name: pub.organisation, avatarUrl: ((w) => (w ? organisationLogoUrl(w.metadata) : null))(organisationWorkspaces.find((o) => o.metadata.name === pub.organisation)) }]
+          : undefined,
         // No "Sector"/"Geography": a publication carries neither field — only
         // its parent event might, and that isn't the same thing as the
         // publication's own. "Year" is the parent event's year, the closest

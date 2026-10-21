@@ -33,6 +33,7 @@ import type {
   ProvenanceIconKey,
   UsagePart,
 } from '@/pages/playground/data-dna/data-dna-scenarios'
+import { logoFit } from '@/lib/org-logo'
 
 /** The card's surfaces, all existing tokens: workspace light blue for the story, a soft lavender (chart-7 tint) for the
  *  supporting and context cards, white for usage and provenance. */
@@ -155,7 +156,7 @@ const initials = (name: string) => {
 /** A round profile image; when none is set, an initials circle (never an invented photo). */
 function ProfileImage({ name, imageUrl }: { name: string; imageUrl: string | null }) {
   if (imageUrl) {
-    return <img src={imageUrl} alt="" className="size-10 shrink-0 rounded-full object-cover" />
+    return <img src={imageUrl} alt="" className={`size-10 shrink-0 rounded-full ${logoFit(imageUrl, 'p-1.5')}`} />
   }
   return (
     <span

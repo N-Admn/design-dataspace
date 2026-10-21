@@ -1,13 +1,15 @@
 
 import type { ContentCardMetadataItem } from '@/lib/content-card'
 import type { CollaborativeRelationship } from '@/types/collaborative'
+import { logoDevUrl } from '@/lib/org-logo'
 
 /** Local, clearly illustrative sample data for the Collaborative Detail Page playground. Nothing here is read from, or written to,
  *  the CivicDataSpace data models, and the organisations, people and records are invented for layout testing. Every count the
  *  page shows (hero, ecosystem, tabs, result counts) is taken from these arrays, so the numbers always agree with the lists. */
 
 /** Free-licence Pexels photos the project's own sample data already uses (portraits, covers, avatars). All of them are stand-ins:
- *  none is a real logo, and none shows the person or organisation it is attached to. */
+ *  none is a real logo, and none shows the person or organisation it is attached to. Real organisations (CivicDataLab, WHO, UNEP, Oxford,
+ *  Wellcome, the World Bank) use their real logo instead, looked up from their website (empty without a Logo.dev key). */
 const photo = (id: number, width = 300) => `https://images.pexels.com/photos/${id}/pexels-photo-${id}.jpeg?auto=compress&cs=tinysrgb&w=${width}`
 
 export interface Resource {
@@ -136,27 +138,27 @@ const u = (
 ): Resource => ({ id: `uc-${id}`, title, description, topic, geography, sector, tags, year, ...extras })
 
 export const USE_CASES: Resource[] = [
-  u(1, 'Maternal Health Monitoring in Rural Districts', 'Tracks antenatal and delivery services against seasonal access barriers so district teams can plan outreach.', 'Maternal health', 'India', 'Public health', ['Maternal', 'Outreach', 'Districts'], 2026, { datasetCount: 3, chartCount: 2, thumbnailUrl: photo(30313887, 1200), publishers: [{ name: 'CivicDataLab', avatarUrl: photo(1092644) }, { name: 'World Health Organization', avatarUrl: photo(30313887) }] }),
+  u(1, 'Maternal Health Monitoring in Rural Districts', 'Tracks antenatal and delivery services against seasonal access barriers so district teams can plan outreach.', 'Maternal health', 'India', 'Public health', ['Maternal', 'Outreach', 'Districts'], 2026, { datasetCount: 3, chartCount: 2, thumbnailUrl: photo(30313887, 1200), publishers: [{ name: 'CivicDataLab', avatarUrl: logoDevUrl('civicdatalab.in') }, { name: 'World Health Organization', avatarUrl: logoDevUrl('who.int') }] }),
   u(2, 'Early Warning for Heat-Related Illness', 'Combines forecast heat with clinic data to alert health workers before heatwaves peak.', 'Heat', 'South Asia', 'Disaster management', ['Heat', 'Early warning'], 2025, { datasetCount: 2, chartCount: 1, thumbnailUrl: photo(37358150, 1200), publishers: [{ name: 'National Meteorological Service (sample)', avatarUrl: photo(12415346) }] }),
-  u(3, 'Climate Resilient Health Facilities', 'Prioritises upgrades for facilities exposed to floods, cyclones and extreme heat.', 'Climate risk', 'Asia-Pacific', 'Infrastructure', ['Facilities', 'Resilience'], 2026, { datasetCount: 4, thumbnailUrl: photo(8190805, 1200), publishers: [{ name: 'Urban Resilience Lab (sample)', avatarUrl: photo(8761336) }, { name: 'The World Bank', avatarUrl: photo(1000445) }] }),
+  u(3, 'Climate Resilient Health Facilities', 'Prioritises upgrades for facilities exposed to floods, cyclones and extreme heat.', 'Climate risk', 'Asia-Pacific', 'Infrastructure', ['Facilities', 'Resilience'], 2026, { datasetCount: 4, thumbnailUrl: photo(8190805, 1200), publishers: [{ name: 'Urban Resilience Lab (sample)', avatarUrl: photo(8761336) }, { name: 'The World Bank', avatarUrl: logoDevUrl('worldbank.org') }] }),
   u(4, 'Air Quality Alerts for Urban Schools', 'Sends school administrators daily guidance when pollution crosses health thresholds.', 'Air quality', 'India', 'Education', ['Schools', 'Alerts'], 2025, { datasetCount: 1, chartCount: 1, thumbnailUrl: photo(12415346, 1200), publishers: [{ name: 'Open Climate Alliance (sample)', avatarUrl: photo(18999470) }] }),
-  u(5, 'Cholera Outbreak Risk Mapping after Floods', 'Maps sub-districts where flooding and water quality point to elevated outbreak risk.', 'Water and sanitation', 'South Asia', 'Public health', ['Cholera', 'Flood', 'Mapping'], 2024, { datasetCount: 2, thumbnailUrl: photo(17609960, 1200), publishers: [{ name: 'Community Health Network (sample)', avatarUrl: photo(5486096) }, { name: 'World Health Organization', avatarUrl: photo(30313887) }] }),
+  u(5, 'Cholera Outbreak Risk Mapping after Floods', 'Maps sub-districts where flooding and water quality point to elevated outbreak risk.', 'Water and sanitation', 'South Asia', 'Public health', ['Cholera', 'Flood', 'Mapping'], 2024, { datasetCount: 2, thumbnailUrl: photo(17609960, 1200), publishers: [{ name: 'Community Health Network (sample)', avatarUrl: photo(5486096) }, { name: 'World Health Organization', avatarUrl: logoDevUrl('who.int') }] }),
   u(6, 'Heat Action Plan Evaluation for Cities', undefined, 'Heat', 'India', 'Urban planning', ['Policy', 'Cities'], undefined, { thumbnailUrl: photo(12413177, 1200) }),
 ]
 
 export const ORGANISATIONS: Organisation[] = [
-  { id: 'o1', name: 'United Nations Environment Programme', relationship: 'partner', imageUrl: photo(2990650) },
-  { id: 'o2', name: 'World Health Organization', relationship: 'partner', imageUrl: photo(30313887) },
-  { id: 'o3', name: 'University of Oxford', relationship: 'partner', imageUrl: photo(15325468) },
-  { id: 'o4', name: 'Wellcome Trust', relationship: 'supporter', imageUrl: photo(7245808) },
-  { id: 'o5', name: 'The World Bank', relationship: 'supporter', imageUrl: photo(1000445) },
+  { id: 'o1', name: 'United Nations Environment Programme', relationship: 'partner', imageUrl: logoDevUrl('unep.org') },
+  { id: 'o2', name: 'World Health Organization', relationship: 'partner', imageUrl: logoDevUrl('who.int') },
+  { id: 'o3', name: 'University of Oxford', relationship: 'partner', imageUrl: logoDevUrl('ox.ac.uk') },
+  { id: 'o4', name: 'Wellcome Trust', relationship: 'supporter', imageUrl: logoDevUrl('wellcome.org') },
+  { id: 'o5', name: 'The World Bank', relationship: 'supporter', imageUrl: logoDevUrl('worldbank.org') },
   { id: 'o6', name: 'Asia-Pacific Climate Network (sample)', relationship: 'partner', imageUrl: photo(5486096) },
   { id: 'o7', name: 'Regional Health Research Institute (sample)', relationship: 'partner', imageUrl: photo(8761336) },
   { id: 'o8', name: 'Urban Resilience Lab (sample)', relationship: 'contributor' },
   { id: 'o9', name: 'Open Climate Alliance (sample)', relationship: 'contributor', imageUrl: photo(18999470) },
   { id: 'o10', name: 'Community Health Network (sample)', relationship: 'partner' },
   { id: 'o11', name: 'National Meteorological Service (sample)', relationship: 'contributor', imageUrl: photo(12415346) },
-  { id: 'o12', name: 'CivicDataLab', relationship: 'partner', imageUrl: photo(1092644) },
+  { id: 'o12', name: 'CivicDataLab', relationship: 'partner', imageUrl: logoDevUrl('civicdatalab.in') },
 ]
 
 export const PEOPLE: Person[] = [
@@ -180,7 +182,7 @@ export const PEOPLE: Person[] = [
   { id: 'p18', name: 'Dr. Ravi Shankar', relationship: 'contributor', imageUrl: photo(32721690) },
 ]
 
-const CIVICDATALAB = [{ name: 'CivicDataLab', avatarUrl: photo(1092644) }]
+const CIVICDATALAB = [{ name: 'CivicDataLab', avatarUrl: logoDevUrl('civicdatalab.in') }]
 
 const pub = (id: number, title: string, description: string | undefined, publicationType: string, year: number | undefined, publishers: Resource['publishers'] = CIVICDATALAB): Resource => ({
   id: `pub-${id}`,
@@ -196,7 +198,7 @@ const pub = (id: number, title: string, description: string | undefined, publica
 
 /** Connected publications: the Search card for a publication shows the year and the type, and no cover image. */
 export const PUBLICATIONS: Resource[] = [
-  pub(1, 'Heat and Health: A Regional Evidence Review', 'A review of what the evidence says about heat exposure and health outcomes across South and Southeast Asia.', 'Report', 2026, [{ name: 'World Health Organization', avatarUrl: photo(30313887) }, { name: 'CivicDataLab', avatarUrl: photo(1092644) }]),
+  pub(1, 'Heat and Health: A Regional Evidence Review', 'A review of what the evidence says about heat exposure and health outcomes across South and Southeast Asia.', 'Report', 2026, [{ name: 'World Health Organization', avatarUrl: logoDevUrl('who.int') }, { name: 'CivicDataLab', avatarUrl: logoDevUrl('civicdatalab.in') }]),
   pub(2, 'Policy Brief: Preparing Health Facilities for Extreme Weather', 'A short brief on the policy choices that keep facilities running through floods, cyclones and heatwaves.', 'Policy Brief', 2026),
   pub(3, 'Climate and Health Data Collaborative: Launch Presentation', 'Slides introducing the collaborative, its members and the shared evidence base.', 'Presentation', 2025),
   pub(4, 'Reading List: Climate Risk and Public Health', 'Curated readings for new members of the collaborative.', 'Reading Material', 2025, []),

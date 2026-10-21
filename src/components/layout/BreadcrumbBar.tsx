@@ -271,7 +271,7 @@ function BreadcrumbBar() {
         : (MOCK_PUBLIC_PEOPLE.find((p) => p.id === publisherProfileMatch[1])?.name ?? '')
     return (
       <div data-slot="breadcrumb" className={STRIP_CLASS}>
-        <Breadcrumbs crumbs={[{ label: 'Home', to: HOME_PATH }, { label: 'Publishers', to: '/community?tab=publishers' }, { label: name || 'Publisher' }]} />
+        <Breadcrumbs crumbs={[{ label: 'Home', to: HOME_PATH }, { label: 'People', to: '/community?tab=people' }, { label: name || 'Person' }]} />
       </div>
     )
   }

@@ -1,4 +1,5 @@
 import * as React from 'react'
+import { logoFit } from '@/lib/org-logo'
 
 import { cn } from '@/lib/utils'
 import './pill-ticker.css'
@@ -32,7 +33,7 @@ const initials = (name: string) =>
 function Avatar({ item }: { item: TickerItem }) {
   const [broken, setBroken] = React.useState(false)
   if (item.imageUrl && !broken)
-    return <img src={item.imageUrl} alt="" onError={() => setBroken(true)} className="size-14 shrink-0 rounded-full object-cover" />
+    return <img src={item.imageUrl} alt="" onError={() => setBroken(true)} className={`size-14 shrink-0 rounded-full ${logoFit(item.imageUrl, 'p-2')}`} />
   return (
     <span
       aria-hidden="true"

@@ -1,4 +1,5 @@
 import { MOCK_ORGANISATIONS } from '@/lib/mock-organisations'
+import { mockPortraitId } from '@/lib/mock-portraits'
 import type { UploadedAsset } from '@/lib/generic-upload'
 import { emptyPromptDatasetMetadata, type DatasetRecord } from '@/types/dataset'
 import type { UseCaseRecord } from '@/types/usecase'
@@ -111,7 +112,7 @@ function useCase(spec: UseCaseSpec): UseCaseRecord {
         id: `contributor-uc${spec.n}-${i + 1}`,
         name: c.name,
         designation: c.designation,
-        image: c.photo ? asset(pexels(c.photo, 160), `uc${spec.n}-c${i + 1}.jpg`) : null,
+        image: asset(pexels(c.photo ?? mockPortraitId(c.name), 160), `uc${spec.n}-c${i + 1}.jpg`),
       })),
       organizations: spec.organisations.map((i) => MOCK_ORGANISATIONS[i]),
     },
