@@ -255,7 +255,7 @@ function AppLayout() {
             <Route path="/forum" element={<ComingSoonPage title="Forum" />} />
             {/* One Community page with All / Organisations / Publishers tabs; the older URLs open the matching tab. */}
             <Route path="/community" element={<CommunityPage />} />
-            <Route path="/publishers" element={<Navigate to="/community?tab=publishers" replace />} />
+            <Route path="/publishers" element={<Navigate to="/community?tab=people" replace />} />
             <Route path="/publishers/:personId" element={<PublisherProfilePage />} />
             {/* The public Organisations directory and profiles sit under /explore: /organisations is the contributor's own
                 "My Organisations" workspace area. */}

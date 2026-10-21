@@ -14,7 +14,7 @@ import { useGoBack } from '@/hooks/use-go-back'
 import {
   CONTRIBUTION_LABEL,
   CONTRIBUTION_TYPES,
-  describeCounts,
+  describeTotal,
   type ContributionCounts,
   type ContributionType,
   type IndividualEntry,
@@ -521,7 +521,7 @@ function MemberCards({ members }: { members: IndividualEntry[] }) {
             typeLabel="Individual publisher"
             description={person.headline}
             metadata={person.location ? [{ icon: MapPin, text: person.location }] : []}
-            summary={describeCounts(person.counts) || undefined}
+            summary={describeTotal(person.total) || undefined}
           />
         </li>
       ))}

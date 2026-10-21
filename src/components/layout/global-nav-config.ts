@@ -16,7 +16,7 @@ import {
   type LucideIcon,
 } from 'lucide-react'
 
-/** Destinations for the global (consumer) navigation. Every route here already exists in `App.tsx`. Publishers and
+/** Destinations for the global (consumer) navigation. Every route here already exists in `App.tsx`. People and
  *  Organisations are not content types the Search page lists yet, so they have their own directory pages. */
 
 /** The primary "Search" item — the existing search results page. */
@@ -30,7 +30,7 @@ export const COLLABORATIVES_ROUTE = searchRoute('collaboratives')
 export const EVENTS_ROUTE = searchRoute('events')
 /** The Community page opens on a tab: /organisations itself is the contributor's "My Organisations" area. */
 export const COMMUNITY_ORGANISATIONS_ROUTE = '/community?tab=organisations'
-export const COMMUNITY_PUBLISHERS_ROUTE = '/community?tab=publishers'
+export const COMMUNITY_PEOPLE_ROUTE = '/community?tab=people'
 export const SIGN_IN_ROUTE = '/auth/sign-in'
 export const WORKSPACE_ROUTE = '/'
 
@@ -107,10 +107,10 @@ export const DISCOVER_GROUPS: NavGroup[] = [
         description: 'Find workshops, talks and gatherings from the civic data community.',
       },
       {
-        label: 'Publishers',
-        to: COMMUNITY_PUBLISHERS_ROUTE,
+        label: 'People',
+        to: COMMUNITY_PEOPLE_ROUTE,
         icon: Newspaper,
-        description: 'Discover the people and organisations publishing civic data.',
+        description: 'Discover the people publishing civic data, with or without an organisation.',
       },
       // The public directory: /organisations itself is the contributor's "My Organisations" area.
       {

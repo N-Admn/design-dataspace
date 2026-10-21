@@ -1,4 +1,5 @@
 import { formatShortDate, parseAppTimestamp } from '@/lib/format'
+import { organisationLogoUrl } from '@/lib/org-logo'
 import {
   MOCK_ME_ORGANISATION_IDS,
   MOCK_ORGANISATION_CONTENT,
@@ -186,6 +187,11 @@ export function describeCounts(counts: ContributionCounts): string {
     .join(' · ')
 }
 
+/** "17 published contributions" for a card's footer; empty when there is nothing, so the card shows no line. */
+export function describeTotal(total: number): string {
+  return total > 0 ? `${total} published ${total === 1 ? 'contribution' : 'contributions'}` : ''
+}
+
 export const formatContributionDate = (updatedAt: string) => formatShortDate(updatedAt)
 
 interface DirectoryEntryBase {
@@ -251,7 +257,7 @@ export function buildCommunityDirectory(source: ContributionSource, profile: Con
     } else personal.push(c)
   }
 
-  const orgOf = new Map(source.organisationWorkspaces.map((o) => [o.id, { name: o.metadata.name, imageUrl: o.metadata.logo?.dataUrl ?? null }]))
+  const orgOf = new Map(source.organisationWorkspaces.map((o) => [o.id, { name: o.metadata.name, imageUrl: organisationLogoUrl(o.metadata) }]))
   const affiliationsOf = (ids: string[]) => ids.filter((id) => orgOf.has(id)).map((id) => ({ id, ...(orgOf.get(id) as { name: string; imageUrl: string | null }) }))
 
   /** A person's own contributions: what is in their own workspace plus what they are credited on, each record once. */
@@ -310,7 +316,7 @@ export function buildCommunityDirectory(source: ContributionSource, profile: Con
         name: metadata.name,
         description: metadata.description.trim(),
         location: metadata.location.trim(),
-        imageUrl: metadata.logo?.dataUrl ?? null,
+        imageUrl: organisationLogoUrl(metadata),
         type: metadata.type,
         typeLabel: organisationTypeLabel(metadata.type),
         website: metadata.website.trim(),
@@ -337,6 +343,13 @@ const matchesTerms = (terms: string[], haystack: string) => terms.every((t) => h
 export function organisationMatches(entry: OrganisationEntry, terms: string[]): boolean {
   if (terms.length === 0) return true
   return matchesTerms(terms, [entry.name, entry.description, entry.typeLabel, entry.location].join(' ').toLowerCase())
+}
+
+/** People: the person's own profile only: name, headline, description, location, expertise and the organisations they are affiliated with
+ *  (what they have published is not searched here). */
+export function personMatches(entry: IndividualEntry, terms: string[]): boolean {
+  if (terms.length === 0) return true
+  return matchesTerms(terms, [entry.name, entry.headline, entry.description, entry.location, ...entry.expertise, ...entry.affiliations.map((a) => a.name)].join(' ').toLowerCase())
 }
 
 /** Publishers: the publisher's own name and description, its type and location, who it belongs to or what it does, and the titles of
