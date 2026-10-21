@@ -1,7 +1,6 @@
 import {
   BarChart3,
   CalendarDays,
-  Save,
   FileStack,
   FileType2,
   Globe2,
@@ -12,11 +11,10 @@ import {
   type LucideIcon,
 } from 'lucide-react'
 import type * as React from 'react'
+import { logoFit } from '@/lib/org-logo'
 import { Link } from 'react-router-dom'
 
 import datasetDnaIllustration from '@/assets/data-dna/dataset-dna-card.png'
-import { Button } from '@/components/ui/button'
-import { useToast } from '@/components/ui/toast'
 import { cn } from '@/lib/utils'
 import { useDataDNAModel, type DNAFact } from '@/components/dataset/consumer/data-dna/use-data-dna'
 
@@ -88,7 +86,7 @@ const initials = (name: string) => {
 /** A round profile image; when none is set, an initials circle (never an invented photo). */
 function ProfileImage({ name, imageUrl }: { name: string; imageUrl: string | null }) {
   if (imageUrl) {
-    return <img src={imageUrl} alt="" className="size-10 shrink-0 rounded-full object-cover" />
+    return <img src={imageUrl} alt="" className={`size-10 shrink-0 rounded-full ${logoFit(imageUrl, 'p-1.5')}`} />
   }
   return (
     <span
@@ -115,7 +113,6 @@ const fact = (facts: DNAFact[], id: string) => facts.find((f) => f.id === id)
  *  is read or counted from the dataset and its connected records; nothing is invented. Shown at the top of Dataset Details; Back,
  *  Download dataset, Share and the tabs belong to the page around it. */
 function DatasetDataDNA({ datasetId }: { datasetId: string }) {
-  const toast = useToast()
   const model = useDataDNAModel(datasetId)
   if (!model) return <p className="py-10 text-sm text-text-subdued">Dataset not found.</p>
 
@@ -215,26 +212,11 @@ function DatasetDataDNA({ datasetId }: { datasetId: string }) {
   return (
     <article
       aria-label="Data DNA"
+      data-data-card
       className="flex min-h-0 flex-col gap-5 rounded-3xl bg-page-background p-5 text-primary sm:p-6"
     >
-      <header className="flex items-start justify-between gap-4">
+      <header>
         <h1 className="type-display-1 min-w-0 break-words text-black lg:max-w-[70%]">{model.title}</h1>
-        {/* A round filled icon button (the same treatment as Version 6) that saves the Data DNA. */}
-        <Button
-          type="button"
-          size="icon"
-          className="size-11 shrink-0 rounded-full"
-          aria-label="Save Data DNA"
-          title="Save Data DNA"
-          onClick={() =>
-            toast({
-              title: 'Prototype',
-              description: 'Data DNA downloads are not wired up yet.',
-            })
-          }
-        >
-          <Save className="size-5" aria-hidden="true" />
-        </Button>
       </header>
 
       {/* Two columns from lg: story over context, and usage over volume + supporting metrics; each stacks at a 16px gap.

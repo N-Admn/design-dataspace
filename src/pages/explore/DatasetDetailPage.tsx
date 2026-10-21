@@ -5,6 +5,7 @@ import { ArrowLeft } from 'lucide-react'
 import { EmptyState } from '@/components/shared/EmptyState'
 import { ViewTabPanel, ViewTabs } from '@/components/shared/ViewTabs'
 import { DatasetActions } from '@/components/dataset/consumer/DatasetActions'
+import { DatasetApplications } from '@/components/dataset/consumer/DatasetApplications'
 import { DatasetDataDNA } from '@/components/dataset/consumer/DatasetDataDNA'
 import { DatasetOverview } from '@/components/dataset/consumer/DatasetOverview'
 import { DatasetDataExplorer } from '@/components/dataset/consumer/DatasetDataExplorer'
@@ -18,10 +19,11 @@ const VIEWS = [
   { key: 'visualisations', label: 'Visualisations' },
   // The key stays `overview` so existing `?view=overview` links keep working; only the label changed.
   { key: 'overview', label: 'Metadata' },
+  { key: 'applications', label: 'Applications' },
 ]
 
 /** Consumer-facing Dataset Details page — Dataset Header, then the three primary
- *  views (Data / Visualisations / Metadata). See the Dataset Module PRD for the
+ *  views (Data / Visualisations / Metadata / Applications). See the Dataset Module PRD for the
  *  full specification this implements. */
 function DatasetDetailPage() {
   const { id } = useParams<{ id: string }>()
@@ -95,6 +97,10 @@ function DatasetDetailPage() {
 
       <ViewTabPanel id="overview" idPrefix="dataset-detail" active={view === 'overview'}>
         <DatasetOverview form={form} publisher={publisher} updatedAt={record.updatedAt} />
+      </ViewTabPanel>
+
+      <ViewTabPanel id="applications" idPrefix="dataset-detail" active={view === 'applications'}>
+        <DatasetApplications datasetId={record.id} />
       </ViewTabPanel>
     </div>
   )

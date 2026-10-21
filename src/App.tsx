@@ -53,6 +53,7 @@ import { PlaygroundPlaceholderPage } from '@/pages/playground/PlaygroundPlacehol
 import { PlaygroundPreviewPage } from '@/pages/design-system/PlaygroundPreviewPage'
 import { ComingSoonPage } from '@/pages/ComingSoonPage'
 import { CommunityPage } from '@/pages/community/CommunityPage'
+import { AboutPage } from '@/pages/AboutPage'
 import { PublicOrganisationProfilePage } from '@/pages/community/PublicOrganisationProfilePage'
 import { PublisherProfilePage } from '@/pages/community/PublisherProfilePage'
 import { DiscoverPage } from '@/pages/DiscoverPage'
@@ -261,7 +262,7 @@ function AppLayout() {
                 "My Organisations" workspace area. */}
             <Route path="/explore/organisations" element={<Navigate to="/community?tab=organisations" replace />} />
             <Route path="/explore/organisations/:organisationId" element={<PublicOrganisationProfilePage />} />
-            <Route path="/about" element={<ComingSoonPage title="About" />} />
+            <Route path="/about" element={<AboutPage />} />
             <Route path="/contact" element={<ComingSoonPage title="Contact Us" />} />
             <Route path="*" element={<Navigate to="/dashboard/datasets" replace />} />
           </Routes>
