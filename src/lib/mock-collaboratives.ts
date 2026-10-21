@@ -55,7 +55,7 @@ const REAL_ORGS: Record<string, { name: string; domain: string }> = {
   'food-observatory': { name: 'World Food Programme', domain: 'wfp.org' },
   'basin-authority': { name: 'International Water Management Institute', domain: 'iwmi.org' },
   'farmers-alliance': { name: 'Food and Agriculture Organization of the United Nations', domain: 'fao.org' },
-  'water-utilities': { name: 'WaterAid', domain: 'wateraid.org' },
+  'water-utilities': { name: 'World Bank', domain: 'worldbank.org' },
   'sanitation-hub': { name: 'UNICEF', domain: 'unicef.org' },
   'local-government': { name: 'UN-Habitat', domain: 'unhabitat.org' },
 }
@@ -209,10 +209,10 @@ const collaborative4Form: CollaborativeFormState = {
   },
 }
 
-/** The sparsest publishable Collaborative: required fields only. No image, tags, SDG goals, link or people. */
+/** The sparsest publishable Collaborative: required fields and a cover image only. No tags, SDG goals, link or people. */
 const collaborative5Form: CollaborativeFormState = {
   metadata: {
-    image: null,
+    image: fakeAsset(pexels(17609960), 'hero.jpg'),
     name: 'Safe Water Access Data Network',
     slug: 'safe-water-access',
     descriptionHtml: '<p>Sharing data on urban water supply and coverage.</p>',
