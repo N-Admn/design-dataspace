@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
+import { logoFit, orgLogoFor } from '@/lib/org-logo'
 import type { VariantProps } from 'class-variance-authority'
-import { Building2, CalendarDays, Clock, Globe2, MapPin, Radio } from 'lucide-react'
+import { CalendarDays, Clock, Globe2, MapPin, Radio } from 'lucide-react'
 
 import { Badge, type badgeVariants } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -56,13 +57,11 @@ function RailRow({ icon, children }: { icon: ReactNode; children: ReactNode }) {
 function RailOrgRow({ organisation }: { organisation: Organisation }) {
   const content = (
     <>
-      {organisation.logo ? (
-        <img src={organisation.logo.dataUrl} alt="" className="size-6 shrink-0 rounded-full object-cover" />
-      ) : (
-        <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-surface-subdued text-text-subdued">
-          <Building2 className="size-3.5" />
-        </span>
-      )}
+      <img
+        src={orgLogoFor(organisation.name, organisation.logo?.dataUrl, organisation.url)}
+        alt=""
+        className={`size-6 shrink-0 rounded-full ${logoFit(orgLogoFor(organisation.name, organisation.logo?.dataUrl, organisation.url), 'p-[3px]')}`}
+      />
       <span className="min-w-0 truncate text-sm text-text-default">{organisation.name}</span>
     </>
   )

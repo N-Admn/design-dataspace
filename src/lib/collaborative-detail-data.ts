@@ -1,4 +1,5 @@
 import { BookOpen } from 'lucide-react'
+import { orgLogoFor } from '@/lib/org-logo'
 
 import { formatShortDate, parseAppTimestamp } from '@/lib/format'
 import { buildCardMetadata } from '@/lib/content-card'
@@ -60,7 +61,7 @@ export function buildCollaborativeDetailFromForm(form: CollaborativeFormState, u
   const parties = new Map<string, ConnectedParty & { kind: 'person' | 'organisation' }>()
   for (const p of connections.people) {
     if (parties.has(p.refId)) continue
-    parties.set(p.refId, { id: p.refId, name: p.name, relationship: p.relationship, imageUrl: p.logo?.dataUrl, kind: p.kind })
+    parties.set(p.refId, { id: p.refId, name: p.name, relationship: p.relationship, imageUrl: p.kind === 'organisation' ? orgLogoFor(p.name, p.logo?.dataUrl) : p.logo?.dataUrl, kind: p.kind })
   }
   const all = [...parties.values()]
 

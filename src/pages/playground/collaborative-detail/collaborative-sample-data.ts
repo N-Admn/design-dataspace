@@ -1,15 +1,15 @@
 
 import type { ContentCardMetadataItem } from '@/lib/content-card'
 import type { CollaborativeRelationship } from '@/types/collaborative'
-import { siteLogoUrl } from '@/lib/org-logo'
+import { mockOrgLogo, siteLogoUrl } from '@/lib/org-logo'
 
 /** Local, clearly illustrative sample data for the Collaborative Detail Page playground. Nothing here is read from, or written to,
  *  the CivicDataSpace data models, and the organisations, people and records are invented for layout testing. Every count the
  *  page shows (hero, ecosystem, tabs, result counts) is taken from these arrays, so the numbers always agree with the lists. */
 
 /** Free-licence Pexels photos the project's own sample data already uses (portraits, covers, avatars). All of them are stand-ins:
- *  none is a real logo, and none shows the person or organisation it is attached to. Real organisations (CivicDataLab, WHO, UNEP, Oxford,
- *  Wellcome, the World Bank) use their real logo instead, looked up from their website (empty without a Logo.dev key). */
+ *  none is a real logo, and none shows the person it is attached to. Real organisations (CivicDataLab, WHO, UNEP, Oxford, Wellcome, the
+ *  World Bank) use their local logo copy, and the invented "(sample)" organisations use a mock logo. */
 const photo = (id: number, width = 300) => `https://images.pexels.com/photos/${id}/pexels-photo-${id}.jpeg?auto=compress&cs=tinysrgb&w=${width}`
 
 export interface Resource {
@@ -139,10 +139,10 @@ const u = (
 
 export const USE_CASES: Resource[] = [
   u(1, 'Maternal Health Monitoring in Rural Districts', 'Tracks antenatal and delivery services against seasonal access barriers so district teams can plan outreach.', 'Maternal health', 'India', 'Public health', ['Maternal', 'Outreach', 'Districts'], 2026, { datasetCount: 3, chartCount: 2, thumbnailUrl: photo(30313887, 1200), publishers: [{ name: 'CivicDataLab', avatarUrl: siteLogoUrl('civicdatalab.in') }, { name: 'World Health Organization', avatarUrl: siteLogoUrl('who.int') }] }),
-  u(2, 'Early Warning for Heat-Related Illness', 'Combines forecast heat with clinic data to alert health workers before heatwaves peak.', 'Heat', 'South Asia', 'Disaster management', ['Heat', 'Early warning'], 2025, { datasetCount: 2, chartCount: 1, thumbnailUrl: photo(37358150, 1200), publishers: [{ name: 'National Meteorological Service (sample)', avatarUrl: photo(12415346) }] }),
-  u(3, 'Climate Resilient Health Facilities', 'Prioritises upgrades for facilities exposed to floods, cyclones and extreme heat.', 'Climate risk', 'Asia-Pacific', 'Infrastructure', ['Facilities', 'Resilience'], 2026, { datasetCount: 4, thumbnailUrl: photo(8190805, 1200), publishers: [{ name: 'Urban Resilience Lab (sample)', avatarUrl: photo(8761336) }, { name: 'The World Bank', avatarUrl: siteLogoUrl('worldbank.org') }] }),
-  u(4, 'Air Quality Alerts for Urban Schools', 'Sends school administrators daily guidance when pollution crosses health thresholds.', 'Air quality', 'India', 'Education', ['Schools', 'Alerts'], 2025, { datasetCount: 1, chartCount: 1, thumbnailUrl: photo(12415346, 1200), publishers: [{ name: 'Open Climate Alliance (sample)', avatarUrl: photo(18999470) }] }),
-  u(5, 'Cholera Outbreak Risk Mapping after Floods', 'Maps sub-districts where flooding and water quality point to elevated outbreak risk.', 'Water and sanitation', 'South Asia', 'Public health', ['Cholera', 'Flood', 'Mapping'], 2024, { datasetCount: 2, thumbnailUrl: photo(17609960, 1200), publishers: [{ name: 'Community Health Network (sample)', avatarUrl: photo(5486096) }, { name: 'World Health Organization', avatarUrl: siteLogoUrl('who.int') }] }),
+  u(2, 'Early Warning for Heat-Related Illness', 'Combines forecast heat with clinic data to alert health workers before heatwaves peak.', 'Heat', 'South Asia', 'Disaster management', ['Heat', 'Early warning'], 2025, { datasetCount: 2, chartCount: 1, thumbnailUrl: photo(37358150, 1200), publishers: [{ name: 'National Meteorological Service (sample)', avatarUrl: mockOrgLogo('National Meteorological Service (sample)') }] }),
+  u(3, 'Climate Resilient Health Facilities', 'Prioritises upgrades for facilities exposed to floods, cyclones and extreme heat.', 'Climate risk', 'Asia-Pacific', 'Infrastructure', ['Facilities', 'Resilience'], 2026, { datasetCount: 4, thumbnailUrl: photo(8190805, 1200), publishers: [{ name: 'Urban Resilience Lab (sample)', avatarUrl: mockOrgLogo('Urban Resilience Lab (sample)') }, { name: 'The World Bank', avatarUrl: siteLogoUrl('worldbank.org') }] }),
+  u(4, 'Air Quality Alerts for Urban Schools', 'Sends school administrators daily guidance when pollution crosses health thresholds.', 'Air quality', 'India', 'Education', ['Schools', 'Alerts'], 2025, { datasetCount: 1, chartCount: 1, thumbnailUrl: photo(12415346, 1200), publishers: [{ name: 'Open Climate Alliance (sample)', avatarUrl: mockOrgLogo('Open Climate Alliance (sample)') }] }),
+  u(5, 'Cholera Outbreak Risk Mapping after Floods', 'Maps sub-districts where flooding and water quality point to elevated outbreak risk.', 'Water and sanitation', 'South Asia', 'Public health', ['Cholera', 'Flood', 'Mapping'], 2024, { datasetCount: 2, thumbnailUrl: photo(17609960, 1200), publishers: [{ name: 'Community Health Network (sample)', avatarUrl: mockOrgLogo('Community Health Network (sample)') }, { name: 'World Health Organization', avatarUrl: siteLogoUrl('who.int') }] }),
   u(6, 'Heat Action Plan Evaluation for Cities', undefined, 'Heat', 'India', 'Urban planning', ['Policy', 'Cities'], undefined, { thumbnailUrl: photo(12413177, 1200) }),
 ]
 
@@ -152,12 +152,12 @@ export const ORGANISATIONS: Organisation[] = [
   { id: 'o3', name: 'University of Oxford', relationship: 'partner', imageUrl: siteLogoUrl('ox.ac.uk') },
   { id: 'o4', name: 'Wellcome Trust', relationship: 'supporter', imageUrl: siteLogoUrl('wellcome.org') },
   { id: 'o5', name: 'The World Bank', relationship: 'supporter', imageUrl: siteLogoUrl('worldbank.org') },
-  { id: 'o6', name: 'Asia-Pacific Climate Network (sample)', relationship: 'partner', imageUrl: photo(5486096) },
-  { id: 'o7', name: 'Regional Health Research Institute (sample)', relationship: 'partner', imageUrl: photo(8761336) },
-  { id: 'o8', name: 'Urban Resilience Lab (sample)', relationship: 'contributor' },
-  { id: 'o9', name: 'Open Climate Alliance (sample)', relationship: 'contributor', imageUrl: photo(18999470) },
-  { id: 'o10', name: 'Community Health Network (sample)', relationship: 'partner' },
-  { id: 'o11', name: 'National Meteorological Service (sample)', relationship: 'contributor', imageUrl: photo(12415346) },
+  { id: 'o6', name: 'Asia-Pacific Climate Network (sample)', relationship: 'partner', imageUrl: mockOrgLogo('Asia-Pacific Climate Network (sample)') },
+  { id: 'o7', name: 'Regional Health Research Institute (sample)', relationship: 'partner', imageUrl: mockOrgLogo('Regional Health Research Institute (sample)') },
+  { id: 'o8', name: 'Urban Resilience Lab (sample)', relationship: 'contributor', imageUrl: mockOrgLogo('Urban Resilience Lab (sample)') },
+  { id: 'o9', name: 'Open Climate Alliance (sample)', relationship: 'contributor', imageUrl: mockOrgLogo('Open Climate Alliance (sample)') },
+  { id: 'o10', name: 'Community Health Network (sample)', relationship: 'partner', imageUrl: mockOrgLogo('Community Health Network (sample)') },
+  { id: 'o11', name: 'National Meteorological Service (sample)', relationship: 'contributor', imageUrl: mockOrgLogo('National Meteorological Service (sample)') },
   { id: 'o12', name: 'CivicDataLab', relationship: 'partner', imageUrl: siteLogoUrl('civicdatalab.in') },
 ]
 
