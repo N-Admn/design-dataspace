@@ -1,4 +1,6 @@
 import type { UploadedAsset } from '@/lib/generic-upload'
+import { logoDevAsset } from '@/lib/org-logo'
+import { mockPortraitId } from '@/lib/mock-portraits'
 import { MOCK_ORGANISATIONS } from '@/lib/mock-organisations'
 import { MOCK_PEOPLE } from '@/lib/mock-people'
 import type { CollaborativeFormState, CollaborativePerson, CollaborativeRecord, CollaborativeRelationship } from '@/types/collaborative'
@@ -32,22 +34,40 @@ function person(id: string, relationship: CollaborativeRelationship, photoId?: n
     name: p.name,
     context: p.title,
     relationship,
-    logo: photoId
-      ? fakeAsset(`https://images.pexels.com/photos/${photoId}/pexels-photo-${photoId}.jpeg?auto=compress&cs=tinysrgb&w=300`, `${p.id}.jpg`)
-      : undefined,
+    logo: fakeAsset(`https://images.pexels.com/photos/${photoId ?? mockPortraitId(p.name)}/pexels-photo-${photoId ?? mockPortraitId(p.name)}.jpeg?auto=compress&cs=tinysrgb&w=300`, `${p.id}.jpg`),
   }
 }
 
 const photo = (id: number) => fakeAsset(`https://images.pexels.com/photos/${id}/pexels-photo-${id}.jpeg?auto=compress&cs=tinysrgb&w=300`, `photo-${id}.jpg`)
 
-/** An invented organisation (sample data only), with a free-licence Pexels scene standing in for its logo. */
-function sampleOrg(slug: string, name: string, relationship: CollaborativeRelationship, logoPhoto: number): CollaborativePerson {
-  return { refId: `org-sample-${slug}`, kind: 'organisation', name, context: 'Registered organisation', relationship, logo: photo(logoPhoto) }
+/** Real organisations used as sample data, each with the website its logo is looked up from (see `lib/org-logo.ts`). */
+const REAL_ORGS: Record<string, { name: string; domain: string }> = {
+  'metro-air': { name: 'World Meteorological Organization', domain: 'wmo.int' },
+  'coastal-climate': { name: 'UN Environment Programme', domain: 'unep.org' },
+  'riverside-sph': { name: 'London School of Hygiene & Tropical Medicine', domain: 'lshtm.ac.uk' },
+  'community-clinics': { name: 'Médecins Sans Frontières', domain: 'msf.org' },
+  'green-commons': { name: 'Wellcome Trust', domain: 'wellcome.org' },
+  'open-cities': { name: 'Open Government Partnership', domain: 'opengovpartnership.org' },
+  'urban-mobility': { name: 'Institute for Transportation and Development Policy', domain: 'itdp.org' },
+  'national-stats': { name: 'Open Data Institute', domain: 'theodi.org' },
+  'rural-livelihoods': { name: 'International Fund for Agricultural Development', domain: 'ifad.org' },
+  'agri-research': { name: 'CGIAR', domain: 'cgiar.org' },
+  'food-observatory': { name: 'World Food Programme', domain: 'wfp.org' },
+  'basin-authority': { name: 'International Water Management Institute', domain: 'iwmi.org' },
+  'farmers-alliance': { name: 'Food and Agriculture Organization of the United Nations', domain: 'fao.org' },
+  'water-utilities': { name: 'WaterAid', domain: 'wateraid.org' },
+  'sanitation-hub': { name: 'UNICEF', domain: 'unicef.org' },
+  'local-government': { name: 'UN-Habitat', domain: 'unhabitat.org' },
+}
+
+function realOrg(slug: string, relationship: CollaborativeRelationship): CollaborativePerson {
+  const { name, domain } = REAL_ORGS[slug]
+  return { refId: `org-sample-${slug}`, kind: 'organisation', name, context: 'Registered organisation', relationship, logo: logoDevAsset(domain, slug) ?? undefined }
 }
 
 /** An invented person (sample data only); `photoId` is an optional free-licence Pexels portrait. */
 function samplePerson(slug: string, name: string, designation: string, relationship: CollaborativeRelationship, photoId?: number): CollaborativePerson {
-  return { refId: `person-sample-${slug}`, kind: 'person', name, context: designation, relationship, logo: photoId ? photo(photoId) : undefined }
+  return { refId: `person-sample-${slug}`, kind: 'person', name, context: designation, relationship, logo: photo(photoId ?? mockPortraitId(name)) }
 }
 
 const collaborative1Form: CollaborativeFormState = {
@@ -71,11 +91,11 @@ const collaborative1Form: CollaborativeFormState = {
       org('org-1', 'partner'),
       org('org-2', 'supporter'),
       org('org-3', 'contributor'),
-      sampleOrg('metro-air', 'Metropolitan Air Quality Authority', 'partner', 12415346),
-      sampleOrg('coastal-climate', 'Coastal Climate Research Institute', 'partner', 17609960),
-      sampleOrg('riverside-sph', 'Riverside University School of Public Health', 'contributor', 15325468),
-      sampleOrg('community-clinics', 'Community Clinics Alliance', 'contributor', 5486096),
-      sampleOrg('green-commons', 'Green Commons Trust', 'supporter', 18999470),
+      realOrg('metro-air', 'partner'),
+      realOrg('coastal-climate', 'partner'),
+      realOrg('riverside-sph', 'contributor'),
+      realOrg('community-clinics', 'contributor'),
+      realOrg('green-commons', 'supporter'),
       person('person-1', 'contributor', 7580822),
       person('person-3', 'partner', 30004323),
       person('person-6', 'supporter'),
@@ -230,14 +250,14 @@ const collaborative6Form: CollaborativeFormState = {
     people: [
       org('org-1', 'partner'),
       org('org-3', 'supporter'),
-      sampleOrg('metro-air', 'Metropolitan Air Quality Authority', 'partner', 12415346),
-      sampleOrg('riverside-sph', 'Riverside University School of Public Health', 'contributor', 15325468),
-      sampleOrg('community-clinics', 'Community Clinics Alliance', 'contributor', 5486096),
-      sampleOrg('open-cities', 'Open Cities Lab', 'contributor', 8761336),
-      sampleOrg('urban-mobility', 'Urban Mobility Council', 'supporter', 1181406),
-      sampleOrg('green-commons', 'Green Commons Trust', 'supporter', 18999470),
-      sampleOrg('coastal-climate', 'Coastal Climate Research Institute', 'partner', 17609960),
-      sampleOrg('national-stats', 'National Statistics Cooperative', 'contributor', 7245808),
+      realOrg('metro-air', 'partner'),
+      realOrg('riverside-sph', 'contributor'),
+      realOrg('community-clinics', 'contributor'),
+      realOrg('open-cities', 'contributor'),
+      realOrg('urban-mobility', 'supporter'),
+      realOrg('green-commons', 'supporter'),
+      realOrg('coastal-climate', 'partner'),
+      realOrg('national-stats', 'contributor'),
       samplePerson('meera-kapoor', 'Dr. Meera Kapoor', 'Air Quality Scientist', 'contributor', 29811345),
       samplePerson('vikram-rao', 'Dr. Vikram Rao', 'Emergency Medicine Physician', 'partner', 38889914),
       samplePerson('anita-joshi', 'Anita Joshi', 'Public Health Officer', 'contributor'),
@@ -291,13 +311,13 @@ const collaborative7Form: CollaborativeFormState = {
     people: [
       org('org-1', 'partner'),
       org('org-2', 'supporter'),
-      sampleOrg('rural-livelihoods', 'Rural Livelihoods Network', 'partner', 4865519),
-      sampleOrg('agri-research', 'Agricultural Research Council', 'partner', 8190805),
-      sampleOrg('food-observatory', 'Food Systems Observatory', 'contributor', 7245808),
-      sampleOrg('basin-authority', 'Basin Management Authority', 'contributor', 12413177),
-      sampleOrg('national-stats', 'National Statistics Cooperative', 'contributor', 1181406),
-      sampleOrg('farmers-alliance', 'Farmers’ Producer Alliance', 'supporter', 20427650),
-      sampleOrg('coastal-climate', 'Coastal Climate Research Institute', 'partner', 17609960),
+      realOrg('rural-livelihoods', 'partner'),
+      realOrg('agri-research', 'partner'),
+      realOrg('food-observatory', 'contributor'),
+      realOrg('basin-authority', 'contributor'),
+      realOrg('national-stats', 'contributor'),
+      realOrg('farmers-alliance', 'supporter'),
+      realOrg('coastal-climate', 'partner'),
       samplePerson('kavita-menon', 'Kavita Menon', 'Agronomist', 'contributor', 21792037),
       samplePerson('sunil-varma', 'Sunil Varma', 'Market Analyst', 'contributor'),
       samplePerson('harish-naidu', 'Dr. Harish Naidu', 'Soil Scientist', 'partner', 12775205),
@@ -349,13 +369,13 @@ const collaborative8Form: CollaborativeFormState = {
     people: [
       org('org-1', 'partner'),
       org('org-3', 'contributor'),
-      sampleOrg('water-utilities', 'Water Utilities Forum', 'partner', 35670601),
-      sampleOrg('sanitation-hub', 'Sanitation Innovation Hub', 'partner', 7245808),
-      sampleOrg('basin-authority', 'Basin Management Authority', 'contributor', 12413177),
-      sampleOrg('community-clinics', 'Community Clinics Alliance', 'contributor', 5486096),
-      sampleOrg('open-cities', 'Open Cities Lab', 'contributor', 8761336),
-      sampleOrg('local-government', 'Local Government Association', 'supporter', 1181406),
-      sampleOrg('riverside-sph', 'Riverside University School of Public Health', 'contributor', 15325468),
+      realOrg('water-utilities', 'partner'),
+      realOrg('sanitation-hub', 'partner'),
+      realOrg('basin-authority', 'contributor'),
+      realOrg('community-clinics', 'contributor'),
+      realOrg('open-cities', 'contributor'),
+      realOrg('local-government', 'supporter'),
+      realOrg('riverside-sph', 'contributor'),
       samplePerson('priya-nair', 'Priya Nair', 'Programme Manager', 'partner', 30004323),
       samplePerson('aisha-verma', 'Dr. Aisha Verma', 'Public Health Researcher', 'contributor', 7580822),
       samplePerson('rahul-desai', 'Rahul Desai', 'Urban Planner', 'contributor', 26834972),

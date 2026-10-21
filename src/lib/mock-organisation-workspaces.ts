@@ -1,22 +1,10 @@
-import type { UploadedAsset } from '@/lib/generic-upload'
 import { MOCK_PROFILE } from '@/types/profile'
 import type { OrganisationRecord } from '@/types/organisation-workspace'
 
-function fakeLogo(url: string, name: string): UploadedAsset {
-  return {
-    id: `asset-${name}`,
-    name,
-    extension: 'jpg',
-    sizeLabel: '48 KB',
-    sizeBytes: 48_000,
-    uploadedAt: '06/08/2026 09:00:00',
-    dataUrl: url,
-  }
-}
-
-/** Fictional organisations that round out the public Organisations directory. The current user ('me') is not a member of any
- *  of them, so "My Organisations" is unaffected. None has published content: they show how an organisation with a valid public
- *  profile stays in the Organisations directory but is left out of Publishers. Names, links and text are invented. */
+/** Real organisations that round out the public Organisations directory, with their real websites so their logos can be looked up (see
+ *  `lib/org-logo.ts`). The current user ('me') is not a member of any of them, so "My Organisations" is unaffected. None has published
+ *  content: they show how an organisation with a valid public profile stays in the Organisations directory but is left out of
+ *  Publishers. Names and websites are real; the short descriptions and everything else about them here are illustrative only. */
 function directoryOrganisation(
   n: number,
   metadata: Partial<OrganisationRecord['metadata']> & Pick<OrganisationRecord['metadata'], 'name' | 'type'>,
@@ -52,74 +40,74 @@ function directoryOrganisation(
 
 const DIRECTORY_SEED_ORGANISATIONS: OrganisationRecord[] = [
   directoryOrganisation(2, {
-    name: 'Meridian Institute for Public Policy',
-    type: 'research',
-    description:
-      'An independent research institute studying how public data can improve policy design, from municipal budgeting to school education. Its analysts publish methods alongside findings so that other teams can reuse them, and run a fellowship for early-career researchers working with government data.',
-    website: 'https://meridian-policy.example.org',
-    location: 'New Delhi, India',
-    linkedin: 'https://linkedin.com/company/meridian-policy',
+    name: 'World Health Organization',
+    type: 'other',
+    description: 'The United Nations agency for international public health, setting norms and supporting countries on health systems, data and emergencies.',
+    website: 'https://who.int',
+    location: 'Geneva, Switzerland',
   }),
   directoryOrganisation(3, {
-    name: 'Urban Commons Lab',
-    type: 'non-profit',
-    description: 'Helps neighbourhood groups map and monitor shared public spaces, services and infrastructure in growing cities.',
-    website: 'https://urbancommons.example.org',
-    location: 'Pune, India',
+    name: 'UN Environment Programme',
+    type: 'other',
+    description: 'The United Nations body that coordinates environmental work, including climate, air quality and biodiversity data for policy.',
+    website: 'https://unep.org',
+    location: 'Nairobi, Kenya',
   }),
   directoryOrganisation(4, {
-    name: 'State Open Data Cell',
-    type: 'state-government',
-    description: 'The state government unit responsible for releasing departmental datasets under an open licence and supporting departments in doing so.',
-    website: 'https://opendata.state.example.gov',
-    location: 'Thiruvananthapuram, India',
+    name: 'Ministry of Health and Family Welfare, Government of India',
+    type: 'government',
+    description: 'The Government of India ministry responsible for public health, family welfare and the national health programmes.',
+    website: 'https://mohfw.gov.in',
+    location: 'New Delhi, India',
   }),
   directoryOrganisation(5, {
-    name: 'Riverbend Health Foundation',
-    type: 'non-profit',
-    description: 'Works with district health teams to collect, clean and share maternal and child health indicators from primary care centres.',
-    website: 'https://riverbendhealth.example.org',
-    location: 'Bhubaneswar, India',
-    github: 'https://github.com/riverbend-health',
+    name: 'UNICEF',
+    type: 'other',
+    description: "The United Nations agency working for children's health, nutrition, education and protection.",
+    website: 'https://unicef.org',
+    location: 'New York, United States',
   }),
   directoryOrganisation(6, {
-    name: 'Open Budget Collective',
-    type: 'community',
-    description: 'A volunteer community that turns published budget documents into open, comparable tables and explains them in plain language.',
-    website: 'https://openbudget.example.org',
-    location: 'Bengaluru, India',
-    x: 'https://x.com/openbudgetcollective',
+    name: 'Wellcome Trust',
+    type: 'non-profit',
+    description: 'A global charitable foundation that funds research in health, including climate and health.',
+    website: 'https://wellcome.org',
+    location: 'London, United Kingdom',
   }),
   directoryOrganisation(7, {
-    name: 'Institute of Applied Statistics',
+    name: 'London School of Hygiene & Tropical Medicine',
     type: 'academic',
-    description: 'A university department teaching and researching official statistics, survey methods and the responsible use of administrative data.',
-    website: 'https://ias.example.edu',
-    location: 'Hyderabad, India',
+    description: 'A university focused on public and global health research and teaching.',
+    website: 'https://lshtm.ac.uk',
+    location: 'London, United Kingdom',
   }),
   directoryOrganisation(8, {
-    name: 'National Water Data Authority',
+    name: 'NITI Aayog',
     type: 'government',
-    description: 'Maintains national records on rainfall, groundwater and river flow, and publishes them for planners, researchers and the public.',
-    website: 'https://waterdata.example.gov',
+    description: "The Government of India's policy think tank, supporting national development planning and data-driven policy.",
+    website: 'https://niti.gov.in',
     location: 'New Delhi, India',
   }),
   directoryOrganisation(9, {
-    name: 'Lakeshore Civic Technologies',
-    type: 'private',
-    description: 'A small company building accessible dashboards and reporting tools for local governments.',
-    website: 'https://lakeshore-civic.example.com',
-    location: 'Kochi, India',
+    name: 'Gates Foundation',
+    type: 'non-profit',
+    description: 'A private foundation funding work on global health, development and data for decision-making.',
+    website: 'https://gatesfoundation.org',
+    location: 'Seattle, United States',
   }),
   directoryOrganisation(10, {
-    name: "Northern Plains Farmers' Network",
-    type: 'community',
-    description: 'A cooperative of farming households sharing field-level weather and price observations.',
+    name: 'Food and Agriculture Organization of the United Nations',
+    type: 'other',
+    description: 'The United Nations agency leading efforts on food security, agriculture and rural development.',
+    website: 'https://fao.org',
+    location: 'Rome, Italy',
   }),
   directoryOrganisation(11, {
-    name: 'Centre for Transparent Governance and Participatory Public Finance Research',
-    type: 'research',
-    location: 'Guwahati, India',
+    name: 'United Nations Development Programme',
+    type: 'other',
+    description: 'The United Nations development agency, supporting countries on the Sustainable Development Goals, governance and resilience.',
+    website: 'https://undp.org',
+    location: 'New York, United States',
   }),
 ]
 
@@ -142,10 +130,8 @@ export const MOCK_ORGANISATION_WORKSPACES: OrganisationRecord[] = [
       type: 'non-profit',
       website: 'https://civicdatalab.in',
       contactEmail: 'contact@civicdatalab.in',
-      // Same mockup logo used for CivicDataLab's Organiser/Partner rows on the
-      // Event details page (`lib/mock-organisations.ts`) — one consistent
-      // stand-in image for this org everywhere it appears.
-      logo: fakeLogo('https://images.pexels.com/photos/1092644/pexels-photo-1092644.jpeg?auto=compress&cs=tinysrgb&w=200', 'civicdatalab-logo.jpg'),
+      // No uploaded logo: its real logo is looked up from the website above (the Event pages' organiser rows use the same one).
+      logo: null,
       linkedin: '',
       github: '',
       x: '',

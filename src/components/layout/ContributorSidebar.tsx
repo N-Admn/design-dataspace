@@ -1,4 +1,5 @@
 import * as React from 'react'
+import { logoFit } from '@/lib/org-logo'
 import { Link, useLocation } from 'react-router-dom'
 import { ArrowLeft, ChevronLeft, ChevronRight, Menu } from 'lucide-react'
 
@@ -127,7 +128,7 @@ function ContributorSidebar({
   const groups = visibleNavGroups(groupsProp ?? NAV_GROUPS)
 
   const avatar = identity.avatarUrl ? (
-    <img src={identity.avatarUrl} alt="" className="size-12 shrink-0 rounded-full object-cover" />
+    <img src={identity.avatarUrl} alt="" className={`size-12 shrink-0 rounded-full ${logoFit(identity.avatarUrl, 'p-2')}`} />
   ) : (
     <div className="flex size-12 shrink-0 items-center justify-center rounded-full bg-muted text-sm font-semibold text-muted-foreground">
       {identity.avatarLabel}

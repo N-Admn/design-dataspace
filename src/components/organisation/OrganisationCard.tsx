@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { logoFit, organisationLogoUrl } from '@/lib/org-logo'
 import { ArrowRight, Building2 } from 'lucide-react'
 
 import { Badge } from '@/components/ui/badge'
@@ -26,6 +27,7 @@ interface OrganisationCardProps {
  * elements, so it works correctly with Tab/Enter and screen readers. */
 function OrganisationCard({ organisation, role }: OrganisationCardProps) {
   const { metadata, members } = organisation
+  const logoUrl = organisationLogoUrl(metadata)
   const resolvedType = typeLabel(metadata.type)
   const visibleMembers = members.slice(0, VISIBLE_MEMBER_AVATARS)
   const overflowCount = members.length - visibleMembers.length
@@ -36,11 +38,11 @@ function OrganisationCard({ organisation, role }: OrganisationCardProps) {
       className="group flex flex-col items-center gap-5 rounded-2xl border border-border-default bg-surface-default p-8 text-center shadow-sm transition-shadow hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-focus focus-visible:ring-offset-2"
     >
       <div className="relative">
-        {metadata.logo?.dataUrl ? (
+        {logoUrl ? (
           <img
-            src={metadata.logo.dataUrl}
+            src={logoUrl}
             alt=""
-            className="size-24 rounded-full border border-border-default object-cover"
+            className={`size-24 rounded-full border border-border-default ${logoFit(logoUrl, 'p-3.5')}`}
           />
         ) : (
           <div className="flex size-24 items-center justify-center rounded-full bg-surface-accent text-text-on-accent">
