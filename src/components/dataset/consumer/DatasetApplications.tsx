@@ -42,7 +42,7 @@ function DatasetApplications({ datasetId }: { datasetId: string }) {
 
   return (
     <div className="py-6">
-      <SectionHeader as="h2" title="Applications" description="Where this dataset is applied across CivicDataSpace: the published use cases, collaboratives and events that use it." />
+      <SectionHeader as="h2" title="Where this dataset is used" description="Where this dataset is applied across CivicDataSpace: the published use cases, collaboratives and events that use it." />
 
       {/* The same chips as a collaborative's Explore section: All, then one for each kind that has something. */}
       {groups.length > 1 && (
