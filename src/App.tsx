@@ -45,6 +45,7 @@ import { OrganisationEventsPage } from '@/pages/organisation/OrganisationEventsP
 import { OrganisationMembersPage } from '@/pages/organisation/OrganisationMembersPage'
 import { OrganisationProfilePage } from '@/pages/organisation/OrganisationProfilePage'
 import { DocsIndexRedirect, DocsLayout } from '@/pages/design-system/docs/DocsLayout'
+import { DocumentationLayout } from '@/pages/documentation/DocumentationLayout'
 import { DatasetHeaderPlayground } from '@/pages/playground/DatasetHeaderPlayground'
 import { CollaborativeDetailPlayground } from '@/pages/playground/collaborative-detail/CollaborativeDetailPlayground'
 import { CommunityProfilePlayground } from '@/pages/playground/community-profile/CommunityProfilePlayground'
@@ -105,6 +106,8 @@ function AppLayout() {
   const isPublicationPreview = /^\/dashboard\/publications\/[^/]+\/preview$/.test(location.pathname)
   // The design system is a docs site: /design-system opens its first page and /design-system/<page> each topic.
   const isDesignSystem = location.pathname === '/design-system' || location.pathname.startsWith('/design-system/')
+  // Documentation is the same kind of docs layout: its own sidebar against the left edge, its own padding.
+  const isDocumentation = location.pathname === '/documentation' || location.pathname.startsWith('/documentation/')
   // The Playground Hub and every playground under /playground share the consumer chrome.
   const isPlayground = location.pathname === '/playground' || location.pathname.startsWith('/playground/')
   const isConsumerRoute =
@@ -115,6 +118,7 @@ function AppLayout() {
     location.pathname === '/publishers' ||
     location.pathname.startsWith('/publishers/') ||
     location.pathname === '/about' ||
+    isDocumentation ||
     location.pathname === '/contact' ||
     location.pathname === '/discover' ||
     isPlayground ||
@@ -188,7 +192,7 @@ function AppLayout() {
           'mx-auto flex w-full flex-1 flex-col',
           // The design-system page is a docs layout: its sidebar sits flush against the left edge and it handles its own
           // content padding, so it opts out of the shared page gutter, vertical padding and max width.
-          isDesignSystem ? 'max-w-none' : cn('max-w-[1760px] gap-6 py-8', PAGE_GUTTER_X),
+          isDesignSystem || isDocumentation ? 'max-w-none' : cn('max-w-[1760px] gap-6 py-8', PAGE_GUTTER_X),
           !hideSidebar && 'md:flex-row',
           // Consumer-facing pages (Explore, Search, Discover, Collaboratives,
           // Forum) sit on a white canvas rather than the app's default grey
@@ -236,6 +240,8 @@ function AppLayout() {
             <Route path="/organisations/:organisationId/events" element={<OrganisationEventsPage />} />
             <Route path="/organisations/:organisationId/members" element={<OrganisationMembersPage />} />
             <Route path="/organisations/:organisationId/profile" element={<OrganisationProfilePage />} />
+            <Route path="/documentation" element={<DocumentationLayout />} />
+            <Route path="/documentation/:slug" element={<DocumentationLayout />} />
             <Route path="/design-system" element={<DocsIndexRedirect />} />
             <Route path="/design-system/:slug" element={<DocsLayout />} />
             <Route path="/playground" element={<PlaygroundHubPage />} />

@@ -8,6 +8,7 @@ import { useCloseSearch } from '@/hooks/use-close-search'
 import { PAGE_GUTTER_X } from '@/lib/layout'
 import { MOCK_PUBLIC_PEOPLE } from '@/lib/mock-community'
 import { DOCS_HOME, DOC_PAGES, docPath } from '@/pages/design-system/docs/registry'
+import { articleBySlug, docPath as docsPath, groupLabel } from '@/pages/documentation/content'
 import { CURRENT_USER_PERSON_ID } from '@/types/organisation-workspace'
 import { cn } from '@/lib/utils'
 
@@ -234,6 +235,21 @@ function BreadcrumbBar() {
       <div data-slot="breadcrumb" className={STRIP_CLASS}>
         <Breadcrumbs
           crumbs={[{ label: 'Home', to: HOME_PATH }, { label: 'Search', to: EXPLORE_PATH }, { label: exploreListLabel }]}
+        />
+      </div>
+    )
+  }
+
+  if (pathname === '/documentation' || pathname.startsWith('/documentation/')) {
+    const article = articleBySlug(pathname.split('/')[2])
+    return (
+      <div data-slot="breadcrumb" className={STRIP_CLASS}>
+        <Breadcrumbs
+          crumbs={[
+            { label: 'Home', to: HOME_PATH },
+            { label: 'Documentation', to: article ? docsPath() : undefined },
+            ...(article ? [{ label: groupLabel(article.group) }, { label: article.title }] : []),
+          ]}
         />
       </div>
     )
