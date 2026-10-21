@@ -1,5 +1,5 @@
 import { storyFrom } from '@/components/dataset/consumer/data-dna/use-data-dna'
-import { logoDevUrl } from '@/lib/org-logo'
+import { siteLogoUrl } from '@/lib/org-logo'
 
 /** Test scenarios for the Data DNA card (playground only). A scenario is plain, serialisable data so it can also be
  *  handed to the chrome-less preview frame as a URL parameter.
@@ -232,7 +232,7 @@ export function resolveCard(data: ScenarioData): { view: CardView; diag: Diagnos
     provenance.push({ id: 'access', label: 'Access', value: 'Restricted', icon: 'access' })
     adjustments.push('Restricted access is stated in the bottom row, apart from the technical metrics.')
   }
-  const publisher = data.publisher ? { name: data.publisher, avatarUrl: data.publisher === 'CivicDataLab' ? (logoDevUrl('civicdatalab.in') ?? null) : null } : null
+  const publisher = data.publisher ? { name: data.publisher, avatarUrl: data.publisher === 'CivicDataLab' ? (siteLogoUrl('civicdatalab.in') ?? null) : null } : null
   if (!publisher) hidden.push('Publisher card')
   if (provenance.length > 0 && provenance.length < 3)
     adjustments.push('Bottom-row items redistribute evenly across the available width.')

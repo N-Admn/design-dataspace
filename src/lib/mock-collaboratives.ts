@@ -1,5 +1,5 @@
 import type { UploadedAsset } from '@/lib/generic-upload'
-import { logoDevAsset } from '@/lib/org-logo'
+import { siteLogoAsset } from '@/lib/org-logo'
 import { mockPortraitId } from '@/lib/mock-portraits'
 import { MOCK_ORGANISATIONS } from '@/lib/mock-organisations'
 import { MOCK_PEOPLE } from '@/lib/mock-people'
@@ -62,7 +62,7 @@ const REAL_ORGS: Record<string, { name: string; domain: string }> = {
 
 function realOrg(slug: string, relationship: CollaborativeRelationship): CollaborativePerson {
   const { name, domain } = REAL_ORGS[slug]
-  return { refId: `org-sample-${slug}`, kind: 'organisation', name, context: 'Registered organisation', relationship, logo: logoDevAsset(domain, slug) ?? undefined }
+  return { refId: `org-sample-${slug}`, kind: 'organisation', name, context: 'Registered organisation', relationship, logo: siteLogoAsset(domain, slug) ?? undefined }
 }
 
 /** An invented person (sample data only); `photoId` is an optional free-licence Pexels portrait. */
