@@ -163,7 +163,7 @@ function BreadcrumbBar() {
           crumbs={[
             { label: 'Home', to: HOME_PATH },
             { label: 'Search', to: EXPLORE_PATH },
-            { label: 'Datasets', to: '/explore/datasets' },
+            { label: 'Datasets', to: '/search?type=datasets' },
             { label: datasetName },
           ]}
         />
@@ -220,7 +220,7 @@ function BreadcrumbBar() {
           crumbs={[
             { label: 'Home', to: HOME_PATH },
             { label: 'Search', to: EXPLORE_PATH },
-            { label: 'Events', to: '/explore/events' },
+            { label: 'Events', to: '/search?type=events' },
             { label: eventName },
           ]}
         />
