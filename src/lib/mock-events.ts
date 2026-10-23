@@ -396,6 +396,27 @@ const evt8Form: EventFormState = {
   relatedContent: FULL_RELATED_CONTENT,
 }
 
+// evt-9 is an event of a kind the list has no name for, so it is typed "Other".
+const evt9Form: EventFormState = {
+  ...evt3Form,
+  metadata: {
+    ...evt3Form.metadata,
+    title: 'Civic Data Open House',
+    subtitle: 'An informal day to meet the team, see demos and swap ideas',
+    eventType: 'other',
+    theme: 'urban-development',
+    overview:
+      'An open-door day for anyone curious about civic data: short demos, a walk through the platform and time to talk with contributors.',
+    startDate: '2026-11-14',
+    endDate: '2026-11-14',
+    registrationRequired: false,
+    registrationUrl: '',
+    registrationEndDate: '',
+    registrationEndTime: '',
+  },
+  publications: mkPublications('evt9'),
+}
+
 // evt-6 is published and live, but has a saved working copy with unpublished
 // edits — surfaces as "Published · Unsaved changes".
 const evt6WorkingForm: EventFormState = {
@@ -415,4 +436,5 @@ export const MOCK_EVENTS: EventRecord[] = [
   { id: 'evt-6', status: 'published', createdAt: '02/06/2026 09:00:00', updatedAt: '09/06/2026 17:45:00', form: evt6WorkingForm, publishedForm: evt6Form, organisationId: 'org-workspace-1', createdBy: 'Sana Khan' },
   { id: 'evt-7', status: 'published', createdAt: '20/05/2026 09:00:00', updatedAt: '25/05/2026 10:10:00', form: evt7Form, publishedForm: evt7Form },
   { id: 'evt-8', status: 'published', createdAt: '28/04/2026 09:00:00', updatedAt: '05/05/2026 14:20:00', form: evt8Form, publishedForm: evt8Form },
+  { id: 'evt-9', status: 'published', createdAt: '02/10/2026 09:00:00', updatedAt: '06/10/2026 11:00:00', form: evt9Form, publishedForm: evt9Form },
 ]
