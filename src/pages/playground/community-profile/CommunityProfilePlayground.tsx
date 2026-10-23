@@ -2,7 +2,7 @@ import * as React from 'react'
 import { Link } from 'react-router-dom'
 import { ArrowLeft } from 'lucide-react'
 
-import { OrganisationProfileView, PublisherProfileView } from '@/components/community/ProfileViews'
+import { OrganisationProfileView, PublisherProfileView, type HeroLayout } from '@/components/community/ProfileViews'
 import { useCommunityDirectory, useContentCardItems } from '@/hooks/use-community'
 import { withContributions, type IndividualEntry, type OrganisationEntry } from '@/lib/community'
 import { PAGE_GUTTER_X } from '@/lib/layout'
@@ -56,6 +56,8 @@ function CommunityProfilePlayground() {
   const [subject, setSubject] = React.useState('organisation:org-workspace-5')
   const [mode, setMode] = React.useState<Mode>('full')
   // The published content on tabs by default (one list on screen at a time); the sections layout is the live pages' current one.
+  // The top of the profile: the banner the live pages use, or the earlier bento of cards.
+  const [heroLayout, setHeroLayout] = React.useState<HeroLayout>('banner')
   const [contentLayout, setContentLayout] = React.useState<'tabs' | 'sections'>('tabs')
 
   const [kind, id] = subject.split(':') as ['organisation' | 'individual', string]
@@ -113,6 +115,17 @@ function CommunityProfilePlayground() {
               </select>
             </label>
             <label className="flex items-center gap-1.5">
+              Hero
+              <select
+                value={heroLayout}
+                onChange={(e) => setHeroLayout(e.target.value as HeroLayout)}
+                className="rounded-md border border-border-input bg-surface-default px-2 py-1 text-xs text-text-default focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-focus"
+              >
+                <option value="banner">Banner (live)</option>
+                <option value="bento">Bento cards</option>
+              </select>
+            </label>
+            <label className="flex items-center gap-1.5">
               Published content
               <select
                 value={contentLayout}
@@ -130,8 +143,8 @@ function CommunityProfilePlayground() {
 
       <main>
         <Shell className="py-10">
-          {org && <OrganisationProfileView org={thinOrganisation(org, mode)} cards={cards} showBack={false} contentLayout={contentLayout} />}
-          {person && <PublisherProfileView person={thinIndividual(person, mode)} cards={cards} showBack={false} contentLayout={contentLayout} />}
+          {org && <OrganisationProfileView org={thinOrganisation(org, mode)} cards={cards} showBack={false} contentLayout={contentLayout} heroLayout={heroLayout} />}
+          {person && <PublisherProfileView person={thinIndividual(person, mode)} cards={cards} showBack={false} contentLayout={contentLayout} heroLayout={heroLayout} />}
         </Shell>
       </main>
 

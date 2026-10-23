@@ -81,21 +81,43 @@ const CONTEXT_CARD = 'flex min-h-[5.5rem] min-w-0 flex-col justify-center gap-3 
 
 const PANEL = 'rounded-2xl bg-secondary p-4 text-secondary-foreground sm:p-5'
 
-/** One count panel: the icon and the number (heading-1) on one line, then what it counts. It links to that kind's list on the page. */
-function CountPanel({ type, count }: { type: ContributionType; count: number }) {
+/** One count panel. It links to that kind's list on the page. By default the icon and the number (heading-1) share a line with what it
+ *  counts underneath. With `iconBeside` the icon is on the left and the number sits above what it counts, in a column beside it, and
+ *  with `plain` it is just that: no background and not a link, for a row of counts that the page divides with rules. */
+function CountPanel({ type, count, className, iconBeside = false, plain = false }: { type: ContributionType; count: number; className?: string; iconBeside?: boolean; plain?: boolean }) {
   const Icon = TYPE_ICON[type]
+  const icon = (
+    <span aria-hidden="true" className={cn('flex size-[36px] shrink-0 items-center justify-center rounded-full', TYPE_TINT[type])}>
+      <Icon className="size-[14px]" strokeWidth={1.75} />
+    </span>
+  )
+  const number = <span className="type-heading-1 tabular-nums text-text-brand">{count.toLocaleString()}</span>
+  const label = <span className="type-body text-text-default">{CONTRIBUTION_LABEL[type][count === 1 ? 'singular' : 'plural']}</span>
+  const body = iconBeside ? (
+    <>
+      {icon}
+      <span className="flex min-w-0 flex-col">
+        {number}
+        {label}
+      </span>
+    </>
+  ) : (
+    <>
+      <div className="flex items-center gap-3">
+        {icon}
+        {number}
+      </div>
+      {label}
+    </>
+  )
+  const layout = iconBeside ? 'flex items-center gap-4' : 'flex flex-col justify-center gap-2'
+  if (plain) return <div className={cn('min-w-0', layout, className)}>{body}</div>
   return (
     <a
       href={`#section-${type}`}
-      className={cn(PANEL, 'flex min-h-[6.8rem] min-w-0 flex-col justify-center gap-2 transition-colors hover:bg-secondary/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring')}
+      className={cn(PANEL, 'min-h-[6.8rem] min-w-0 transition-colors hover:bg-secondary/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring', layout, className)}
     >
-      <div className="flex items-center gap-3">
-        <span aria-hidden="true" className={cn('flex size-[36px] shrink-0 items-center justify-center rounded-full', TYPE_TINT[type])}>
-          <Icon className="size-[14px]" strokeWidth={1.75} />
-        </span>
-        <span className="type-heading-1 tabular-nums text-text-brand">{count.toLocaleString()}</span>
-      </div>
-      <span className="type-body text-text-default">{CONTRIBUTION_LABEL[type][count === 1 ? 'singular' : 'plural']}</span>
+      {body}
     </a>
   )
 }
@@ -108,6 +130,8 @@ interface ProfileHeroProps {
   headline?: string
   /** An organisation's type. */
   badge?: string
+  /** Where the type opens: the Community directory with that organisation type applied. */
+  badgeHref?: string
   location?: string
   links: ProfileLink[]
   /** An individual's social profiles, shown as a card of icons. */
@@ -325,15 +349,134 @@ function ProfileHero({ kind, name, imageUrl, headline, badge, location, links, s
   )
 }
 
-/** The heading each tab opens with, in the same editorial pattern as a collaborative's sections: a small label, a large title, and one
- *  line saying what the list is. `who` is how the page's subject relates to the content ("published by X" or "X is credited on"). */
-const TAB_INTRO: Record<ContributionType, { title: string; intro: (who: string) => string }> = {
-  dataset: { title: 'Evidence and data.', intro: (who) => `Browse the datasets ${who} and open any of them for a closer look.` },
-  'use-case': { title: 'Applications in practice.', intro: (who) => `Explore the use cases ${who}.` },
-  publication: { title: 'Reports and reading.', intro: (who) => `Read the publications ${who}.` },
-  collaborative: { title: 'Working together.', intro: (who) => `See the collaboratives ${who}.` },
-  event: { title: 'Gatherings and workshops.', intro: (who) => `Find the events ${who}.` },
-  'ai-model': { title: 'Models in use.', intro: (who) => `Look at the AI models ${who}.` },
+/** A social profile in the banner: a filled circle, overlapped with its neighbours and ringed in white where they meet. */
+const BANNER_SOCIAL = 'flex size-10 items-center justify-center rounded-full ring-2 ring-background'
+
+/** One fact in the banner's row: a grey icon and its text, or a link. The row separates the facts with a thin grey rule. */
+function BannerFact({ icon: Icon, children, href, to }: { icon: React.ComponentType<{ className?: string }>; children: React.ReactNode; href?: string; to?: string }) {
+  const body = (
+    <>
+      <Icon className="size-4 shrink-0 text-text-subdued" />
+      <span className="min-w-0 truncate">{children}</span>
+    </>
+  )
+  const cls = 'type-body inline-flex min-w-0 max-w-full items-center gap-2 text-text-default'
+  const link = cn(cls, 'underline-offset-4 hover:text-text-brand hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-focus')
+  if (to) return <Link to={to} className={link}>{body}</Link>
+  if (href)
+    return (
+      <a href={href} target="_blank" rel="noreferrer" className={link}>
+        {body}
+        <span className="sr-only"> (opens in a new tab)</span>
+      </a>
+    )
+  return <span className={cls}>{body}</span>
+}
+
+/** The other top-of-profile layout: a banner instead of a bento. All on one softly tinted card: a large square image on the left; beside it the kind, the name, one
+ *  row of facts (type, location, website, or an individual's organisations and profiles) and the description; then a rule and one row of
+ *  white panels, one for each kind of content published. It has no separate About, People or Join cards: the people of an organisation are listed
+ *  further down the page, as in the bento. */
+function ProfileBannerHero({ kind, name, imageUrl, headline, badge, badgeHref, location, links, social, counts, total, about, expertise = [], affiliations = [] }: ProfileHeroProps) {
+  const socials = [
+    { label: 'GitHub', href: social?.github, Icon: GitHubIcon },
+    { label: 'LinkedIn', href: social?.linkedin, Icon: LinkedInIcon },
+    { label: 'X', href: social?.x, Icon: XIcon },
+  ]
+  return (
+    <div className="flex flex-col gap-8 rounded-2xl bg-primary/5 p-6 md:p-8">
+      <section aria-label="Profile" className="grid items-stretch gap-6 md:grid-cols-[minmax(0,14rem)_minmax(0,1fr)] md:gap-8 lg:grid-cols-[minmax(0,18rem)_minmax(0,1fr)]">
+        <div className="aspect-square w-40 self-start overflow-hidden rounded-2xl bg-background md:w-full">
+          <EntityImage kind={kind} name={name} imageUrl={imageUrl} fill initialsClassName="text-5xl" />
+        </div>
+        <div className="flex min-w-0 flex-col gap-[0.6rem]">
+          <div className="flex min-w-0 flex-col items-start gap-[0.6rem]">
+            {/* A small badge that opens the directory on the tab for this kind of profile. */}
+            <Tag size="sm" to={kind === 'organisation' ? '/community?tab=organisations' : '/community?tab=people'} className="bg-background">
+              {kind === 'organisation' ? 'Organisations' : 'People'}
+            </Tag>
+            <h1 title={name} className="type-heading-1 line-clamp-2 break-words text-black">{name}</h1>
+            {/* The name's line box leaves room under its letters, so the designation is pulled up to make the gap look like the others. */}
+            {headline && <p className="type-heading-3 -mt-[0.26rem] text-text-default">{headline}</p>}
+          </div>
+          <div className="-mt-[0.1rem] flex flex-wrap items-center gap-y-2 [&>*:first-child]:border-l-0 [&>*:first-child]:pl-0 [&>*]:border-l [&>*]:border-text-subdued/40 [&>*]:px-4 [&>*]:leading-5">
+            {badge && (
+              <BannerFact icon={Building2} to={badgeHref}>
+                {badge}
+              </BannerFact>
+            )}
+            {location && <BannerFact icon={MapPin}>{location}</BannerFact>}
+            {links
+              .filter((l) => l.icon === 'website')
+              .map((l) => (
+                <BannerFact key={l.label} icon={Globe2} href={l.href}>
+                  {l.label}
+                </BannerFact>
+              ))}
+            {affiliations.map((a) => (
+              <BannerFact key={a.id} icon={Building2} to={`/explore/organisations/${a.id}`}>
+                {a.name}
+              </BannerFact>
+            ))}
+          </div>
+          {about && <p className="type-body mt-[0.2rem] max-w-4xl whitespace-pre-line text-text-subdued">{about}</p>}
+          {/* The bottom line of the card: the areas of expertise on the left, and the three social profiles on the right. The social profiles
+              always show, so the row never changes shape: one that is set is a link in the normal colour, one that is not is grey. */}
+          <div className="mt-auto flex flex-wrap items-end justify-between gap-x-6 gap-y-3 pt-4">
+            {expertise.length > 0 && (
+              <ul className="flex flex-wrap gap-2" aria-label="Areas of expertise">
+                {expertise.map((area) => (
+                  <li key={area}>
+                    <Tag size="sm" to={`/search?q=${encodeURIComponent(area)}`} className="bg-background">
+                      {area}
+                    </Tag>
+                  </li>
+                ))}
+              </ul>
+            )}
+            <ul className="ml-auto flex -space-x-2" aria-label="Social profiles">
+              {socials.map(({ label, href, Icon }) => (
+                <li key={label} className="relative hover:z-10 focus-within:z-10">
+                  {href ? (
+                    <a href={href} target="_blank" rel="noreferrer" className={cn(BANNER_SOCIAL, 'bg-primary text-primary-foreground transition-opacity hover:opacity-85 focus-visible:outline-none focus-visible:ring-border-focus')}>
+                      <Icon className="size-4 fill-current" />
+                      <span className="sr-only">{label} (opens in a new tab)</span>
+                    </a>
+                  ) : (
+                    <span className={cn(BANNER_SOCIAL, 'bg-[color-mix(in_srgb,var(--muted-foreground)_40%,var(--background))] text-background')} title={`No ${label} profile`}>
+                      <Icon className="size-4 fill-current" />
+                      <span className="sr-only">No {label} profile</span>
+                    </span>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <hr className="border-t border-border" />
+
+      {/* Plain counts, not links, divided by a thin grey rule from lg up (they sit two or three to a row below that). */}
+      <div className="grid grid-cols-2 gap-x-4 gap-y-6 sm:grid-cols-3 lg:grid-cols-6 lg:gap-x-0 lg:divide-x lg:divide-border">
+        {CONTRIBUTION_TYPES.map((t) => (
+          <CountPanel key={t} type={t} count={counts[t] ?? 0} iconBeside plain className="lg:px-6 lg:first:pl-0 lg:last:pr-0" />
+        ))}
+      </div>
+      <p className="sr-only">{total} published {total === 1 ? 'contribution' : 'contributions'}</p>
+    </div>
+  )
+}
+
+/** The line under each tab's heading, saying what the list is. `who` is how the page's subject relates to the content ("published by X" or
+ *  "X is credited on"). The heading itself is the kind, as on a collaborative's sections (the count is already on the tab). */
+const TAB_INTRO: Record<ContributionType, (who: string) => string> = {
+  dataset: (who) => `Browse the datasets ${who} and open any of them for a closer look.`,
+  'use-case': (who) => `Explore the use cases ${who}.`,
+  publication: (who) => `Read the publications ${who}.`,
+  collaborative: (who) => `See the collaboratives ${who}.`,
+  event: (who) => `Find the events ${who}.`,
+  'ai-model': (who) => `Look at the AI models ${who}.`,
 }
 
 type TabSort = 'newest' | 'oldest' | 'az'
@@ -456,15 +599,11 @@ function ContributionSections({
         />
         <ViewTabPanel id={active} idPrefix="profile-content" active>
           <div className="pt-10">
-            <p className="text-xs font-medium uppercase tracking-[0.2em] text-text-subdued">{label}</p>
-            <h2 className="type-display-1 mt-3 text-text-brand">{intro.title}</h2>
-            <p className="mt-4 max-w-2xl text-base text-text-subdued">{intro.intro(who)}</p>
-
-            <div className="mb-4 mt-8 flex flex-wrap items-center justify-between gap-2 text-sm">
-              <p role="status" aria-live="polite" className="text-text-subdued">
-                {all.length} {all.length === 1 ? CONTRIBUTION_LABEL[active].singular.toLowerCase() : label.toLowerCase()}
-              </p>
-              <label className="flex items-center gap-2 text-text-subdued">
+            {/* The heading, then the line saying what the list is with Sort by level with it at the right. */}
+            <h3 className="type-heading-2 text-text-brand">{label}</h3>
+            <div className="mb-6 mt-1 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-2">
+              <p className="type-body text-text-subdued">{intro(who)}</p>
+              <label className="flex items-center gap-2 text-sm text-text-subdued">
                 Sort by:
                 <select
                   value={sort}
@@ -479,6 +618,9 @@ function ContributionSections({
                 </select>
               </label>
             </div>
+            <p role="status" aria-live="polite" className="sr-only">
+              {all.length} {all.length === 1 ? CONTRIBUTION_LABEL[active].singular.toLowerCase() : label.toLowerCase()}
+            </p>
 
             <CardGrid items={all} cards={cards} expanded={expanded.has(active)} onToggle={() => toggle(active)} label={label} />
           </div>
@@ -542,5 +684,5 @@ function ProfileNotFound({ title, description, backTo, backLabel }: { title: str
   )
 }
 
-export { BackLink, ProfileHero, ProfileLinks, ContributionSections, MemberCards, ProfileNotFound }
+export { BackLink, ProfileBannerHero, ProfileHero, ProfileLinks, ContributionSections, MemberCards, ProfileNotFound }
 export type { ProfileLink }

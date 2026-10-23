@@ -10,7 +10,7 @@ import {
   NoResults,
   type RailGroup,
 } from '@/components/community/DirectoryParts'
-import { BackLink, ProfileHero, ProfileLinks } from '@/components/community/ProfileParts'
+import { BackLink, ProfileBannerHero, ProfileHero, ProfileLinks } from '@/components/community/ProfileParts'
 import { GlobalSearchField } from '@/components/discover/GlobalSearchField'
 import { FeaturedCollaborativeCard } from '@/components/layout/FeaturedCollaborativeCard'
 import { FEATURED_COLLABORATIVES } from '@/components/layout/global-nav-config'
@@ -303,9 +303,60 @@ export function ProfilePartsPage() {
   return (
     <>
       <DocSection
+        id="banner-hero"
+        title="ProfileBannerHero"
+        description="The top of every profile, organisation or individual: one softly tinted card. On the left a large square image that fills its tile (a wide logo is cropped to it). On the right a small badge that opens the Community directory on the matching tab, the name (Heading 1), the designation (Heading 3), one row of facts and the description (body). Along the bottom, areas of expertise as small badges, and the three social profiles as overlapping filled circles. Below a divider, a row of six counts, each with its icon on the left and the number above its label, with a thin grey rule between them."
+      >
+        <ComponentPreview
+          title="Profile banner"
+          stage="fill"
+          code={`<ProfileBannerHero
+  kind="individual"
+  name="Dr. Aisha Verma"
+  imageUrl={null}
+  headline="Public health researcher"
+  location="New Delhi, India"
+  links={[]}
+  social={{ linkedin: 'https://linkedin.com', github: '', x: '' }}
+  counts={{ dataset: 2, 'use-case': 2, collaborative: 2, event: 1 }}
+  total={7}
+  about="Studies how heat, air quality and water access shape health outcomes."
+  expertise={['Public health', 'Climate and health']}
+  affiliations={[{ id: 'org-workspace-2', name: 'Meridian Institute for Public Policy', imageUrl: null }]}
+/>`}
+        >
+          <div className="w-full">
+            <ProfileBannerHero
+              kind="individual"
+              name="Dr. Aisha Verma"
+              imageUrl={null}
+              headline="Public health researcher"
+              location="New Delhi, India"
+              links={[]}
+              social={{ linkedin: 'https://linkedin.com', github: '', x: '' }}
+              counts={{ dataset: 2, 'use-case': 2, publication: 1, collaborative: 2, event: 1 }}
+              total={8}
+              about="Studies how heat, air quality and water access shape health outcomes in Indian cities, and works with district teams to turn those findings into early-warning tools."
+              expertise={['Public health', 'Climate and health', 'Early warning']}
+              affiliations={[{ id: 'org-workspace-2', name: 'Meridian Institute for Public Policy', imageUrl: null }]}
+            />
+          </div>
+        </ComponentPreview>
+        <ReferenceTable
+          columns={['Part', 'Detail']}
+          rows={[
+            ['Facts row', 'Grey 16px icons with body text (type, location, website, or a person’s organisations), separated by a thin grey rule. Only what is set shows.'],
+            ['Social profiles', 'Always three circles, GitHub, LinkedIn and X: filled in the primary colour and a link when set, solid grey and not clickable when not.'],
+            ['Counts', 'One per kind of content, plain on the card (no background, not links), divided by a thin grey rule from lg up. Below lg they sit two or three to a row without the rules.'],
+            ['Left out', 'There is no separate About, People or “Become part of …” card here; an organisation’s people are listed further down the page.'],
+          ]}
+        />
+      </DocSection>
+
+      <DocSection
         id="hero"
-        title="ProfileHero"
-        description="The top of every profile, organisation or individual, as one bento laid out like the Collaborative page’s hero (39.5 / 60.5 from xl, stacked below) at a fixed 35rem height from xl. Left: an identity card (round image on top, then the label, name, details and links, all left-aligned with a 20px gap) and the context cards. Right: a panel for each of the six kinds of content, and a large About card. Every card is always there, so a profile with little data keeps the same shape."
+        title="ProfileHero (bento)"
+        description="The earlier top of a profile, still available in the Playground: one bento laid out like the Collaborative page’s hero (39.5 / 60.5 from xl, stacked below) at a fixed 35rem height from xl. Left: an identity card (round image on top, then the label, name, details and links, all left-aligned with a 20px gap) and the context cards. Right: a panel for each of the six kinds of content, and a large About card. Every card is always there, so a profile with little data keeps the same shape."
       >
         <ComponentPreview
           title="Profile hero"

@@ -27,6 +27,7 @@ function EntityImage({
   className,
   initialsClassName,
   square = false,
+  fill = false,
 }: {
   kind: EntityKind
   name: string
@@ -35,6 +36,8 @@ function EntityImage({
   initialsClassName?: string
   /** Set when the frame is a square rather than a circle: a logo then needs only a small margin, not the larger one a circle's curve calls for. */
   square?: boolean
+  /** Set for a large square tile where the image should fill the whole frame, with no margin (a wide logo is cropped to the square). */
+  fill?: boolean
 }) {
   const [failed, setFailed] = React.useState(false)
   React.useEffect(() => setFailed(false), [imageUrl])
@@ -45,7 +48,7 @@ function EntityImage({
         alt={kind === 'organisation' ? `${name} logo` : `Photo of ${name}`}
         onError={() => setFailed(true)}
         // A logo is shown whole inside its circle, with the margin that keeps a square logo's corners inside it; a photo fills it.
-        className={cn('size-full', kind === 'organisation' ? 'bg-white object-contain p-5' : 'object-cover', className, kind === 'organisation' && (square ? 'p-1.5' : 'p-[15%]'))}
+        className={cn('size-full', fill ? 'object-cover' : kind === 'organisation' ? 'bg-white object-contain p-5' : 'object-cover', className, !fill && kind === 'organisation' && (square ? 'p-1.5' : 'p-[15%]'))}
       />
     )
   }
