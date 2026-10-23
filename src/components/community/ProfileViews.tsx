@@ -26,14 +26,14 @@ function OrganisationProfileView({
   cards,
   showBack = true,
   contentLayout = 'tabs',
-  heroLayout = 'bento',
+  heroLayout = 'banner',
 }: {
   org: OrganisationEntry
   cards: Map<string, SearchResultItem>
   showBack?: boolean
   /** How the published content is laid out: a kind on each tab (the default), or one section after another. */
   contentLayout?: 'sections' | 'tabs'
-  /** The top of the page: the bento of cards (the default), or a banner with the image beside the name and facts. */
+  /** The top of the page: a banner with the image beside the name and facts (the default), or the bento of cards. */
   heroLayout?: HeroLayout
 }) {
   const Hero = heroLayout === 'banner' ? ProfileBannerHero : ProfileHero
@@ -83,7 +83,7 @@ function PublisherProfileView({
   cards,
   showBack = true,
   contentLayout = 'tabs',
-  heroLayout = 'bento',
+  heroLayout = 'banner',
 }: {
   person: IndividualEntry
   cards: Map<string, SearchResultItem>
