@@ -82,12 +82,12 @@ const CONTEXT_CARD = 'flex min-h-[5.5rem] min-w-0 flex-col justify-center gap-3 
 const PANEL = 'rounded-2xl bg-secondary p-4 text-secondary-foreground sm:p-5'
 
 /** One count panel: the icon and the number (heading-1) on one line, then what it counts. It links to that kind's list on the page. */
-function CountPanel({ type, count }: { type: ContributionType; count: number }) {
+function CountPanel({ type, count, className }: { type: ContributionType; count: number; className?: string }) {
   const Icon = TYPE_ICON[type]
   return (
     <a
       href={`#section-${type}`}
-      className={cn(PANEL, 'flex min-h-[6.8rem] min-w-0 flex-col justify-center gap-2 transition-colors hover:bg-secondary/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring')}
+      className={cn(PANEL, 'flex min-h-[6.8rem] min-w-0 flex-col justify-center gap-2 transition-colors hover:bg-secondary/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring', className)}
     >
       <div className="flex items-center gap-3">
         <span aria-hidden="true" className={cn('flex size-[36px] shrink-0 items-center justify-center rounded-full', TYPE_TINT[type])}>
@@ -348,9 +348,9 @@ function BannerFact({ icon: Icon, children, href, to }: { icon: React.ComponentT
   return <span className={cls}>{body}</span>
 }
 
-/** The other top-of-profile layout: a banner instead of a bento. On a softly tinted card, a large square image on the left; beside it the kind, the name, one row
- *  of facts (type, location, website, or an individual's organisations and profiles) and the description; then a rule and one row with a
- *  panel for each kind of content published. It has no separate About, People or Join cards: the people of an organisation are listed
+/** The other top-of-profile layout: a banner instead of a bento. All on one softly tinted card: a large square image on the left; beside it the kind, the name, one
+ *  row of facts (type, location, website, or an individual's organisations and profiles) and the description; then a rule and one row of
+ *  white panels, one for each kind of content published. It has no separate About, People or Join cards: the people of an organisation are listed
  *  further down the page, as in the bento. */
 function ProfileBannerHero({ kind, name, imageUrl, headline, badge, location, links, social, counts, total, about, expertise = [], affiliations = [] }: ProfileHeroProps) {
   const socials = [
@@ -359,9 +359,9 @@ function ProfileBannerHero({ kind, name, imageUrl, headline, badge, location, li
     { label: 'X', href: social?.x, Icon: XIcon },
   ].filter((x) => x.href)
   return (
-    <div className="flex flex-col gap-8">
-      <section aria-label="Profile" className="grid items-start gap-6 rounded-2xl bg-primary/5 p-6 md:grid-cols-[minmax(0,14rem)_minmax(0,1fr)] md:gap-8 md:p-8 lg:grid-cols-[minmax(0,18rem)_minmax(0,1fr)]">
-        <div className="aspect-square w-40 overflow-hidden rounded-2xl bg-secondary md:w-full">
+    <div className="flex flex-col gap-8 rounded-2xl bg-primary/5 p-6 md:p-8">
+      <section aria-label="Profile" className="grid items-start gap-6 md:grid-cols-[minmax(0,14rem)_minmax(0,1fr)] md:gap-8 lg:grid-cols-[minmax(0,18rem)_minmax(0,1fr)]">
+        <div className="aspect-square w-40 overflow-hidden rounded-2xl bg-background md:w-full">
           <EntityImage kind={kind} name={name} imageUrl={imageUrl} className={kind === 'organisation' ? 'p-6' : undefined} initialsClassName="text-5xl" />
         </div>
         <div className="flex min-w-0 flex-col gap-4">
@@ -408,7 +408,7 @@ function ProfileBannerHero({ kind, name, imageUrl, headline, badge, location, li
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
         {CONTRIBUTION_TYPES.map((t) => (
-          <CountPanel key={t} type={t} count={counts[t] ?? 0} />
+          <CountPanel key={t} type={t} count={counts[t] ?? 0} className="bg-background hover:bg-background/70" />
         ))}
       </div>
       <p className="sr-only">{total} published {total === 1 ? 'contribution' : 'contributions'}</p>
