@@ -25,7 +25,7 @@ import { ReviewPublishPanel } from '@/components/shared/ReviewPublishPanel'
 import { SectionHeader } from '@/components/shared/SectionHeader'
 import { GEOGRAPHY_OPTIONS, SECTOR_OPTIONS } from '@/types/dataset'
 import { SDG_GOAL_OPTIONS, type UseCaseBlockType, type UseCaseFormState } from '@/types/usecase'
-import { validateUseCaseBasicInfo, isUseCaseReadyToPublish } from '@/lib/usecase-validation'
+import { validateUseCaseBasicInfo, validateUseCaseConnect, isUseCaseReadyToPublish } from '@/lib/usecase-validation'
 
 interface UseCaseStep3ReviewProps {
   form: UseCaseFormState
@@ -133,6 +133,8 @@ function UseCaseStep3Review({ form, onEditStep, hasLiveVersion, onPublish }: Use
   const { metadata, blocks, connections } = form
   const basicInfoErrors = validateUseCaseBasicInfo(form)
   const basicInfoOk = Object.keys(basicInfoErrors).length === 0
+  const connectErrors = validateUseCaseConnect(form)
+  const connectOk = Object.keys(connectErrors).length === 0
   const ready = isUseCaseReadyToPublish(form)
 
   const basicInfoDetail = basicInfoOk
@@ -153,7 +155,7 @@ function UseCaseStep3Review({ form, onEditStep, hasLiveVersion, onPublish }: Use
         </p>
         <div className="mt-2 divide-y divide-border">
           <ReadinessRow label="Builder" ok={basicInfoOk} detail={basicInfoDetail} onEdit={() => onEditStep(1)} />
-          <ReadinessRow label="Connect" ok />
+          <ReadinessRow label="Connect" ok={connectOk} detail={connectOk ? undefined : `${Object.values(connectErrors).filter(Boolean).join(' ')} Return to Connect to complete the required fields.`} onEdit={() => onEditStep(2)} />
         </div>
       </div>
 

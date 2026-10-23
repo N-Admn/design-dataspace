@@ -17,7 +17,7 @@ import { useConfirm } from '@/components/ui/confirm-dialog'
 import { useAppData } from '@/context/AppDataContext'
 import { useHelpContext } from '@/context/HelpContext'
 import { clearUseCaseDraftSnapshot, saveUseCaseDraftSnapshot } from '@/lib/usecase-draft-storage'
-import { isUseCaseReadyToPublish } from '@/lib/usecase-validation'
+import { isUseCaseReadyToPublish, validateUseCaseConnect } from '@/lib/usecase-validation'
 import { hasUnsavedEdits } from '@/lib/content-status'
 import { emptyUseCaseForm, type UseCaseFormState, type UseCaseMetadata } from '@/types/usecase'
 
@@ -132,7 +132,10 @@ function UseCaseCreationPage() {
   }
 
   const allStepsValid = isUseCaseReadyToPublish(form)
+  // Like the other flows, the Connect step's required field only shows its error from the moment Review has been reached.
+  const [showConnectErrors, setShowConnectErrors] = useState(false)
   useEffect(() => {
+    if (step === 3) setShowConnectErrors(true)
     if (step === 3 && allStepsValid) setStepperUnlocked(true)
   }, [step, allStepsValid])
 
@@ -240,6 +243,7 @@ function UseCaseCreationPage() {
             onMetadataChange={updateMetadata}
             connections={form.connections}
             onChange={(connections) => setForm((prev) => ({ ...prev, connections }))}
+            classificationErrors={showConnectErrors ? validateUseCaseConnect(form) : undefined}
           />
         )}
         {step === 3 && (

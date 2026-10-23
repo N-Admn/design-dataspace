@@ -22,6 +22,8 @@ interface UseCaseStep2ConnectProps {
   onMetadataChange: <K extends keyof UseCaseMetadata>(field: K, value: UseCaseMetadata[K]) => void
   connections: UseCaseConnections
   onChange: (connections: UseCaseConnections) => void
+  /** Errors for the Classification fields, shown once they matter (from the Review step). */
+  classificationErrors?: { sdgGoals?: string }
 }
 
 function OrganisationRow({ org, onRemove }: { org: Organisation; onRemove: () => void }) {
@@ -46,7 +48,7 @@ function OrganisationRow({ org, onRemove }: { org: Organisation; onRemove: () =>
   )
 }
 
-function UseCaseStep2Connect({ metadata, onMetadataChange, connections, onChange }: UseCaseStep2ConnectProps) {
+function UseCaseStep2Connect({ metadata, onMetadataChange, connections, onChange, classificationErrors }: UseCaseStep2ConnectProps) {
   const { organisations, addOrganisation } = useAppData()
   const toast = useToast()
   const [showContributorForm, setShowContributorForm] = React.useState(false)
@@ -69,7 +71,7 @@ function UseCaseStep2Connect({ metadata, onMetadataChange, connections, onChange
 
   return (
     <div className="flex flex-col gap-6">
-      <UseCaseClassificationSection metadata={metadata} onChange={onMetadataChange} />
+      <UseCaseClassificationSection metadata={metadata} onChange={onMetadataChange} errors={classificationErrors} />
 
       <DatasetConnectionsCard
         datasets={connections.datasets}
