@@ -179,6 +179,19 @@ function SearchResultsPage() {
     })
   }, [filterKeysForType])
 
+  // A link can arrive with a filter pre-applied (e.g. the nav's featured collaboratives: `&sector=climate-action`). It is applied once and
+  // then dropped from the URL, so the rail stays the one place the selection lives and can be changed freely.
+  const sectorParam = searchParams.get('sector')
+  React.useEffect(() => {
+    if (!sectorParam) return
+    // Only the Collaboratives tab has a Sector link source today, so the value goes to that tab's own sector filter.
+    setActiveFilters((prev) => ({ ...prev, collaborativeSector: sectorParam.split(',').filter(Boolean) }))
+    const params = new URLSearchParams(searchParams)
+    params.delete('sector')
+    setSearchParams(params, { replace: true })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sectorParam])
+
   const setFilter = (key: string, values: string[]) => {
     setActiveFilters((prev) => {
       const next = { ...prev }
