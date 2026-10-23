@@ -319,7 +319,8 @@ function SearchResultsPage() {
             initiated a search or browse — not on the pre-search landing
             state, per spec. */}
         {!isLanding && (
-          <div className="flex flex-wrap items-center gap-2 lg:flex-nowrap" role="group" aria-label="Filter results by content type">
+          // Tablet and phone: three pills to a row over two rows, each a third of the search bar's width. From lg, one row.
+          <div className="grid grid-cols-3 gap-2 lg:flex lg:flex-nowrap lg:items-center" role="group" aria-label="Filter results by content type">
             {TYPE_PILLS.map((f) => (
               <Chip
                 key={f.value}
@@ -328,7 +329,7 @@ function SearchResultsPage() {
                 onClick={() => updateParams({ type: f.value })}
                 // The pills share the width evenly so the row lines up with the search bar above it.
                 icon={f.value === 'all' ? undefined : TYPE_ICON[f.value]}
-                className="min-w-0 whitespace-nowrap lg:flex-1"
+                className="min-w-0 text-center leading-tight lg:flex-1 lg:whitespace-nowrap"
               />
             ))}
           </div>
