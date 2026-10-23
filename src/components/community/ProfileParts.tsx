@@ -380,17 +380,17 @@ function ProfileBannerHero({ kind, name, imageUrl, headline, badge, location, li
         <div className="aspect-square w-40 overflow-hidden rounded-2xl bg-background md:w-full">
           <EntityImage kind={kind} name={name} imageUrl={imageUrl} fill initialsClassName="text-5xl" />
         </div>
-        <div className="flex min-w-0 flex-col gap-3">
-          <div className="flex min-w-0 flex-col items-start gap-3">
+        <div className="flex min-w-0 flex-col gap-[0.6rem]">
+          <div className="flex min-w-0 flex-col items-start gap-[0.6rem]">
             {/* A small badge that opens the directory on the tab for this kind of profile. */}
             <Tag size="sm" to={kind === 'organisation' ? '/community?tab=organisations' : '/community?tab=people'} className="bg-background">
               {kind === 'organisation' ? 'Organisation' : 'Individual publisher'}
             </Tag>
-            <h1 title={name} className="type-display-1 line-clamp-2 break-words text-black">{name}</h1>
+            <h1 title={name} className="type-heading-1 line-clamp-2 break-words text-black">{name}</h1>
             {/* The name's line box leaves room under its letters, so the designation is pulled up to make the gap look like the others. */}
-            {headline && <p className="type-heading-3 -mt-1.5 text-text-default">{headline}</p>}
+            {headline && <p className="type-heading-3 -mt-[0.1rem] text-text-default">{headline}</p>}
           </div>
-          <div className="-mt-1 flex flex-wrap items-center gap-x-8 gap-y-3">
+          <div className="-mt-[0.2rem] flex flex-wrap items-center gap-x-8 gap-y-3">
             {badge && <BannerFact icon={Building2}>{badge}</BannerFact>}
             {location && <BannerFact icon={MapPin}>{location}</BannerFact>}
             {links.map((l) => (
@@ -409,7 +409,7 @@ function ProfileBannerHero({ kind, name, imageUrl, headline, badge, location, li
               </BannerFact>
             ))}
           </div>
-          {about && <p className="type-body -mt-1 max-w-4xl whitespace-pre-line text-text-subdued">{about}</p>}
+          {about && <p className="type-body -mt-[0.2rem] max-w-4xl whitespace-pre-line text-text-subdued">{about}</p>}
           {expertise.length > 0 && (
             <ul className="flex flex-wrap gap-2" aria-label="Areas of expertise">
               {expertise.map((area) => (
