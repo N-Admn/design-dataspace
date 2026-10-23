@@ -382,8 +382,11 @@ function ProfileBannerHero({ kind, name, imageUrl, headline, badge, location, li
         </div>
         <div className="flex min-w-0 flex-col gap-4">
           <div className="min-w-0">
-            <p className="text-xs font-medium uppercase tracking-wide text-text-subdued">{kind === 'organisation' ? 'Organisation' : 'Individual publisher'}</p>
-            <h1 title={name} className="type-display-1 mt-1 line-clamp-2 break-words text-black">{name}</h1>
+            {/* A small badge that opens the directory on the tab for this kind of profile. */}
+            <Tag size="sm" to={kind === 'organisation' ? '/community?tab=organisations' : '/community?tab=people'} className="bg-background">
+              {kind === 'organisation' ? 'Organisation' : 'Individual publisher'}
+            </Tag>
+            <h1 title={name} className="type-display-1 mt-2 line-clamp-2 break-words text-black">{name}</h1>
             {headline && <p className="type-heading-3 mt-1 text-text-default">{headline}</p>}
           </div>
           <div className="flex flex-wrap items-center gap-x-8 gap-y-3">
