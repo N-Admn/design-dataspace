@@ -2,8 +2,9 @@
  *  `CivicDataEcosystem`, motion in `use-ecosystem-stack`, drawings in `illustrations`.
  *
  *  Routes are the ones the landing page's own discovery cards already used (the mixed results page, pre-filtered
- *  by content type), plus `/organisations` for Community. `/explore/datasets`, `/explore/ai-models`,
- *  `/collaboratives` and `/publishers` only render a "Coming soon" page today, so they are deliberately not used. */
+ *  by content type), plus `/community` (the public Organisations and People directory) for Community. `/organisations` is the
+ *  contributor's own "My Organisations" area, so it is deliberately not used. `/explore/datasets`, `/explore/ai-models`,
+ *  `/collaboratives` and `/publishers` only render a "Coming soon" page today, so they are not used either. */
 
 export type EcosystemCardId = 'datasets' | 'use-cases' | 'collaboratives' | 'ai-models' | 'community'
 
@@ -40,6 +41,6 @@ export const ECOSYSTEM_CARDS: EcosystemCardContent[] = [
   {
     id: 'community',
     sentence: 'Meet the people and organisations behind the data.',
-    to: '/organisations',
+    to: '/community',
   },
 ]
