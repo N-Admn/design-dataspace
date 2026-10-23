@@ -362,7 +362,7 @@ function ProfileBannerHero({ kind, name, imageUrl, headline, badge, location, li
     <div className="flex flex-col gap-8 rounded-2xl bg-primary/5 p-6 md:p-8">
       <section aria-label="Profile" className="grid items-start gap-6 md:grid-cols-[minmax(0,14rem)_minmax(0,1fr)] md:gap-8 lg:grid-cols-[minmax(0,18rem)_minmax(0,1fr)]">
         <div className="aspect-square w-40 overflow-hidden rounded-2xl bg-background md:w-full">
-          <EntityImage kind={kind} name={name} imageUrl={imageUrl} className={kind === 'organisation' ? 'p-6' : undefined} initialsClassName="text-5xl" />
+          <EntityImage kind={kind} name={name} imageUrl={imageUrl} fill initialsClassName="text-5xl" />
         </div>
         <div className="flex min-w-0 flex-col gap-4">
           <div className="min-w-0">
