@@ -5,6 +5,7 @@ import { Building2, MapPin, Users, type LucideIcon } from 'lucide-react'
 import { Chip } from '@/components/discover/Chip'
 import { GlobalSearchField } from '@/components/discover/GlobalSearchField'
 import { SortMenu, ViewToggle, type ResultView } from '@/components/discover/ResultsToolbar'
+import { AppliedFilters } from '@/components/discover/AppliedFilters'
 import {
   DIRECTORY_PAGE_SIZE,
   DirectoryCard,
@@ -151,10 +152,10 @@ function CommunityPage() {
   // never its own.
   const groups: RailGroup[] = React.useMemo(() => {
     const countIn = (key: keyof Active, test: (e: PublisherEntry) => boolean) => matched.filter((e) => passes(e, active, key) && test(e)).length
-    const types = ORGANISATION_TYPE_OPTIONS.map((o) => ({ value: o.value, label: o.label, count: countIn('otype', (e) => e.kind === 'organisation' && e.type === o.value) })).filter((o) => o.count > 0)
-    const content = CONTRIBUTION_TYPES.map((t) => ({ value: t, label: CONTRIBUTION_LABEL[t].plural, count: countIn('content', (e) => (e.counts[t] ?? 0) > 0) })).filter((o) => o.count > 0)
+    const types = ORGANISATION_TYPE_OPTIONS.map((o) => ({ value: o.value, label: o.label, count: countIn('otype', (e) => e.kind === 'organisation' && e.type === o.value) })).filter((o) => o.count > 0 || active.otype.includes(o.value))
+    const content = CONTRIBUTION_TYPES.map((t) => ({ value: t, label: CONTRIBUTION_LABEL[t].plural, count: countIn('content', (e) => (e.counts[t] ?? 0) > 0) })).filter((o) => o.count > 0 || active.content.includes(o.value))
     const updatedPool = matched.filter((e) => passes(e, active, 'updated'))
-    const updated = UPDATED_OPTIONS.map((o) => ({ value: o.value, label: o.label, count: updatedPool.filter((e) => TESTS.updated(e, [o.value])).length })).filter((o) => o.count > 0)
+    const updated = UPDATED_OPTIONS.map((o) => ({ value: o.value, label: o.label, count: updatedPool.filter((e) => TESTS.updated(e, [o.value])).length })).filter((o) => o.count > 0 || active.updated.includes(o.value))
     return [
       { key: 'updated', label: 'Last updated', kind: 'single', options: updated, anyLabel: 'Any time', anyCount: updatedPool.length },
       // Only organisations have a type.
@@ -238,6 +239,18 @@ function CommunityPage() {
         <div className="hidden shrink-0 self-stretch border-l border-border sm:block" aria-hidden="true" />
 
         <div ref={resultsRef} className="min-w-0 flex-1 scroll-mt-28">
+          {/* Every applied filter as a removable chip, so what is narrowing the list is always visible, even when it leaves nothing. */}
+          <AppliedFilters
+            filters={groups.flatMap((g) =>
+              (active[g.key as keyof Active] ?? []).map((value) => ({
+                id: `${g.key}:${value}`,
+                group: g.label,
+                label: g.options.find((o) => o.value === value)?.label ?? value,
+                onRemove: () => setFilter(g.key, (active[g.key as keyof Active] ?? []).filter((v) => v !== value)),
+              })),
+            )}
+            onClearAll={clearFilters}
+          />
           {pools[tab].length === 0 ? (
             <EmptyState
               icon={Users}
