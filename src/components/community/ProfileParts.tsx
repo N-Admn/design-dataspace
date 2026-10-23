@@ -373,12 +373,32 @@ function ProfileBannerHero({ kind, name, imageUrl, headline, badge, location, li
     { label: 'GitHub', href: social?.github, Icon: GitHubIcon },
     { label: 'LinkedIn', href: social?.linkedin, Icon: LinkedInIcon },
     { label: 'X', href: social?.x, Icon: XIcon },
-  ].filter((x) => x.href)
+  ]
   return (
     <div className="flex flex-col gap-8 rounded-2xl bg-primary/5 p-6 md:p-8">
       <section aria-label="Profile" className="grid items-start gap-6 md:grid-cols-[minmax(0,14rem)_minmax(0,1fr)] md:gap-8 lg:grid-cols-[minmax(0,18rem)_minmax(0,1fr)]">
-        <div className="aspect-square w-40 overflow-hidden rounded-2xl bg-background md:w-full">
-          <EntityImage kind={kind} name={name} imageUrl={imageUrl} fill initialsClassName="text-5xl" />
+        <div className="flex min-w-0 flex-col gap-4">
+          <div className="aspect-square w-40 overflow-hidden rounded-2xl bg-background md:w-full">
+            <EntityImage kind={kind} name={name} imageUrl={imageUrl} fill initialsClassName="text-5xl" />
+          </div>
+          {/* The three profiles always show, so the row never changes shape: one that is set is a link in the normal colour, one that is not is grey. */}
+          <ul className="flex items-center gap-5" aria-label="Social profiles">
+            {socials.map(({ label, href, Icon }) => (
+              <li key={label}>
+                {href ? (
+                  <a href={href} target="_blank" rel="noreferrer" className="block rounded-sm text-text-brand transition-opacity hover:opacity-75 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-focus focus-visible:ring-offset-2">
+                    <Icon className="size-5 fill-current" />
+                    <span className="sr-only">{label} (opens in a new tab)</span>
+                  </a>
+                ) : (
+                  <span className="block text-text-subdued opacity-40" title={`No ${label} profile`}>
+                    <Icon className="size-5 fill-current" />
+                    <span className="sr-only">No {label} profile</span>
+                  </span>
+                )}
+              </li>
+            ))}
+          </ul>
         </div>
         <div className="flex min-w-0 flex-col gap-[0.6rem]">
           <div className="flex min-w-0 flex-col items-start gap-[0.6rem]">
@@ -393,19 +413,16 @@ function ProfileBannerHero({ kind, name, imageUrl, headline, badge, location, li
           <div className="-mt-[0.2rem] flex flex-wrap items-center gap-x-8 gap-y-3">
             {badge && <BannerFact icon={Building2}>{badge}</BannerFact>}
             {location && <BannerFact icon={MapPin}>{location}</BannerFact>}
-            {links.map((l) => (
-              <BannerFact key={l.label} icon={l.icon === 'website' ? Globe2 : ExternalLink} href={l.href}>
-                {l.label}
-              </BannerFact>
-            ))}
+            {links
+              .filter((l) => l.icon === 'website')
+              .map((l) => (
+                <BannerFact key={l.label} icon={Globe2} href={l.href}>
+                  {l.label}
+                </BannerFact>
+              ))}
             {affiliations.map((a) => (
               <BannerFact key={a.id} icon={Building2} to={`/explore/organisations/${a.id}`}>
                 {a.name}
-              </BannerFact>
-            ))}
-            {socials.map(({ label, href, Icon }) => (
-              <BannerFact key={label} icon={Icon} href={href}>
-                {label}
               </BannerFact>
             ))}
           </div>

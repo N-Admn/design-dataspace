@@ -52,6 +52,7 @@ function OrganisationProfileView({
         badge={org.typeLabel || undefined}
         location={org.location || undefined}
         links={links}
+        social={org.social}
         counts={org.counts}
         total={org.total}
         about={org.description || undefined}
