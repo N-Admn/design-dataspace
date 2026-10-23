@@ -325,15 +325,15 @@ function ProfileHero({ kind, name, imageUrl, headline, badge, location, links, s
   )
 }
 
-/** The heading each tab opens with, in the same editorial pattern as a collaborative's sections: a small label, a large title, and one
- *  line saying what the list is. `who` is how the page's subject relates to the content ("published by X" or "X is credited on"). */
-const TAB_INTRO: Record<ContributionType, { title: string; intro: (who: string) => string }> = {
-  dataset: { title: 'Evidence and data.', intro: (who) => `Browse the datasets ${who} and open any of them for a closer look.` },
-  'use-case': { title: 'Applications in practice.', intro: (who) => `Explore the use cases ${who}.` },
-  publication: { title: 'Reports and reading.', intro: (who) => `Read the publications ${who}.` },
-  collaborative: { title: 'Working together.', intro: (who) => `See the collaboratives ${who}.` },
-  event: { title: 'Gatherings and workshops.', intro: (who) => `Find the events ${who}.` },
-  'ai-model': { title: 'Models in use.', intro: (who) => `Look at the AI models ${who}.` },
+/** The line under each tab's heading, saying what the list is. `who` is how the page's subject relates to the content ("published by X" or
+ *  "X is credited on"). The heading itself is the kind and its count, as on a collaborative's sections. */
+const TAB_INTRO: Record<ContributionType, (who: string) => string> = {
+  dataset: (who) => `Browse the datasets ${who} and open any of them for a closer look.`,
+  'use-case': (who) => `Explore the use cases ${who}.`,
+  publication: (who) => `Read the publications ${who}.`,
+  collaborative: (who) => `See the collaboratives ${who}.`,
+  event: (who) => `Find the events ${who}.`,
+  'ai-model': (who) => `Look at the AI models ${who}.`,
 }
 
 type TabSort = 'newest' | 'oldest' | 'az'
@@ -456,12 +456,14 @@ function ContributionSections({
         />
         <ViewTabPanel id={active} idPrefix="profile-content" active>
           <div className="pt-10">
-            <p className="text-xs font-medium uppercase tracking-[0.2em] text-text-subdued">{label}</p>
-            <h2 className="type-display-1 mt-3 text-text-brand">{intro.title}</h2>
-            <p className="mt-4 max-w-2xl text-base text-text-subdued">{intro.intro(who)}</p>
+            {/* The same heading as a collaborative's sections: the kind and its count, then one line saying what the list is. */}
+            <h3 className="type-heading-2 text-text-brand">
+              {label} <span className="font-normal text-text-subdued">· {all.length}</span>
+            </h3>
+            <p className="mb-6 mt-1 type-body text-text-subdued">{intro(who)}</p>
 
-            <div className="mb-4 mt-8 flex flex-wrap items-center justify-between gap-2 text-sm">
-              <p role="status" aria-live="polite" className="text-text-subdued">
+            <div className="mb-4 flex flex-wrap items-center justify-end gap-2 text-sm">
+              <p role="status" aria-live="polite" className="sr-only">
                 {all.length} {all.length === 1 ? CONTRIBUTION_LABEL[active].singular.toLowerCase() : label.toLowerCase()}
               </p>
               <label className="flex items-center gap-2 text-text-subdued">
