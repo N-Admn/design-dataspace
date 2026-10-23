@@ -2,6 +2,7 @@ import {
   BackLink,
   ContributionSections,
   MemberCards,
+  ProfileBannerHero,
   ProfileHero,
   type ProfileLink,
 } from '@/components/community/ProfileParts'
@@ -10,6 +11,8 @@ import type { SearchResultItem } from '@/lib/global-search'
 
 /** The two public profile pages as pure views: everything they show comes in as props, so the real pages feed them the directory and
  *  the Playground feeds them sample variations of it. Neither reads app data or the URL. */
+
+export type HeroLayout = 'bento' | 'banner'
 
 const socialLinks = (social: { linkedin: string; github: string; x: string }): ProfileLink[] => [
   ...(social.linkedin ? [{ label: 'LinkedIn', href: social.linkedin }] : []),
@@ -23,13 +26,17 @@ function OrganisationProfileView({
   cards,
   showBack = true,
   contentLayout = 'tabs',
+  heroLayout = 'bento',
 }: {
   org: OrganisationEntry
   cards: Map<string, SearchResultItem>
   showBack?: boolean
   /** How the published content is laid out: a kind on each tab (the default), or one section after another. */
   contentLayout?: 'sections' | 'tabs'
+  /** The top of the page: the bento of cards (the default), or a banner with the image beside the name and facts. */
+  heroLayout?: HeroLayout
 }) {
+  const Hero = heroLayout === 'banner' ? ProfileBannerHero : ProfileHero
   const links: ProfileLink[] = [
     ...(org.website ? [{ label: org.website.replace(/^https?:\/\//, '').replace(/\/$/, ''), href: org.website, icon: 'website' as const }] : []),
     ...socialLinks(org.social),
@@ -38,7 +45,7 @@ function OrganisationProfileView({
     <div className="mx-auto flex w-full max-w-[1400px] flex-col gap-10 py-2">
       {showBack && <BackLink fallbackTo="/community?tab=organisations" label="Back to Community" />}
 
-      <ProfileHero
+      <Hero
         kind="organisation"
         name={org.name}
         imageUrl={org.imageUrl}
@@ -75,17 +82,20 @@ function PublisherProfileView({
   cards,
   showBack = true,
   contentLayout = 'tabs',
+  heroLayout = 'bento',
 }: {
   person: IndividualEntry
   cards: Map<string, SearchResultItem>
   showBack?: boolean
   contentLayout?: 'sections' | 'tabs'
+  heroLayout?: HeroLayout
 }) {
+  const Hero = heroLayout === 'banner' ? ProfileBannerHero : ProfileHero
   return (
     <div className="mx-auto flex w-full max-w-[1400px] flex-col gap-10 py-2">
       {showBack && <BackLink fallbackTo="/community?tab=people" label="Back to Community" />}
 
-      <ProfileHero
+      <Hero
         kind="individual"
         name={person.name}
         imageUrl={person.imageUrl}

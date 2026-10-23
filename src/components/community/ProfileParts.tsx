@@ -325,6 +325,97 @@ function ProfileHero({ kind, name, imageUrl, headline, badge, location, links, s
   )
 }
 
+/** One fact in the banner's row: a round soft icon and the text, or a link. */
+function BannerFact({ icon: Icon, children, href, to }: { icon: React.ComponentType<{ className?: string }>; children: React.ReactNode; href?: string; to?: string }) {
+  const body = (
+    <>
+      <span aria-hidden="true" className="flex size-9 shrink-0 items-center justify-center rounded-full bg-secondary text-text-brand">
+        <Icon className="size-4" />
+      </span>
+      <span className="min-w-0 truncate">{children}</span>
+    </>
+  )
+  const cls = 'inline-flex min-w-0 max-w-full items-center gap-2.5 text-base text-text-default'
+  const link = cn(cls, 'rounded-sm underline-offset-4 hover:text-text-brand hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-focus')
+  if (to) return <Link to={to} className={link}>{body}</Link>
+  if (href)
+    return (
+      <a href={href} target="_blank" rel="noreferrer" className={link}>
+        {body}
+        <span className="sr-only"> (opens in a new tab)</span>
+      </a>
+    )
+  return <span className={cls}>{body}</span>
+}
+
+/** The other top-of-profile layout: a banner instead of a bento. A large square image on the left; beside it the kind, the name, one row
+ *  of facts (type, location, website, or an individual's organisations and profiles) and the description; then a rule and one row with a
+ *  panel for each kind of content published. It has no separate About, People or Join cards: the people of an organisation are listed
+ *  further down the page, as in the bento. */
+function ProfileBannerHero({ kind, name, imageUrl, headline, badge, location, links, social, counts, total, about, expertise = [], affiliations = [] }: ProfileHeroProps) {
+  const socials = [
+    { label: 'GitHub', href: social?.github, Icon: GitHubIcon },
+    { label: 'LinkedIn', href: social?.linkedin, Icon: LinkedInIcon },
+    { label: 'X', href: social?.x, Icon: XIcon },
+  ].filter((x) => x.href)
+  return (
+    <div className="flex flex-col gap-8">
+      <section aria-label="Profile" className="grid items-start gap-6 md:grid-cols-[minmax(0,14rem)_minmax(0,1fr)] md:gap-8 lg:grid-cols-[minmax(0,18rem)_minmax(0,1fr)]">
+        <div className="aspect-square w-40 overflow-hidden rounded-2xl bg-secondary md:w-full">
+          <EntityImage kind={kind} name={name} imageUrl={imageUrl} className={kind === 'organisation' ? 'p-6' : undefined} initialsClassName="text-5xl" />
+        </div>
+        <div className="flex min-w-0 flex-col gap-4">
+          <div className="min-w-0">
+            <p className="text-xs font-medium uppercase tracking-wide text-text-subdued">{kind === 'organisation' ? 'Organisation' : 'Individual publisher'}</p>
+            <h1 title={name} className="type-display-1 mt-1 line-clamp-2 break-words text-black">{name}</h1>
+            {headline && <p className="type-heading-3 mt-1 text-text-default">{headline}</p>}
+          </div>
+          <div className="flex flex-wrap items-center gap-x-8 gap-y-3">
+            {badge && <BannerFact icon={Building2}>{badge}</BannerFact>}
+            {location && <BannerFact icon={MapPin}>{location}</BannerFact>}
+            {links.map((l) => (
+              <BannerFact key={l.label} icon={l.icon === 'website' ? Globe2 : ExternalLink} href={l.href}>
+                {l.label}
+              </BannerFact>
+            ))}
+            {affiliations.map((a) => (
+              <BannerFact key={a.id} icon={Building2} to={`/explore/organisations/${a.id}`}>
+                {a.name}
+              </BannerFact>
+            ))}
+            {socials.map(({ label, href, Icon }) => (
+              <BannerFact key={label} icon={Icon} href={href}>
+                {label}
+              </BannerFact>
+            ))}
+          </div>
+          {about && <p className="max-w-4xl whitespace-pre-line text-base leading-relaxed text-text-subdued">{about}</p>}
+          {expertise.length > 0 && (
+            <ul className="flex flex-wrap gap-2" aria-label="Areas of expertise">
+              {expertise.map((area) => (
+                <li key={area}>
+                  <Tag size="md" to={`/search?q=${encodeURIComponent(area)}`}>
+                    {area}
+                  </Tag>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </section>
+
+      <hr className="border-t border-border" />
+
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+        {CONTRIBUTION_TYPES.map((t) => (
+          <CountPanel key={t} type={t} count={counts[t] ?? 0} />
+        ))}
+      </div>
+      <p className="sr-only">{total} published {total === 1 ? 'contribution' : 'contributions'}</p>
+    </div>
+  )
+}
+
 /** The line under each tab's heading, saying what the list is. `who` is how the page's subject relates to the content ("published by X" or
  *  "X is credited on"). The heading itself is the kind, as on a collaborative's sections (the count is already on the tab). */
 const TAB_INTRO: Record<ContributionType, (who: string) => string> = {
@@ -541,5 +632,5 @@ function ProfileNotFound({ title, description, backTo, backLabel }: { title: str
   )
 }
 
-export { BackLink, ProfileHero, ProfileLinks, ContributionSections, MemberCards, ProfileNotFound }
+export { BackLink, ProfileBannerHero, ProfileHero, ProfileLinks, ContributionSections, MemberCards, ProfileNotFound }
 export type { ProfileLink }
