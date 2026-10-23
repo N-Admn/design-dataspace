@@ -1,3 +1,5 @@
+import * as React from 'react'
+
 import {
   BackLink,
   ContributionSections,
@@ -19,6 +21,53 @@ const socialLinks = (social: { linkedin: string; github: string; x: string }): P
   ...(social.github ? [{ label: 'GitHub', href: social.github }] : []),
   ...(social.x ? [{ label: 'X', href: social.x }] : []),
 ]
+
+type PeopleSort = 'az' | 'za' | 'most'
+const PEOPLE_SORTS: { value: PeopleSort; label: string }[] = [
+  { value: 'az', label: 'A–Z' },
+  { value: 'za', label: 'Z–A' },
+  { value: 'most', label: 'Most active' },
+]
+
+/** The people who belong to an organisation, in the same pattern as the content tabs above: the heading, a line saying what the list is
+ *  with Sort by level with it at the right, then a card for each person. */
+function PeopleSection({ name, members }: { name: string; members: IndividualEntry[] }) {
+  const [sort, setSort] = React.useState<PeopleSort>('az')
+  const sorted = React.useMemo(() => {
+    const list = [...members]
+    if (sort === 'az') return list.sort((a, b) => a.name.localeCompare(b.name))
+    if (sort === 'za') return list.sort((a, b) => b.name.localeCompare(a.name))
+    return list.sort((a, b) => b.total - a.total || a.name.localeCompare(b.name))
+  }, [members, sort])
+  return (
+    <section aria-labelledby="people-heading" className="scroll-mt-28 border-t border-border-default pt-10">
+      <h2 id="people-heading" className="type-heading-2 text-text-brand">
+        People
+      </h2>
+      <div className="mb-6 mt-1 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-2">
+        <p className="type-body text-text-subdued">Publishers who are part of {name}. Each has a profile of their own.</p>
+        <label className="flex items-center gap-2 text-sm text-text-subdued">
+          Sort by:
+          <select
+            value={sort}
+            onChange={(e) => setSort(e.target.value as PeopleSort)}
+            className="rounded-sm bg-transparent py-1 pr-1 font-medium text-text-default focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-focus"
+          >
+            {PEOPLE_SORTS.map((o) => (
+              <option key={o.value} value={o.value}>
+                {o.label}
+              </option>
+            ))}
+          </select>
+        </label>
+      </div>
+      <p role="status" aria-live="polite" className="sr-only">
+        {members.length} {members.length === 1 ? 'person' : 'people'}
+      </p>
+      <MemberCards members={sorted} />
+    </section>
+  )
+}
 
 /** The organisation profile: a bento header, the cards for everything it published, and the people who belong to it. */
 function OrganisationProfileView({
@@ -61,17 +110,7 @@ function OrganisationProfileView({
 
       <ContributionSections contributions={org.contributions} cards={cards} layout={contentLayout} who={`published by ${org.name}`} emptyText="Datasets, use cases and other work this organisation publishes will be listed here." />
 
-      {org.members.length > 0 && (
-        <section aria-labelledby="people-heading" className="scroll-mt-28 border-t border-border-default pt-10">
-          <h2 id="people-heading" className="type-heading-1 text-text-brand">
-            People <span className="font-normal text-text-subdued">({org.members.length})</span>
-          </h2>
-          <p className="type-body mt-2 max-w-3xl text-text-subdued">Publishers who are part of {org.name}. Each has a profile of their own, and also appears under Publishers.</p>
-          <div className="mt-4">
-            <MemberCards members={org.members} />
-          </div>
-        </section>
-      )}
+      {org.members.length > 0 && <PeopleSection name={org.name} members={org.members} />}
     </div>
   )
 }
