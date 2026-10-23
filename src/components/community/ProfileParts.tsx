@@ -391,9 +391,9 @@ function ProfileBannerHero({ kind, name, imageUrl, headline, badge, location, li
             </Tag>
             <h1 title={name} className="type-heading-1 line-clamp-2 break-words text-black">{name}</h1>
             {/* The name's line box leaves room under its letters, so the designation is pulled up to make the gap look like the others. */}
-            {headline && <p className="type-heading-3 -mt-[0.1rem] text-text-default">{headline}</p>}
+            {headline && <p className="type-heading-3 -mt-[0.26rem] text-text-default">{headline}</p>}
           </div>
-          <div className="-mt-[0.2rem] flex flex-wrap items-center gap-y-2 [&>*:first-child]:border-l-0 [&>*:first-child]:pl-0 [&>*]:border-l [&>*]:border-text-subdued/40 [&>*]:px-4 [&>*]:leading-5">
+          <div className="-mt-[0.1rem] flex flex-wrap items-center gap-y-2 [&>*:first-child]:border-l-0 [&>*:first-child]:pl-0 [&>*]:border-l [&>*]:border-text-subdued/40 [&>*]:px-4 [&>*]:leading-5">
             {badge && <BannerFact icon={Building2}>{badge}</BannerFact>}
             {location && <BannerFact icon={MapPin}>{location}</BannerFact>}
             {links
