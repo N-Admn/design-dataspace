@@ -329,7 +329,7 @@ function ProfileHero({ kind, name, imageUrl, headline, badge, location, links, s
 function BannerFact({ icon: Icon, children, href, to }: { icon: React.ComponentType<{ className?: string }>; children: React.ReactNode; href?: string; to?: string }) {
   const body = (
     <>
-      <span aria-hidden="true" className="flex size-9 shrink-0 items-center justify-center rounded-full bg-secondary text-text-brand">
+      <span aria-hidden="true" className="flex size-9 shrink-0 items-center justify-center rounded-full bg-background text-text-brand">
         <Icon className="size-4" />
       </span>
       <span className="min-w-0 truncate">{children}</span>
@@ -348,7 +348,7 @@ function BannerFact({ icon: Icon, children, href, to }: { icon: React.ComponentT
   return <span className={cls}>{body}</span>
 }
 
-/** The other top-of-profile layout: a banner instead of a bento. A large square image on the left; beside it the kind, the name, one row
+/** The other top-of-profile layout: a banner instead of a bento. On a softly tinted card, a large square image on the left; beside it the kind, the name, one row
  *  of facts (type, location, website, or an individual's organisations and profiles) and the description; then a rule and one row with a
  *  panel for each kind of content published. It has no separate About, People or Join cards: the people of an organisation are listed
  *  further down the page, as in the bento. */
@@ -360,7 +360,7 @@ function ProfileBannerHero({ kind, name, imageUrl, headline, badge, location, li
   ].filter((x) => x.href)
   return (
     <div className="flex flex-col gap-8">
-      <section aria-label="Profile" className="grid items-start gap-6 md:grid-cols-[minmax(0,14rem)_minmax(0,1fr)] md:gap-8 lg:grid-cols-[minmax(0,18rem)_minmax(0,1fr)]">
+      <section aria-label="Profile" className="grid items-start gap-6 rounded-2xl bg-primary/5 p-6 md:grid-cols-[minmax(0,14rem)_minmax(0,1fr)] md:gap-8 md:p-8 lg:grid-cols-[minmax(0,18rem)_minmax(0,1fr)]">
         <div className="aspect-square w-40 overflow-hidden rounded-2xl bg-secondary md:w-full">
           <EntityImage kind={kind} name={name} imageUrl={imageUrl} className={kind === 'organisation' ? 'p-6' : undefined} initialsClassName="text-5xl" />
         </div>
