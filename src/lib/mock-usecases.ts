@@ -30,7 +30,7 @@ const useCase1Form: UseCaseFormState = {
       'How twelve districts used open health-facility data to close a maternal mortality gap that outlived a decade of infrastructure spending.',
     tags: ['Maternal Health', 'Rural', 'Monitoring'],
     sdgGoals: ['sdg-3', 'sdg-5'],
-    sectors: ['health'],
+    sectors: ['gender'],
     geographies: ['india'],
   },
   blocks: [
@@ -128,7 +128,7 @@ const useCase2Form: UseCaseFormState = {
     subtitle: '',
     tags: [],
     sdgGoals: ['sdg-6'],
-    sectors: ['water-sanitation'],
+    sectors: ['urban-development'],
     geographies: [],
   },
   blocks: [],

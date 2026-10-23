@@ -4,8 +4,8 @@ import { ManagementTable, type ManagementColumn, type ManagementFilterDef, type 
 import { TruncatedText } from '@/components/shared/TruncatedText'
 import { StatusBadge } from '@/components/shared/StatusBadge'
 import { formatShortDate, parseAppTimestamp } from '@/lib/format'
-import { GEOGRAPHY_OPTIONS } from '@/types/dataset'
-import { COLLABORATIVE_SECTOR_OPTIONS, type CollaborativeRecord, type CollaborativeStatus } from '@/types/collaborative'
+import { GEOGRAPHY_OPTIONS, SECTOR_OPTIONS } from '@/types/dataset'
+import type { CollaborativeRecord, CollaborativeStatus } from '@/types/collaborative'
 
 interface CollaborativeListViewProps {
   collaboratives: CollaborativeRecord[]
@@ -88,7 +88,7 @@ function buildColumns(onOpen: (collaborative: CollaborativeRecord) => void): Man
     responsive: 'lg',
     optional: true,
     defaultVisible: false,
-    render: (c) => <TruncatedText>{optionLabels(COLLABORATIVE_SECTOR_OPTIONS, c.form.metadata.sectors)}</TruncatedText>,
+    render: (c) => <TruncatedText>{optionLabels(SECTOR_OPTIONS, c.form.metadata.sectors)}</TruncatedText>,
   },
   {
     key: 'geography',
@@ -103,7 +103,7 @@ function buildColumns(onOpen: (collaborative: CollaborativeRecord) => void): Man
 }
 
 const FILTERS: ManagementFilterDef<CollaborativeRecord>[] = [
-  { key: 'sector', label: 'Sector', placeholder: 'Any sector', options: COLLABORATIVE_SECTOR_OPTIONS, matches: (c, v) => c.form.metadata.sectors.includes(v) },
+  { key: 'sector', label: 'Sector', placeholder: 'Any sector', options: SECTOR_OPTIONS, matches: (c, v) => c.form.metadata.sectors.includes(v) },
   { key: 'geography', label: 'Geography', placeholder: 'Any geography', options: GEOGRAPHY_OPTIONS, matches: (c, v) => c.form.metadata.geographies.includes(v) },
 ]
 

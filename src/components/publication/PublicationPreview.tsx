@@ -1,7 +1,10 @@
+import { Link } from 'react-router-dom'
 import { CalendarDays, Download, ExternalLink, FileText, Globe2, ShieldCheck, User } from 'lucide-react'
 
+import { FilterBadge } from '@/components/shared/FilterBadge'
 import { Badge } from '@/components/ui/badge'
 import { formatShortDate } from '@/lib/format'
+import { searchFacetHref } from '@/lib/search-links'
 import { getPublicationFileTitle } from '@/lib/publication-file'
 import { getYouTubeEmbedUrl } from '@/lib/youtube'
 import { GEOGRAPHY_OPTIONS, LICENSE_OPTIONS, SECTOR_OPTIONS } from '@/types/dataset'
@@ -20,9 +23,12 @@ function PublicationPreview({ form, publishedAt }: { form: PublicationFormState;
     <div className="overflow-hidden rounded-xl border border-border bg-card">
       <div className="border-b border-border px-6 py-6">
         {metadata.resourceType && (
-          <span className="text-xs font-semibold uppercase tracking-wider text-primary">
+          <Link
+            to={searchFacetHref('publication', 'resourceType', metadata.resourceType)}
+            className="rounded-sm text-xs font-semibold uppercase tracking-wider text-primary underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-focus"
+          >
             {optionLabel(RESOURCE_TYPE_OPTIONS, metadata.resourceType)}
-          </span>
+          </Link>
         )}
         <h1 className="mt-1 type-heading-1 text-primary">{metadata.name || 'Untitled Publication'}</h1>
         {metadata.description && <p className="mt-2 text-base text-muted-foreground">{metadata.description}</p>}
@@ -43,7 +49,12 @@ function PublicationPreview({ form, publishedAt }: { form: PublicationFormState;
           {metadata.geography && (
             <div className="flex items-center gap-1.5 text-sm text-foreground">
               <Globe2 className="size-3.5 shrink-0 text-muted-foreground" />
-              {optionLabel(GEOGRAPHY_OPTIONS, metadata.geography)}
+              <Link
+                to={searchFacetHref('publication', 'geography', metadata.geography)}
+                className="rounded-sm underline-offset-2 hover:text-text-brand hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-focus"
+              >
+                {optionLabel(GEOGRAPHY_OPTIONS, metadata.geography)}
+              </Link>
             </div>
           )}
           {metadata.usageRights && (
@@ -55,7 +66,11 @@ function PublicationPreview({ form, publishedAt }: { form: PublicationFormState;
         </div>
 
         <div className="mt-3 flex flex-wrap items-center gap-1.5">
-          {metadata.sector && <Badge variant="secondary">{optionLabel(SECTOR_OPTIONS, metadata.sector)}</Badge>}
+          {metadata.sector && (
+            <FilterBadge type="publication" facet="sector" value={metadata.sector} variant="secondary">
+              {optionLabel(SECTOR_OPTIONS, metadata.sector)}
+            </FilterBadge>
+          )}
           {metadata.externalLink && (
             <a
               href={metadata.externalLink}

@@ -179,6 +179,7 @@ export const EVENT_TYPE_OPTIONS = [
   { value: 'roundtable', label: 'Roundtable' },
   { value: 'webinar', label: 'Webinar' },
   { value: 'training', label: 'Training' },
+  { value: 'other', label: 'Other' },
 ]
 
 export const PUBLICATION_TYPE_OPTIONS = [

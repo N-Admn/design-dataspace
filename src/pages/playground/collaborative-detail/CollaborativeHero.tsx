@@ -1,9 +1,11 @@
 import * as React from 'react'
+import { Link } from 'react-router-dom'
 import { BookOpen, Database, ImageOff, Users, type LucideIcon } from 'lucide-react'
 
 import { Tag } from '@/components/ui/tag'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import type { SdgGoal } from '@/lib/sdg-goals'
+import { searchFacetHref } from '@/lib/search-links'
 import { cn } from '@/lib/utils'
 
 /** The Collaborative's editorial hero: on the left a title-and-tags card above the SDG goals, statistics panels and the
@@ -109,13 +111,14 @@ function SdgPanel({ goals }: { goals: SdgGoal[] }) {
                   tooltip open while the pointer moves on to the next one. */}
               <Tooltip disableHoverableContent>
                 <TooltipTrigger asChild>
-                  <span
-                    tabIndex={0}
-                    aria-label={`Goal ${g.number}: ${g.title}`}
+                  {/* A link: opens Search on the Collaboratives tab filtered to this goal. */}
+                  <Link
+                    to={searchFacetHref('collaborative', 'sdgGoal', g.value)}
+                    aria-label={`Goal ${g.number}: ${g.title}. Show collaboratives for this goal`}
                     className="block rounded-[6px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-focus"
                   >
                     <img src={g.imageUrl} alt="" style={{ width: SDG_SIZE, height: SDG_SIZE }} className="rounded-[6px] object-cover ring-2 ring-secondary" />
-                  </span>
+                  </Link>
                 </TooltipTrigger>
                 <TooltipContent side="top" className="max-w-[min(22rem,90vw)] whitespace-normal">
                   <span className="block font-semibold text-text-brand">

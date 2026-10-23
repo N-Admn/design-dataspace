@@ -268,15 +268,14 @@ export interface AIModelSuggestions {
 }
 
 const SECTOR_KEYWORDS: [string, string[]][] = [
-  ['health', ['health', 'medical', 'clinical', 'disease', 'hospital', 'patient']],
-  ['agriculture', ['crop', 'farm', 'agricultur', 'soil', 'irrigation', 'yield']],
-  ['education', ['education', 'student', 'school', 'learning', 'curriculum']],
-  ['environment', ['climate', 'environment', 'emission', 'pollution', 'weather', 'flood']],
-  ['finance', ['finance', 'credit', 'loan', 'banking', 'payment', 'fraud']],
-  ['urban-development', ['urban', 'city', 'infrastructure', 'housing', 'planning']],
-  ['water-sanitation', ['water', 'sanitation', 'sewage']],
-  ['transportation', ['traffic', 'transport', 'mobility', 'vehicle', 'logistics']],
-  ['energy', ['energy', 'power', 'electricity', 'grid', 'solar']],
+  ['child-rights', ['child', 'maternal', 'nutrition', 'education', 'student', 'school', 'learning', 'curriculum']],
+  ['climate-action', ['climate', 'environment', 'emission', 'pollution', 'weather', 'crop', 'farm', 'agricultur', 'soil', 'energy', 'solar']],
+  ['coastal', ['coast', 'marine', 'shoreline', 'cyclone', 'fisher']],
+  ['disaster-risk-reduction', ['flood', 'disaster', 'hazard', 'vulnerab', 'earthquake', 'early warning']],
+  ['gender', ['gender', 'women', 'girl', 'inclusion']],
+  ['law-justice', ['law', 'legal', 'justice', 'court', 'governance']],
+  ['public-finance', ['finance', 'budget', 'credit', 'loan', 'banking', 'payment', 'expenditure', 'tax']],
+  ['urban-development', ['urban', 'city', 'infrastructure', 'housing', 'planning', 'transport', 'water', 'sanitation']],
 ]
 
 const TARGET_USER_KEYWORDS: [string, string[]][] = [
@@ -289,11 +288,10 @@ const TARGET_USER_KEYWORDS: [string, string[]][] = [
 ]
 
 const DOMAIN_TO_SECTOR: Record<string, string> = {
-  health: 'health',
-  agriculture: 'agriculture',
-  education: 'education',
-  climate: 'environment',
-  finance: 'finance',
+  agriculture: 'climate-action',
+  education: 'child-rights',
+  climate: 'climate-action',
+  finance: 'public-finance',
   'urban-planning': 'urban-development',
 }
 

@@ -5,9 +5,10 @@ import { BarChart3, Database, ExternalLink } from 'lucide-react'
 
 import { ChartPreviewCanvas } from '@/components/chart/ChartPreviewCanvas'
 import { EmptyPreviewState } from '@/components/chart/EmptyPreviewState'
+import { FilterBadge } from '@/components/shared/FilterBadge'
 import { SdgBadge } from '@/components/shared/SdgBadge'
 import { SocialShareLinks } from '@/components/shared/SocialShareLinks'
-import { Badge, badgeVariants } from '@/components/ui/badge'
+import { badgeVariants } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
 import { useAppData } from '@/context/AppDataContext'
 import { getFileColumns, getMockRows } from '@/lib/chart-data'
@@ -334,7 +335,7 @@ export function MetadataPanel({ metadata }: { metadata: UseCaseMetadata }) {
           <p className="type-label text-foreground">SDG Goals</p>
           <div className="mt-3 flex flex-wrap gap-1.5">
             {metadata.sdgGoals.map((g) => (
-              <SdgBadge key={g} goal={g} />
+              <SdgBadge key={g} goal={g} linkTo="use-case" />
             ))}
           </div>
         </div>
@@ -345,9 +346,9 @@ export function MetadataPanel({ metadata }: { metadata: UseCaseMetadata }) {
           <p className="type-label text-foreground">Sector</p>
           <div className="mt-3 flex flex-wrap gap-1.5">
             {metadata.sectors.map((s) => (
-              <Badge key={s} variant="outline">
+              <FilterBadge key={s} type="use-case" facet="sector" value={s} variant="outline">
                 {optionLabel(SECTOR_OPTIONS, s)}
-              </Badge>
+              </FilterBadge>
             ))}
           </div>
         </div>

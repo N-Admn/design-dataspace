@@ -19,6 +19,17 @@ export function isUseCaseBasicInfoValid(form: UseCaseFormState): boolean {
   return Object.keys(validateUseCaseBasicInfo(form)).length === 0
 }
 
+/** The Connect step's one required field: at least one SDG goal, so a use case can always be found by goal on Search. */
+export interface UseCaseConnectErrors {
+  sdgGoals?: string
+}
+
+export function validateUseCaseConnect(form: UseCaseFormState): UseCaseConnectErrors {
+  const errors: UseCaseConnectErrors = {}
+  if (form.metadata.sdgGoals.length === 0) errors.sdgGoals = 'Select at least one SDG goal.'
+  return errors
+}
+
 export interface UseCaseReadinessIssue {
   section: 'Builder' | 'Connect'
   message: string
@@ -30,6 +41,9 @@ export function getUseCaseReadinessIssues(form: UseCaseFormState): UseCaseReadin
 
   Object.values(validateUseCaseBasicInfo(form)).forEach((message) => {
     if (message) issues.push({ section: 'Builder', message, step: 1 })
+  })
+  Object.values(validateUseCaseConnect(form)).forEach((message) => {
+    if (message) issues.push({ section: 'Connect', message, step: 2 })
   })
 
   return issues

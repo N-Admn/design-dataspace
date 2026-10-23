@@ -2,11 +2,12 @@ import type { DatasetRecord } from '@/types/dataset'
 import { orgLogoFor, organisationLogoUrl } from '@/lib/org-logo'
 import { GEOGRAPHY_OPTIONS, SECTOR_OPTIONS } from '@/types/dataset'
 import type { UseCaseRecord } from '@/types/usecase'
-import { COLLABORATIVE_SECTOR_OPTIONS, type CollaborativeRecord } from '@/types/collaborative'
+import type { CollaborativeRecord } from '@/types/collaborative'
 import { PUBLICATION_TYPE_OPTIONS, type EventRecord, type EventMetadata } from '@/types/event'
 import { MODEL_TYPE_OPTIONS, PROVIDER_OPTIONS, type AIModelRecord } from '@/types/ai-model'
 import type { OrganisationRecord } from '@/types/organisation-workspace'
 import type { ChartRecord } from '@/types/chart'
+import { RESOURCE_TYPE_OPTIONS, type PublicationRecord } from '@/types/publication'
 import { formatEventDateRange, getEventLifecycleStatus } from '@/lib/event-status'
 import { EVENT_MOCK_COVER_IMAGE } from '@/lib/event-thumbnail'
 import { resolveDatasetPublisher, resolvePublisherByOrganisation } from '@/lib/dataset-publisher'
@@ -48,8 +49,6 @@ export const SEARCH_TYPE_LABEL: Record<SearchResultType, string> = {
  */
 export interface SearchFacets {
   sector?: string[]
-  /** A Collaborative's sectors — its own list (COLLABORATIVE_SECTOR_OPTIONS), kept apart from the dataset/use case `sector`. */
-  collaborativeSector?: string[]
   geography?: string[]
   organisation?: string[]
   datasetType?: string[]
@@ -63,6 +62,10 @@ export interface SearchFacets {
   publicationType?: string[]
   modelType?: string[]
   provider?: string[]
+  /** SDG goal values (`sdg-1` … `sdg-17`) — Use Cases and Collaboratives. */
+  sdgGoal?: string[]
+  /** Publication resource type (RESOURCE_TYPE_OPTIONS) — the standalone Publication records, and the event publications mapped onto it. */
+  resourceType?: string[]
   /** Raw app timestamp ("DD/MM/YYYY HH:mm:ss") backing the "Updated"/"Date"
    *  recency filter. Publications reuse their parent event's, since a
    *  publication has no timestamp of its own. */
@@ -152,6 +155,9 @@ function eventTimeStatus(metadata: EventMetadata, now = new Date()): 'upcoming' 
   return status === 'completed' ? 'past' : status
 }
 
+/** An event's publication has four kinds; each is the nearest of the Publication module's resource types. */
+const EVENT_PUBLICATION_RESOURCE_TYPE: Record<string, string> = { report: 'report', presentation: 'presentation', 'reading-material': 'other', other: 'other' }
+
 export interface GlobalSearchSource {
   datasets: DatasetRecord[]
   useCases: UseCaseRecord[]
@@ -160,6 +166,8 @@ export interface GlobalSearchSource {
   aiModels: AIModelRecord[]
   organisationWorkspaces: OrganisationRecord[]
   charts: ChartRecord[]
+  /** The standalone Publication records. Optional: only the Search page needs them indexed. */
+  publications?: PublicationRecord[]
 }
 
 /** Builds the flat, mixed-type result pool — published content only. */
@@ -171,6 +179,7 @@ export function buildSearchIndex({
   aiModels,
   organisationWorkspaces,
   charts,
+  publications = [],
 }: GlobalSearchSource): SearchResultItem[] {
   const items: SearchResultItem[] = []
 
@@ -235,6 +244,7 @@ export function buildSearchIndex({
       publishers: useCasePublishers.length > 0 ? useCasePublishers : undefined,
       facets: {
         sector: u.form.metadata.sectors,
+        sdgGoal: u.form.metadata.sdgGoals,
         geography: u.form.metadata.geographies,
         organisation: u.form.connections.organizations.map((o) => o.name),
         contributors: u.form.connections.contributors.map((c) => c.name),
@@ -259,7 +269,7 @@ export function buildSearchIndex({
       type: 'collaborative',
       title: c.form.metadata.name || 'Untitled Collaborative',
       organisation: orgNames[0],
-      meta: c.form.metadata.sectors.map((s) => optionLabel(COLLABORATIVE_SECTOR_OPTIONS, s)).filter(Boolean).join(', ') || undefined,
+      meta: c.form.metadata.sectors.map((s) => optionLabel(SECTOR_OPTIONS, s)).filter(Boolean).join(', ') || undefined,
       // The public page: it shows the published snapshot only (the owner's preview shows the working copy and publish controls).
       href: `/explore/collaboratives/${c.id}`,
       thumbnailUrl: c.form.metadata.image?.dataUrl ?? null,
@@ -273,7 +283,8 @@ export function buildSearchIndex({
       // No "Status" facet: the model has no field beyond the internal
       // draft/published lifecycle, which consumer search doesn't expose.
       facets: {
-        collaborativeSector: c.form.metadata.sectors,
+        sector: c.form.metadata.sectors,
+        sdgGoal: c.form.metadata.sdgGoals,
         geography: c.form.metadata.geographies,
         organisation: orgNames,
         updatedAt: c.updatedAt,
@@ -304,11 +315,10 @@ export function buildSearchIndex({
           : undefined,
       // No "Geography" facet: events have a venue city/country, not a value
       // from the shared GEOGRAPHY_OPTIONS list the other modules use.
-      // "Sector" here is the organiser's sector (ORG_SECTOR_OPTIONS) — a
-      // different, org-level taxonomy from Dataset/Use Case's SECTOR_OPTIONS,
-      // since the event itself has no sector field of its own.
+      // "Sector" is the event's own Theme/Sector field, which uses the same
+      // list as every other module, so a sector filter on All reaches events.
       facets: {
-        sector: e.form.organisers[0]?.sectorType ? [e.form.organisers[0].sectorType] : [],
+        sector: e.form.metadata.theme ? [e.form.metadata.theme] : [],
         organisation: organiserNames,
         eventType: e.form.metadata.eventType ? [e.form.metadata.eventType] : [],
         eventStatus: [eventTimeStatus(e.form.metadata)],
@@ -336,12 +346,14 @@ export function buildSearchIndex({
         publishers: pub.organisation
           ? [{ name: pub.organisation, avatarUrl: ((w) => (w ? organisationLogoUrl(w.metadata) : orgLogoFor(pub.organisation)))(organisationWorkspaces.find((o) => o.metadata.name === pub.organisation)) }]
           : undefined,
-        // No "Sector"/"Geography": a publication carries neither field — only
-        // its parent event might, and that isn't the same thing as the
-        // publication's own. "Year" is the parent event's year, the closest
-        // real date available.
+        // No "Geography". "Sector" is the parent event's Theme/Sector: a
+        // publication attached to an event belongs to that event's topic, and
+        // without it a sector filter on All would drop every one of them.
+        // "Year" is the parent event's year, the closest real date available.
         facets: {
+          sector: e.form.metadata.theme ? [e.form.metadata.theme] : [],
           publicationType: pub.publicationType ? [pub.publicationType] : [],
+          resourceType: pub.publicationType ? [EVENT_PUBLICATION_RESOURCE_TYPE[pub.publicationType] ?? 'other'] : [],
           organisation: pub.organisation ? [pub.organisation] : [],
           updatedAt: e.updatedAt,
           year,
@@ -378,6 +390,35 @@ export function buildSearchIndex({
         modelType: m.form.metadata.modelType ? [m.form.metadata.modelType] : [],
         provider: primaryAccess?.provider ? [primaryAccess.provider] : [],
         updatedAt: m.updatedAt,
+      },
+    })
+  }
+
+  // The standalone Publication records (the Publication creation flow), alongside the publications attached to events above.
+  for (const p of publications) {
+    if (p.status !== 'published') continue
+    const meta = (p.publishedForm ?? p.form).metadata
+    const publisher = resolvePublisherByOrganisation(p.organisationId, p.createdBy, organisationWorkspaces)
+    items.push({
+      id: p.id,
+      type: 'publication',
+      title: meta.name || 'Untitled publication',
+      description: meta.description,
+      organisation: publisher.name,
+      meta: sectorGeoMeta(meta.sector, meta.geography),
+      href: `/dashboard/publications/${p.id}/preview`,
+      cardMeta: {
+        year: meta.date ? meta.date.slice(0, 4) : undefined,
+        publicationType: meta.resourceType ? optionLabel(RESOURCE_TYPE_OPTIONS, meta.resourceType) : undefined,
+      },
+      publishers: [{ name: publisher.name, avatarUrl: publisher.avatarUrl }],
+      facets: {
+        sector: meta.sector ? [meta.sector] : [],
+        geography: meta.geography ? [meta.geography] : [],
+        organisation: [publisher.name],
+        resourceType: meta.resourceType ? [meta.resourceType] : [],
+        updatedAt: p.updatedAt,
+        year: meta.date ? meta.date.slice(0, 4) : undefined,
       },
     })
   }

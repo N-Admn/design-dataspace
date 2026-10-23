@@ -40,6 +40,7 @@ export interface CollaborativeAboutErrors {
   slug?: string
   description?: string
   externalUrl?: string
+  sdgGoals?: string
 }
 
 /** `takenSlugs` — slugs already used by other Collaboratives (never this one's own). */
@@ -57,6 +58,7 @@ export function validateCollaborativeAbout(form: CollaborativeFormState, takenSl
   else if (richTextLength(metadata.descriptionHtml) > COLLABORATIVE_DESCRIPTION_MAX_LENGTH)
     errors.description = `Shorten the description to ${COLLABORATIVE_DESCRIPTION_MAX_LENGTH.toLocaleString()} characters or fewer.`
   if (metadata.externalUrl.trim() && !isValidUrl(metadata.externalUrl.trim())) errors.externalUrl = 'Enter a valid URL.'
+  if (metadata.sdgGoals.length === 0) errors.sdgGoals = 'Select at least one SDG goal.'
   return errors
 }
 

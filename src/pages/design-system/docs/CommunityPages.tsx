@@ -15,6 +15,9 @@ import { GlobalSearchField } from '@/components/discover/GlobalSearchField'
 import { FeaturedCollaborativeCard } from '@/components/layout/FeaturedCollaborativeCard'
 import { FEATURED_COLLABORATIVES } from '@/components/layout/global-nav-config'
 import { DocSearch } from '@/pages/documentation/components/DocSearch'
+import { AppliedFilters } from '@/components/discover/AppliedFilters'
+import { FilterBadge } from '@/components/shared/FilterBadge'
+import { SdgBadge } from '@/components/shared/SdgBadge'
 import { Callout, Code, ComponentPreview, DocSection, PropsTable, ReferenceTable } from '@/pages/design-system/docs/primitives'
 
 /** The Organisations and Publishers directory and profile pattern. The previews are the real components with sample data. */
@@ -499,6 +502,89 @@ export function FeaturedCollaborativeCardPage() {
           rows={[
             { name: 'item', type: 'FeaturedCollaborative', description: 'theme, description, to (the link), image (the illustration) and tint (a background token class).' },
             { name: 'onNavigate', type: '() => void', description: 'Optional. Called on click, so the menu can close.' },
+          ]}
+        />
+      </DocSection>
+    </>
+  )
+}
+
+/* ------------------------------------------------------------ filter badge */
+
+export function FilterBadgePage() {
+  return (
+    <>
+      <DocSection
+        id="overview"
+        title="Overview"
+        description="A badge or tag that is also a way into Search. It looks exactly like the badge it replaces; clicking it opens the Search page on the tab of the content it belongs to, with that one value applied and shown as a removable chip. Remove the chip and the plain tab is left. It is used wherever a page states a sector, SDG goal, event type, resource type, model type or geography, and for every tag, so every one of them leads somewhere."
+      >
+        <ComponentPreview
+          title="Filter badges"
+          code={`<FilterBadge type="dataset" facet="sector" value="gender" variant="secondary">Gender</FilterBadge>
+<FilterBadge type="event" facet="eventType" value="conference" variant="muted">Conference</FilterBadge>
+<SdgBadge goal="sdg-5" linkTo="use-case" />`}
+        >
+          <div className="flex flex-wrap items-center gap-2">
+            <FilterBadge type="dataset" facet="sector" value="gender" variant="secondary">
+              Gender
+            </FilterBadge>
+            <FilterBadge type="event" facet="eventType" value="conference" variant="muted">
+              Conference
+            </FilterBadge>
+            <FilterBadge type="ai-model" facet="geography" value="india" variant="outline">
+              India
+            </FilterBadge>
+            <SdgBadge goal="sdg-5" linkTo="use-case" />
+          </div>
+        </ComponentPreview>
+        <ReferenceTable
+          columns={['Badge says', 'Opens']}
+          rows={[
+            ['A sector (Gender)', '/search?type=dataset&sector=gender, on the badge’s own content type'],
+            ['An SDG goal', '/search?type=use-case&sdgGoal=sdg-5 (use cases and collaboratives)'],
+            ['An event type, a resource type', '/search?type=event&eventType=… and /search?type=publication&resourceType=…'],
+            ['A geography, a model type', 'The same, applied as a chip only: these have no group in the filter rail'],
+            ['A tag', '/search?type=dataset&tag=… The chip reads “Tag: name”'],
+          ]}
+        />
+        <Callout title="The filters live in the URL." tone="do">
+          <p>
+            So a link from a badge can be reloaded and shared, and Back returns to the page the badge was on. Removing a chip replaces the page in
+            the history instead of adding a step, so Back still goes to where the person came from.
+          </p>
+        </Callout>
+      </DocSection>
+
+      <DocSection
+        id="applied"
+        title="Applied filters"
+        description="The chips above the results that show everything narrowing the list: “Sector: Gender ×”, “Tag: heat ×”. Each removes itself; Clear all appears from two. A ticked option in the filter rail stays listed (as 0) while it is applied, so an applied filter can never disappear."
+      >
+        <ComponentPreview
+          title="Applied filters"
+          code={`<AppliedFilters
+  filters={[{ id: 'sector:gender', group: 'Sector', label: 'Gender', onRemove: () => {} }]}
+  onClearAll={clearAll}
+/>`}
+        >
+          <AppliedFilters
+            filters={[
+              { id: 'tag', group: 'Tag', label: 'GDP', onRemove: () => {} },
+              { id: 'sector', group: 'Sector', label: 'Public Finance', onRemove: () => {} },
+            ]}
+            onClearAll={() => {}}
+          />
+        </ComponentPreview>
+      </DocSection>
+
+      <DocSection id="api" title="API reference">
+        <PropsTable
+          rows={[
+            { name: 'type', type: "'dataset' | 'use-case' | 'publication' | 'collaborative' | 'event' | 'ai-model'", description: 'The Search tab to open: the content type the badge sits on.' },
+            { name: 'facet', type: "'sector' | 'sdgGoal' | 'eventType' | 'resourceType' | 'geography' | 'modelType'", description: 'Which filter the value applies to.' },
+            { name: 'value', type: 'string', description: 'The stored value (for example gender, sdg-5, conference), not its label.' },
+            { name: 'variant', type: 'Badge variant', description: 'The same variants as Badge; the badge keeps its look and gains a hover underline and a focus ring.' },
           ]}
         />
       </DocSection>

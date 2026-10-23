@@ -1,21 +1,20 @@
+import { Link } from 'react-router-dom'
 import type * as React from 'react'
 import {
-  Bus,
+  Baby,
   Building,
   Building2,
   CalendarDays,
   Download,
-  Droplet,
-  GraduationCap,
-  HeartPulse,
-  Home,
   Landmark,
   Leaf,
   MapPin,
+  Scale,
   Share2,
-  Sprout,
+  ShieldAlert,
   Tag,
-  Zap,
+  Users,
+  Waves,
   type LucideIcon,
 } from 'lucide-react'
 
@@ -28,6 +27,7 @@ import { Button } from '@/components/ui/button'
 import { SocialShareLinks } from '@/components/shared/SocialShareLinks'
 import { useToast } from '@/components/ui/toast'
 import { formatShortDate } from '@/lib/format'
+import { searchFacetHref } from '@/lib/search-links'
 import { cn } from '@/lib/utils'
 import type { DatasetPublisher } from '@/lib/dataset-publisher'
 import {
@@ -47,27 +47,27 @@ function optionLabel(
  *  without repeating the label text. `Tag` is a generic fallback for any sector
  *  value that isn't in the current option list. */
 const SECTOR_ICONS: Record<string, LucideIcon> = {
-  agriculture: Sprout,
-  education: GraduationCap,
-  energy: Zap,
-  environment: Leaf,
-  finance: Landmark,
-  health: HeartPulse,
-  housing: Home,
-  transportation: Bus,
+  'child-rights': Baby,
+  'climate-action': Leaf,
+  coastal: Waves,
+  'disaster-risk-reduction': ShieldAlert,
+  gender: Users,
+  'law-justice': Scale,
+  'public-finance': Landmark,
   'urban-development': Building,
-  'water-sanitation': Droplet,
 }
 
 interface MetaCardProps {
   icon: LucideIcon
   label: string
   value: string
+  /** When set, the value is a link (to Search with this fact applied). */
+  to?: string
 }
 
 /** One identity fact on a soft white card (80% opacity over the header surface): a large line icon beside a
  *  label/value pair, vertically centred as a unit. Icon and value are grey (--border-strong). */
-function MetaCard({ icon: Icon, label, value }: MetaCardProps) {
+function MetaCard({ icon: Icon, label, value, to }: MetaCardProps) {
   return (
     <li className="flex min-w-0 items-center gap-5 rounded-lg border border-transparent bg-card/80 px-6 py-5">
       <Icon
@@ -79,9 +79,16 @@ function MetaCard({ icon: Icon, label, value }: MetaCardProps) {
         <span className="type-eyebrow text-muted-foreground">
           {label}
         </span>
-        <span className="truncate text-sm font-semibold text-[var(--border-strong)]">
-          {value}
-        </span>
+        {to ? (
+          <Link
+            to={to}
+            className="truncate rounded-sm text-sm font-semibold text-[var(--border-strong)] underline-offset-2 hover:text-text-brand hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-focus"
+          >
+            {value}
+          </Link>
+        ) : (
+          <span className="truncate text-sm font-semibold text-[var(--border-strong)]">{value}</span>
+        )}
       </div>
     </li>
   )
@@ -128,6 +135,7 @@ function DatasetDetailHeader({
             icon: SectorIcon,
             label: 'Sector',
             value: optionLabel(SECTOR_OPTIONS, metadata.sector),
+            to: searchFacetHref('dataset', 'sector', metadata.sector),
           },
         ]
       : []),
@@ -137,6 +145,7 @@ function DatasetDetailHeader({
             icon: MapPin,
             label: 'Geography',
             value: optionLabel(GEOGRAPHY_OPTIONS, metadata.geography),
+            to: searchFacetHref('dataset', 'geography', metadata.geography),
           },
         ]
       : []),

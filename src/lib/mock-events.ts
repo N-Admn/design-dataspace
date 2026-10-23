@@ -146,7 +146,7 @@ const evt2Form: EventFormState = {
     title: 'AI for Public Good Workshop',
     subtitle: 'Practical approaches to responsible AI in public services',
     eventType: 'workshop',
-    theme: 'health',
+    theme: 'child-rights',
     overview:
       'A hands-on workshop covering practical, responsible approaches to deploying AI in public service delivery, with case studies and open discussion.',
     startDate: '2026-08-12',
@@ -257,7 +257,7 @@ const evt5Form: EventFormState = {
     title: 'Open Data Licensing 101',
     subtitle: 'A practical primer on choosing and applying open data licenses',
     eventType: 'webinar',
-    theme: 'open-data',
+    theme: 'law-justice',
     overview:
       'An introductory webinar covering the fundamentals of open data licensing, common pitfalls, and how to choose the right license for public datasets.',
     startDate: '2026-06-30',
@@ -294,7 +294,7 @@ const evt6Form: EventFormState = {
     title: 'Data Visualization Bootcamp for Civic Teams',
     subtitle: 'Hands-on training for building public-facing data dashboards',
     eventType: 'training',
-    theme: 'capacity-building',
+    theme: 'urban-development',
     overview:
       'A two-day, hands-on bootcamp for government and civil-society teams to learn practical data visualization techniques for public dashboards.',
     startDate: '2026-06-17',
@@ -332,7 +332,7 @@ const evt7Form: EventFormState = {
     title: 'Financial Inclusion Data Roundtable',
     subtitle: 'Reviewing district-level indicators with sector experts',
     eventType: 'roundtable',
-    theme: 'finance',
+    theme: 'public-finance',
     overview:
       'A closed-door roundtable to review the latest district financial inclusion indicators with researchers, regulators, and civil-society partners.',
     startDate: '2026-06-02',
@@ -369,7 +369,7 @@ const evt8Form: EventFormState = {
     title: 'State of Civic Tech India 2026',
     subtitle: 'An annual look at civic technology and open governance trends',
     eventType: 'conference',
-    theme: 'governance',
+    theme: 'law-justice',
     overview:
       'A national conference bringing together civic technologists, policymakers, and researchers to review the state of open governance and civic tech in India.',
     startDate: '2026-05-20',
@@ -396,6 +396,27 @@ const evt8Form: EventFormState = {
   relatedContent: FULL_RELATED_CONTENT,
 }
 
+// evt-9 is an event of a kind the list has no name for, so it is typed "Other".
+const evt9Form: EventFormState = {
+  ...evt3Form,
+  metadata: {
+    ...evt3Form.metadata,
+    title: 'Civic Data Open House',
+    subtitle: 'An informal day to meet the team, see demos and swap ideas',
+    eventType: 'other',
+    theme: 'urban-development',
+    overview:
+      'An open-door day for anyone curious about civic data: short demos, a walk through the platform and time to talk with contributors.',
+    startDate: '2026-11-14',
+    endDate: '2026-11-14',
+    registrationRequired: false,
+    registrationUrl: '',
+    registrationEndDate: '',
+    registrationEndTime: '',
+  },
+  publications: mkPublications('evt9'),
+}
+
 // evt-6 is published and live, but has a saved working copy with unpublished
 // edits — surfaces as "Published · Unsaved changes".
 const evt6WorkingForm: EventFormState = {
@@ -415,4 +436,5 @@ export const MOCK_EVENTS: EventRecord[] = [
   { id: 'evt-6', status: 'published', createdAt: '02/06/2026 09:00:00', updatedAt: '09/06/2026 17:45:00', form: evt6WorkingForm, publishedForm: evt6Form, organisationId: 'org-workspace-1', createdBy: 'Sana Khan' },
   { id: 'evt-7', status: 'published', createdAt: '20/05/2026 09:00:00', updatedAt: '25/05/2026 10:10:00', form: evt7Form, publishedForm: evt7Form },
   { id: 'evt-8', status: 'published', createdAt: '28/04/2026 09:00:00', updatedAt: '05/05/2026 14:20:00', form: evt8Form, publishedForm: evt8Form },
+  { id: 'evt-9', status: 'published', createdAt: '02/10/2026 09:00:00', updatedAt: '06/10/2026 11:00:00', form: evt9Form, publishedForm: evt9Form },
 ]

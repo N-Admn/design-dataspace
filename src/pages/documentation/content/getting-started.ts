@@ -192,7 +192,7 @@ export const GETTING_STARTED: Article[] = [
             type: 'list',
             items: [
               'With nothing typed, Search suggests popular topics and popular searches to start from.',
-              'The filter rail on the left changes with the type. Datasets, for example, can be filtered by when they were updated and by file format. Each option shows how many records match.',
+              'The filter rail on the left changes with the type. Every tab can be filtered by when it was updated, and then by one more thing: Sector for datasets and AI models, SDG goals for use cases and collaboratives, resource type for publications and event type for events. Each option shows how many records match.',
               'Sort changes the order (for example, by relevance), and the toggle beside it switches between list and grid views.',
               'A tab can offer a button for contributing that kind of content; the Datasets tab, for example, has Contribute Dataset.',
               '“Close search” returns you to the page you came from.',

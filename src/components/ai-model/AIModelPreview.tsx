@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import { ExternalLink, Globe2, Sparkles } from 'lucide-react'
 
+import { FilterBadge } from '@/components/shared/FilterBadge'
 import { Badge, badgeVariants } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 import { GEOGRAPHY_OPTIONS, LICENSE_OPTIONS, SECTOR_OPTIONS } from '@/types/dataset'
@@ -34,12 +35,16 @@ function AIModelPreview({ form }: { form: AIModelFormState }) {
         <h1 className="mt-1.5 type-heading-1 text-primary">{metadata.name || 'Untitled AI Model'}</h1>
 
         <div className="mt-3 flex flex-wrap items-center gap-1.5">
-          {metadata.modelType && <Badge variant="accent">{optionLabel(MODEL_TYPE_OPTIONS, metadata.modelType)}</Badge>}
+          {metadata.modelType && (
+            <FilterBadge type="ai-model" facet="modelType" value={metadata.modelType} variant="accent">
+              {optionLabel(MODEL_TYPE_OPTIONS, metadata.modelType)}
+            </FilterBadge>
+          )}
           {metadata.domain && <Badge variant="secondary">{optionLabel(DOMAIN_OPTIONS, metadata.domain)}</Badge>}
           {metadata.sectors.map((s) => (
-            <Badge key={s} variant="muted">
+            <FilterBadge key={s} type="ai-model" facet="sector" value={s} variant="muted">
               {optionLabel(SECTOR_OPTIONS, s)}
-            </Badge>
+            </FilterBadge>
           ))}
         </div>
 
@@ -123,9 +128,9 @@ function AIModelPreview({ form }: { form: AIModelFormState }) {
               <p className="text-sm font-semibold text-foreground">Geography</p>
               <div className="mt-2 flex flex-wrap gap-1.5">
                 {metadata.geographies.map((g) => (
-                  <Badge key={g} variant="muted">
+                  <FilterBadge key={g} type="ai-model" facet="geography" value={g} variant="muted">
                     {optionLabel(GEOGRAPHY_OPTIONS, g)}
-                  </Badge>
+                  </FilterBadge>
                 ))}
               </div>
             </div>

@@ -22,7 +22,7 @@ const publication1Form: PublicationFormState = {
       { id: 'contributor-mock-2', name: 'Farhan Ali', designation: 'Data Analyst', organisation: 'CivicDataLab' },
     ],
     date: '2026-07-15',
-    sector: 'water-sanitation',
+    sector: 'urban-development',
     geography: 'global',
     usageRights: 'cc-by-4.0',
     resourceType: 'research',
