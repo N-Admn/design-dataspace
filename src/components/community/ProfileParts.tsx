@@ -81,21 +81,39 @@ const CONTEXT_CARD = 'flex min-h-[5.5rem] min-w-0 flex-col justify-center gap-3 
 
 const PANEL = 'rounded-2xl bg-secondary p-4 text-secondary-foreground sm:p-5'
 
-/** One count panel: the icon and the number (heading-1) on one line, then what it counts. It links to that kind's list on the page. */
-function CountPanel({ type, count, className }: { type: ContributionType; count: number; className?: string }) {
+/** One count panel. It links to that kind's list on the page. By default the icon and the number (heading-1) share a line with what it
+ *  counts underneath; with `iconBeside` the icon is on the left and the number sits above what it counts, in a column beside it. */
+function CountPanel({ type, count, className, iconBeside = false }: { type: ContributionType; count: number; className?: string; iconBeside?: boolean }) {
   const Icon = TYPE_ICON[type]
+  const icon = (
+    <span aria-hidden="true" className={cn('flex size-[36px] shrink-0 items-center justify-center rounded-full', TYPE_TINT[type])}>
+      <Icon className="size-[14px]" strokeWidth={1.75} />
+    </span>
+  )
+  const number = <span className="type-heading-1 tabular-nums text-text-brand">{count.toLocaleString()}</span>
+  const label = <span className="type-body text-text-default">{CONTRIBUTION_LABEL[type][count === 1 ? 'singular' : 'plural']}</span>
   return (
     <a
       href={`#section-${type}`}
-      className={cn(PANEL, 'flex min-h-[6.8rem] min-w-0 flex-col justify-center gap-2 transition-colors hover:bg-secondary/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring', className)}
+      className={cn(PANEL, 'min-h-[6.8rem] min-w-0 transition-colors hover:bg-secondary/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring', iconBeside ? 'flex items-center gap-4' : 'flex flex-col justify-center gap-2', className)}
     >
-      <div className="flex items-center gap-3">
-        <span aria-hidden="true" className={cn('flex size-[36px] shrink-0 items-center justify-center rounded-full', TYPE_TINT[type])}>
-          <Icon className="size-[14px]" strokeWidth={1.75} />
-        </span>
-        <span className="type-heading-1 tabular-nums text-text-brand">{count.toLocaleString()}</span>
-      </div>
-      <span className="type-body text-text-default">{CONTRIBUTION_LABEL[type][count === 1 ? 'singular' : 'plural']}</span>
+      {iconBeside ? (
+        <>
+          {icon}
+          <span className="flex min-w-0 flex-col">
+            {number}
+            {label}
+          </span>
+        </>
+      ) : (
+        <>
+          <div className="flex items-center gap-3">
+            {icon}
+            {number}
+          </div>
+          {label}
+        </>
+      )}
     </a>
   )
 }
@@ -408,7 +426,7 @@ function ProfileBannerHero({ kind, name, imageUrl, headline, badge, location, li
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
         {CONTRIBUTION_TYPES.map((t) => (
-          <CountPanel key={t} type={t} count={counts[t] ?? 0} className="bg-background hover:bg-background/70" />
+          <CountPanel key={t} type={t} count={counts[t] ?? 0} iconBeside className="bg-background hover:bg-background/70" />
         ))}
       </div>
       <p className="sr-only">{total} published {total === 1 ? 'contribution' : 'contributions'}</p>
