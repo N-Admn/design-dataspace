@@ -391,7 +391,7 @@ function ProfileBannerHero({ kind, name, imageUrl, headline, badge, location, li
           <div className="flex min-w-0 flex-col items-start gap-[0.6rem]">
             {/* A small badge that opens the directory on the tab for this kind of profile. */}
             <Tag size="sm" to={kind === 'organisation' ? '/community?tab=organisations' : '/community?tab=people'} className="bg-background">
-              {kind === 'organisation' ? 'Organisation' : 'Individual publisher'}
+              {kind === 'organisation' ? 'Organisations' : 'People'}
             </Tag>
             <h1 title={name} className="type-heading-1 line-clamp-2 break-words text-black">{name}</h1>
             {/* The name's line box leaves room under its letters, so the designation is pulled up to make the gap look like the others. */}
