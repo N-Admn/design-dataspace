@@ -1,10 +1,11 @@
+import * as React from 'react'
 import type { ReactNode } from 'react'
 
 import { Checkbox } from '@/components/ui/checkbox'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Label } from '@/components/ui/label'
 import { cn } from '@/lib/utils'
-import { computeGroupOptions, type FilterGroupDef } from '@/lib/search-filters'
+import { computeGroupOptions, type FilterGroupDef, type FilterOption } from '@/lib/search-filters'
 import { filterItems, type ActiveFilters, type SearchResultItem } from '@/lib/global-search'
 
 interface FilterRailProps {
@@ -31,6 +32,54 @@ function OptionRow({ children, count }: { children: ReactNode; count: number }) 
     <div className="flex items-start justify-between gap-3">
       <span className="flex min-w-0 items-start gap-2">{children}</span>
       <span className="shrink-0 pt-px text-xs tabular-nums text-muted-foreground">{count}</span>
+    </div>
+  )
+}
+
+/** How many options a checkbox group shows before the rest are folded away behind "Show all". */
+const COLLAPSED_COUNT = 6
+
+/** A group of checkboxes. A long list shows its most common options (and anything already ticked) with a "Show all N" button for the rest,
+ *  so a list of seventeen does not push every other filter off the screen. Expanded, the options are in their own order. */
+function CheckboxGroup({ groupKey, options, selected, onChange }: { groupKey: string; options: FilterOption[]; selected: string[]; onChange: (key: string, values: string[]) => void }) {
+  const [expanded, setExpanded] = React.useState(false)
+  const collapsible = options.length > COLLAPSED_COUNT + 1
+  const visible = React.useMemo(() => {
+    if (!collapsible || expanded) return options
+    const keep = new Set(options.filter((o) => selected.includes(o.value)).map((o) => o.value))
+    for (const o of [...options].sort((a, b) => b.count - a.count)) {
+      if (keep.size >= COLLAPSED_COUNT) break
+      keep.add(o.value)
+    }
+    return options.filter((o) => keep.has(o.value))
+  }, [options, selected, collapsible, expanded])
+  return (
+    <div className="flex flex-col gap-3.5">
+      {visible.map((option) => {
+        const checked = selected.includes(option.value)
+        return (
+          <label key={option.value} className="cursor-pointer">
+            <OptionRow count={option.count}>
+              <Checkbox
+                className="mt-0.5"
+                checked={checked}
+                onCheckedChange={(next) => onChange(groupKey, next ? [...selected, option.value] : selected.filter((v) => v !== option.value))}
+              />
+              <span className="text-sm font-normal text-foreground">{option.label}</span>
+            </OptionRow>
+          </label>
+        )
+      })}
+      {collapsible && (
+        <button
+          type="button"
+          aria-expanded={expanded}
+          onClick={() => setExpanded((v) => !v)}
+          className="self-start rounded-sm text-sm font-medium text-primary underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        >
+          {expanded ? 'Show fewer' : `Show all ${options.length}`}
+        </button>
+      )}
     </div>
   )
 }
@@ -101,25 +150,7 @@ function FilterRail({ groups, items, active, onChange, onClearAll, stickyTop }: 
                 ))}
               </RadioGroup>
             ) : (
-              <div className="flex flex-col gap-3.5">
-                {options.map((option) => {
-                  const checked = selected.includes(option.value)
-                  return (
-                    <label key={option.value} className="cursor-pointer">
-                      <OptionRow count={option.count}>
-                        <Checkbox
-                          className="mt-0.5"
-                          checked={checked}
-                          onCheckedChange={(next) =>
-                            onChange(group.key, next ? [...selected, option.value] : selected.filter((v) => v !== option.value))
-                          }
-                        />
-                        <span className="text-sm font-normal text-foreground">{option.label}</span>
-                      </OptionRow>
-                    </label>
-                  )
-                })}
-              </div>
+              <CheckboxGroup groupKey={group.key} options={options} selected={selected} onChange={onChange} />
             )}
           </fieldset>
         )

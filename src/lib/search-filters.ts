@@ -38,7 +38,29 @@ const sector: FilterGroupDef = { key: 'sector', label: 'Sector', kind: 'multi', 
 
 // One group of its own on each tab, after "Last updated": the field that best tells that kind of content apart. Geography is deliberately
 // not a filter anywhere: its list grows without bound and would need nesting and endless scrolling.
-const sdgGoal: FilterGroupDef = { key: 'sdgGoal', label: 'SDG goals', kind: 'multi', fixedOptions: SDG_GOAL_OPTIONS }
+// The SDG goals' full names are too long for the rail (they wrap onto two lines and crowd the counts), so the filter uses the short
+// name of each goal, in goal order. The numbered full names stay in the forms and on the pages.
+const SDG_SHORT_NAMES: Record<string, string> = {
+  'sdg-1': 'No Poverty',
+  'sdg-2': 'Zero Hunger',
+  'sdg-3': 'Good Health',
+  'sdg-4': 'Quality Education',
+  'sdg-5': 'Gender Equality',
+  'sdg-6': 'Clean Water & Sanitation',
+  'sdg-7': 'Clean Energy',
+  'sdg-8': 'Decent Work & Growth',
+  'sdg-9': 'Industry & Innovation',
+  'sdg-10': 'Reduced Inequalities',
+  'sdg-11': 'Sustainable Cities',
+  'sdg-12': 'Responsible Consumption',
+  'sdg-13': 'Climate Action',
+  'sdg-14': 'Life Below Water',
+  'sdg-15': 'Life on Land',
+  'sdg-16': 'Peace & Justice',
+  'sdg-17': 'Partnerships',
+}
+const SDG_FILTER_OPTIONS = SDG_GOAL_OPTIONS.map((o) => ({ value: o.value, label: SDG_SHORT_NAMES[o.value] ?? o.label }))
+const sdgGoal: FilterGroupDef = { key: 'sdgGoal', label: 'SDG goals', kind: 'multi', fixedOptions: SDG_FILTER_OPTIONS }
 const resourceType: FilterGroupDef = { key: 'resourceType', label: 'Resource type', kind: 'multi', fixedOptions: RESOURCE_TYPE_OPTIONS }
 const eventType: FilterGroupDef = { key: 'eventType', label: 'Event type', kind: 'multi', fixedOptions: EVENT_TYPE_OPTIONS }
 
