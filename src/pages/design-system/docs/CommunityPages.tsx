@@ -302,7 +302,7 @@ export function ProfilePartsPage() {
       <DocSection
         id="banner-hero"
         title="ProfileBannerHero"
-        description="The top of every profile, organisation or individual: one softly tinted card. On the left a large square image that fills its tile (a wide logo is cropped to it). On the right a small badge that opens the Community directory on the matching tab, the name (Heading 1), the designation (Heading 3), one row of facts and the description (body). Along the bottom, areas of expertise as small badges, and the three social profiles as overlapping filled circles. Below a divider, a row of six white count panels, each with its icon on the left and the number above its label."
+        description="The top of every profile, organisation or individual: one softly tinted card. On the left a large square image that fills its tile (a wide logo is cropped to it). On the right a small badge that opens the Community directory on the matching tab, the name (Heading 1), the designation (Heading 3), one row of facts and the description (body). Along the bottom, areas of expertise as small badges, and the three social profiles as overlapping filled circles. Below a divider, a row of six counts, each with its icon on the left and the number above its label, with a thin grey rule between them."
       >
         <ComponentPreview
           title="Profile banner"
@@ -344,7 +344,7 @@ export function ProfilePartsPage() {
           rows={[
             ['Facts row', 'Grey 16px icons with body text (type, location, website, or a person’s organisations), separated by a thin grey rule. Only what is set shows.'],
             ['Social profiles', 'Always three circles, GitHub, LinkedIn and X: filled in the primary colour and a link when set, solid grey and not clickable when not.'],
-            ['Count panels', 'One per kind of content, white on the card, linking to that kind’s list.'],
+            ['Counts', 'One per kind of content, plain on the card (no background, not links), divided by a thin grey rule from lg up. Below lg they sit two or three to a row without the rules.'],
             ['Left out', 'There is no separate About, People or “Become part of …” card here; an organisation’s people are listed further down the page.'],
           ]}
         />
