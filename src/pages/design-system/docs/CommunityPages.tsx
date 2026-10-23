@@ -11,6 +11,10 @@ import {
   type RailGroup,
 } from '@/components/community/DirectoryParts'
 import { BackLink, ProfileHero, ProfileLinks } from '@/components/community/ProfileParts'
+import { GlobalSearchField } from '@/components/discover/GlobalSearchField'
+import { FeaturedCollaborativeCard } from '@/components/layout/FeaturedCollaborativeCard'
+import { FEATURED_COLLABORATIVES } from '@/components/layout/global-nav-config'
+import { DocSearch } from '@/pages/documentation/components/DocSearch'
 import { Callout, Code, ComponentPreview, DocSection, PropsTable, ReferenceTable } from '@/pages/design-system/docs/primitives'
 
 /** The Organisations and Publishers directory and profile pattern. The previews are the real components with sample data. */
@@ -200,6 +204,13 @@ export function DirectoryControlsPage() {
             ['single', 'Radios with an “Any” choice first, e.g. Last updated.'],
           ]}
         />
+        <ReferenceTable
+          columns={['Rule', 'Detail']}
+          rows={[
+            ['Order', '“Last updated” is always the first group, on every tab of Search and Community, and always carries the same title.'],
+            ['Sticky', 'Pass stickyTop (the height of the sticky search block, in px) and the rail pins just below it, so only the results scroll. It scrolls on its own if its groups are taller than the viewport. Not sticky below the sm breakpoint, where it stacks above the results.'],
+          ]}
+        />
         <Callout title="Counts never include their own group.">
           <p>
             Each group’s counts come from the pool narrowed by every other group, so ticking an option can shrink another group’s counts but never its
@@ -226,10 +237,32 @@ export function DirectoryControlsPage() {
         </ComponentPreview>
       </DocSection>
 
-      <DocSection id="pagination" title="DirectoryPagination" description="Previous, numbered pages and next. Long ranges collapse to “1 … 4 5 6 … 12”. Renders nothing for a single page. Pages hold 9 cards.">
-        <ComponentPreview title="Pagination" code={`<DirectoryPagination page={page} pageCount={12} onPage={setPage} />`}>
-          <DirectoryPagination page={page} pageCount={12} onPage={setPage} />
+      <DocSection id="pagination" title="DirectoryPagination" description="The one pagination for Search and Community: a results range on the left, Previous, numbered pages and Next in the middle, and a Go to field on the right. Renders nothing for a single page. Community pages hold 9 cards, Search pages 10.">
+        <ComponentPreview title="Pagination" stage="fill" code={`<DirectoryPagination page={page} pageCount={12} onPage={setPage} total={108} pageSize={9} />`}>
+          <div className="w-full">
+            <DirectoryPagination page={page} pageCount={12} onPage={setPage} total={108} pageSize={9} />
+          </div>
         </ComponentPreview>
+        <ReferenceTable
+          columns={['Part', 'Behaviour']}
+          rows={[
+            ['Previous / Next', 'Soft grey filled buttons with text only. Disabled (faded) on the first and last page.'],
+            ['Page numbers', 'Plain numbers; the current page is a filled circle in the primary colour. 7 pages or fewer shows them all.'],
+            ['Long ranges', 'First and last page always show, with “…” where pages are skipped: “1 … 14 15 16 … 110”. Near either end the window widens, “1 2 3 4 5 … 110”, so the row keeps a steady width.'],
+            ['Results range', '“Results 10–18 of 73”, when total and pageSize are passed.'],
+            ['Go to', 'A number field from 8 pages up. Enter jumps there; out-of-range numbers are clamped.'],
+          ]}
+        />
+        <PropsTable
+          rows={[
+            { name: 'page / pageCount', type: 'number', description: 'The current page (1-based) and how many there are.' },
+            { name: 'onPage', type: '(page: number) => void', description: 'Called with the new page. The page scrolls the results back into view.' },
+            { name: 'total / pageSize', type: 'number', description: 'Optional. Together they show the results range.' },
+          ]}
+        />
+        <Callout title="Changing what is searched starts again at page 1.">
+          <p>A new query, tab, tag, filter or sort resets the page, so you are never left on a page that no longer exists.</p>
+        </Callout>
       </DocSection>
 
       <DocSection id="no-results" title="NoResults" description="Shown when a search or filter leaves nothing: say what happened and offer the way back.">
@@ -342,6 +375,130 @@ export function ProfilePartsPage() {
             { name: 'affiliations / members', type: '{ id; name; imageUrl }[]', description: 'ProfileHero: the organisations card for an individual / the people card for an organisation.' },
             { name: 'social', type: '{ linkedin; github; x }', description: 'ProfileHero: an individual’s social icons card.' },
             { name: 'contributions / cards', type: 'PublicContribution[] / Map', description: 'ContributionSections: the records to list, and the Search cards to render them with.' },
+          ]}
+        />
+      </DocSection>
+    </>
+  )
+}
+
+/* ------------------------------------------------------------ search field */
+
+export function SearchFieldPage() {
+  const [value, setValue] = React.useState('')
+  return (
+    <>
+      <DocSection
+        id="overview"
+        title="Overview"
+        description="One search field everywhere: a full pill with a border and soft shadow, the placeholder inside, a clear (×) button once something is typed, and a circular primary Search button inset on the right. The global search, the Community directory and the documentation all use it, so a search never looks different from one page to the next."
+      >
+        <ComponentPreview
+          title="Search field, medium (results pages)"
+          stage="fill"
+          code={`<GlobalSearchField
+  value={value}
+  onChange={setValue}
+  onSubmit={(next) => search(next)}
+  placeholder="Search datasets, use cases, publications, and more"
+  ariaLabel="Search CivicDataSpace"
+  size="md"
+/>`}
+        >
+          <div className="w-full">
+            <GlobalSearchField value={value} onChange={setValue} onSubmit={() => {}} placeholder="Search datasets, use cases, publications, and more" ariaLabel="Search CivicDataSpace" size="md" />
+          </div>
+        </ComponentPreview>
+        <ComponentPreview
+          title="Search field, large (landing)"
+          stage="fill"
+          code={`<GlobalSearchField value={value} onChange={setValue} onSubmit={search} placeholder="Search…" ariaLabel="Search CivicDataSpace" size="lg" />`}
+        >
+          <div className="w-full">
+            <GlobalSearchField value={value} onChange={setValue} onSubmit={() => {}} placeholder="Search…" ariaLabel="Search CivicDataSpace" size="lg" />
+          </div>
+        </ComponentPreview>
+      </DocSection>
+
+      <DocSection
+        id="documentation-search"
+        title="Documentation search"
+        description="The documentation search is the same pill, with results listed underneath while something is typed. Submitting (Enter or the Search button) opens the highlighted result; the arrow keys move through them and Escape clears. It comes in two sizes: 48px in the page header and a compact 40px in the sidebar."
+      >
+        <ComponentPreview
+          title="Documentation search"
+          stage="fill"
+          code={`<DocSearch placeholder="Search documentation..." ariaLabel="Search the documentation" size="lg" />`}
+        >
+          <div className="w-full">
+            <DocSearch placeholder="Search documentation..." ariaLabel="Search the documentation" size="lg" />
+          </div>
+        </ComponentPreview>
+      </DocSection>
+
+      <DocSection id="api" title="API reference">
+        <PropsTable
+          rows={[
+            { name: 'value / onChange', type: 'string / (value) => void', description: 'Controlled text. Typing does not search by itself; submitting does.' },
+            { name: 'onSubmit', type: '(value: string) => void', description: 'Called on Enter or the Search button.' },
+            { name: 'placeholder / ariaLabel', type: 'string', description: 'The hint inside the field and its persistent accessible name, which never relies on the placeholder.' },
+            { name: 'size', type: "'lg' | 'md'", default: "'lg'", description: 'lg: 64px, for the landing page. md: 48px, for results pages.' },
+            { name: 'autoFocus', type: 'boolean', description: 'Focus the field on mount. Left off when the page is shown inside a frame.' },
+          ]}
+        />
+        <ReferenceTable
+          columns={['Where', 'Size']}
+          rows={[
+            ['Search results, Community directory', 'md, in a sticky block together with the content-type pills'],
+            ['Documentation header', 'DocSearch, 48px'],
+            ['Documentation sidebar', 'DocSearch, 40px'],
+          ]}
+        />
+      </DocSection>
+    </>
+  )
+}
+
+/* ---------------------------------------------- featured collaborative card */
+
+export function FeaturedCollaborativeCardPage() {
+  return (
+    <>
+      <DocSection
+        id="overview"
+        title="Overview"
+        description="The cards in the navigation bar's Collaboratives menu. Each is an illustration on a soft tint, a small theme label and a description of the sector. The tints are the same surfaces as the landing page's bento cards, so the menu reads as part of the same family. The whole card is the link: it opens the Search page's Collaboratives tab with the theme's Sector filter applied."
+      >
+        <ComponentPreview
+          title="Featured collaborative cards"
+          stage="fill"
+          code={`{FEATURED_COLLABORATIVES.map((item) => (
+  <li key={item.title}>
+    <FeaturedCollaborativeCard item={item} onNavigate={closeMenu} />
+  </li>
+))}`}
+        >
+          <ul className="grid w-full gap-4 sm:grid-cols-3">
+            {FEATURED_COLLABORATIVES.map((item) => (
+              <li key={item.title}>
+                <FeaturedCollaborativeCard item={item} />
+              </li>
+            ))}
+          </ul>
+        </ComponentPreview>
+        <ReferenceTable
+          columns={['Part', 'Detail']}
+          rows={[
+            ['Tile', '16:9, rounded, the illustration contained and centred with 12px of padding. The tint comes from the card (blue, pink, peach).'],
+            ['Theme label', 'Small caps in the muted colour; the name of the Sector it opens.'],
+            ['Description', '14px muted text, up to two lines, never truncated. Written about the sector, not as a title.'],
+            ['Link', 'Collaboratives tab plus the Sector filter, e.g. ?type=collaboratives&sector=climate-action. The filter is applied once and then lives in the filter rail.'],
+          ]}
+        />
+        <PropsTable
+          rows={[
+            { name: 'item', type: 'FeaturedCollaborative', description: 'theme, description, to (the link), image (the illustration) and tint (a background token class).' },
+            { name: 'onNavigate', type: '() => void', description: 'Optional. Called on click, so the menu can close.' },
           ]}
         />
       </DocSection>
