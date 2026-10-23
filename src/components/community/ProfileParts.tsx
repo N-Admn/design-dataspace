@@ -347,11 +347,11 @@ function ProfileHero({ kind, name, imageUrl, headline, badge, location, links, s
 function BannerFact({ icon: Icon, children, href, to }: { icon: React.ComponentType<{ className?: string }>; children: React.ReactNode; href?: string; to?: string }) {
   const body = (
     <>
-      <Icon aria-hidden="true" className="size-5 shrink-0 text-text-brand" />
+      <Icon aria-hidden="true" className="size-4 shrink-0 text-text-brand" />
       <span className="min-w-0 truncate">{children}</span>
     </>
   )
-  const cls = 'inline-flex min-w-0 max-w-full items-center gap-2 text-base text-text-default'
+  const cls = 'type-body inline-flex min-w-0 max-w-full items-center gap-2 text-text-default'
   const link = cn(cls, 'rounded-sm underline-offset-4 hover:text-text-brand hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-focus')
   if (to) return <Link to={to} className={link}>{body}</Link>
   if (href)
