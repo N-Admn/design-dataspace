@@ -294,7 +294,7 @@ function CommunityPage() {
                 })}
               </ul>
               <div className="mt-8">
-                <DirectoryPagination page={currentPage} pageCount={pageCount} onPage={goToPage} />
+                <DirectoryPagination page={currentPage} pageCount={pageCount} onPage={goToPage} total={results.length} pageSize={DIRECTORY_PAGE_SIZE} />
               </div>
             </>
           )}

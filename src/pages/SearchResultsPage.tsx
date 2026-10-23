@@ -8,6 +8,7 @@ import { Chip } from '@/components/discover/Chip'
 import { GlobalSearchField } from '@/components/discover/GlobalSearchField'
 import { SearchResultCard, TYPE_ICON } from '@/components/discover/SearchResultCard'
 import { FilterRail } from '@/components/discover/FilterRail'
+import { DirectoryPagination } from '@/components/community/DirectoryParts'
 import { SortMenu, ViewToggle, type ResultView } from '@/components/discover/ResultsToolbar'
 import { useAppData } from '@/context/AppDataContext'
 import { parseAppTimestamp } from '@/lib/format'
@@ -120,6 +121,9 @@ function ResultsGrid({ items, view }: { items: SearchResultItem[]; view: ResultV
   )
 }
 
+/** Results per page on Search. */
+const SEARCH_PAGE_SIZE = 10
+
 function SearchResultsPage() {
   const { datasets, useCases, collaboratives, events, aiModels, organisationWorkspaces, charts } = useAppData()
   const [searchParams, setSearchParams] = useSearchParams()
@@ -211,6 +215,31 @@ function SearchResultsPage() {
     [tagMatches, type],
   )
   const results = React.useMemo(() => filterItems(typeMatches, activeFilters), [typeMatches, activeFilters])
+
+  // Pagination: the whole result set is ordered once (grouped by content type on "All", otherwise just sorted), then sliced. Any change
+  // to what is being searched or how it is sorted starts again at page 1.
+  const [page, setPage] = React.useState(1)
+  React.useEffect(() => setPage(1), [query, type, tag, activeFilters, sort])
+  const ordered = React.useMemo(
+    () =>
+      type === 'all'
+        ? TYPE_FILTERS.filter((f) => f.value !== 'all').flatMap((f) =>
+            sortResults(
+              results.filter((item) => item.type === f.value),
+              sort,
+            ),
+          )
+        : sortResults(results, sort),
+    [results, type, sort],
+  )
+  const pageCount = Math.max(1, Math.ceil(ordered.length / SEARCH_PAGE_SIZE))
+  const currentPage = Math.min(page, pageCount)
+  const pageItems = ordered.slice((currentPage - 1) * SEARCH_PAGE_SIZE, currentPage * SEARCH_PAGE_SIZE)
+  const resultsTopRef = React.useRef<HTMLDivElement>(null)
+  const goToPage = (next: number) => {
+    setPage(next)
+    resultsTopRef.current?.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' })
+  }
 
   const countFor = (value: TypeFilter) => (value === 'all' ? tagMatches.length : tagMatches.filter((i) => i.type === value).length)
   const hasActiveFilters = Object.keys(activeFilters).length > 0
@@ -387,7 +416,7 @@ function SearchResultsPage() {
 
           <div className="hidden shrink-0 self-stretch border-l border-border sm:block" aria-hidden="true" />
 
-          <div className="min-w-0 flex-1">
+          <div ref={resultsTopRef} className="min-w-0 flex-1 scroll-mt-40">
             {results.length === 0 ? (
               <EmptyState
                 icon={SearchX}
@@ -408,15 +437,13 @@ function SearchResultsPage() {
                 {type === 'all' ? (
                   <div className="mt-4 flex flex-col gap-8">
                     {TYPE_FILTERS.filter((f) => f.value !== 'all').map((f) => {
-                      const items = sortResults(
-                        results.filter((item) => item.type === f.value),
-                        sort,
-                      )
+                      const items = pageItems.filter((item) => item.type === f.value)
                       if (items.length === 0) return null
+                      const typeTotal = results.filter((item) => item.type === f.value).length
                       return (
                         <section key={f.value} aria-labelledby={`section-${f.value}`}>
                           <h2 id={`section-${f.value}`} className="type-heading-3 text-foreground">
-                            {f.label} ({items.length})
+                            {f.label} ({typeTotal})
                           </h2>
                           <div className="mt-3">
                             <ResultsGrid items={items} view={view} />
@@ -427,9 +454,12 @@ function SearchResultsPage() {
                   </div>
                 ) : (
                   <div className="mt-4">
-                    <ResultsGrid items={sortResults(results, sort)} view={view} />
+                    <ResultsGrid items={pageItems} view={view} />
                   </div>
                 )}
+                <div className="mt-8">
+                  <DirectoryPagination page={currentPage} pageCount={pageCount} onPage={goToPage} total={ordered.length} pageSize={SEARCH_PAGE_SIZE} />
+                </div>
               </>
             )}
           </div>
