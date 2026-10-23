@@ -387,7 +387,7 @@ function ProfileBannerHero({ kind, name, imageUrl, headline, badge, location, li
               {kind === 'organisation' ? 'Organisation' : 'Individual publisher'}
             </Tag>
             <h1 title={name} className="type-display-1 mt-2 line-clamp-2 break-words text-black">{name}</h1>
-            {headline && <p className="type-body mt-1 font-semibold text-text-default">{headline}</p>}
+            {headline && <p className="type-heading-3 mt-1 text-text-default">{headline}</p>}
           </div>
           <div className="flex flex-wrap items-center gap-x-8 gap-y-3">
             {badge && <BannerFact icon={Building2}>{badge}</BannerFact>}
