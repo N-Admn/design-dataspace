@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { Info } from 'lucide-react'
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -7,6 +8,7 @@ import { FieldError } from '@/components/ui/field-error'
 import { MultiSelect } from '@/components/ui/multi-select'
 import { TagInput } from '@/components/ui/tag-input'
 import { RichTextEditor } from '@/components/ui/rich-text-editor'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { FileUploadField } from '@/components/shared/FileUploadField'
 import { GEOGRAPHY_OPTIONS, SECTOR_OPTIONS } from '@/types/dataset'
 import { SDG_GOALS } from '@/lib/sdg-goals'
@@ -155,6 +157,39 @@ function CollaborativeStep1About({ metadata, errors, onChange }: CollaborativeSt
         </CardHeader>
         <CardContent className="flex flex-col gap-5">
           <div>
+            <div className="flex items-center gap-1.5">
+              <Label htmlFor="collaborative-sdg-goals">
+                SDG Goals <span className="text-destructive">*</span>
+              </Label>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    type="button"
+                    aria-label="About SDG goals"
+                    className="flex size-5 items-center justify-center rounded-full text-text-subdued hover:text-text-default focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-focus"
+                  >
+                    <Info className="size-4" aria-hidden="true" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="top" className="max-w-xs">
+                  The UN Sustainable Development Goals this collaborative works towards. Pick every goal that applies, but at least one. People can filter collaboratives by SDG goal on the Search page.
+                </TooltipContent>
+              </Tooltip>
+            </div>
+            <div className="mt-1.5">
+              <MultiSelect
+                id="collaborative-sdg-goals"
+                options={SDG_SELECT_OPTIONS}
+                values={metadata.sdgGoals}
+                onChange={(values) => onChange('sdgGoals', values)}
+                placeholder="Select SDG goals..."
+                invalid={Boolean(errors.sdgGoals)}
+              />
+            </div>
+            <FieldError message={errors.sdgGoals} />
+          </div>
+
+          <div>
             <Label htmlFor="collaborative-sectors">Sectors</Label>
             <div className="mt-1.5">
               <MultiSelect
@@ -163,19 +198,6 @@ function CollaborativeStep1About({ metadata, errors, onChange }: CollaborativeSt
                 values={metadata.sectors}
                 onChange={(values) => onChange('sectors', values)}
                 placeholder="Select sectors..."
-              />
-            </div>
-          </div>
-
-          <div>
-            <Label htmlFor="collaborative-sdg-goals">SDG Goals</Label>
-            <div className="mt-1.5">
-              <MultiSelect
-                id="collaborative-sdg-goals"
-                options={SDG_SELECT_OPTIONS}
-                values={metadata.sdgGoals}
-                onChange={(values) => onChange('sdgGoals', values)}
-                placeholder="Select SDG goals..."
               />
             </div>
           </div>

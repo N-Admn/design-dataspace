@@ -218,7 +218,7 @@ const collaborative5Form: CollaborativeFormState = {
     descriptionHtml: '<p>Sharing data on urban water supply and coverage.</p>',
     externalUrl: '',
     sectors: ['child-rights', 'urban-development'],
-    sdgGoals: [],
+    sdgGoals: ['sdg-6'],
     tags: [],
     geographies: [],
   },
