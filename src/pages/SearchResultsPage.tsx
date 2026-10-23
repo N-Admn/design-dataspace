@@ -8,11 +8,12 @@ import { Chip } from '@/components/discover/Chip'
 import { GlobalSearchField } from '@/components/discover/GlobalSearchField'
 import { SearchResultCard, TYPE_ICON } from '@/components/discover/SearchResultCard'
 import { FilterRail } from '@/components/discover/FilterRail'
+import { AppliedFilters } from '@/components/discover/AppliedFilters'
 import { DirectoryPagination } from '@/components/community/DirectoryParts'
 import { SortMenu, ViewToggle, type ResultView } from '@/components/discover/ResultsToolbar'
 import { useAppData } from '@/context/AppDataContext'
 import { parseAppTimestamp } from '@/lib/format'
-import { FILTER_GROUPS_BY_TYPE, type TypeFilter } from '@/lib/search-filters'
+import { FILTER_GROUPS_BY_TYPE, describeActiveFilters, type TypeFilter } from '@/lib/search-filters'
 import {
   buildSearchIndex,
   filterByTag,
@@ -429,11 +430,16 @@ function SearchResultsPage() {
           <div className="hidden shrink-0 self-stretch border-l border-border sm:block" aria-hidden="true" />
 
           <div ref={resultsTopRef} className="min-w-0 flex-1 scroll-mt-40">
+            <AppliedFilters
+              filters={describeActiveFilters(type, activeFilters)}
+              onRemove={(key, value) => setFilter(key, (activeFilters[key] ?? []).filter((v) => v !== value))}
+              onClearAll={() => setActiveFilters({})}
+            />
             {results.length === 0 ? (
               <EmptyState
                 icon={SearchX}
                 title={tag ? `No results tagged "${tag}"` : query.trim() ? `No results for "${query}"` : 'No results'}
-                description="Try a different keyword, or clear a filter."
+                description={hasActiveFilters ? "Try a different keyword, or remove a filter above." : "Try a different keyword."}
               />
             ) : (
               <>

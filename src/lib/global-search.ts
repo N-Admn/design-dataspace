@@ -315,11 +315,10 @@ export function buildSearchIndex({
           : undefined,
       // No "Geography" facet: events have a venue city/country, not a value
       // from the shared GEOGRAPHY_OPTIONS list the other modules use.
-      // "Sector" here is the organiser's sector (ORG_SECTOR_OPTIONS) — a
-      // different, org-level taxonomy from Dataset/Use Case's SECTOR_OPTIONS,
-      // since the event itself has no sector field of its own.
+      // "Sector" is the event's own Theme/Sector field, which uses the same
+      // list as every other module, so a sector filter on All reaches events.
       facets: {
-        sector: e.form.organisers[0]?.sectorType ? [e.form.organisers[0].sectorType] : [],
+        sector: e.form.metadata.theme ? [e.form.metadata.theme] : [],
         organisation: organiserNames,
         eventType: e.form.metadata.eventType ? [e.form.metadata.eventType] : [],
         eventStatus: [eventTimeStatus(e.form.metadata)],
@@ -347,11 +346,12 @@ export function buildSearchIndex({
         publishers: pub.organisation
           ? [{ name: pub.organisation, avatarUrl: ((w) => (w ? organisationLogoUrl(w.metadata) : orgLogoFor(pub.organisation)))(organisationWorkspaces.find((o) => o.metadata.name === pub.organisation)) }]
           : undefined,
-        // No "Sector"/"Geography": a publication carries neither field — only
-        // its parent event might, and that isn't the same thing as the
-        // publication's own. "Year" is the parent event's year, the closest
-        // real date available.
+        // No "Geography". "Sector" is the parent event's Theme/Sector: a
+        // publication attached to an event belongs to that event's topic, and
+        // without it a sector filter on All would drop every one of them.
+        // "Year" is the parent event's year, the closest real date available.
         facets: {
+          sector: e.form.metadata.theme ? [e.form.metadata.theme] : [],
           publicationType: pub.publicationType ? [pub.publicationType] : [],
           resourceType: pub.publicationType ? [EVENT_PUBLICATION_RESOURCE_TYPE[pub.publicationType] ?? 'other'] : [],
           organisation: pub.organisation ? [pub.organisation] : [],

@@ -120,9 +120,9 @@ function FilterRail({ groups, items, active, onChange, onClearAll, stickyTop }: 
       {groups.map((group) => {
         const otherFilters = Object.fromEntries(Object.entries(active).filter(([key]) => key !== group.key))
         const pool = filterItems(items, otherFilters)
-        const options = computeGroupOptions(group, pool)
-        if (options.length === 0) return null
         const selected = active[group.key] ?? []
+        const options = computeGroupOptions(group, pool, selected)
+        if (options.length === 0) return null
 
         return (
           <fieldset key={group.key} className="flex flex-col">

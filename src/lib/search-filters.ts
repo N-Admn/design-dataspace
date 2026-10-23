@@ -93,15 +93,17 @@ export const FILTER_GROUPS_BY_TYPE: Record<TypeFilter, FilterGroupDef[]> = {
 
 /** Real counts only — computed from the current (type + query + other-filter)
  *  result pool, never invented. An option with zero matches in that pool is
- *  left out rather than shown as "0". */
-export function computeGroupOptions(group: FilterGroupDef, items: SearchResultItem[]): FilterOption[] {
+ *  left out rather than shown as "0" — except one that is already selected
+ *  (`selected`), which stays listed so an applied filter can never disappear
+ *  from the rail while it is still narrowing the results. */
+export function computeGroupOptions(group: FilterGroupDef, items: SearchResultItem[], selected: string[] = []): FilterOption[] {
   if (group.key === 'updated') {
     return RECENCY_OPTIONS.map((option) => {
       const days = RECENCY_DAYS[option.value]
       const cutoff = Date.now() - days * 86400000
       const count = items.filter((item) => parseAppTimestamp(item.facets.updatedAt).getTime() >= cutoff).length
       return { ...option, count }
-    }).filter((o) => o.count > 0)
+    }).filter((o) => o.count > 0 || selected.includes(o.value))
   }
 
   const counts = new Map<string, number>()
@@ -113,10 +115,24 @@ export function computeGroupOptions(group: FilterGroupDef, items: SearchResultIt
   if (group.fixedOptions) {
     return group.fixedOptions
       .map((o) => ({ value: o.value, label: o.label, count: counts.get(o.value) ?? 0 }))
-      .filter((o) => o.count > 0 || group.showEmpty)
+      .filter((o) => o.count > 0 || group.showEmpty || selected.includes(o.value))
   }
 
+  for (const value of selected) if (!counts.has(value)) counts.set(value, 0)
   return Array.from(counts.entries())
     .map(([value, count]) => ({ value, label: value, count }))
     .sort((a, b) => b.count - a.count || a.label.localeCompare(b.label))
+}
+
+/** The applied selections as plain pairs — group title and option label — for the removable chips above the results. Only groups the
+ *  current tab has, in the rail's order. */
+export function describeActiveFilters(type: TypeFilter, active: Record<string, string[]>): { key: string; value: string; group: string; label: string }[] {
+  const out: { key: string; value: string; group: string; label: string }[] = []
+  for (const group of FILTER_GROUPS_BY_TYPE[type]) {
+    const options = group.key === 'updated' ? RECENCY_OPTIONS : (group.fixedOptions ?? [])
+    for (const value of active[group.key] ?? []) {
+      out.push({ key: group.key, value, group: group.label, label: options.find((o) => o.value === value)?.label ?? value })
+    }
+  }
+  return out
 }
