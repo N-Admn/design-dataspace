@@ -343,17 +343,15 @@ function ProfileHero({ kind, name, imageUrl, headline, badge, location, links, s
   )
 }
 
-/** One fact in the banner's row: a round soft icon and the text, or a link. */
+/** One fact in the banner's row: an icon and the text, or a link. */
 function BannerFact({ icon: Icon, children, href, to }: { icon: React.ComponentType<{ className?: string }>; children: React.ReactNode; href?: string; to?: string }) {
   const body = (
     <>
-      <span aria-hidden="true" className="flex size-9 shrink-0 items-center justify-center rounded-full bg-background text-text-brand">
-        <Icon className="size-4" />
-      </span>
+      <Icon aria-hidden="true" className="size-5 shrink-0 text-text-brand" />
       <span className="min-w-0 truncate">{children}</span>
     </>
   )
-  const cls = 'inline-flex min-w-0 max-w-full items-center gap-2.5 text-base text-text-default'
+  const cls = 'inline-flex min-w-0 max-w-full items-center gap-2 text-base text-text-default'
   const link = cn(cls, 'rounded-sm underline-offset-4 hover:text-text-brand hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-focus')
   if (to) return <Link to={to} className={link}>{body}</Link>
   if (href)
