@@ -2,6 +2,7 @@ import * as React from 'react'
 import { Link } from 'react-router-dom'
 import { Search, X } from 'lucide-react'
 
+import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { docPath, groupLabel, searchDocs } from '@/pages/documentation/content'
 
@@ -56,8 +57,18 @@ function DocSearch({
 
   return (
     <div className={className}>
-      <div className="relative">
-        <Search className={cn('pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground', size === 'lg' ? 'size-5' : 'size-4')} aria-hidden="true" />
+      {/* The same pill as the global search field: inset circular submit button on the right. Submitting opens the highlighted result. */}
+      <form
+        role="search"
+        onSubmit={(e) => {
+          e.preventDefault()
+          linkRefs.current[index]?.click()
+        }}
+        className={cn(
+          'flex items-center gap-2 rounded-full border border-input bg-background pl-5 shadow-sm transition-colors focus-within:border-ring focus-within:ring-2 focus-within:ring-ring',
+          size === 'lg' ? 'h-12 pr-1.5' : 'h-10 pr-1',
+        )}
+      >
         <input
           type="search"
           role="combobox"
@@ -71,8 +82,8 @@ function DocSearch({
           onKeyDown={onKeyDown}
           placeholder={placeholder}
           className={cn(
-            'w-full rounded-md border border-input bg-background pl-9 pr-9 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring [&::-webkit-search-cancel-button]:hidden',
-            size === 'lg' ? 'h-12 text-base' : 'h-9 text-sm',
+            'h-full min-w-0 flex-1 bg-transparent text-foreground outline-none placeholder:text-muted-foreground [&::-webkit-search-cancel-button]:hidden',
+            'text-sm',
           )}
         />
         {query && (
@@ -80,12 +91,15 @@ function DocSearch({
             type="button"
             onClick={() => setQuery('')}
             aria-label="Clear search"
-            className="absolute right-1.5 top-1/2 inline-flex size-7 -translate-y-1/2 items-center justify-center rounded-md text-muted-foreground hover:bg-control-hover hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="flex size-8 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <X className="size-4" aria-hidden="true" />
           </button>
         )}
-      </div>
+        <Button type="submit" size="icon" aria-label="Search" className={cn('shrink-0 rounded-full', size === 'lg' ? 'size-9' : 'size-8')}>
+          <Search className="size-4" aria-hidden="true" />
+        </Button>
+      </form>
 
       <div id={listId} role="listbox" aria-label="Search results" className={cn(searching ? 'mt-3' : 'hidden')}>
         {searching && hits.length === 0 && (
