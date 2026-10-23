@@ -81,7 +81,7 @@ const collaborative1Form: CollaborativeFormState = {
     descriptionHtml:
       '<p>A cross-sector initiative bringing together health and climate researchers to track the public-health impact of extreme weather events, and to make that data openly available for policy planning.</p>',
     externalUrl: 'https://civicdatalab.in',
-    sectors: ['health', 'environment'],
+    sectors: ['climate-action'],
     sdgGoals: ['sdg-3', 'sdg-6', 'sdg-13'],
     tags: ['Climate', 'Health', 'Disaster Resilience'],
     geographies: ['india'],
@@ -144,7 +144,7 @@ const collaborative2Form: CollaborativeFormState = {
     slug: 'urban-water-resilience',
     descriptionHtml: '',
     externalUrl: '',
-    sectors: ['water-sanitation'],
+    sectors: ['urban-development', 'disaster-risk-reduction', 'coastal'],
     sdgGoals: ['sdg-6'],
     tags: [],
     geographies: [],
@@ -167,7 +167,7 @@ const collaborative3Form: CollaborativeFormState = {
     descriptionHtml:
       '<p>A network of city finance officers, researchers and civic groups working to make municipal budgets easier to read, compare and question.</p><p>Members publish budget and expenditure data in open formats and agree common definitions, so that a rupee spent in one city can be compared with a rupee spent in another.</p><ul><li>Open budget and expenditure datasets</li><li>Shared definitions and a common data dictionary</li><li>Periodic review of data quality</li></ul>',
     externalUrl: 'https://example.org/municipal-finance',
-    sectors: ['finance', 'urban-development'],
+    sectors: ['public-finance', 'law-justice'],
     sdgGoals: ['sdg-8', 'sdg-11', 'sdg-16'],
     tags: ['Municipal Finance', 'Budgets', 'Transparency'],
     geographies: ['india'],
@@ -197,7 +197,7 @@ const collaborative4Form: CollaborativeFormState = {
     descriptionHtml:
       '<p>Bringing education and gender data together to see where girls and young women are, and are not, completing school.</p><p>The collaborative links enrolment and infrastructure data with partners who work on the ground.</p>',
     externalUrl: '',
-    sectors: ['education'],
+    sectors: ['gender', 'child-rights'],
     sdgGoals: ['sdg-4', 'sdg-5', 'sdg-10'],
     tags: ['Education', 'Gender'],
     geographies: ['india'],
@@ -217,7 +217,7 @@ const collaborative5Form: CollaborativeFormState = {
     slug: 'safe-water-access',
     descriptionHtml: '<p>Sharing data on urban water supply and coverage.</p>',
     externalUrl: '',
-    sectors: ['water-sanitation'],
+    sectors: ['child-rights', 'urban-development'],
     sdgGoals: [],
     tags: [],
     geographies: [],
@@ -241,7 +241,7 @@ const collaborative6Form: CollaborativeFormState = {
       '<p>Air pollution is one of the largest and most preventable risks to health in Indian cities, yet the evidence that links what people breathe to who falls ill sits in separate systems. This collaborative brings monitoring, hospital, transport and land-use data together in one place.</p><p>Researchers, city agencies and clinicians use the shared datasets to test where pollution drives illness, which neighbourhoods are most exposed, and whether interventions are working.</p>' +
       DESCRIPTION_LIST(['Open air-quality and admissions datasets with documented methods', 'Shared definitions so cities can be compared fairly', 'Use cases that turn the data into alerts, plans and evaluations']),
     externalUrl: 'https://example.org/clean-air-urban-health',
-    sectors: ['health', 'environment', 'urban-development'],
+    sectors: ['climate-action', 'urban-development'],
     sdgGoals: ['sdg-3', 'sdg-7', 'sdg-11', 'sdg-13', 'sdg-17'],
     tags: ['Air Quality', 'Urban Health', 'Pollution', 'Cities'],
     geographies: ['india'],
@@ -302,7 +302,7 @@ const collaborative7Form: CollaborativeFormState = {
       '<p>Harvests, prices and nutrition are all shaped by weather that is becoming harder to predict. This collaborative connects rainfall, soil, crop, market and nutrition data so that planners can see food-security risks building before they become crises.</p><p>Members include agricultural researchers, market monitors and district officials who share data openly and agree how it should be used.</p>' +
       DESCRIPTION_LIST(['Ten seasons of district crop and rainfall data', 'Weekly food prices from district markets', 'Nutrition indicators alongside climate risk']),
     externalUrl: 'https://example.org/food-security-climate-resilience',
-    sectors: ['agriculture', 'environment', 'health'],
+    sectors: ['climate-action', 'disaster-risk-reduction', 'child-rights'],
     sdgGoals: ['sdg-2', 'sdg-1', 'sdg-12', 'sdg-13', 'sdg-15', 'sdg-17'],
     tags: ['Food Security', 'Climate Resilience', 'Agriculture', 'Nutrition'],
     geographies: ['india', 'global'],
@@ -360,7 +360,7 @@ const collaborative8Form: CollaborativeFormState = {
       '<p>Safe water and working sanitation are the first line of public health, but the data that shows where services fail is scattered across utilities, municipalities and clinics. This collaborative gathers it in one place.</p><p>Utility managers, public health teams and civic groups use it to find the wards and districts where gaps in water and sanitation are most likely to cause illness.</p>' +
       DESCRIPTION_LIST(['Groundwater, supply and sanitation coverage data', 'Facility staffing and disease reporting for the same areas', 'Ward-level analyses that guide investment']),
     externalUrl: 'https://example.org/water-sanitation-public-health',
-    sectors: ['water-sanitation', 'health', 'urban-development'],
+    sectors: ['child-rights', 'urban-development'],
     sdgGoals: ['sdg-6', 'sdg-3', 'sdg-11', 'sdg-13'],
     tags: ['Water', 'Sanitation', 'Public Health', 'Wards'],
     geographies: ['india'],

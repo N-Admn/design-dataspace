@@ -2,7 +2,7 @@ import type { DatasetRecord } from '@/types/dataset'
 import { orgLogoFor, organisationLogoUrl } from '@/lib/org-logo'
 import { GEOGRAPHY_OPTIONS, SECTOR_OPTIONS } from '@/types/dataset'
 import type { UseCaseRecord } from '@/types/usecase'
-import type { CollaborativeRecord } from '@/types/collaborative'
+import { COLLABORATIVE_SECTOR_OPTIONS, type CollaborativeRecord } from '@/types/collaborative'
 import { PUBLICATION_TYPE_OPTIONS, type EventRecord, type EventMetadata } from '@/types/event'
 import { MODEL_TYPE_OPTIONS, PROVIDER_OPTIONS, type AIModelRecord } from '@/types/ai-model'
 import type { OrganisationRecord } from '@/types/organisation-workspace'
@@ -48,6 +48,8 @@ export const SEARCH_TYPE_LABEL: Record<SearchResultType, string> = {
  */
 export interface SearchFacets {
   sector?: string[]
+  /** A Collaborative's sectors — its own list (COLLABORATIVE_SECTOR_OPTIONS), kept apart from the dataset/use case `sector`. */
+  collaborativeSector?: string[]
   geography?: string[]
   organisation?: string[]
   datasetType?: string[]
@@ -257,7 +259,7 @@ export function buildSearchIndex({
       type: 'collaborative',
       title: c.form.metadata.name || 'Untitled Collaborative',
       organisation: orgNames[0],
-      meta: c.form.metadata.sectors.map((s) => optionLabel(SECTOR_OPTIONS, s)).filter(Boolean).join(', ') || undefined,
+      meta: c.form.metadata.sectors.map((s) => optionLabel(COLLABORATIVE_SECTOR_OPTIONS, s)).filter(Boolean).join(', ') || undefined,
       // The public page: it shows the published snapshot only (the owner's preview shows the working copy and publish controls).
       href: `/explore/collaboratives/${c.id}`,
       thumbnailUrl: c.form.metadata.image?.dataUrl ?? null,
@@ -271,7 +273,7 @@ export function buildSearchIndex({
       // No "Status" facet: the model has no field beyond the internal
       // draft/published lifecycle, which consumer search doesn't expose.
       facets: {
-        sector: c.form.metadata.sectors,
+        collaborativeSector: c.form.metadata.sectors,
         geography: c.form.metadata.geographies,
         organisation: orgNames,
         updatedAt: c.updatedAt,

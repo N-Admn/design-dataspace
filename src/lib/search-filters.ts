@@ -1,4 +1,5 @@
 import { SECTOR_OPTIONS } from '@/types/dataset'
+import { COLLABORATIVE_SECTOR_OPTIONS } from '@/types/collaborative'
 import { EVENT_TYPE_OPTIONS, PUBLICATION_TYPE_OPTIONS } from '@/types/event'
 import { MODEL_TYPE_OPTIONS } from '@/types/ai-model'
 import { RECENCY_DAYS, type SearchFacets, type SearchResultItem, type SearchResultType } from '@/lib/global-search'
@@ -52,7 +53,10 @@ const PUBLICATION_FILTER_GROUPS: FilterGroupDef[] = [
   { key: 'publicationType', label: 'Type', kind: 'multi', fixedOptions: PUBLICATION_TYPE_OPTIONS },
 ]
 
-const COLLABORATIVE_FILTER_GROUPS: FilterGroupDef[] = [lastUpdated(), sector]
+const COLLABORATIVE_FILTER_GROUPS: FilterGroupDef[] = [
+  lastUpdated(),
+  { key: 'collaborativeSector', label: 'Sector', kind: 'multi', fixedOptions: COLLABORATIVE_SECTOR_OPTIONS },
+]
 
 const EVENT_FILTER_GROUPS: FilterGroupDef[] = [
   lastUpdated(),
