@@ -7,6 +7,7 @@ import { PUBLICATION_TYPE_OPTIONS, type EventRecord, type EventMetadata } from '
 import { MODEL_TYPE_OPTIONS, PROVIDER_OPTIONS, type AIModelRecord } from '@/types/ai-model'
 import type { OrganisationRecord } from '@/types/organisation-workspace'
 import type { ChartRecord } from '@/types/chart'
+import { RESOURCE_TYPE_OPTIONS, type PublicationRecord } from '@/types/publication'
 import { formatEventDateRange, getEventLifecycleStatus } from '@/lib/event-status'
 import { EVENT_MOCK_COVER_IMAGE } from '@/lib/event-thumbnail'
 import { resolveDatasetPublisher, resolvePublisherByOrganisation } from '@/lib/dataset-publisher'
@@ -61,6 +62,10 @@ export interface SearchFacets {
   publicationType?: string[]
   modelType?: string[]
   provider?: string[]
+  /** SDG goal values (`sdg-1` … `sdg-17`) — Use Cases and Collaboratives. */
+  sdgGoal?: string[]
+  /** Publication resource type (RESOURCE_TYPE_OPTIONS) — the standalone Publication records, and the event publications mapped onto it. */
+  resourceType?: string[]
   /** Raw app timestamp ("DD/MM/YYYY HH:mm:ss") backing the "Updated"/"Date"
    *  recency filter. Publications reuse their parent event's, since a
    *  publication has no timestamp of its own. */
@@ -150,6 +155,9 @@ function eventTimeStatus(metadata: EventMetadata, now = new Date()): 'upcoming' 
   return status === 'completed' ? 'past' : status
 }
 
+/** An event's publication has four kinds; each is the nearest of the Publication module's resource types. */
+const EVENT_PUBLICATION_RESOURCE_TYPE: Record<string, string> = { report: 'report', presentation: 'presentation', 'reading-material': 'other', other: 'other' }
+
 export interface GlobalSearchSource {
   datasets: DatasetRecord[]
   useCases: UseCaseRecord[]
@@ -158,6 +166,8 @@ export interface GlobalSearchSource {
   aiModels: AIModelRecord[]
   organisationWorkspaces: OrganisationRecord[]
   charts: ChartRecord[]
+  /** The standalone Publication records. Optional: only the Search page needs them indexed. */
+  publications?: PublicationRecord[]
 }
 
 /** Builds the flat, mixed-type result pool — published content only. */
@@ -169,6 +179,7 @@ export function buildSearchIndex({
   aiModels,
   organisationWorkspaces,
   charts,
+  publications = [],
 }: GlobalSearchSource): SearchResultItem[] {
   const items: SearchResultItem[] = []
 
@@ -233,6 +244,7 @@ export function buildSearchIndex({
       publishers: useCasePublishers.length > 0 ? useCasePublishers : undefined,
       facets: {
         sector: u.form.metadata.sectors,
+        sdgGoal: u.form.metadata.sdgGoals,
         geography: u.form.metadata.geographies,
         organisation: u.form.connections.organizations.map((o) => o.name),
         contributors: u.form.connections.contributors.map((c) => c.name),
@@ -272,6 +284,7 @@ export function buildSearchIndex({
       // draft/published lifecycle, which consumer search doesn't expose.
       facets: {
         sector: c.form.metadata.sectors,
+        sdgGoal: c.form.metadata.sdgGoals,
         geography: c.form.metadata.geographies,
         organisation: orgNames,
         updatedAt: c.updatedAt,
@@ -340,6 +353,7 @@ export function buildSearchIndex({
         // real date available.
         facets: {
           publicationType: pub.publicationType ? [pub.publicationType] : [],
+          resourceType: pub.publicationType ? [EVENT_PUBLICATION_RESOURCE_TYPE[pub.publicationType] ?? 'other'] : [],
           organisation: pub.organisation ? [pub.organisation] : [],
           updatedAt: e.updatedAt,
           year,
@@ -376,6 +390,35 @@ export function buildSearchIndex({
         modelType: m.form.metadata.modelType ? [m.form.metadata.modelType] : [],
         provider: primaryAccess?.provider ? [primaryAccess.provider] : [],
         updatedAt: m.updatedAt,
+      },
+    })
+  }
+
+  // The standalone Publication records (the Publication creation flow), alongside the publications attached to events above.
+  for (const p of publications) {
+    if (p.status !== 'published') continue
+    const meta = (p.publishedForm ?? p.form).metadata
+    const publisher = resolvePublisherByOrganisation(p.organisationId, p.createdBy, organisationWorkspaces)
+    items.push({
+      id: p.id,
+      type: 'publication',
+      title: meta.name || 'Untitled publication',
+      description: meta.description,
+      organisation: publisher.name,
+      meta: sectorGeoMeta(meta.sector, meta.geography),
+      href: `/dashboard/publications/${p.id}/preview`,
+      cardMeta: {
+        year: meta.date ? meta.date.slice(0, 4) : undefined,
+        publicationType: meta.resourceType ? optionLabel(RESOURCE_TYPE_OPTIONS, meta.resourceType) : undefined,
+      },
+      publishers: [{ name: publisher.name, avatarUrl: publisher.avatarUrl }],
+      facets: {
+        sector: meta.sector ? [meta.sector] : [],
+        geography: meta.geography ? [meta.geography] : [],
+        organisation: [publisher.name],
+        resourceType: meta.resourceType ? [meta.resourceType] : [],
+        updatedAt: p.updatedAt,
+        year: meta.date ? meta.date.slice(0, 4) : undefined,
       },
     })
   }

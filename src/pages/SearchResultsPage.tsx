@@ -125,7 +125,7 @@ function ResultsGrid({ items, view }: { items: SearchResultItem[]; view: ResultV
 const SEARCH_PAGE_SIZE = 10
 
 function SearchResultsPage() {
-  const { datasets, useCases, collaboratives, events, aiModels, organisationWorkspaces, charts } = useAppData()
+  const { datasets, useCases, collaboratives, events, aiModels, organisationWorkspaces, charts, publications } = useAppData()
   const [searchParams, setSearchParams] = useSearchParams()
 
   const query = searchParams.get('q') ?? ''
@@ -206,8 +206,8 @@ function SearchResultsPage() {
   React.useEffect(() => setDraft(query), [query])
 
   const index = React.useMemo(
-    () => buildSearchIndex({ datasets, useCases, collaboratives, events, aiModels, organisationWorkspaces, charts }),
-    [datasets, useCases, collaboratives, events, aiModels, organisationWorkspaces, charts],
+    () => buildSearchIndex({ datasets, useCases, collaboratives, events, aiModels, organisationWorkspaces, charts, publications }),
+    [datasets, useCases, collaboratives, events, aiModels, organisationWorkspaces, charts, publications],
   )
 
   // Real per-topic result counts for the trending-search chips — computed

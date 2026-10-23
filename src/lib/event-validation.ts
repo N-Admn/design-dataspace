@@ -10,6 +10,7 @@ export function validateEventInformation(metadata: EventMetadata): EventInformat
   const errors: EventInformationErrors = {}
 
   if (!metadata.title.trim()) errors.title = 'Enter an event title.'
+  if (!metadata.eventType) errors.eventType = 'Select an event type.'
   if (!metadata.overview.trim()) errors.overview = 'Enter a detail overview.'
 
   if (!metadata.startDate) errors.startDate = 'Select a start date.'

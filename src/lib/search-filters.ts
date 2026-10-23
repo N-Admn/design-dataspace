@@ -1,6 +1,7 @@
 import { SECTOR_OPTIONS } from '@/types/dataset'
-import { EVENT_TYPE_OPTIONS, PUBLICATION_TYPE_OPTIONS } from '@/types/event'
-import { MODEL_TYPE_OPTIONS } from '@/types/ai-model'
+import { SDG_GOAL_OPTIONS } from '@/types/usecase'
+import { RESOURCE_TYPE_OPTIONS } from '@/types/publication'
+import { EVENT_TYPE_OPTIONS } from '@/types/event'
 import { RECENCY_DAYS, type SearchFacets, type SearchResultItem, type SearchResultType } from '@/lib/global-search'
 import { parseAppTimestamp } from '@/lib/format'
 
@@ -22,12 +23,6 @@ export interface FilterGroupDef {
   fixedOptions?: { value: string; label: string }[]
 }
 
-const EVENT_STATUS_OPTIONS = [
-  { value: 'upcoming', label: 'Upcoming' },
-  { value: 'ongoing', label: 'Ongoing' },
-  { value: 'past', label: 'Past' },
-]
-
 export const RECENCY_OPTIONS = [
   { value: 'week', label: 'Past week' },
   { value: 'month', label: 'Past month' },
@@ -41,29 +36,25 @@ export const RECENCY_OPTIONS = [
 const lastUpdated = (): FilterGroupDef => ({ key: 'updated', label: 'Last updated', kind: 'single', fixedOptions: RECENCY_OPTIONS })
 const sector: FilterGroupDef = { key: 'sector', label: 'Sector', kind: 'multi', fixedOptions: SECTOR_OPTIONS }
 
+// One group of its own on each tab, after "Last updated": the field that best tells that kind of content apart. Geography is deliberately
+// not a filter anywhere: its list grows without bound and would need nesting and endless scrolling.
+const sdgGoal: FilterGroupDef = { key: 'sdgGoal', label: 'SDG goals', kind: 'multi', fixedOptions: SDG_GOAL_OPTIONS }
+const resourceType: FilterGroupDef = { key: 'resourceType', label: 'Resource type', kind: 'multi', fixedOptions: RESOURCE_TYPE_OPTIONS }
+const eventType: FilterGroupDef = { key: 'eventType', label: 'Event type', kind: 'multi', fixedOptions: EVENT_TYPE_OPTIONS }
+
 const ALL_FILTER_GROUPS: FilterGroupDef[] = [lastUpdated(), sector]
 
-const DATASET_FILTER_GROUPS: FilterGroupDef[] = [lastUpdated(), { key: 'format', label: 'Format', kind: 'multi' }]
+const DATASET_FILTER_GROUPS: FilterGroupDef[] = [lastUpdated(), sector]
 
-const USE_CASE_FILTER_GROUPS: FilterGroupDef[] = [lastUpdated(), sector]
+const USE_CASE_FILTER_GROUPS: FilterGroupDef[] = [lastUpdated(), sdgGoal]
 
-const PUBLICATION_FILTER_GROUPS: FilterGroupDef[] = [
-  lastUpdated(),
-  { key: 'publicationType', label: 'Type', kind: 'multi', fixedOptions: PUBLICATION_TYPE_OPTIONS },
-]
+const PUBLICATION_FILTER_GROUPS: FilterGroupDef[] = [lastUpdated(), resourceType]
 
-const COLLABORATIVE_FILTER_GROUPS: FilterGroupDef[] = [lastUpdated(), sector]
+const COLLABORATIVE_FILTER_GROUPS: FilterGroupDef[] = [lastUpdated(), sdgGoal]
 
-const EVENT_FILTER_GROUPS: FilterGroupDef[] = [
-  lastUpdated(),
-  { key: 'eventType', label: 'Type', kind: 'multi', fixedOptions: EVENT_TYPE_OPTIONS },
-  { key: 'eventStatus', label: 'Status', kind: 'multi', fixedOptions: EVENT_STATUS_OPTIONS },
-]
+const EVENT_FILTER_GROUPS: FilterGroupDef[] = [lastUpdated(), eventType]
 
-const AI_MODEL_FILTER_GROUPS: FilterGroupDef[] = [
-  lastUpdated(),
-  { key: 'modelType', label: 'Type', kind: 'multi', fixedOptions: MODEL_TYPE_OPTIONS },
-]
+const AI_MODEL_FILTER_GROUPS: FilterGroupDef[] = [lastUpdated(), sector]
 
 export const FILTER_GROUPS_BY_TYPE: Record<TypeFilter, FilterGroupDef[]> = {
   all: ALL_FILTER_GROUPS,
