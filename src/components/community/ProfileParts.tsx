@@ -414,7 +414,7 @@ function ProfileBannerHero({ kind, name, imageUrl, headline, badge, location, li
             <ul className="flex flex-wrap gap-2" aria-label="Areas of expertise">
               {expertise.map((area) => (
                 <li key={area}>
-                  <Tag size="md" to={`/search?q=${encodeURIComponent(area)}`}>
+                  <Tag size="sm" to={`/search?q=${encodeURIComponent(area)}`} className="bg-background">
                     {area}
                   </Tag>
                 </li>
