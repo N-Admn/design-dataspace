@@ -57,15 +57,19 @@ function CheckboxGroup({ groupKey, options, selected, onChange }: { groupKey: st
     <div className="flex flex-col gap-3.5">
       {visible.map((option) => {
         const checked = selected.includes(option.value)
+        // An option with nothing behind it (only listed for closed lists that show every value) is dimmed and cannot be ticked, unless it
+        // is already ticked, so it can still be cleared.
+        const empty = option.count === 0 && !checked
         return (
-          <label key={option.value} className="cursor-pointer">
+          <label key={option.value} className={empty ? 'cursor-not-allowed' : 'cursor-pointer'}>
             <OptionRow count={option.count}>
               <Checkbox
                 className="mt-0.5"
                 checked={checked}
+                disabled={empty}
                 onCheckedChange={(next) => onChange(groupKey, next ? [...selected, option.value] : selected.filter((v) => v !== option.value))}
               />
-              <span className="text-sm font-normal text-foreground">{option.label}</span>
+              <span className={empty ? 'text-sm font-normal text-muted-foreground' : 'text-sm font-normal text-foreground'}>{option.label}</span>
             </OptionRow>
           </label>
         )

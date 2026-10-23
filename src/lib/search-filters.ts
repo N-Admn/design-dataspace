@@ -21,6 +21,9 @@ export interface FilterGroupDef {
    *  omitted for free-form facets (Format) where the values themselves come
    *  from whatever's in the data. */
   fixedOptions?: { value: string; label: string }[]
+  /** List every option of a closed list, even one with no matching records (shown as 0). Used where the whole list is itself
+   *  information, such as the 17 SDG goals. Other groups leave out an option that matches nothing. */
+  showEmpty?: boolean
 }
 
 export const RECENCY_OPTIONS = [
@@ -60,7 +63,7 @@ const SDG_SHORT_NAMES: Record<string, string> = {
   'sdg-17': 'Partnerships',
 }
 const SDG_FILTER_OPTIONS = SDG_GOAL_OPTIONS.map((o) => ({ value: o.value, label: SDG_SHORT_NAMES[o.value] ?? o.label }))
-const sdgGoal: FilterGroupDef = { key: 'sdgGoal', label: 'SDG goals', kind: 'multi', fixedOptions: SDG_FILTER_OPTIONS }
+const sdgGoal: FilterGroupDef = { key: 'sdgGoal', label: 'SDG goals', kind: 'multi', fixedOptions: SDG_FILTER_OPTIONS, showEmpty: true }
 const resourceType: FilterGroupDef = { key: 'resourceType', label: 'Resource type', kind: 'multi', fixedOptions: RESOURCE_TYPE_OPTIONS }
 const eventType: FilterGroupDef = { key: 'eventType', label: 'Event type', kind: 'multi', fixedOptions: EVENT_TYPE_OPTIONS }
 
@@ -110,7 +113,7 @@ export function computeGroupOptions(group: FilterGroupDef, items: SearchResultIt
   if (group.fixedOptions) {
     return group.fixedOptions
       .map((o) => ({ value: o.value, label: o.label, count: counts.get(o.value) ?? 0 }))
-      .filter((o) => o.count > 0)
+      .filter((o) => o.count > 0 || group.showEmpty)
   }
 
   return Array.from(counts.entries())
