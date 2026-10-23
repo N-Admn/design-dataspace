@@ -185,6 +185,8 @@ function FilterRailView({
   onChange,
   onClearAll,
   stickyTop,
+  layout = 'rail',
+  idPrefix = '',
 }: {
   groups: RailGroup[]
   active: Record<string, string[]>
@@ -192,6 +194,10 @@ function FilterRailView({
   onClearAll: () => void
   /** Pins the rail below the sticky search block (its height, in px) so only the results scroll. */
   stickyTop?: number
+  /** `sheet`: the groups only, full width, for the bottom sheet on tablet and phone. */
+  layout?: 'rail' | 'sheet'
+  /** Prefix for the radio ids, so the rail and the sheet (both mounted) never share one. */
+  idPrefix?: string
 }) {
   const shown = groups.filter((g) => g.options.length > 0)
   if (shown.length === 0) return null
@@ -199,12 +205,12 @@ function FilterRailView({
   return (
     <div
       className={cn(
-        'flex w-full shrink-0 flex-col gap-8 sm:w-[18%]',
-        stickyTop !== undefined && 'sm:sticky sm:self-start sm:overflow-y-auto sm:pb-6 sm:pr-2',
+        layout === 'sheet' ? 'flex w-full flex-col gap-8' : 'flex w-full shrink-0 flex-col gap-8 sm:w-[18%]',
+        layout === 'rail' && stickyTop !== undefined && 'sm:sticky sm:self-start sm:overflow-y-auto sm:pb-6 sm:pr-2',
       )}
-      style={stickyTop !== undefined ? { top: stickyTop, maxHeight: `calc(100dvh - ${stickyTop}px)` } : undefined}
+      style={layout === 'rail' && stickyTop !== undefined ? { top: stickyTop, maxHeight: `calc(100dvh - ${stickyTop}px)` } : undefined}
     >
-      <div className="flex items-center justify-between gap-2">
+      <div className={cn('flex items-center justify-between gap-2', layout === 'sheet' && 'hidden')}>
         <p className="text-sm font-bold uppercase tracking-wider text-foreground">Filter by</p>
         {hasActive && (
           <button
@@ -225,15 +231,15 @@ function FilterRailView({
             {group.kind === 'single' ? (
               <RadioGroup value={selected[0] ?? 'any'} onValueChange={(value) => onChange(group.key, value === 'any' ? [] : [value])} className="gap-3.5">
                 <OptionRow count={group.anyCount ?? 0}>
-                  <RadioGroupItem value="any" id={`${group.key}-any`} className="mt-0.5" />
-                  <Label htmlFor={`${group.key}-any`} className="text-sm font-normal text-foreground">
+                  <RadioGroupItem value="any" id={`${idPrefix}${group.key}-any`} className="mt-0.5" />
+                  <Label htmlFor={`${idPrefix}${group.key}-any`} className="text-sm font-normal text-foreground">
                     {group.anyLabel ?? 'Any'}
                   </Label>
                 </OptionRow>
                 {group.options.map((option) => (
                   <OptionRow key={option.value} count={option.count}>
-                    <RadioGroupItem value={option.value} id={`${group.key}-${option.value}`} className="mt-0.5" />
-                    <Label htmlFor={`${group.key}-${option.value}`} className="text-sm font-normal text-foreground">
+                    <RadioGroupItem value={option.value} id={`${idPrefix}${group.key}-${option.value}`} className="mt-0.5" />
+                    <Label htmlFor={`${idPrefix}${group.key}-${option.value}`} className="text-sm font-normal text-foreground">
                       {option.label}
                     </Label>
                   </OptionRow>

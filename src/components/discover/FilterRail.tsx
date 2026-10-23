@@ -20,6 +20,10 @@ interface FilterRailProps {
   onClearAll: () => void
   /** Pins the rail below the sticky search block (its height, in px) so only the results scroll. */
   stickyTop?: number
+  /** `sheet`: the groups only, full width, for the bottom sheet on tablet and phone (it has its own title and Clear all). */
+  layout?: 'rail' | 'sheet'
+  /** Prefix for the radio ids, so the rail and the sheet (both mounted) never share one. */
+  idPrefix?: string
 }
 
 /** One option row — label wraps onto multiple lines when long, without ever
@@ -92,19 +96,19 @@ export function CheckboxGroup({ groupKey, options, selected, onChange }: { group
  *  the group), single-select as radios. Groups and their options are entirely
  *  data-driven (see `lib/search-filters.ts`); an option with no matches in
  *  the current result pool isn't shown, rather than shown as a fake "0". */
-function FilterRail({ groups, items, active, onChange, onClearAll, stickyTop }: FilterRailProps) {
+function FilterRail({ groups, items, active, onChange, onClearAll, stickyTop, layout = 'rail', idPrefix = '' }: FilterRailProps) {
   if (groups.length === 0) return null
   const hasActiveFilters = Object.keys(active).length > 0
 
   return (
     <div
       className={cn(
-        'flex w-full shrink-0 flex-col gap-8 sm:w-[18%]',
-        stickyTop !== undefined && 'sm:sticky sm:self-start sm:overflow-y-auto sm:pb-6 sm:pr-2',
+        layout === 'sheet' ? 'flex w-full flex-col gap-8' : 'flex w-full shrink-0 flex-col gap-8 sm:w-[18%]',
+        layout === 'rail' && stickyTop !== undefined && 'sm:sticky sm:self-start sm:overflow-y-auto sm:pb-6 sm:pr-2',
       )}
-      style={stickyTop !== undefined ? { top: stickyTop, maxHeight: `calc(100dvh - ${stickyTop}px)` } : undefined}
+      style={layout === 'rail' && stickyTop !== undefined ? { top: stickyTop, maxHeight: `calc(100dvh - ${stickyTop}px)` } : undefined}
     >
-      <div className="flex items-center justify-between gap-2">
+      <div className={cn('flex items-center justify-between gap-2', layout === 'sheet' && 'hidden')}>
         <p className="text-sm font-bold uppercase tracking-wider text-foreground">Filter by</p>
         {hasActiveFilters && (
           <button
@@ -139,15 +143,15 @@ function FilterRail({ groups, items, active, onChange, onClearAll, stickyTop }: 
                 className="gap-3.5"
               >
                 <OptionRow count={pool.length}>
-                  <RadioGroupItem value="any" id={`${group.key}-any`} className="mt-0.5" />
-                  <Label htmlFor={`${group.key}-any`} className="text-sm font-normal text-foreground">
+                  <RadioGroupItem value="any" id={`${idPrefix}${group.key}-any`} className="mt-0.5" />
+                  <Label htmlFor={`${idPrefix}${group.key}-any`} className="text-sm font-normal text-foreground">
                     Any time
                   </Label>
                 </OptionRow>
                 {options.map((option) => (
                   <OptionRow key={option.value} count={option.count}>
-                    <RadioGroupItem value={option.value} id={`${group.key}-${option.value}`} className="mt-0.5" />
-                    <Label htmlFor={`${group.key}-${option.value}`} className="text-sm font-normal text-foreground">
+                    <RadioGroupItem value={option.value} id={`${idPrefix}${group.key}-${option.value}`} className="mt-0.5" />
+                    <Label htmlFor={`${idPrefix}${group.key}-${option.value}`} className="text-sm font-normal text-foreground">
                       {option.label}
                     </Label>
                   </OptionRow>

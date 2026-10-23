@@ -12,6 +12,8 @@ const DIALOG_VARIANT_CLASSES = {
     'fixed left-1/2 top-1/2 grid max-h-[calc(100vh-4rem)] w-[calc(100%-2rem)] max-w-2xl -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-xl data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95',
   'right-drawer':
     'fixed inset-y-0 right-0 flex h-screen w-full sm:w-[70vw] md:w-[60vw] lg:w-[50vw] lg:min-w-[560px] lg:max-w-[760px] flex-col overflow-y-auto rounded-none lg:rounded-l-xl data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right',
+  'bottom-sheet':
+    'fixed inset-x-0 bottom-0 flex max-h-[88dvh] w-full flex-col overflow-hidden rounded-b-none rounded-t-2xl data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom',
   anchored:
     'fixed bottom-24 right-6 w-[380px] max-w-[calc(100vw-3rem)] max-h-[calc(100vh-8rem)] overflow-y-auto rounded-xl data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-bottom-2 data-[state=open]:slide-in-from-bottom-2',
 } as const
