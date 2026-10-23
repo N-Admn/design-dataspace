@@ -6,6 +6,7 @@ import { Chip } from '@/components/discover/Chip'
 import { GlobalSearchField } from '@/components/discover/GlobalSearchField'
 import { SortMenu, ViewToggle, type ResultView } from '@/components/discover/ResultsToolbar'
 import { AppliedFilters } from '@/components/discover/AppliedFilters'
+import { FilterSheet } from '@/components/discover/FilterSheet'
 import {
   DIRECTORY_PAGE_SIZE,
   DirectoryCard,
@@ -192,6 +193,18 @@ function CommunityPage() {
   const intro = INTRO[tab]
   const noun = tab === 'organisations' ? 'Organisations' : 'People'
 
+  // Tablet and phone: the filters open from a Filter button in a sheet from the bottom (laptop and desktop use the rail).
+  const filterSheet = (
+    <FilterSheet
+      appliedCount={groups.reduce((n, g) => n + ((active[g.key as keyof Active] ?? []).length > 0 ? 1 : 0), 0)}
+      resultsLabel={`Show ${results.length} ${noun.toLowerCase()}`}
+      onClearAll={clearFilters}
+    >
+      <FilterRailView groups={groups} active={active} onChange={setFilter} onClearAll={clearFilters} layout="sheet" idPrefix="sheet-" />
+    </FilterSheet>
+  )
+
+
   return (
     <div className="mx-auto flex w-full max-w-[1400px] flex-col gap-9">
       <div ref={stickyRef} className="sticky top-0 z-20 flex flex-col gap-4 bg-background py-3">
@@ -234,9 +247,12 @@ function CommunityPage() {
 
       <hr className="border-t border-border" />
 
-      <div className="flex flex-col gap-7 sm:flex-row">
-        <FilterRailView groups={groups} active={active} onChange={setFilter} onClearAll={clearFilters} stickyTop={stickyHeight} />
-        <div className="hidden shrink-0 self-stretch border-l border-border sm:block" aria-hidden="true" />
+      <div className="flex flex-col gap-7 lg:flex-row">
+        {/* From lg (laptop and desktop) the filters are the rail beside the results; below it they are the Filter button and sheet. */}
+        <div className="hidden lg:contents">
+          <FilterRailView groups={groups} active={active} onChange={setFilter} onClearAll={clearFilters} stickyTop={stickyHeight} />
+          <div className="shrink-0 self-stretch border-l border-border" aria-hidden="true" />
+        </div>
 
         <div ref={resultsRef} className="min-w-0 flex-1 scroll-mt-28">
           {/* Every applied filter as a removable chip, so what is narrowing the list is always visible, even when it leaves nothing. */}
@@ -259,6 +275,8 @@ function CommunityPage() {
               className="py-14"
             />
           ) : results.length === 0 ? (
+            <>
+              <div className="mb-4 lg:hidden">{filterSheet}</div>
             <NoResults
               title={values.q.trim() ? `No results for “${values.q.trim()}”` : 'No results'}
               description="Try a different keyword, or remove a filter to see more of the directory."
@@ -267,14 +285,18 @@ function CommunityPage() {
                 clear()
               }}
             />
+            </>
           ) : (
             <>
               <div className="flex flex-wrap items-center justify-between gap-3">
-                <p role="status" aria-live="polite" className="text-sm font-medium text-foreground">
-                  {results.length} {noun}
-                  {hasFilters || values.q.trim() ? ' match' : ''}
-                  {results.length > DIRECTORY_PAGE_SIZE && ` · showing ${(currentPage - 1) * DIRECTORY_PAGE_SIZE + 1}–${(currentPage - 1) * DIRECTORY_PAGE_SIZE + visible.length}`}
-                </p>
+                <div className="flex items-center gap-3">
+                  {filterSheet}
+                  <p role="status" aria-live="polite" className="text-sm font-medium text-foreground">
+                    {results.length} {noun}
+                    {hasFilters || values.q.trim() ? ' match' : ''}
+                    {results.length > DIRECTORY_PAGE_SIZE && ` · showing ${(currentPage - 1) * DIRECTORY_PAGE_SIZE + 1}–${(currentPage - 1) * DIRECTORY_PAGE_SIZE + visible.length}`}
+                  </p>
+                </div>
                 <div className="flex items-center gap-4">
                   <SortMenu sort={sort} options={SORT_OPTIONS} onChange={(next) => update({ sort: next })} />
                   <ViewToggle view={view} onChange={setView} />

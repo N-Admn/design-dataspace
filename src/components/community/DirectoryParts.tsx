@@ -188,6 +188,8 @@ function FilterRailView({
   onChange,
   onClearAll,
   stickyTop,
+  layout = 'rail',
+  idPrefix = '',
 }: {
   groups: RailGroup[]
   active: Record<string, string[]>
@@ -195,6 +197,10 @@ function FilterRailView({
   onClearAll: () => void
   /** Pins the rail below the sticky search block (its height, in px) so only the results scroll. */
   stickyTop?: number
+  /** `sheet`: the groups only, full width, for the bottom sheet on tablet and phone. */
+  layout?: 'rail' | 'sheet'
+  /** Prefix for the radio ids, so the rail and the sheet (both mounted) never share one. */
+  idPrefix?: string
 }) {
   const shown = groups.filter((g) => g.options.length > 0)
   if (shown.length === 0) return null
@@ -202,12 +208,12 @@ function FilterRailView({
   return (
     <div
       className={cn(
-        'flex w-full shrink-0 flex-col gap-8 sm:w-[18%]',
-        stickyTop !== undefined && 'sm:sticky sm:self-start sm:overflow-y-auto sm:pb-6 sm:pr-2',
+        layout === 'sheet' ? 'flex w-full flex-col gap-8' : 'flex w-full shrink-0 flex-col gap-8 sm:w-[18%]',
+        layout === 'rail' && stickyTop !== undefined && 'sm:sticky sm:self-start sm:overflow-y-auto sm:pb-6 sm:pr-2',
       )}
-      style={stickyTop !== undefined ? { top: stickyTop, maxHeight: `calc(100dvh - ${stickyTop}px)` } : undefined}
+      style={layout === 'rail' && stickyTop !== undefined ? { top: stickyTop, maxHeight: `calc(100dvh - ${stickyTop}px)` } : undefined}
     >
-      <div className="flex items-center justify-between gap-2">
+      <div className={cn('flex items-center justify-between gap-2', layout === 'sheet' && 'hidden')}>
         <p className="text-sm font-bold uppercase tracking-wider text-foreground">Filter by</p>
         {hasActive && (
           <button
@@ -228,15 +234,15 @@ function FilterRailView({
             {group.kind === 'single' ? (
               <RadioGroup value={selected[0] ?? 'any'} onValueChange={(value) => onChange(group.key, value === 'any' ? [] : [value])} className="gap-3.5">
                 <OptionRow count={group.anyCount ?? 0}>
-                  <RadioGroupItem value="any" id={`${group.key}-any`} className="mt-0.5" />
-                  <Label htmlFor={`${group.key}-any`} className="text-sm font-normal text-foreground">
+                  <RadioGroupItem value="any" id={`${idPrefix}${group.key}-any`} className="mt-0.5" />
+                  <Label htmlFor={`${idPrefix}${group.key}-any`} className="text-sm font-normal text-foreground">
                     {group.anyLabel ?? 'Any'}
                   </Label>
                 </OptionRow>
                 {group.options.map((option) => (
                   <OptionRow key={option.value} count={option.count}>
-                    <RadioGroupItem value={option.value} id={`${group.key}-${option.value}`} className="mt-0.5" />
-                    <Label htmlFor={`${group.key}-${option.value}`} className="text-sm font-normal text-foreground">
+                    <RadioGroupItem value={option.value} id={`${idPrefix}${group.key}-${option.value}`} className="mt-0.5" />
+                    <Label htmlFor={`${idPrefix}${group.key}-${option.value}`} className="text-sm font-normal text-foreground">
                       {option.label}
                     </Label>
                   </OptionRow>
@@ -286,67 +292,68 @@ function DirectoryPagination({
     setGoTo('')
   }
   return (
-    <nav aria-label="Pagination" className="flex flex-wrap items-center justify-center gap-x-6 gap-y-3 sm:justify-between">
+    <nav aria-label="Pagination" className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3">
       {total !== undefined && pageSize !== undefined ? (
         <p className="text-sm tabular-nums text-text-subdued">
           Results {(page - 1) * pageSize + 1}–{Math.min(page * pageSize, total)} of {total}
         </p>
       ) : (
-        <span aria-hidden="true" className="hidden sm:block" />
+        <span aria-hidden="true" />
       )}
-      <div className="flex flex-wrap items-center justify-center gap-2">
-        <button type="button" disabled={page <= 1} onClick={() => onPage(page - 1)} className="inline-flex h-10 items-center justify-center gap-1.5 rounded-lg bg-muted px-5 text-sm font-medium text-foreground transition-colors hover:bg-muted/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50">
-          Previous
-        </button>
-        {pageItems(page, pageCount).map((n, i) =>
-          typeof n === 'string' ? (
-            <span key={`${n}-${i}`} aria-hidden="true" className="px-1 text-muted-foreground">
-              …
-            </span>
-          ) : (
-            <button
-              key={n}
-              type="button"
-              aria-label={`Page ${n}`}
-              aria-current={n === page ? 'page' : undefined}
-              onClick={() => onPage(n)}
-              className={cn(
-                'flex size-10 items-center justify-center rounded-full text-sm tabular-nums transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                n === page ? 'bg-primary font-semibold text-primary-foreground' : 'text-foreground hover:bg-muted',
-              )}
-            >
-              {n}
-            </button>
-          ),
+      {/* The controls sit at the right: Previous, the page numbers and Next, then the Go to field when there are many pages. */}
+      <div className="ml-auto flex flex-wrap items-center justify-end gap-x-6 gap-y-3">
+        <div className="flex flex-wrap items-center justify-end gap-2">
+          <button type="button" disabled={page <= 1} onClick={() => onPage(page - 1)} className="inline-flex h-10 items-center justify-center gap-1.5 rounded-lg bg-muted px-3 text-sm sm:px-5 font-medium text-foreground transition-colors hover:bg-muted/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50">
+            Previous
+          </button>
+          {pageItems(page, pageCount).map((n, i) =>
+            typeof n === 'string' ? (
+              <span key={`${n}-${i}`} aria-hidden="true" className="px-1 text-muted-foreground">
+                …
+              </span>
+            ) : (
+              <button
+                key={n}
+                type="button"
+                aria-label={`Page ${n}`}
+                aria-current={n === page ? 'page' : undefined}
+                onClick={() => onPage(n)}
+                className={cn(
+                  'flex size-9 items-center justify-center rounded-full text-sm tabular-nums sm:size-10 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                  n === page ? 'bg-primary font-semibold text-primary-foreground' : 'text-foreground hover:bg-muted',
+                )}
+              >
+                {n}
+              </button>
+            ),
+          )}
+          <button type="button" disabled={page >= pageCount} onClick={() => onPage(page + 1)} className="inline-flex h-10 items-center justify-center gap-1.5 rounded-lg bg-muted px-3 text-sm sm:px-5 font-medium text-foreground transition-colors hover:bg-muted/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50">
+            Next
+          </button>
+        </div>
+        {pageCount > 7 && (
+          <form
+            className="flex items-center gap-2 text-sm text-text-subdued"
+            onSubmit={(e) => {
+              e.preventDefault()
+              submitGoTo()
+            }}
+          >
+            <label htmlFor="pagination-go-to">Go to:</label>
+            <input
+              id="pagination-go-to"
+              type="number"
+              inputMode="numeric"
+              min={1}
+              max={pageCount}
+              value={goTo}
+              onChange={(e) => setGoTo(e.target.value)}
+              placeholder={`e.g. ${Math.ceil(pageCount / 2)}`}
+              className="h-8 w-24 rounded-md border border-border-default bg-background px-2 text-sm text-text-default placeholder:text-text-subdued focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-focus"
+            />
+          </form>
         )}
-        <button type="button" disabled={page >= pageCount} onClick={() => onPage(page + 1)} className="inline-flex h-10 items-center justify-center gap-1.5 rounded-lg bg-muted px-5 text-sm font-medium text-foreground transition-colors hover:bg-muted/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50">
-          Next
-        </button>
       </div>
-      {pageCount > 7 ? (
-        <form
-          className="flex items-center gap-2 text-sm text-text-subdued"
-          onSubmit={(e) => {
-            e.preventDefault()
-            submitGoTo()
-          }}
-        >
-          <label htmlFor="pagination-go-to">Go to:</label>
-          <input
-            id="pagination-go-to"
-            type="number"
-            inputMode="numeric"
-            min={1}
-            max={pageCount}
-            value={goTo}
-            onChange={(e) => setGoTo(e.target.value)}
-            placeholder={`e.g. ${Math.ceil(pageCount / 2)}`}
-            className="h-8 w-24 rounded-md border border-border-default bg-background px-2 text-sm text-text-default placeholder:text-text-subdued focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-focus"
-          />
-        </form>
-      ) : (
-        <span aria-hidden="true" className="hidden sm:block" />
-      )}
     </nav>
   )
 }

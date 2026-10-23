@@ -9,6 +9,7 @@ import { GlobalSearchField } from '@/components/discover/GlobalSearchField'
 import { SearchResultCard, TYPE_ICON } from '@/components/discover/SearchResultCard'
 import { FilterRail } from '@/components/discover/FilterRail'
 import { AppliedFilters } from '@/components/discover/AppliedFilters'
+import { FilterSheet } from '@/components/discover/FilterSheet'
 import { DirectoryPagination } from '@/components/community/DirectoryParts'
 import { SortMenu, ViewToggle, type ResultView } from '@/components/discover/ResultsToolbar'
 import { useAppData } from '@/context/AppDataContext'
@@ -261,6 +262,18 @@ function SearchResultsPage() {
   const countFor = (value: TypeFilter) => tagMatches.filter((i) => i.type === value).length
   const filterGroups = FILTER_GROUPS_BY_TYPE[type]
 
+  // Tablet and phone: the filters open from a Filter button in a sheet from the bottom (laptop and desktop use the rail).
+  const typeLabel = TYPE_FILTERS.find((f) => f.value === type)?.label?.toLowerCase() ?? 'results'
+  const filterSheet = (
+    <FilterSheet
+      appliedCount={Object.keys(activeFilters).length + (tag ? 1 : 0)}
+      resultsLabel={`Show ${results.length} ${typeLabel}`}
+      onClearAll={clearFilters}
+    >
+      <FilterRail groups={filterGroups} items={typeMatches} active={activeFilters} onChange={setFilter} onClearAll={clearFilters} layout="sheet" idPrefix="sheet-" />
+    </FilterSheet>
+  )
+
   // The filter rail pins just below the sticky search block, so it needs that block's live height.
   const stickyRef = React.useRef<HTMLDivElement>(null)
   const [stickyHeight, setStickyHeight] = React.useState(0)
@@ -306,7 +319,8 @@ function SearchResultsPage() {
             initiated a search or browse — not on the pre-search landing
             state, per spec. */}
         {!isLanding && (
-          <div className="flex flex-wrap items-center gap-2 lg:flex-nowrap" role="group" aria-label="Filter results by content type">
+          // Tablet and phone: three pills to a row over two rows, each a third of the search bar's width. From lg, one row.
+          <div className="grid grid-cols-3 gap-2 lg:flex lg:flex-nowrap lg:items-center" role="group" aria-label="Filter results by content type">
             {TYPE_PILLS.map((f) => (
               <Chip
                 key={f.value}
@@ -315,7 +329,7 @@ function SearchResultsPage() {
                 onClick={() => updateParams({ type: f.value })}
                 // The pills share the width evenly so the row lines up with the search bar above it.
                 icon={f.value === 'all' ? undefined : TYPE_ICON[f.value]}
-                className="min-w-0 whitespace-nowrap lg:flex-1"
+                className="min-w-0 text-center leading-tight lg:flex-1 lg:whitespace-nowrap"
               />
             ))}
           </div>
@@ -406,17 +420,20 @@ function SearchResultsPage() {
           </section>
         </div>
       ) : (
-        <div className="flex flex-col gap-7 sm:flex-row">
-          <FilterRail
-            groups={filterGroups}
-            items={typeMatches}
-            active={activeFilters}
-            onChange={setFilter}
-            onClearAll={clearFilters}
-            stickyTop={stickyHeight}
-          />
+        <div className="flex flex-col gap-7 lg:flex-row">
+          {/* From lg (laptop and desktop) the filters are the rail beside the results; below it they are the Filter button and sheet. */}
+          <div className="hidden lg:contents">
+            <FilterRail
+              groups={filterGroups}
+              items={typeMatches}
+              active={activeFilters}
+              onChange={setFilter}
+              onClearAll={clearFilters}
+              stickyTop={stickyHeight}
+            />
 
-          <div className="hidden shrink-0 self-stretch border-l border-border sm:block" aria-hidden="true" />
+            <div className="shrink-0 self-stretch border-l border-border" aria-hidden="true" />
+          </div>
 
           <div ref={resultsTopRef} className="min-w-0 flex-1 scroll-mt-40">
             <AppliedFilters
@@ -432,17 +449,23 @@ function SearchResultsPage() {
               onClearAll={clearFilters}
             />
             {results.length === 0 ? (
+              <>
+                <div className="mb-4 lg:hidden">{filterSheet}</div>
               <EmptyState
                 icon={SearchX}
                 title={tag ? `No results tagged "${tag}"` : query.trim() ? `No results for "${query}"` : 'No results'}
                 description={Object.keys(activeFilters).length > 0 ? 'Try a different keyword, or remove a filter above.' : 'Try a different keyword.'}
               />
+              </>
             ) : (
               <>
                 <div className="flex flex-wrap items-center justify-between gap-3">
-                  <p className="text-sm font-medium text-foreground">
-                    {results.length} {TYPE_FILTERS.find((f) => f.value === type)?.label}
-                  </p>
+                  <div className="flex items-center gap-3">
+                    {filterSheet}
+                    <p className="text-sm font-medium text-foreground">
+                      {results.length} {TYPE_FILTERS.find((f) => f.value === type)?.label}
+                    </p>
+                  </div>
                   <div className="flex items-center gap-4">
                     <SortMenu sort={sort} options={SORT_OPTIONS} onChange={setSort} />
                     <ViewToggle view={view} onChange={setView} />
