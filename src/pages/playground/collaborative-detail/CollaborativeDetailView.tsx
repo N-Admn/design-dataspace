@@ -217,7 +217,6 @@ function CollaborativeDetailView({ data, cta, onBack, pageUrl, onOpenResource, h
       {/* About: the description, then the ecosystem diagram */}
       <Section
         id="about"
-        eyebrow="Description"
         title="About this collaborative."
         fullWidthIntro
         intro={
