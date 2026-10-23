@@ -64,6 +64,7 @@ export const DOC_PAGES: DocPageDef[] = [
   page('content-card', 'Content card', 'components', 'The single card for every content type: grid and list layouts and every state.', layout, 'ContentCardPage', ['src/components/discover/ContentCard.tsx', 'src/components/discover/SearchResultCard.tsx', 'src/lib/content-card.ts']),
   page('dialog', 'Dialog', 'components', 'One Radix dialog pattern with three placements.', overlays, 'DialogPage', ['src/components/ui/dialog.tsx']),
   page('empty-state', 'Empty state', 'components', 'The “nothing here yet” block.', layout, 'EmptyStatePage', ['src/components/shared/EmptyState.tsx']),
+  page('featured-collaborative-card', 'Featured collaborative card', 'components', 'The illustrated cards in the navigation bar’s Collaboratives menu.', community, 'FeaturedCollaborativeCardPage', ['src/components/layout/FeaturedCollaborativeCard.tsx', 'src/components/layout/global-nav-config.ts']),
   page('form-controls', 'Form controls', 'components', 'Input, textarea, checkbox, radio group and field error.', controls, 'FormControlsPage', ['src/components/ui/input.tsx', 'src/components/ui/textarea.tsx', 'src/components/ui/checkbox.tsx']),
   page('leave-dialog', 'Leave dialog', 'components', 'The unsaved-changes gate for creation and edit flows.', overlays, 'LeaveDialogPage', ['src/components/shared/LeaveCreationDialog.tsx']),
   page('popover', 'Popover', 'components', 'A small floating panel anchored to its trigger.', overlays, 'PopoverPage', ['src/components/ui/popover.tsx']),
@@ -71,6 +72,7 @@ export const DOC_PAGES: DocPageDef[] = [
   page('review-publish-panel', 'Review publish panel', 'components', 'The call-to-action panel that ends the review step.', layout, 'ReviewPublishPanelPage', ['src/components/shared/ReviewPublishPanel.tsx']),
   page('review-section', 'Review section', 'components', 'A collapsible section for the review step.', layout, 'ReviewSectionPage', ['src/components/shared/ReviewSection.tsx']),
   page('rich-text-editor', 'Rich text editor', 'components', 'A contentEditable field with a fixed toolbar.', controls, 'RichTextEditorPage', ['src/components/ui/rich-text-editor.tsx']),
+  page('search-field', 'Search field', 'components', 'The one search pill used by Search, Community and the documentation.', community, 'SearchFieldPage', ['src/components/discover/GlobalSearchField.tsx', 'src/pages/documentation/components/DocSearch.tsx']),
   page('selects', 'Selects and pickers', 'components', 'SearchableSelect, MultiSelect and MultiSelectFilter share one dropdown pattern.', controls, 'SelectsPage', ['src/components/ui/searchable-select.tsx', 'src/components/ui/multi-select.tsx', 'src/components/ui/multi-select-filter.tsx']),
   page('stepper', 'Stepper', 'components', 'Progress through a multi-step flow, then navigation once review is reached.', layout, 'StepperPage', ['src/components/ui/stepper.tsx']),
   page('tag', 'Tag', 'components', 'A clickable pill, the interactive counterpart of Badge.', controls, 'TagPage', ['src/components/ui/tag.tsx']),
@@ -81,7 +83,7 @@ export const DOC_PAGES: DocPageDef[] = [
   page('upload-fields', 'Upload fields', 'components', 'The one standard dropzone for every file upload.', controls, 'UploadFieldsPage', ['src/components/shared/DropzoneUploadField.tsx', 'src/components/shared/FileUploadField.tsx']),
 
   page('directory-card', 'Directory card', 'patterns', 'The Search-style card for organisations and individual publishers, in grid and list layouts.', community, 'DirectoryCardPage', ['src/components/community/DirectoryParts.tsx']),
-  page('directory-controls', 'Directory filters and toolbar', 'patterns', 'The filter rail, sort and view controls, pagination and empty state of the Community page.', community, 'DirectoryControlsPage', ['src/components/community/DirectoryParts.tsx', 'src/hooks/use-directory-params.ts']),
+  page('directory-controls', 'Directory filters and toolbar', 'patterns', 'The filter rail, sort and view controls, pagination and empty state of the Community page.', community, 'DirectoryControlsPage', ['src/components/community/DirectoryParts.tsx', 'src/components/discover/FilterRail.tsx', 'src/hooks/use-directory-params.ts']),
   page('profile-parts', 'Profile page parts', 'patterns', 'The identity block and contribution list shared by organisation and individual profiles.', community, 'ProfilePartsPage', ['src/components/community/ProfileParts.tsx', 'src/lib/community.ts']),
 
   page('reference-only', 'Components needing app data', 'reference', 'Components that read live app data and are not mounted here.', misc, 'ReferenceOnlyPage'),
