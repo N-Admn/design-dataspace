@@ -43,6 +43,9 @@ const TYPE_FILTERS: { value: TypeFilter; label: string }[] = [
   { value: 'ai-model', label: 'AI Models' },
 ]
 
+/** The content-type pills. There is no "All": a search always sits on one content type, and each pill's count shows what the others hold. */
+const TYPE_PILLS = TYPE_FILTERS.filter((f) => f.value !== 'all')
+
 /** Contextual heading + one-line description shown below the content-type
  *  pills, keyed by the selected pill — updates instantly since it's derived
  *  straight from `type`, no separate state. */
@@ -131,27 +134,13 @@ function SearchResultsPage() {
 
   const query = searchParams.get('q') ?? ''
   const typeParam = searchParams.get('type')
-  const type: TypeFilter = TYPE_FILTERS.some((f) => f.value === typeParam)
+  const requestedType: TypeFilter = TYPE_FILTERS.some((f) => f.value === typeParam)
     ? (typeParam as TypeFilter)
     : (TYPE_PARAM_ALIASES[typeParam ?? ''] ?? 'all')
   // A structured filter (e.g. clicking a dataset tag) — kept distinct from the
   // free-text `q` keyword search; see `filterByTag`.
   const tag = searchParams.get('tag') ?? ''
 
-  // The applied filters live in the URL (`?type=dataset&sector=gender`), so a link from a badge, a reload and the Back button all keep them.
-  // Only the keys that apply on the current tab count; anything else in the URL is ignored.
-  const paramsKey = searchParams.toString()
-  const activeFilters = React.useMemo<ActiveFilters>(() => {
-    const allowed = allowedFilterKeys(type)
-    const out: ActiveFilters = {}
-    for (const key of FILTER_URL_KEYS) {
-      if (!allowed.has(key)) continue
-      const values = (searchParams.get(key) ?? '').split(',').filter(Boolean)
-      if (values.length > 0) out[key] = values
-    }
-    return out
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [paramsKey, type])
   // Results-area presentation only — independent of the filter/search state
   // above. Only meaningful for a single selected content type; the grouped
   // "All" view always shows its own compact grid, per type, unsorted.
@@ -211,6 +200,42 @@ function SearchResultsPage() {
 
   const keywordMatches = React.useMemo(() => searchItems(index, query), [index, query])
   const tagMatches = React.useMemo(() => (tag ? filterByTag(keywordMatches, tag) : keywordMatches), [keywordMatches, tag])
+  // The pre-search landing state: no query typed, no content type chosen, no tag or filter narrowing anything yet. Any one of those
+  // means the user has started a search or browse and should see results instead.
+  const filterParamPresent = FILTER_URL_KEYS.some((key) => searchParams.get(key))
+  const isLanding = query.trim() === '' && requestedType === 'all' && !tag && !filterParamPresent
+  // There is no "All" tab: results always sit on one content type. When none was chosen (a typed query, or a tag or filter link without a
+  // `type`), the first type with something to show is used, so a search never opens on an empty tab.
+  // Filters in the URL count only on the tabs that have them, so each candidate tab is checked with its own.
+  const readFilters = (forType: TypeFilter): ActiveFilters => {
+    const allowed = allowedFilterKeys(forType)
+    const out: ActiveFilters = {}
+    for (const key of FILTER_URL_KEYS) {
+      if (!allowed.has(key)) continue
+      const values = (searchParams.get(key) ?? '').split(',').filter(Boolean)
+      if (values.length > 0) out[key] = values
+    }
+    return out
+  }
+  const type: TypeFilter =
+    requestedType !== 'all'
+      ? requestedType
+      : isLanding
+        ? 'all'
+        : (() => {
+            // Prefer a tab that has every filter in the URL, then one that has results for it.
+            const present = FILTER_URL_KEYS.filter((key) => searchParams.get(key))
+            const hasResults = (f: { value: TypeFilter }) => filterItems(tagMatches.filter((item) => item.type === f.value), readFilters(f.value)).length > 0
+            const supportsAll = (f: { value: TypeFilter }) => present.every((key) => allowedFilterKeys(f.value).has(key))
+            return (TYPE_PILLS.find((f) => supportsAll(f) && hasResults(f)) ?? TYPE_PILLS.find((f) => supportsAll(f)) ?? TYPE_PILLS.find(hasResults))?.value ?? 'dataset'
+          })()
+
+  // The applied filters live in the URL (`?type=dataset&sector=gender`), so a link from a badge, a reload and the Back button all keep them.
+  // Only the keys that apply on the current tab count; anything else in the URL is ignored.
+  const paramsKey = searchParams.toString()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const activeFilters = React.useMemo<ActiveFilters>(() => readFilters(type), [paramsKey, type])
+
   // The pool the filter rail computes its own counts from — current type +
   // keyword/tag matches, before any filter-group selection narrows it further.
   const typeMatches = React.useMemo(
@@ -219,22 +244,11 @@ function SearchResultsPage() {
   )
   const results = React.useMemo(() => filterItems(typeMatches, activeFilters), [typeMatches, activeFilters])
 
-  // Pagination: the whole result set is ordered once (grouped by content type on "All", otherwise just sorted), then sliced. Any change
+  // Pagination: the whole result set is ordered once, then sliced. Any change
   // to what is being searched or how it is sorted starts again at page 1.
   const [page, setPage] = React.useState(1)
   React.useEffect(() => setPage(1), [query, type, tag, activeFilters, sort])
-  const ordered = React.useMemo(
-    () =>
-      type === 'all'
-        ? TYPE_FILTERS.filter((f) => f.value !== 'all').flatMap((f) =>
-            sortResults(
-              results.filter((item) => item.type === f.value),
-              sort,
-            ),
-          )
-        : sortResults(results, sort),
-    [results, type, sort],
-  )
+  const ordered = React.useMemo(() => sortResults(results, sort), [results, sort])
   const pageCount = Math.max(1, Math.ceil(ordered.length / SEARCH_PAGE_SIZE))
   const currentPage = Math.min(page, pageCount)
   const pageItems = ordered.slice((currentPage - 1) * SEARCH_PAGE_SIZE, currentPage * SEARCH_PAGE_SIZE)
@@ -244,15 +258,8 @@ function SearchResultsPage() {
     resultsTopRef.current?.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' })
   }
 
-  const countFor = (value: TypeFilter) => (value === 'all' ? tagMatches.length : tagMatches.filter((i) => i.type === value).length)
-  const hasActiveFilters = Object.keys(activeFilters).length > 0
+  const countFor = (value: TypeFilter) => tagMatches.filter((i) => i.type === value).length
   const filterGroups = FILTER_GROUPS_BY_TYPE[type]
-
-  // The pre-search landing state: no query typed, no content type chosen, no
-  // tag or filter narrowing anything yet. Any one of those is enough to mean
-  // the user has "initiated a search/browse action" and should see the
-  // results architecture instead — content-type pills included.
-  const isLanding = query.trim() === '' && type === 'all' && !tag && !hasActiveFilters
 
   // The filter rail pins just below the sticky search block, so it needs that block's live height.
   const stickyRef = React.useRef<HTMLDivElement>(null)
@@ -300,17 +307,15 @@ function SearchResultsPage() {
             state, per spec. */}
         {!isLanding && (
           <div className="flex flex-wrap items-center gap-2 lg:flex-nowrap" role="group" aria-label="Filter results by content type">
-            {TYPE_FILTERS.map((f) => (
+            {TYPE_PILLS.map((f) => (
               <Chip
                 key={f.value}
                 label={`${f.label} (${countFor(f.value)})`}
                 pressed={type === f.value}
                 onClick={() => updateParams({ type: f.value })}
-                // "All" has no single content-type icon and stays its natural
-                // width; the rest share the remaining width evenly so the row
-                // lines up with the search bar above it.
+                // The pills share the width evenly so the row lines up with the search bar above it.
                 icon={f.value === 'all' ? undefined : TYPE_ICON[f.value]}
-                className={f.value === 'all' ? 'shrink-0' : 'min-w-0 whitespace-nowrap lg:flex-1'}
+                className="min-w-0 whitespace-nowrap lg:flex-1"
               />
             ))}
           </div>
@@ -430,42 +435,22 @@ function SearchResultsPage() {
               <EmptyState
                 icon={SearchX}
                 title={tag ? `No results tagged "${tag}"` : query.trim() ? `No results for "${query}"` : 'No results'}
-                description={hasActiveFilters ? "Try a different keyword, or remove a filter above." : "Try a different keyword."}
+                description={Object.keys(activeFilters).length > 0 ? 'Try a different keyword, or remove a filter above.' : 'Try a different keyword.'}
               />
             ) : (
               <>
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <p className="text-sm font-medium text-foreground">
-                    {results.length} {type === 'all' ? 'Results' : TYPE_FILTERS.find((f) => f.value === type)?.label}
+                    {results.length} {TYPE_FILTERS.find((f) => f.value === type)?.label}
                   </p>
                   <div className="flex items-center gap-4">
                     <SortMenu sort={sort} options={SORT_OPTIONS} onChange={setSort} />
                     <ViewToggle view={view} onChange={setView} />
                   </div>
                 </div>
-                {type === 'all' ? (
-                  <div className="mt-4 flex flex-col gap-8">
-                    {TYPE_FILTERS.filter((f) => f.value !== 'all').map((f) => {
-                      const items = pageItems.filter((item) => item.type === f.value)
-                      if (items.length === 0) return null
-                      const typeTotal = results.filter((item) => item.type === f.value).length
-                      return (
-                        <section key={f.value} aria-labelledby={`section-${f.value}`}>
-                          <h2 id={`section-${f.value}`} className="type-heading-3 text-foreground">
-                            {f.label} ({typeTotal})
-                          </h2>
-                          <div className="mt-3">
-                            <ResultsGrid items={items} view={view} />
-                          </div>
-                        </section>
-                      )
-                    })}
-                  </div>
-                ) : (
-                  <div className="mt-4">
-                    <ResultsGrid items={pageItems} view={view} />
-                  </div>
-                )}
+                <div className="mt-4">
+                  <ResultsGrid items={pageItems} view={view} />
+                </div>
                 <div className="mt-8">
                   <DirectoryPagination page={currentPage} pageCount={pageCount} onPage={goToPage} total={ordered.length} pageSize={SEARCH_PAGE_SIZE} />
                 </div>

@@ -151,7 +151,7 @@ export const GETTING_STARTED: Article[] = [
           {
             type: 'defs',
             items: [
-              { term: 'Search', desc: 'Find content through the platform’s unified search, with an All tab and a tab for each content type.' },
+              { term: 'Search', desc: 'Find content through the platform’s unified search, with a tab for each content type.' },
               {
                 term: 'Discover',
                 desc: 'A menu that groups content into Knowledge (Datasets, Publications, AI Models), Stories (Use Cases, Collaboratives) and Community (Events, People, Organisations).',
