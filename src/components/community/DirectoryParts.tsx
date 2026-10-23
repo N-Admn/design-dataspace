@@ -5,9 +5,9 @@ import { SearchX, type LucideIcon } from 'lucide-react'
 import { EmptyState } from '@/components/shared/EmptyState'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Checkbox } from '@/components/ui/checkbox'
 import { Label } from '@/components/ui/label'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
+import { CheckboxGroup } from '@/components/discover/FilterRail'
 import { cn, initialsFor } from '@/lib/utils'
 
 /** The pieces the Community directory is built from. Its anatomy follows the Search results page: the same card structure, the same
@@ -240,20 +240,7 @@ function FilterRailView({
                 ))}
               </RadioGroup>
             ) : (
-              <div className="flex flex-col gap-3.5">
-                {group.options.map((option) => (
-                  <label key={option.value} className="cursor-pointer">
-                    <OptionRow count={option.count}>
-                      <Checkbox
-                        className="mt-0.5"
-                        checked={selected.includes(option.value)}
-                        onCheckedChange={(next) => onChange(group.key, next ? [...selected, option.value] : selected.filter((v) => v !== option.value))}
-                      />
-                      <span className="text-sm font-normal text-foreground">{option.label}</span>
-                    </OptionRow>
-                  </label>
-                ))}
-              </div>
+              <CheckboxGroup groupKey={group.key} options={group.options} selected={selected} onChange={onChange} />
             )}
           </fieldset>
         )

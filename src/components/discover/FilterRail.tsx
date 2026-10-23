@@ -41,7 +41,7 @@ const COLLAPSED_COUNT = 6
 
 /** A group of checkboxes. A long list shows its most common options (and anything already ticked) with a "Show all N" button for the rest,
  *  so a list of seventeen does not push every other filter off the screen. Expanded, the options are in their own order. */
-function CheckboxGroup({ groupKey, options, selected, onChange }: { groupKey: string; options: FilterOption[]; selected: string[]; onChange: (key: string, values: string[]) => void }) {
+export function CheckboxGroup({ groupKey, options, selected, onChange }: { groupKey: string; options: FilterOption[]; selected: string[]; onChange: (key: string, values: string[]) => void }) {
   const [expanded, setExpanded] = React.useState(false)
   const collapsible = options.length > COLLAPSED_COUNT + 1
   const visible = React.useMemo(() => {
