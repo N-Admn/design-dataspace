@@ -408,7 +408,7 @@ function ProfileBannerHero({ kind, name, imageUrl, headline, badge, location, li
               </BannerFact>
             ))}
           </div>
-          {about && <p className="max-w-4xl whitespace-pre-line text-base leading-relaxed text-text-subdued">{about}</p>}
+          {about && <p className="type-body max-w-4xl whitespace-pre-line text-text-subdued">{about}</p>}
           {expertise.length > 0 && (
             <ul className="flex flex-wrap gap-2" aria-label="Areas of expertise">
               {expertise.map((area) => (
