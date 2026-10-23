@@ -456,9 +456,10 @@ function ContributionSections({
         />
         <ViewTabPanel id={active} idPrefix="profile-content" active>
           <div className="pt-10">
-            {/* The heading and Sort by share a line; the line saying what the list is sits underneath. */}
-            <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-              <h3 className="type-heading-2 text-text-brand">{label}</h3>
+            {/* The heading, then the line saying what the list is with Sort by level with it at the right. */}
+            <h3 className="type-heading-2 text-text-brand">{label}</h3>
+            <div className="mb-6 mt-1 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-2">
+              <p className="type-body text-text-subdued">{intro(who)}</p>
               <label className="flex items-center gap-2 text-sm text-text-subdued">
                 Sort by:
                 <select
@@ -474,7 +475,6 @@ function ContributionSections({
                 </select>
               </label>
             </div>
-            <p className="mb-6 mt-1 type-body text-text-subdued">{intro(who)}</p>
             <p role="status" aria-live="polite" className="sr-only">
               {all.length} {all.length === 1 ? CONTRIBUTION_LABEL[active].singular.toLowerCase() : label.toLowerCase()}
             </p>
