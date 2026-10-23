@@ -23,7 +23,6 @@ import {
   MORE_GROUPS,
   SIGN_IN_ROUTE,
   WORKSPACE_ROUTE,
-  collaborativeDetailRoute,
   type NavGroup,
   type NavLink,
 } from '@/components/layout/global-nav-config'
@@ -34,9 +33,9 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover'
-import { useAppData } from '@/context/AppDataContext'
 import { useTrackSearchOrigin } from '@/hooks/use-close-search'
 import { PAGE_GUTTER_X } from '@/lib/layout'
+import { FeaturedCollaborativeCard } from '@/components/layout/FeaturedCollaborativeCard'
 import { cn } from '@/lib/utils'
 
 const CURRENT_USER = {
@@ -501,59 +500,14 @@ function FeaturedCollaborativesMenu({
 }: {
   onNavigate: () => void
 }) {
-  const { collaboratives } = useAppData()
   return (
     <div className="flex flex-1 flex-col justify-between gap-6">
       <ul className="grid gap-4 sm:grid-cols-3">
-        {FEATURED_COLLABORATIVES.map((item) => {
-          const record = item.recordId
-            ? collaboratives.find((c) => c.id === item.recordId)
-            : undefined
-          const image = record?.publishedForm?.metadata.image?.dataUrl
-          const to = record
-            ? collaborativeDetailRoute(record.id)
-            : COLLABORATIVES_ROUTE
-          return (
-            <li key={item.title}>
-              <Link
-                to={to}
-                onClick={onNavigate}
-                className="group flex h-full flex-col gap-3 rounded-lg p-2 transition-colors hover:bg-surface-hovered focus-visible:bg-surface-hovered focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              >
-                {/* Gradient behind the photo so a failed image still leaves a tidy tile */}
-                <div className="relative aspect-video w-full overflow-hidden rounded-md bg-[linear-gradient(252deg,var(--workspace-hero-from)_0%,var(--workspace-hero-to)_97.53%)]">
-                  <img
-                    src={image ?? item.image}
-                    alt=""
-                    loading="lazy"
-                    onError={(event) => {
-                      const img = event.currentTarget
-                      // A stored record image that fails to load falls back to the curated thumbnail; if that
-                      // fails too, the gradient behind shows.
-                      if (img.src !== item.image) img.src = item.image
-                      else img.style.display = 'none'
-                    }}
-                    className="absolute inset-0 size-full object-cover"
-                  />
-                </div>
-                <div className="flex flex-col gap-1">
-                  <span className="text-xs font-semibold uppercase tracking-wide text-text-subdued">
-                    {item.theme}
-                  </span>
-                  <span
-                    title={item.title}
-                    className="truncate text-sm font-semibold text-text-default group-hover:text-text-brand"
-                  >
-                    {item.title}
-                  </span>
-                  <span className="line-clamp-2 text-xs text-text-subdued">
-                    {item.description}
-                  </span>
-                </div>
-              </Link>
-            </li>
-          )
-        })}
+        {FEATURED_COLLABORATIVES.map((item) => (
+          <li key={item.title}>
+            <FeaturedCollaborativeCard item={item} onNavigate={onNavigate} />
+          </li>
+        ))}
       </ul>
 
       <div className="flex flex-col gap-4 border-t border-border-default pt-5 sm:flex-row sm:items-center sm:justify-between">
@@ -868,11 +822,7 @@ function TopNav() {
               {FEATURED_COLLABORATIVES.map((item) => (
                 <li key={item.title}>
                   <Link
-                    to={
-                      item.recordId
-                        ? collaborativeDetailRoute(item.recordId)
-                        : COLLABORATIVES_ROUTE
-                    }
+                    to={item.to}
                     onClick={closeAll}
                     className="block rounded-md px-3 py-2.5 text-sm font-medium text-text-default transition-colors hover:bg-surface-hovered focus-visible:bg-surface-hovered focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >

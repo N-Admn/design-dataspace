@@ -15,6 +15,9 @@ import {
   Users,
   type LucideIcon,
 } from 'lucide-react'
+import climateIllustration from '@/assets/nav-collaboratives/climate.png'
+import genderIllustration from '@/assets/nav-collaboratives/gender.png'
+import languageIllustration from '@/assets/nav-collaboratives/language.png'
 
 /** Destinations for the global (consumer) navigation. Every route here already exists in `App.tsx`. People and
  *  Organisations are not content types the Search page lists yet, so they have their own directory pages. */
@@ -176,42 +179,39 @@ export interface FeaturedCollaborative {
   title: string
   theme: string
   description: string
-  /** Existing collaborative record to take the image and detail page from, when one exists. */
-  recordId?: string
-  /** Mock thumbnail, used when no record image is available. */
+  /** Where the card goes: the Search page's Collaboratives tab, narrowed to this theme. */
+  to: string
+  /** Illustration shown in the menu card. */
   image: string
+  /** Soft tint behind the illustration — the same surfaces as the landing page's bento cards. */
+  tint: string
 }
 
-// Pexels stock photos, the same source the mock data already uses for collaborative and member images.
-// Some photos only resolve with their full slug in the path, so the file name is passed in explicitly.
-const mockThumbnail = (id: number, slug = `pexels-photo-${id}`) =>
-  `https://images.pexels.com/photos/${id}/${slug}.jpeg?auto=compress&cs=tinysrgb&w=600&h=338&fit=crop`
-
-/** Curated featured collaboratives. Only `collaborative-1` exists as a record today; the other two
- *  have no record, image or detail page yet, so they fall back to the Search page's Collaboratives tab. */
+/** Curated featured collaborative themes. Each opens the Search page's Collaboratives tab narrowed to the theme; titles and
+ *  descriptions are kept to one line each so the menu cards stay the same height. */
 export const FEATURED_COLLABORATIVES: FeaturedCollaborative[] = [
   {
-    title: 'Asia-Pacific Climate and Health Data Collaborative',
-    theme: 'Climate',
-    description:
-      'Open data linking extreme weather and public-health outcomes across the region.',
-    recordId: 'collaborative-1',
-    image: mockThumbnail(76969, 'cold-front-warm-front-hurricane-felix-76969'),
+    title: 'Climate Action Data',
+    theme: 'Climate Action',
+    description: 'Collaboratives working on climate, environment and the data behind them.',
+    to: `${COLLABORATIVES_ROUTE}&sector=climate-action`,
+    image: climateIllustration,
+    tint: 'bg-chart-1/10',
   },
   {
-    title: 'Gender Data and AI Collaborative',
+    title: 'Gender Data and AI',
     theme: 'Gender',
-    description: 'Shared datasets and tools for gender-responsive data and AI.',
-    image: mockThumbnail(3769021),
+    description: 'Collaboratives advancing gender equity through data and responsible AI.',
+    to: `${COLLABORATIVES_ROUTE}&sector=gender`,
+    image: genderIllustration,
+    tint: 'bg-chart-5/15',
   },
   {
-    title: 'Language Data Collaborative',
-    theme: 'Language',
-    description: 'Building open language data for India’s regional languages.',
-    image: mockThumbnail(256417),
+    title: 'Urban Development Data',
+    theme: 'Urban Development',
+    description: 'Collaboratives using data to plan housing, transport and services in growing cities.',
+    to: `${COLLABORATIVES_ROUTE}&sector=urban-development`,
+    image: languageIllustration,
+    tint: 'bg-accent/20',
   },
 ]
-
-/** The only existing collaborative detail page is the preview route. */
-export const collaborativeDetailRoute = (recordId: string) =>
-  `/dashboard/collaboratives/${recordId}/preview`
