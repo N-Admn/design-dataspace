@@ -184,8 +184,7 @@ function SearchResultsPage() {
   const sectorParam = searchParams.get('sector')
   React.useEffect(() => {
     if (!sectorParam) return
-    // Only the Collaboratives tab has a Sector link source today, so the value goes to that tab's own sector filter.
-    setActiveFilters((prev) => ({ ...prev, collaborativeSector: sectorParam.split(',').filter(Boolean) }))
+    setActiveFilters((prev) => ({ ...prev, sector: sectorParam.split(',').filter(Boolean) }))
     const params = new URLSearchParams(searchParams)
     params.delete('sector')
     setSearchParams(params, { replace: true })

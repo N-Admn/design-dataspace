@@ -1,19 +1,6 @@
 import type { UploadedAsset } from '@/lib/generic-upload'
 import type { EventPublication } from '@/types/event'
 
-/** The sectors a Collaborative can work in. Collaboratives are organised around cross-cutting themes, so they have their own list rather
- *  than the dataset `SECTOR_OPTIONS`; it is what the contributor form offers and what the Search page's Sector filter lists. */
-export const COLLABORATIVE_SECTOR_OPTIONS = [
-  { value: 'child-rights', label: 'Child Rights' },
-  { value: 'climate-action', label: 'Climate Action' },
-  { value: 'coastal', label: 'Coastal' },
-  { value: 'disaster-risk-reduction', label: 'Disaster Risk Reduction' },
-  { value: 'gender', label: 'Gender' },
-  { value: 'law-justice', label: 'Law and Justice' },
-  { value: 'public-finance', label: 'Public Finance' },
-  { value: 'urban-development', label: 'Urban Development' },
-]
-
 export type CollaborativeStatus = 'draft' | 'published'
 
 export type CollaborativeRelationship = 'contributor' | 'partner' | 'supporter'

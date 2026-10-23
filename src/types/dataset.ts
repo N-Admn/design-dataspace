@@ -205,17 +205,17 @@ export const SUPPORTED_FILE_EXTENSIONS = ['pdf', 'csv', 'xls', 'xlsx', 'txt']
 /** Data resource files share the platform-wide 500 MB document ceiling. */
 export const MAX_FILE_SIZE_BYTES = MAX_DOCUMENT_BYTES
 
+/** The one list of sectors: every sector dropdown (datasets, use cases, publications, events, AI models, collaboratives), the Search page's
+ *  Sector filter and the sector badges on detail pages use exactly these. */
 export const SECTOR_OPTIONS = [
-  { value: 'agriculture', label: 'Agriculture' },
-  { value: 'education', label: 'Education' },
-  { value: 'energy', label: 'Energy' },
-  { value: 'environment', label: 'Environment' },
-  { value: 'finance', label: 'Finance' },
-  { value: 'health', label: 'Health' },
-  { value: 'housing', label: 'Housing' },
-  { value: 'transportation', label: 'Transportation' },
+  { value: 'child-rights', label: 'Child Rights' },
+  { value: 'climate-action', label: 'Climate Action' },
+  { value: 'coastal', label: 'Coastal' },
+  { value: 'disaster-risk-reduction', label: 'Disaster Risk Reduction' },
+  { value: 'gender', label: 'Gender' },
+  { value: 'law-justice', label: 'Law And Justice' },
+  { value: 'public-finance', label: 'Public Finance' },
   { value: 'urban-development', label: 'Urban Development' },
-  { value: 'water-sanitation', label: 'Water & Sanitation' },
 ]
 
 export const GEOGRAPHY_OPTIONS = [

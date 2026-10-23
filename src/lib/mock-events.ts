@@ -146,7 +146,7 @@ const evt2Form: EventFormState = {
     title: 'AI for Public Good Workshop',
     subtitle: 'Practical approaches to responsible AI in public services',
     eventType: 'workshop',
-    theme: 'health',
+    theme: 'child-rights',
     overview:
       'A hands-on workshop covering practical, responsible approaches to deploying AI in public service delivery, with case studies and open discussion.',
     startDate: '2026-08-12',
@@ -257,7 +257,7 @@ const evt5Form: EventFormState = {
     title: 'Open Data Licensing 101',
     subtitle: 'A practical primer on choosing and applying open data licenses',
     eventType: 'webinar',
-    theme: 'open-data',
+    theme: 'law-justice',
     overview:
       'An introductory webinar covering the fundamentals of open data licensing, common pitfalls, and how to choose the right license for public datasets.',
     startDate: '2026-06-30',
@@ -294,7 +294,7 @@ const evt6Form: EventFormState = {
     title: 'Data Visualization Bootcamp for Civic Teams',
     subtitle: 'Hands-on training for building public-facing data dashboards',
     eventType: 'training',
-    theme: 'capacity-building',
+    theme: 'urban-development',
     overview:
       'A two-day, hands-on bootcamp for government and civil-society teams to learn practical data visualization techniques for public dashboards.',
     startDate: '2026-06-17',
@@ -332,7 +332,7 @@ const evt7Form: EventFormState = {
     title: 'Financial Inclusion Data Roundtable',
     subtitle: 'Reviewing district-level indicators with sector experts',
     eventType: 'roundtable',
-    theme: 'finance',
+    theme: 'public-finance',
     overview:
       'A closed-door roundtable to review the latest district financial inclusion indicators with researchers, regulators, and civil-society partners.',
     startDate: '2026-06-02',
@@ -369,7 +369,7 @@ const evt8Form: EventFormState = {
     title: 'State of Civic Tech India 2026',
     subtitle: 'An annual look at civic technology and open governance trends',
     eventType: 'conference',
-    theme: 'governance',
+    theme: 'law-justice',
     overview:
       'A national conference bringing together civic technologists, policymakers, and researchers to review the state of open governance and civic tech in India.',
     startDate: '2026-05-20',

@@ -10,7 +10,7 @@ const aiModel1Form: AIModelFormState = {
     targetUsers: ['government-teams', 'analysts'],
     intendedUse:
       'Run daily to generate a district-level flood risk score that district disaster management authorities use to plan evacuation and resource allocation.',
-    sectors: ['environment', 'water-sanitation'],
+    sectors: ['disaster-risk-reduction', 'climate-action'],
     tags: ['Flood', 'Forecasting', 'Disaster Response'],
     languageSupportType: 'specific',
     languages: ['en', 'hi'],

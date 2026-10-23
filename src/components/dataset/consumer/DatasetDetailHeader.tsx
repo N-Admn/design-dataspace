@@ -1,21 +1,19 @@
 import type * as React from 'react'
 import {
-  Bus,
+  Baby,
   Building,
   Building2,
   CalendarDays,
   Download,
-  Droplet,
-  GraduationCap,
-  HeartPulse,
-  Home,
   Landmark,
   Leaf,
   MapPin,
+  Scale,
   Share2,
-  Sprout,
+  ShieldAlert,
   Tag,
-  Zap,
+  Users,
+  Waves,
   type LucideIcon,
 } from 'lucide-react'
 
@@ -47,16 +45,14 @@ function optionLabel(
  *  without repeating the label text. `Tag` is a generic fallback for any sector
  *  value that isn't in the current option list. */
 const SECTOR_ICONS: Record<string, LucideIcon> = {
-  agriculture: Sprout,
-  education: GraduationCap,
-  energy: Zap,
-  environment: Leaf,
-  finance: Landmark,
-  health: HeartPulse,
-  housing: Home,
-  transportation: Bus,
+  'child-rights': Baby,
+  'climate-action': Leaf,
+  coastal: Waves,
+  'disaster-risk-reduction': ShieldAlert,
+  gender: Users,
+  'law-justice': Scale,
+  'public-finance': Landmark,
   'urban-development': Building,
-  'water-sanitation': Droplet,
 }
 
 interface MetaCardProps {

@@ -8,13 +8,12 @@ import { MultiSelect } from '@/components/ui/multi-select'
 import { TagInput } from '@/components/ui/tag-input'
 import { RichTextEditor } from '@/components/ui/rich-text-editor'
 import { FileUploadField } from '@/components/shared/FileUploadField'
-import { GEOGRAPHY_OPTIONS } from '@/types/dataset'
+import { GEOGRAPHY_OPTIONS, SECTOR_OPTIONS } from '@/types/dataset'
 import { SDG_GOALS } from '@/lib/sdg-goals'
 import { SUPPORTED_IMAGE_EXTENSIONS, MAX_IMAGE_BYTES } from '@/types/event'
 import { cn } from '@/lib/utils'
 import {
   COLLABORATIVE_DESCRIPTION_MAX_LENGTH,
-  COLLABORATIVE_SECTOR_OPTIONS,
   COLLABORATIVE_URL_SUFFIX,
   type CollaborativeMetadata,
 } from '@/types/collaborative'
@@ -160,7 +159,7 @@ function CollaborativeStep1About({ metadata, errors, onChange }: CollaborativeSt
             <div className="mt-1.5">
               <MultiSelect
                 id="collaborative-sectors"
-                options={COLLABORATIVE_SECTOR_OPTIONS}
+                options={SECTOR_OPTIONS}
                 values={metadata.sectors}
                 onChange={(values) => onChange('sectors', values)}
                 placeholder="Select sectors..."
