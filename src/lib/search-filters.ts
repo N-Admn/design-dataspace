@@ -35,10 +35,10 @@ export const RECENCY_OPTIONS = [
   { value: 'year', label: 'Past year' },
 ]
 
-// The recency filter is the same underlying facet (`updatedAt`) everywhere —
-// only its visible label changes ("Last updated" vs "Date") — so the
-// selection carries over when switching between two types that both show it.
-const lastUpdated = (label = 'Last updated'): FilterGroupDef => ({ key: 'updated', label, kind: 'single', fixedOptions: RECENCY_OPTIONS })
+// The recency filter is the same underlying facet (`updatedAt`) with the same
+// "Last updated" label everywhere, so the selection carries over when
+// switching between types.
+const lastUpdated = (): FilterGroupDef => ({ key: 'updated', label: 'Last updated', kind: 'single', fixedOptions: RECENCY_OPTIONS })
 const sector: FilterGroupDef = { key: 'sector', label: 'Sector', kind: 'multi', fixedOptions: SECTOR_OPTIONS }
 
 const ALL_FILTER_GROUPS: FilterGroupDef[] = [lastUpdated(), sector]
@@ -55,14 +55,14 @@ const PUBLICATION_FILTER_GROUPS: FilterGroupDef[] = [
 const COLLABORATIVE_FILTER_GROUPS: FilterGroupDef[] = [lastUpdated(), sector]
 
 const EVENT_FILTER_GROUPS: FilterGroupDef[] = [
+  lastUpdated(),
   { key: 'eventType', label: 'Type', kind: 'multi', fixedOptions: EVENT_TYPE_OPTIONS },
   { key: 'eventStatus', label: 'Status', kind: 'multi', fixedOptions: EVENT_STATUS_OPTIONS },
-  lastUpdated('Date'),
 ]
 
 const AI_MODEL_FILTER_GROUPS: FilterGroupDef[] = [
+  lastUpdated(),
   { key: 'modelType', label: 'Type', kind: 'multi', fixedOptions: MODEL_TYPE_OPTIONS },
-  lastUpdated('Date'),
 ]
 
 export const FILTER_GROUPS_BY_TYPE: Record<TypeFilter, FilterGroupDef[]> = {

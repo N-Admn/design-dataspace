@@ -222,6 +222,19 @@ function SearchResultsPage() {
   // results architecture instead — content-type pills included.
   const isLanding = query.trim() === '' && type === 'all' && !tag && !hasActiveFilters
 
+  // The filter rail pins just below the sticky search block, so it needs that block's live height.
+  const stickyRef = React.useRef<HTMLDivElement>(null)
+  const [stickyHeight, setStickyHeight] = React.useState(0)
+  React.useLayoutEffect(() => {
+    const el = stickyRef.current
+    if (!el) return
+    const update = () => setStickyHeight(el.offsetHeight)
+    update()
+    const ro = new ResizeObserver(update)
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [])
+
   return (
     // The white background for this page (and every other consumer-facing
     // route) is set on the shared `<main>` in App.tsx via `isConsumerRoute` —
@@ -237,7 +250,7 @@ function SearchResultsPage() {
           while scrolling through results — `bg-background` matches the
           page's white background so results scrolling underneath don't
           show through. */}
-      <div className="sticky top-0 z-20 flex flex-col gap-4 bg-background py-3">
+      <div ref={stickyRef} className="sticky top-0 z-20 flex flex-col gap-4 bg-background py-3">
         <GlobalSearchField
           value={draft}
           onChange={setDraft}
@@ -369,6 +382,7 @@ function SearchResultsPage() {
             active={activeFilters}
             onChange={setFilter}
             onClearAll={() => setActiveFilters({})}
+            stickyTop={stickyHeight}
           />
 
           <div className="hidden shrink-0 self-stretch border-l border-border sm:block" aria-hidden="true" />

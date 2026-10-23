@@ -184,17 +184,26 @@ function FilterRailView({
   active,
   onChange,
   onClearAll,
+  stickyTop,
 }: {
   groups: RailGroup[]
   active: Record<string, string[]>
   onChange: (key: string, values: string[]) => void
   onClearAll: () => void
+  /** Pins the rail below the sticky search block (its height, in px) so only the results scroll. */
+  stickyTop?: number
 }) {
   const shown = groups.filter((g) => g.options.length > 0)
   if (shown.length === 0) return null
   const hasActive = Object.values(active).some((v) => v.length > 0)
   return (
-    <div className="flex w-full shrink-0 flex-col gap-8 sm:w-[18%]">
+    <div
+      className={cn(
+        'flex w-full shrink-0 flex-col gap-8 sm:w-[18%]',
+        stickyTop !== undefined && 'sm:sticky sm:self-start sm:overflow-y-auto sm:pb-6 sm:pr-2',
+      )}
+      style={stickyTop !== undefined ? { top: stickyTop, maxHeight: `calc(100dvh - ${stickyTop}px)` } : undefined}
+    >
       <div className="flex items-center justify-between gap-2">
         <p className="text-sm font-bold uppercase tracking-wider text-foreground">Filter by</p>
         {hasActive && (

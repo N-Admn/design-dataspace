@@ -3,6 +3,7 @@ import type { ReactNode } from 'react'
 import { Checkbox } from '@/components/ui/checkbox'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Label } from '@/components/ui/label'
+import { cn } from '@/lib/utils'
 import { computeGroupOptions, type FilterGroupDef } from '@/lib/search-filters'
 import { filterItems, type ActiveFilters, type SearchResultItem } from '@/lib/global-search'
 
@@ -16,6 +17,8 @@ interface FilterRailProps {
   active: ActiveFilters
   onChange: (key: string, values: string[]) => void
   onClearAll: () => void
+  /** Pins the rail below the sticky search block (its height, in px) so only the results scroll. */
+  stickyTop?: number
 }
 
 /** One option row — label wraps onto multiple lines when long, without ever
@@ -36,12 +39,18 @@ function OptionRow({ children, count }: { children: ReactNode; count: number }) 
  *  the group), single-select as radios. Groups and their options are entirely
  *  data-driven (see `lib/search-filters.ts`); an option with no matches in
  *  the current result pool isn't shown, rather than shown as a fake "0". */
-function FilterRail({ groups, items, active, onChange, onClearAll }: FilterRailProps) {
+function FilterRail({ groups, items, active, onChange, onClearAll, stickyTop }: FilterRailProps) {
   if (groups.length === 0) return null
   const hasActiveFilters = Object.keys(active).length > 0
 
   return (
-    <div className="flex w-full shrink-0 flex-col gap-8 sm:w-[18%]">
+    <div
+      className={cn(
+        'flex w-full shrink-0 flex-col gap-8 sm:w-[18%]',
+        stickyTop !== undefined && 'sm:sticky sm:self-start sm:overflow-y-auto sm:pb-6 sm:pr-2',
+      )}
+      style={stickyTop !== undefined ? { top: stickyTop, maxHeight: `calc(100dvh - ${stickyTop}px)` } : undefined}
+    >
       <div className="flex items-center justify-between gap-2">
         <p className="text-sm font-bold uppercase tracking-wider text-foreground">Filter by</p>
         {hasActiveFilters && (
