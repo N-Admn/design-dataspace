@@ -65,6 +65,7 @@ export const DOC_PAGES: DocPageDef[] = [
   page('dialog', 'Dialog', 'components', 'One Radix dialog pattern with three placements.', overlays, 'DialogPage', ['src/components/ui/dialog.tsx']),
   page('empty-state', 'Empty state', 'components', 'The “nothing here yet” block.', layout, 'EmptyStatePage', ['src/components/shared/EmptyState.tsx']),
   page('featured-collaborative-card', 'Featured collaborative card', 'components', 'The illustrated cards in the navigation bar’s Collaboratives menu.', community, 'FeaturedCollaborativeCardPage', ['src/components/layout/FeaturedCollaborativeCard.tsx', 'src/components/layout/global-nav-config.ts']),
+  page('filter-badge', 'Filter badge', 'components', 'Badges and tags that open Search with their value applied, and the chips that show it.', community, 'FilterBadgePage', ['src/components/shared/FilterBadge.tsx', 'src/components/shared/SdgBadge.tsx', 'src/components/discover/AppliedFilters.tsx', 'src/lib/search-links.ts']),
   page('form-controls', 'Form controls', 'components', 'Input, textarea, checkbox, radio group and field error.', controls, 'FormControlsPage', ['src/components/ui/input.tsx', 'src/components/ui/textarea.tsx', 'src/components/ui/checkbox.tsx']),
   page('leave-dialog', 'Leave dialog', 'components', 'The unsaved-changes gate for creation and edit flows.', overlays, 'LeaveDialogPage', ['src/components/shared/LeaveCreationDialog.tsx']),
   page('popover', 'Popover', 'components', 'A small floating panel anchored to its trigger.', overlays, 'PopoverPage', ['src/components/ui/popover.tsx']),
