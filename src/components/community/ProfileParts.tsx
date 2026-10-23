@@ -376,36 +376,16 @@ function ProfileBannerHero({ kind, name, imageUrl, headline, badge, location, li
   ]
   return (
     <div className="flex flex-col gap-8 rounded-2xl bg-primary/5 p-6 md:p-8">
-      <section aria-label="Profile" className="grid items-start gap-6 md:grid-cols-[minmax(0,14rem)_minmax(0,1fr)] md:gap-8 lg:grid-cols-[minmax(0,18rem)_minmax(0,1fr)]">
-        <div className="aspect-square w-40 overflow-hidden rounded-2xl bg-background md:w-full">
+      <section aria-label="Profile" className="grid items-stretch gap-6 md:grid-cols-[minmax(0,14rem)_minmax(0,1fr)] md:gap-8 lg:grid-cols-[minmax(0,18rem)_minmax(0,1fr)]">
+        <div className="aspect-square w-40 self-start overflow-hidden rounded-2xl bg-background md:w-full">
           <EntityImage kind={kind} name={name} imageUrl={imageUrl} fill initialsClassName="text-5xl" />
         </div>
         <div className="flex min-w-0 flex-col gap-[0.6rem]">
           <div className="flex min-w-0 flex-col items-start gap-[0.6rem]">
-            {/* A small badge that opens the directory on the tab for this kind of profile, with the three social profiles at the top right.
-                They always show, so the row never changes shape: one that is set is a link in the normal colour, one that is not is grey. */}
-            <div className="flex w-full items-center justify-between gap-4">
-              <Tag size="sm" to={kind === 'organisation' ? '/community?tab=organisations' : '/community?tab=people'} className="bg-background">
-                {kind === 'organisation' ? 'Organisation' : 'Individual publisher'}
-              </Tag>
-    <ul className="flex shrink-0 items-center gap-5" aria-label="Social profiles">
-                {socials.map(({ label, href, Icon }) => (
-                  <li key={label}>
-                    {href ? (
-                      <a href={href} target="_blank" rel="noreferrer" className="block rounded-sm text-text-brand transition-opacity hover:opacity-75 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-focus focus-visible:ring-offset-2">
-                        <Icon className="size-5 fill-current" />
-                        <span className="sr-only">{label} (opens in a new tab)</span>
-                      </a>
-                    ) : (
-                      <span className="block text-text-subdued opacity-40" title={`No ${label} profile`}>
-                        <Icon className="size-5 fill-current" />
-                        <span className="sr-only">No {label} profile</span>
-                      </span>
-                    )}
-                  </li>
-                ))}
-              </ul>
-            </div>
+            {/* A small badge that opens the directory on the tab for this kind of profile. */}
+            <Tag size="sm" to={kind === 'organisation' ? '/community?tab=organisations' : '/community?tab=people'} className="bg-background">
+              {kind === 'organisation' ? 'Organisation' : 'Individual publisher'}
+            </Tag>
             <h1 title={name} className="type-heading-1 line-clamp-2 break-words text-black">{name}</h1>
             {/* The name's line box leaves room under its letters, so the designation is pulled up to make the gap look like the others. */}
             {headline && <p className="type-heading-3 -mt-[0.1rem] text-text-default">{headline}</p>}
@@ -438,6 +418,25 @@ function ProfileBannerHero({ kind, name, imageUrl, headline, badge, location, li
               ))}
             </ul>
           )}
+          {/* The three social profiles at the bottom right. They always show, so the row never changes shape: one that is set is a link in the
+              normal colour, one that is not is grey. */}
+          <ul className="mt-auto flex items-center gap-5 self-end pt-4" aria-label="Social profiles">
+            {socials.map(({ label, href, Icon }) => (
+              <li key={label}>
+                {href ? (
+                  <a href={href} target="_blank" rel="noreferrer" className="block rounded-sm text-text-brand transition-opacity hover:opacity-75 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-focus focus-visible:ring-offset-2">
+                    <Icon className="size-5 fill-current" />
+                    <span className="sr-only">{label} (opens in a new tab)</span>
+                  </a>
+                ) : (
+                  <span className="block text-text-subdued opacity-40" title={`No ${label} profile`}>
+                    <Icon className="size-5 fill-current" />
+                    <span className="sr-only">No {label} profile</span>
+                  </span>
+                )}
+              </li>
+            ))}
+          </ul>
         </div>
       </section>
 
