@@ -326,7 +326,7 @@ function ProfileHero({ kind, name, imageUrl, headline, badge, location, links, s
 }
 
 /** The line under each tab's heading, saying what the list is. `who` is how the page's subject relates to the content ("published by X" or
- *  "X is credited on"). The heading itself is the kind and its count, as on a collaborative's sections. */
+ *  "X is credited on"). The heading itself is the kind, as on a collaborative's sections (the count is already on the tab). */
 const TAB_INTRO: Record<ContributionType, (who: string) => string> = {
   dataset: (who) => `Browse the datasets ${who} and open any of them for a closer look.`,
   'use-case': (who) => `Explore the use cases ${who}.`,
@@ -456,10 +456,8 @@ function ContributionSections({
         />
         <ViewTabPanel id={active} idPrefix="profile-content" active>
           <div className="pt-10">
-            {/* The same heading as a collaborative's sections: the kind and its count, then one line saying what the list is. */}
-            <h3 className="type-heading-2 text-text-brand">
-              {label} <span className="font-normal text-text-subdued">· {all.length}</span>
-            </h3>
+            {/* The same heading as a collaborative's sections: the kind, then one line saying what the list is. */}
+            <h3 className="type-heading-2 text-text-brand">{label}</h3>
             <p className="mb-6 mt-1 type-body text-text-subdued">{intro(who)}</p>
 
             <div className="mb-4 flex flex-wrap items-center justify-end gap-2 text-sm">
