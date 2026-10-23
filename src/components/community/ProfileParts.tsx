@@ -407,36 +407,38 @@ function ProfileBannerHero({ kind, name, imageUrl, headline, badge, location, li
             ))}
           </div>
           {about && <p className="type-body mt-[0.2rem] max-w-4xl whitespace-pre-line text-text-subdued">{about}</p>}
-          {expertise.length > 0 && (
-            <ul className="flex flex-wrap gap-2" aria-label="Areas of expertise">
-              {expertise.map((area) => (
-                <li key={area}>
-                  <Tag size="sm" to={`/search?q=${encodeURIComponent(area)}`} className="bg-background">
-                    {area}
-                  </Tag>
+          {/* The bottom line of the card: the areas of expertise on the left, and the three social profiles on the right. The social profiles
+              always show, so the row never changes shape: one that is set is a link in the normal colour, one that is not is grey. */}
+          <div className="mt-auto flex flex-wrap items-end justify-between gap-x-6 gap-y-3 pt-4">
+            {expertise.length > 0 && (
+              <ul className="flex flex-wrap gap-2" aria-label="Areas of expertise">
+                {expertise.map((area) => (
+                  <li key={area}>
+                    <Tag size="sm" to={`/search?q=${encodeURIComponent(area)}`} className="bg-background">
+                      {area}
+                    </Tag>
+                  </li>
+                ))}
+              </ul>
+            )}
+            <ul className="ml-auto flex items-center gap-5" aria-label="Social profiles">
+              {socials.map(({ label, href, Icon }) => (
+                <li key={label}>
+                  {href ? (
+                    <a href={href} target="_blank" rel="noreferrer" className="block rounded-sm text-text-brand transition-opacity hover:opacity-75 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-focus focus-visible:ring-offset-2">
+                      <Icon className="size-5 fill-current" />
+                      <span className="sr-only">{label} (opens in a new tab)</span>
+                    </a>
+                  ) : (
+                    <span className="block text-text-subdued opacity-40" title={`No ${label} profile`}>
+                      <Icon className="size-5 fill-current" />
+                      <span className="sr-only">No {label} profile</span>
+                    </span>
+                  )}
                 </li>
               ))}
             </ul>
-          )}
-          {/* The three social profiles at the bottom right. They always show, so the row never changes shape: one that is set is a link in the
-              normal colour, one that is not is grey. */}
-          <ul className="mt-auto flex items-center gap-5 self-end pt-4" aria-label="Social profiles">
-            {socials.map(({ label, href, Icon }) => (
-              <li key={label}>
-                {href ? (
-                  <a href={href} target="_blank" rel="noreferrer" className="block rounded-sm text-text-brand transition-opacity hover:opacity-75 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-focus focus-visible:ring-offset-2">
-                    <Icon className="size-5 fill-current" />
-                    <span className="sr-only">{label} (opens in a new tab)</span>
-                  </a>
-                ) : (
-                  <span className="block text-text-subdued opacity-40" title={`No ${label} profile`}>
-                    <Icon className="size-5 fill-current" />
-                    <span className="sr-only">No {label} profile</span>
-                  </span>
-                )}
-              </li>
-            ))}
-          </ul>
+          </div>
         </div>
       </section>
 
