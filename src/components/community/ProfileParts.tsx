@@ -130,6 +130,8 @@ interface ProfileHeroProps {
   headline?: string
   /** An organisation's type. */
   badge?: string
+  /** Where the type opens: the Community directory with that organisation type applied. */
+  badgeHref?: string
   location?: string
   links: ProfileLink[]
   /** An individual's social profiles, shown as a card of icons. */
@@ -375,7 +377,7 @@ function BannerFact({ icon: Icon, children, href, to }: { icon: React.ComponentT
  *  row of facts (type, location, website, or an individual's organisations and profiles) and the description; then a rule and one row of
  *  white panels, one for each kind of content published. It has no separate About, People or Join cards: the people of an organisation are listed
  *  further down the page, as in the bento. */
-function ProfileBannerHero({ kind, name, imageUrl, headline, badge, location, links, social, counts, total, about, expertise = [], affiliations = [] }: ProfileHeroProps) {
+function ProfileBannerHero({ kind, name, imageUrl, headline, badge, badgeHref, location, links, social, counts, total, about, expertise = [], affiliations = [] }: ProfileHeroProps) {
   const socials = [
     { label: 'GitHub', href: social?.github, Icon: GitHubIcon },
     { label: 'LinkedIn', href: social?.linkedin, Icon: LinkedInIcon },
@@ -398,7 +400,11 @@ function ProfileBannerHero({ kind, name, imageUrl, headline, badge, location, li
             {headline && <p className="type-heading-3 -mt-[0.26rem] text-text-default">{headline}</p>}
           </div>
           <div className="-mt-[0.1rem] flex flex-wrap items-center gap-y-2 [&>*:first-child]:border-l-0 [&>*:first-child]:pl-0 [&>*]:border-l [&>*]:border-text-subdued/40 [&>*]:px-4 [&>*]:leading-5">
-            {badge && <BannerFact icon={Building2}>{badge}</BannerFact>}
+            {badge && (
+              <BannerFact icon={Building2} to={badgeHref}>
+                {badge}
+              </BannerFact>
+            )}
             {location && <BannerFact icon={MapPin}>{location}</BannerFact>}
             {links
               .filter((l) => l.icon === 'website')

@@ -99,6 +99,7 @@ function OrganisationProfileView({
         name={org.name}
         imageUrl={org.imageUrl}
         badge={org.typeLabel || undefined}
+        badgeHref={org.type ? `/community?tab=organisations&otype=${encodeURIComponent(org.type)}` : undefined}
         location={org.location || undefined}
         links={links}
         social={org.social}
