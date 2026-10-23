@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { Link } from 'react-router-dom'
-import { ChevronLeft, ChevronRight, SearchX, type LucideIcon } from 'lucide-react'
+import { SearchX, type LucideIcon } from 'lucide-react'
 
 import { EmptyState } from '@/components/shared/EmptyState'
 import { Badge } from '@/components/ui/badge'
@@ -184,17 +184,26 @@ function FilterRailView({
   active,
   onChange,
   onClearAll,
+  stickyTop,
 }: {
   groups: RailGroup[]
   active: Record<string, string[]>
   onChange: (key: string, values: string[]) => void
   onClearAll: () => void
+  /** Pins the rail below the sticky search block (its height, in px) so only the results scroll. */
+  stickyTop?: number
 }) {
   const shown = groups.filter((g) => g.options.length > 0)
   if (shown.length === 0) return null
   const hasActive = Object.values(active).some((v) => v.length > 0)
   return (
-    <div className="flex w-full shrink-0 flex-col gap-8 sm:w-[18%]">
+    <div
+      className={cn(
+        'flex w-full shrink-0 flex-col gap-8 sm:w-[18%]',
+        stickyTop !== undefined && 'sm:sticky sm:self-start sm:overflow-y-auto sm:pb-6 sm:pr-2',
+      )}
+      style={stickyTop !== undefined ? { top: stickyTop, maxHeight: `calc(100dvh - ${stickyTop}px)` } : undefined}
+    >
       <div className="flex items-center justify-between gap-2">
         <p className="text-sm font-bold uppercase tracking-wider text-foreground">Filter by</p>
         {hasActive && (
@@ -255,45 +264,99 @@ function FilterRailView({
 
 /* -------------------------------------------------------------- pagination */
 
-/** Previous / numbered pages / next. Long ranges collapse to “1 … 4 5 6 … 12”. */
-function DirectoryPagination({ page, pageCount, onPage }: { page: number; pageCount: number; onPage: (page: number) => void }) {
+/** The page numbers to show, with “…” where a run is skipped: always the first and last page, and a window around the current one
+ *  (“1 … 14 15 16 … 110”). Near either end the window widens (“1 2 3 4 5 … 110”) so the row keeps a steady width as you page. */
+function pageItems(page: number, pageCount: number): (number | 'gap-start' | 'gap-end')[] {
+  if (pageCount <= 7) return Array.from({ length: pageCount }, (_, i) => i + 1)
+  if (page <= 4) return [1, 2, 3, 4, 5, 'gap-end', pageCount]
+  if (page >= pageCount - 3) return [1, 'gap-start', pageCount - 4, pageCount - 3, pageCount - 2, pageCount - 1, pageCount]
+  return [1, 'gap-start', page - 1, page, page + 1, 'gap-end', pageCount]
+}
+
+/** Results range on the left (“Results 10–18 of 73”), Previous / numbered pages / Next in the middle, and a “Go to” field on the
+ *  right for long lists. Pass `total` and `pageSize` to show the range; the Go to field appears from 8 pages up. */
+function DirectoryPagination({
+  page,
+  pageCount,
+  onPage,
+  total,
+  pageSize,
+}: {
+  page: number
+  pageCount: number
+  onPage: (page: number) => void
+  total?: number
+  pageSize?: number
+}) {
+  const [goTo, setGoTo] = React.useState('')
   if (pageCount <= 1) return null
-  const numbers: (number | 'gap-start' | 'gap-end')[] = []
-  for (let n = 1; n <= pageCount; n += 1) {
-    if (n === 1 || n === pageCount || Math.abs(n - page) <= 1) numbers.push(n)
-    else if (n < page && numbers[numbers.length - 1] !== 'gap-start') numbers.push('gap-start')
-    else if (n > page && numbers[numbers.length - 1] !== 'gap-end') numbers.push('gap-end')
+  const submitGoTo = () => {
+    const n = Number.parseInt(goTo, 10)
+    if (Number.isFinite(n)) onPage(Math.min(pageCount, Math.max(1, n)))
+    setGoTo('')
   }
   return (
-    <nav aria-label="Pagination" className="flex flex-wrap items-center justify-center gap-1.5">
-      <Button type="button" variant="outline" size="sm" disabled={page <= 1} onClick={() => onPage(page - 1)}>
-        <ChevronLeft aria-hidden="true" />
-        Previous
-      </Button>
-      {numbers.map((n, i) =>
-        typeof n === 'string' ? (
-          <span key={`${n}-${i}`} aria-hidden="true" className="px-1 text-text-subdued">
-            …
-          </span>
-        ) : (
-          <Button
-            key={n}
-            type="button"
-            variant={n === page ? 'default' : 'outline'}
-            size="sm"
-            aria-label={`Page ${n}`}
-            aria-current={n === page ? 'page' : undefined}
-            onClick={() => onPage(n)}
-            className="min-w-9 tabular-nums"
-          >
-            {n}
-          </Button>
-        ),
+    <nav aria-label="Pagination" className="flex flex-wrap items-center justify-center gap-x-6 gap-y-3 sm:justify-between">
+      {total !== undefined && pageSize !== undefined ? (
+        <p className="text-sm tabular-nums text-text-subdued">
+          Results {(page - 1) * pageSize + 1}–{Math.min(page * pageSize, total)} of {total}
+        </p>
+      ) : (
+        <span aria-hidden="true" className="hidden sm:block" />
       )}
-      <Button type="button" variant="outline" size="sm" disabled={page >= pageCount} onClick={() => onPage(page + 1)}>
-        Next
-        <ChevronRight aria-hidden="true" />
-      </Button>
+      <div className="flex flex-wrap items-center justify-center gap-2">
+        <button type="button" disabled={page <= 1} onClick={() => onPage(page - 1)} className="inline-flex h-10 items-center justify-center gap-1.5 rounded-lg bg-muted px-5 text-sm font-medium text-foreground transition-colors hover:bg-muted/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50">
+          Previous
+        </button>
+        {pageItems(page, pageCount).map((n, i) =>
+          typeof n === 'string' ? (
+            <span key={`${n}-${i}`} aria-hidden="true" className="px-1 text-muted-foreground">
+              …
+            </span>
+          ) : (
+            <button
+              key={n}
+              type="button"
+              aria-label={`Page ${n}`}
+              aria-current={n === page ? 'page' : undefined}
+              onClick={() => onPage(n)}
+              className={cn(
+                'flex size-10 items-center justify-center rounded-full text-sm tabular-nums transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                n === page ? 'bg-primary font-semibold text-primary-foreground' : 'text-foreground hover:bg-muted',
+              )}
+            >
+              {n}
+            </button>
+          ),
+        )}
+        <button type="button" disabled={page >= pageCount} onClick={() => onPage(page + 1)} className="inline-flex h-10 items-center justify-center gap-1.5 rounded-lg bg-muted px-5 text-sm font-medium text-foreground transition-colors hover:bg-muted/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50">
+          Next
+        </button>
+      </div>
+      {pageCount > 7 ? (
+        <form
+          className="flex items-center gap-2 text-sm text-text-subdued"
+          onSubmit={(e) => {
+            e.preventDefault()
+            submitGoTo()
+          }}
+        >
+          <label htmlFor="pagination-go-to">Go to:</label>
+          <input
+            id="pagination-go-to"
+            type="number"
+            inputMode="numeric"
+            min={1}
+            max={pageCount}
+            value={goTo}
+            onChange={(e) => setGoTo(e.target.value)}
+            placeholder={`e.g. ${Math.ceil(pageCount / 2)}`}
+            className="h-8 w-24 rounded-md border border-border-default bg-background px-2 text-sm text-text-default placeholder:text-text-subdued focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-focus"
+          />
+        </form>
+      ) : (
+        <span aria-hidden="true" className="hidden sm:block" />
+      )}
     </nav>
   )
 }

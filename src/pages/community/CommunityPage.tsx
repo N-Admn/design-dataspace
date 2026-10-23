@@ -156,10 +156,10 @@ function CommunityPage() {
     const updatedPool = matched.filter((e) => passes(e, active, 'updated'))
     const updated = UPDATED_OPTIONS.map((o) => ({ value: o.value, label: o.label, count: updatedPool.filter((e) => TESTS.updated(e, [o.value])).length })).filter((o) => o.count > 0)
     return [
+      { key: 'updated', label: 'Last updated', kind: 'single', options: updated, anyLabel: 'Any time', anyCount: updatedPool.length },
       // Only organisations have a type.
       ...(tab === 'organisations' ? [{ key: 'otype', label: 'Organisation type', kind: 'multi' as const, options: types }] : []),
       { key: 'content', label: 'Published content', kind: 'multi', options: content },
-      { key: 'updated', label: 'Last updated', kind: 'single', options: updated, anyLabel: 'Any time', anyCount: updatedPool.length },
     ]
   }, [matched, tab, active])
 
@@ -175,12 +175,25 @@ function CommunityPage() {
     resultsRef.current?.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' })
   }
 
+  // The filter rail pins just below the sticky search block, so it needs that block's live height.
+  const stickyRef = React.useRef<HTMLDivElement>(null)
+  const [stickyHeight, setStickyHeight] = React.useState(0)
+  React.useLayoutEffect(() => {
+    const el = stickyRef.current
+    if (!el) return
+    const measure = () => setStickyHeight(el.offsetHeight)
+    measure()
+    const ro = new ResizeObserver(measure)
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [])
+
   const intro = INTRO[tab]
   const noun = tab === 'organisations' ? 'Organisations' : 'People'
 
   return (
     <div className="mx-auto flex w-full max-w-[1400px] flex-col gap-9">
-      <div className="sticky top-0 z-20 flex flex-col gap-4 bg-background py-3">
+      <div ref={stickyRef} className="sticky top-0 z-20 flex flex-col gap-4 bg-background py-3">
         <GlobalSearchField
           value={draft}
           onChange={(next) => {
@@ -221,7 +234,7 @@ function CommunityPage() {
       <hr className="border-t border-border" />
 
       <div className="flex flex-col gap-7 sm:flex-row">
-        <FilterRailView groups={groups} active={active} onChange={setFilter} onClearAll={clearFilters} />
+        <FilterRailView groups={groups} active={active} onChange={setFilter} onClearAll={clearFilters} stickyTop={stickyHeight} />
         <div className="hidden shrink-0 self-stretch border-l border-border sm:block" aria-hidden="true" />
 
         <div ref={resultsRef} className="min-w-0 flex-1 scroll-mt-28">
@@ -281,7 +294,7 @@ function CommunityPage() {
                 })}
               </ul>
               <div className="mt-8">
-                <DirectoryPagination page={currentPage} pageCount={pageCount} onPage={goToPage} />
+                <DirectoryPagination page={currentPage} pageCount={pageCount} onPage={goToPage} total={results.length} pageSize={DIRECTORY_PAGE_SIZE} />
               </div>
             </>
           )}
