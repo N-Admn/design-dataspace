@@ -346,25 +346,19 @@ function ProfileHero({ kind, name, imageUrl, headline, badge, location, links, s
 /** A social profile in the banner: a filled circle, overlapped with its neighbours and ringed in white where they meet. */
 const BANNER_SOCIAL = 'flex size-10 items-center justify-center rounded-full ring-2 ring-background'
 
-/** One fact in the banner's row: an icon and the text, or a link. */
-function BannerFact({ icon: Icon, children, href, to }: { icon: React.ComponentType<{ className?: string }>; children: React.ReactNode; href?: string; to?: string }) {
-  const body = (
-    <>
-      <Icon aria-hidden="true" className="size-4 shrink-0 text-text-brand" />
-      <span className="min-w-0 truncate">{children}</span>
-    </>
-  )
-  const cls = 'type-body inline-flex min-w-0 max-w-full items-center gap-2 text-text-default'
-  const link = cn(cls, 'rounded-sm underline-offset-4 hover:text-text-brand hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-focus')
-  if (to) return <Link to={to} className={link}>{body}</Link>
+/** One fact in the banner's row: its text, or a link. The row separates the facts with a thin grey rule. */
+function BannerFact({ children, href, to }: { children: React.ReactNode; href?: string; to?: string }) {
+  const cls = 'type-body min-w-0 max-w-full truncate text-text-default'
+  const link = cn(cls, 'underline-offset-4 hover:text-text-brand hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-focus')
+  if (to) return <Link to={to} className={link}>{children}</Link>
   if (href)
     return (
       <a href={href} target="_blank" rel="noreferrer" className={link}>
-        {body}
+        {children}
         <span className="sr-only"> (opens in a new tab)</span>
       </a>
     )
-  return <span className={cls}>{body}</span>
+  return <span className={cls}>{children}</span>
 }
 
 /** The other top-of-profile layout: a banner instead of a bento. All on one softly tinted card: a large square image on the left; beside it the kind, the name, one
@@ -393,18 +387,18 @@ function ProfileBannerHero({ kind, name, imageUrl, headline, badge, location, li
             {/* The name's line box leaves room under its letters, so the designation is pulled up to make the gap look like the others. */}
             {headline && <p className="type-heading-3 -mt-[0.1rem] text-text-default">{headline}</p>}
           </div>
-          <div className="-mt-[0.2rem] flex flex-wrap items-center gap-x-8 gap-y-3">
-            {badge && <BannerFact icon={Building2}>{badge}</BannerFact>}
-            {location && <BannerFact icon={MapPin}>{location}</BannerFact>}
+          <div className="-mt-[0.2rem] flex flex-wrap items-center gap-y-2 [&>*:first-child]:border-l-0 [&>*:first-child]:pl-0 [&>*]:border-l [&>*]:border-text-subdued/40 [&>*]:px-4 [&>*]:leading-5">
+            {badge && <BannerFact>{badge}</BannerFact>}
+            {location && <BannerFact>{location}</BannerFact>}
             {links
               .filter((l) => l.icon === 'website')
               .map((l) => (
-                <BannerFact key={l.label} icon={Globe2} href={l.href}>
+                <BannerFact key={l.label} href={l.href}>
                   {l.label}
                 </BannerFact>
               ))}
             {affiliations.map((a) => (
-              <BannerFact key={a.id} icon={Building2} to={`/explore/organisations/${a.id}`}>
+              <BannerFact key={a.id} to={`/explore/organisations/${a.id}`}>
                 {a.name}
               </BannerFact>
             ))}
