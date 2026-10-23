@@ -62,7 +62,7 @@ export const DOC_PAGES: DocPageDef[] = [
   page('circle-arrow', 'Circle arrow', 'components', 'The decorative arrow affordance on dashboard cards.', layout, 'CircleArrowPage', ['src/components/shared/CircleArrow.tsx']),
   page('confirm-dialog', 'Confirm dialog', 'components', 'One promise-based gate for every confirmation.', overlays, 'ConfirmDialogPage', ['src/components/ui/confirm-dialog.tsx']),
   page('content-card', 'Content card', 'components', 'The single card for every content type: grid and list layouts and every state.', layout, 'ContentCardPage', ['src/components/discover/ContentCard.tsx', 'src/components/discover/SearchResultCard.tsx', 'src/lib/content-card.ts']),
-  page('dialog', 'Dialog', 'components', 'One Radix dialog pattern with three placements.', overlays, 'DialogPage', ['src/components/ui/dialog.tsx']),
+  page('dialog', 'Dialog', 'components', 'One Radix dialog pattern with four placements.', overlays, 'DialogPage', ['src/components/ui/dialog.tsx']),
   page('empty-state', 'Empty state', 'components', 'The “nothing here yet” block.', layout, 'EmptyStatePage', ['src/components/shared/EmptyState.tsx']),
   page('featured-collaborative-card', 'Featured collaborative card', 'components', 'The illustrated cards in the navigation bar’s Collaboratives menu.', community, 'FeaturedCollaborativeCardPage', ['src/components/layout/FeaturedCollaborativeCard.tsx', 'src/components/layout/global-nav-config.ts']),
   page('filter-badge', 'Filter badge', 'components', 'Badges and tags that open Search with their value applied, and the chips that show it.', community, 'FilterBadgePage', ['src/components/shared/FilterBadge.tsx', 'src/components/shared/SdgBadge.tsx', 'src/components/discover/AppliedFilters.tsx', 'src/lib/search-links.ts']),

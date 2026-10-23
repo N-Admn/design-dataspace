@@ -97,7 +97,7 @@ export function DialogPage() {
       <DocSection
         id="variants"
         title="Variants"
-        description="One platform pattern (Radix Dialog) with three placements. The overlay is bg-black/40, the content bg-card with shadow-lg, and tall content scrolls inside a capped height."
+        description="One platform pattern (Radix Dialog) with four placements. The overlay is bg-black/40, the content bg-card with shadow-lg, and tall content scrolls inside a capped height."
       >
         <ComponentPreview
           title="Dialog variants"
@@ -112,7 +112,7 @@ export function DialogPage() {
   </DialogContent>
 </Dialog>`}
         >
-          {(['center', 'right-drawer', 'anchored'] as const).map((variant) => (
+          {(['center', 'right-drawer', 'bottom-sheet', 'anchored'] as const).map((variant) => (
             <Dialog key={variant}>
               <DialogTrigger asChild>
                 <Button variant="outline">{variant}</Button>
@@ -123,6 +123,7 @@ export function DialogPage() {
                   <DialogDescription>
                     {variant === 'center' && 'Centred modal, up to max-w-2xl, for focused tasks and confirms.'}
                     {variant === 'right-drawer' && 'Edge drawer, up to about 760px, for side workflows like creation wizards.'}
+                    {variant === 'bottom-sheet' && 'Full-width sheet rising from the bottom, up to 88% of the screen, for tablet and phone.'}
                     {variant === 'anchored' && 'Bottom-right panel, 380px, for help and contextual assistants.'}
                   </DialogDescription>
                 </DialogHeader>
@@ -138,12 +139,13 @@ export function DialogPage() {
           rows={[
             ['center', 'Focused tasks and confirmations.'],
             ['right-drawer', 'Side workflows. An “add another” action in a contributor form always opens here.'],
+            ['bottom-sheet', 'Tablet and phone: the Filter sheet on Search and Community, where the laptop and desktop layout shows a rail.'],
             ['anchored', 'Help and contextual assistants.'],
           ]}
         />
       </DocSection>
       <DocSection id="api" title="API reference">
-        <PropsTable rows={[{ name: 'variant', type: "'center' | 'right-drawer' | 'anchored'", default: "'center'", description: 'DialogContent: where and how the dialog opens.' }]} />
+        <PropsTable rows={[{ name: 'variant', type: "'center' | 'right-drawer' | 'bottom-sheet' | 'anchored'", default: "'center'", description: 'DialogContent: where and how the dialog opens.' }]} />
       </DocSection>
     </>
   )
