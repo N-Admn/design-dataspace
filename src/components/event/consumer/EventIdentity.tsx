@@ -1,4 +1,4 @@
-import { Badge } from '@/components/ui/badge'
+import { FilterBadge } from '@/components/shared/FilterBadge'
 import { SECTOR_OPTIONS } from '@/types/dataset'
 import { EVENT_TYPE_OPTIONS, type EventMetadata } from '@/types/event'
 
@@ -14,8 +14,16 @@ function EventIdentity({ metadata }: { metadata: EventMetadata }) {
     <header className="flex flex-col gap-2">
       {(metadata.eventType || metadata.theme) && (
         <div className="flex flex-wrap items-center gap-1.5">
-          {metadata.eventType && <Badge variant="secondary">{optionLabel(EVENT_TYPE_OPTIONS, metadata.eventType)}</Badge>}
-          {metadata.theme && <Badge variant="muted">{optionLabel(SECTOR_OPTIONS, metadata.theme)}</Badge>}
+          {metadata.eventType && (
+            <FilterBadge type="event" facet="eventType" value={metadata.eventType} variant="secondary">
+              {optionLabel(EVENT_TYPE_OPTIONS, metadata.eventType)}
+            </FilterBadge>
+          )}
+          {metadata.theme && (
+            <FilterBadge type="event" facet="sector" value={metadata.theme} variant="muted">
+              {optionLabel(SECTOR_OPTIONS, metadata.theme)}
+            </FilterBadge>
+          )}
         </div>
       )}
 

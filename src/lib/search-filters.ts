@@ -4,6 +4,7 @@ import { RESOURCE_TYPE_OPTIONS } from '@/types/publication'
 import { EVENT_TYPE_OPTIONS } from '@/types/event'
 import { RECENCY_DAYS, type SearchFacets, type SearchResultItem, type SearchResultType } from '@/lib/global-search'
 import { parseAppTimestamp } from '@/lib/format'
+import { EXTRA_FACETS } from '@/lib/search-links'
 
 export type TypeFilter = 'all' | SearchResultType
 
@@ -124,14 +125,27 @@ export function computeGroupOptions(group: FilterGroupDef, items: SearchResultIt
     .sort((a, b) => b.count - a.count || a.label.localeCompare(b.label))
 }
 
-/** The applied selections as plain pairs — group title and option label — for the removable chips above the results. Only groups the
- *  current tab has, in the rail's order. */
+/** Every URL parameter that carries a filter: the rail's groups, plus the chip-only facets a badge can link to. */
+export const FILTER_URL_KEYS = ['updated', 'sector', 'sdgGoal', 'eventType', 'resourceType', 'geography', 'modelType']
+
+/** The filter keys that apply on a tab: its rail groups, and the chip-only facets (valid on any tab that has them in its data). */
+export function allowedFilterKeys(type: TypeFilter): Set<string> {
+  return new Set([...FILTER_GROUPS_BY_TYPE[type].map((g) => g.key), ...Object.keys(EXTRA_FACETS)])
+}
+
+/** The applied selections as plain pairs — group title and option label — for the removable chips above the results. The rail's groups
+ *  first, in the rail's order, then the chip-only facets. */
 export function describeActiveFilters(type: TypeFilter, active: Record<string, string[]>): { key: string; value: string; group: string; label: string }[] {
   const out: { key: string; value: string; group: string; label: string }[] = []
   for (const group of FILTER_GROUPS_BY_TYPE[type]) {
     const options = group.key === 'updated' ? RECENCY_OPTIONS : (group.fixedOptions ?? [])
     for (const value of active[group.key] ?? []) {
       out.push({ key: group.key, value, group: group.label, label: options.find((o) => o.value === value)?.label ?? value })
+    }
+  }
+  for (const [key, extra] of Object.entries(EXTRA_FACETS)) {
+    for (const value of active[key] ?? []) {
+      out.push({ key, value, group: extra.label, label: extra.options.find((o) => o.value === value)?.label ?? value })
     }
   }
   return out

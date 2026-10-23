@@ -13,7 +13,7 @@ import { DirectoryPagination } from '@/components/community/DirectoryParts'
 import { SortMenu, ViewToggle, type ResultView } from '@/components/discover/ResultsToolbar'
 import { useAppData } from '@/context/AppDataContext'
 import { parseAppTimestamp } from '@/lib/format'
-import { FILTER_GROUPS_BY_TYPE, describeActiveFilters, type TypeFilter } from '@/lib/search-filters'
+import { FILTER_GROUPS_BY_TYPE, FILTER_URL_KEYS, allowedFilterKeys, describeActiveFilters, type TypeFilter } from '@/lib/search-filters'
 import {
   buildSearchIndex,
   filterByTag,
@@ -138,10 +138,20 @@ function SearchResultsPage() {
   // free-text `q` keyword search; see `filterByTag`.
   const tag = searchParams.get('tag') ?? ''
 
-  // The filter rail's own selections. Not part of the URL (unlike type/q/tag)
-  // — switching the content-type pill prunes this in place instead of
-  // navigating, per the "content-type pill = what, filters = which" model.
-  const [activeFilters, setActiveFilters] = React.useState<ActiveFilters>({})
+  // The applied filters live in the URL (`?type=dataset&sector=gender`), so a link from a badge, a reload and the Back button all keep them.
+  // Only the keys that apply on the current tab count; anything else in the URL is ignored.
+  const paramsKey = searchParams.toString()
+  const activeFilters = React.useMemo<ActiveFilters>(() => {
+    const allowed = allowedFilterKeys(type)
+    const out: ActiveFilters = {}
+    for (const key of FILTER_URL_KEYS) {
+      if (!allowed.has(key)) continue
+      const values = (searchParams.get(key) ?? '').split(',').filter(Boolean)
+      if (values.length > 0) out[key] = values
+    }
+    return out
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [paramsKey, type])
   // Results-area presentation only — independent of the filter/search state
   // above. Only meaningful for a single selected content type; the grouped
   // "All" view always shows its own compact grid, per type, unsorted.
@@ -157,6 +167,9 @@ function SearchResultsPage() {
     if (next.type !== undefined) {
       if (next.type && next.type !== 'all') params.set('type', next.type)
       else params.delete('type')
+      // Switching content type keeps the filters the new tab also has, and drops the rest.
+      const allowed = allowedFilterKeys(next.type || 'all')
+      for (const key of FILTER_URL_KEYS) if (!allowed.has(key)) params.delete(key)
     }
     if (next.tag !== undefined) {
       if (next.tag) params.set('tag', next.tag)
@@ -165,40 +178,17 @@ function SearchResultsPage() {
     setSearchParams(params, { replace: false })
   }
 
-  // Switching content type keeps shared filters (same key exists in the new
-  // type's group list, e.g. Sector/Geography) and clears type-specific ones
-  // (e.g. Format only means something for Datasets) — done in place, no
-  // navigation, per "Switching content types" above.
-  const filterKeysForType = React.useMemo(() => new Set(FILTER_GROUPS_BY_TYPE[type].map((g) => g.key)), [type])
-  React.useEffect(() => {
-    setActiveFilters((prev) => {
-      const next: ActiveFilters = {}
-      for (const [key, values] of Object.entries(prev)) {
-        if (filterKeysForType.has(key)) next[key] = values
-      }
-      return next
-    })
-  }, [filterKeysForType])
-
-  // A link can arrive with a filter pre-applied (e.g. the nav's featured collaboratives: `&sector=climate-action`). It is applied once and
-  // then dropped from the URL, so the rail stays the one place the selection lives and can be changed freely.
-  const sectorParam = searchParams.get('sector')
-  React.useEffect(() => {
-    if (!sectorParam) return
-    setActiveFilters((prev) => ({ ...prev, sector: sectorParam.split(',').filter(Boolean) }))
-    const params = new URLSearchParams(searchParams)
-    params.delete('sector')
-    setSearchParams(params, { replace: true })
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sectorParam])
-
   const setFilter = (key: string, values: string[]) => {
-    setActiveFilters((prev) => {
-      const next = { ...prev }
-      if (values.length === 0) delete next[key]
-      else next[key] = values
-      return next
-    })
+    const params = new URLSearchParams(searchParams)
+    if (values.length === 0) params.delete(key)
+    else params.set(key, values.join(','))
+    setSearchParams(params, { replace: true })
+  }
+  const clearFilters = () => {
+    const params = new URLSearchParams(searchParams)
+    for (const key of FILTER_URL_KEYS) params.delete(key)
+    params.delete('tag')
+    setSearchParams(params, { replace: true })
   }
 
   // Local, controlled copy of the query so typing doesn't push a history
@@ -350,12 +340,6 @@ function SearchResultsPage() {
           both sides, rather than a one-off value tuned for this divider. */}
       {!isLanding && <hr className="border-t border-border" />}
 
-      {tag && (
-        <div className="flex flex-wrap items-center gap-2" role="group" aria-label="Active tag filter">
-          <Chip label={`Clear tag: ${tag}`} pressed onClick={() => updateParams({ tag: '' })} />
-        </div>
-      )}
-
       {isLanding ? (
         <div className="flex flex-col gap-8">
           <section aria-labelledby="trending-searches-heading">
@@ -423,7 +407,7 @@ function SearchResultsPage() {
             items={typeMatches}
             active={activeFilters}
             onChange={setFilter}
-            onClearAll={() => setActiveFilters({})}
+            onClearAll={clearFilters}
             stickyTop={stickyHeight}
           />
 
@@ -431,9 +415,16 @@ function SearchResultsPage() {
 
           <div ref={resultsTopRef} className="min-w-0 flex-1 scroll-mt-40">
             <AppliedFilters
-              filters={describeActiveFilters(type, activeFilters)}
-              onRemove={(key, value) => setFilter(key, (activeFilters[key] ?? []).filter((v) => v !== value))}
-              onClearAll={() => setActiveFilters({})}
+              filters={[
+                ...(tag ? [{ id: `tag:${tag}`, group: 'Tag', label: tag, onRemove: () => updateParams({ tag: '' }) }] : []),
+                ...describeActiveFilters(type, activeFilters).map((f) => ({
+                  id: `${f.key}:${f.value}`,
+                  group: f.group,
+                  label: f.label,
+                  onRemove: () => setFilter(f.key, (activeFilters[f.key] ?? []).filter((v) => v !== f.value)),
+                })),
+              ]}
+              onClearAll={clearFilters}
             />
             {results.length === 0 ? (
               <EmptyState

@@ -18,6 +18,7 @@ import {
 import { badgeVariants } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
+import { searchFacetHref } from '@/lib/search-links'
 import { InfoField } from '@/components/shared/InfoField'
 import { formatIsoDateShort, formatShortDate } from '@/lib/format'
 import type { DatasetPublisher } from '@/lib/dataset-publisher'
@@ -237,14 +238,22 @@ function DatasetOverview({ form, publisher, updatedAt }: DatasetOverviewProps) {
               <InfoField
                 icon={Layers}
                 label="Sector"
-                value={optionLabel(SECTOR_OPTIONS, metadata.sector)}
+                value={
+                  <Link to={searchFacetHref('dataset', 'sector', metadata.sector)} className="rounded-sm underline-offset-2 hover:text-text-brand hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-focus">
+                    {optionLabel(SECTOR_OPTIONS, metadata.sector)}
+                  </Link>
+                }
               />
             )}
             {metadata.geography && (
               <InfoField
                 icon={MapPin}
                 label="Geography"
-                value={optionLabel(GEOGRAPHY_OPTIONS, metadata.geography)}
+                value={
+                  <Link to={searchFacetHref('dataset', 'geography', metadata.geography)} className="rounded-sm underline-offset-2 hover:text-text-brand hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-focus">
+                    {optionLabel(GEOGRAPHY_OPTIONS, metadata.geography)}
+                  </Link>
+                }
               />
             )}
             <InfoField
