@@ -343,6 +343,9 @@ function ProfileHero({ kind, name, imageUrl, headline, badge, location, links, s
   )
 }
 
+/** A social profile in the banner: a filled circle, overlapped with its neighbours and ringed in white where they meet. */
+const BANNER_SOCIAL = 'flex size-10 items-center justify-center rounded-full ring-2 ring-background'
+
 /** One fact in the banner's row: an icon and the text, or a link. */
 function BannerFact({ icon: Icon, children, href, to }: { icon: React.ComponentType<{ className?: string }>; children: React.ReactNode; href?: string; to?: string }) {
   const body = (
@@ -421,17 +424,17 @@ function ProfileBannerHero({ kind, name, imageUrl, headline, badge, location, li
                 ))}
               </ul>
             )}
-            <ul className="ml-auto flex items-center gap-5" aria-label="Social profiles">
+            <ul className="ml-auto flex -space-x-2" aria-label="Social profiles">
               {socials.map(({ label, href, Icon }) => (
-                <li key={label}>
+                <li key={label} className="relative hover:z-10 focus-within:z-10">
                   {href ? (
-                    <a href={href} target="_blank" rel="noreferrer" className="block rounded-sm text-text-brand transition-opacity hover:opacity-75 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-focus focus-visible:ring-offset-2">
-                      <Icon className="size-5 fill-current" />
+                    <a href={href} target="_blank" rel="noreferrer" className={cn(BANNER_SOCIAL, 'bg-primary text-primary-foreground transition-opacity hover:opacity-85 focus-visible:outline-none focus-visible:ring-border-focus')}>
+                      <Icon className="size-4 fill-current" />
                       <span className="sr-only">{label} (opens in a new tab)</span>
                     </a>
                   ) : (
-                    <span className="block text-text-subdued opacity-40" title={`No ${label} profile`}>
-                      <Icon className="size-5 fill-current" />
+                    <span className={cn(BANNER_SOCIAL, 'bg-[color-mix(in_srgb,var(--muted-foreground)_40%,var(--background))] text-background')} title={`No ${label} profile`}>
+                      <Icon className="size-4 fill-current" />
                       <span className="sr-only">No {label} profile</span>
                     </span>
                   )}
