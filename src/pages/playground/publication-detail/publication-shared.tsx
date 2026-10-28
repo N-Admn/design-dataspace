@@ -14,15 +14,19 @@ import { useToast } from '@/components/ui/toast'
 import { cn } from '@/lib/utils'
 import { GEOGRAPHY_OPTIONS, LICENSE_OPTIONS, SECTOR_OPTIONS } from '@/types/dataset'
 import { RESOURCE_TYPE_OPTIONS } from '@/types/publication'
+import caseStudyIllustration from '@/assets/publication-types/case-study.png'
+import policyBriefIllustration from '@/assets/publication-types/policy-brief.png'
+import publicationIllustration from '@/assets/publication-types/publication.png'
+import reportIllustration from '@/assets/publication-types/report.png'
+import toolkitIllustration from '@/assets/publication-types/toolkit-guide.png'
 import {
   TREATMENT_BY_TYPE,
   type Connection,
-  type DocPage,
   type SamplePublication,
   type Treatment,
 } from '@/pages/playground/publication-detail/publication-sample-data'
 
-/** Pieces the Publication Detail versions share: labels, the generated cover, figures, the citation and the connections.
+/** Pieces the Publication Detail page uses: labels, the type illustrations, the citation and the connections.
  *  Playground-only; nothing here is used by a production page. */
 
 const optionLabel = (options: { value: string; label: string }[], value: string) =>
@@ -37,16 +41,14 @@ export const treatmentOf = (p: SamplePublication): Treatment => TREATMENT_BY_TYP
 export const formatDate = (iso: string) =>
   new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' })
 
-/** Each treatment's accent, from the chart palette. Used only on fills, stripes and markers, always next to a text label, never
- *  as the colour of text (slots 3–5 are below 3:1 on white). Written out in full so Tailwind sees every class. */
-export const ACCENT: Record<Treatment, { fill: string; soft: string; border: string }> = {
-  brief: { fill: 'bg-chart-8', soft: 'bg-chart-8/10', border: 'border-chart-8' },
-  report: { fill: 'bg-chart-1', soft: 'bg-chart-1/10', border: 'border-chart-1' },
-  toolkit: { fill: 'bg-chart-3', soft: 'bg-chart-3/10', border: 'border-chart-3' },
-  'field-note': { fill: 'bg-chart-6', soft: 'bg-chart-6/10', border: 'border-chart-6' },
-  'case-study': { fill: 'bg-chart-7', soft: 'bg-chart-7/10', border: 'border-chart-7' },
-  deck: { fill: 'bg-chart-2', soft: 'bg-chart-2/10', border: 'border-chart-2' },
-  article: { fill: 'bg-chart-1', soft: 'bg-chart-1/10', border: 'border-chart-1' },
+/** Each family's hand-drawn illustration (navy and marigold, the house style; sources in `visuals/publications-detail`). The type
+ *  is told apart by the drawing, not by colour, so the page keeps the brand surfaces the Dataset and Collaborative pages use. */
+export const ILLUSTRATION: Record<Treatment, string> = {
+  brief: policyBriefIllustration,
+  report: reportIllustration,
+  toolkit: toolkitIllustration,
+  'case-study': caseStudyIllustration,
+  publication: publicationIllustration,
 }
 
 /** A prototype action: says what would happen instead of going anywhere. */
@@ -55,81 +57,6 @@ export function usePrototypeAction() {
   return React.useCallback(
     (what: string) => toast({ title: 'Prototype', description: `${what} is not wired up in this playground.` }),
     [toast],
-  )
-}
-
-/** A generated cover, standing in for the first page of the file: the type, the title and the publisher on the brand navy, with a
- *  stripe and a line pattern in the type's accent. `stacked` draws two sheets behind it, so it reads as a document. */
-export function DocumentCover({
-  pub,
-  stacked = false,
-  landscape = false,
-  className,
-}: {
-  pub: SamplePublication
-  stacked?: boolean
-  /** 16:10 instead of 3:4, for slides. */
-  landscape?: boolean
-  className?: string
-}) {
-  const accent = ACCENT[treatmentOf(pub)]
-  return (
-    <div className={cn('relative', className)} aria-hidden="true">
-      {stacked && (
-        <>
-          <div className="absolute inset-0 translate-x-4 translate-y-3 rotate-[4deg] rounded-lg border border-border-default bg-card shadow-sm" />
-          <div className="absolute inset-0 translate-x-2 translate-y-1.5 rotate-[2deg] rounded-lg border border-border-default bg-card shadow-sm" />
-        </>
-      )}
-      <div
-        className={cn(
-          'relative flex flex-col justify-between overflow-hidden rounded-lg bg-header-background p-6 text-text-on-brand shadow-lg',
-          landscape ? 'aspect-[16/10]' : 'aspect-[3/4]',
-        )}
-      >
-        <svg className="absolute -right-16 -top-16 size-64 opacity-30" viewBox="0 0 200 200">
-          {[90, 74, 58, 42, 26].map((r) => (
-            <circle key={r} cx="100" cy="100" r={r} fill="none" stroke="currentColor" strokeWidth="1" />
-          ))}
-        </svg>
-        <div className="relative">
-          <span className={cn('block h-1.5 w-12 rounded-full', accent.fill)} />
-          <p className="type-caption mt-3 font-medium uppercase tracking-[0.025em]">{typeLabel(pub)}</p>
-        </div>
-        <p className="type-heading-2 relative line-clamp-6">{pub.title}</p>
-        <div className="type-caption relative flex items-end justify-between gap-3 opacity-90">
-          <span className="min-w-0 truncate">{pub.publisher}</span>
-          <span className="shrink-0 tabular-nums">{new Date(pub.date).getUTCFullYear()}</span>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-/** A horizontal bar figure, labelled on every bar so colour never carries the meaning. */
-export function BarFigure({ figure }: { figure: NonNullable<DocPage['figure']> }) {
-  const max = Math.max(...figure.bars.map((b) => b.value))
-  return (
-    <figure className="flex flex-col gap-2">
-      <ul className="flex flex-col gap-2">
-        {figure.bars.map((b) => (
-          <li key={b.label} className="grid grid-cols-[minmax(0,9rem)_1fr] items-center gap-3">
-            <span className="type-caption truncate text-text-secondary">{b.label}</span>
-            <span className="flex items-center gap-2">
-              <span className="h-3 rounded-sm bg-primary" style={{ width: `${(b.value / max) * 100}%` }} />
-              <span className="type-caption shrink-0 tabular-nums text-text-default">
-                {b.value.toLocaleString()}
-                {figure.unit === '%' ? '%' : ''}
-              </span>
-            </span>
-          </li>
-        ))}
-      </ul>
-      <figcaption className="type-caption text-text-subdued">
-        {figure.caption}
-        {figure.unit !== '%' && ` (${figure.unit})`}
-      </figcaption>
-    </figure>
   )
 }
 
@@ -231,7 +158,7 @@ export function ConnectionsSection({
           {groups.map((g) => (
             <div
               key={g.key}
-              className={cn('flex flex-col gap-1 p-3', filled ? 'rounded-2xl bg-page-background' : 'rounded-xl border border-border-default bg-card')}
+              className={cn('flex flex-col gap-1 p-3', filled ? 'rounded-2xl bg-secondary' : 'rounded-xl border border-border-default bg-card')}
             >
               <h3 className="type-caption flex items-center justify-between px-2.5 pt-1 font-medium uppercase tracking-[0.025em] text-text-subdued">
                 {g.label}
@@ -265,7 +192,7 @@ export function ReadNext({ pub, onOpen, filled = false }: { pub: SamplePublicati
               onClick={() => onOpen(item.id)}
               className={cn(
                 'flex w-full items-center gap-3 p-4 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-focus',
-                filled ? 'rounded-2xl bg-page-background hover:bg-surface-hovered' : 'rounded-xl border border-border-default bg-card hover:bg-surface-hovered',
+                filled ? 'rounded-2xl bg-secondary hover:bg-surface-hovered' : 'rounded-xl border border-border-default bg-card hover:bg-surface-hovered',
               )}
             >
               <BookOpen className="size-5 shrink-0 text-text-brand" aria-hidden="true" />

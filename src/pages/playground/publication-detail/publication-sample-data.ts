@@ -20,7 +20,8 @@ export type ResourceType =
 
 /** Variant B gives each family of resource types its own layout. Report, research and white paper read the same way (long-form,
  *  chaptered); article and other fall back to a light editorial page. */
-export type Treatment = 'brief' | 'report' | 'toolkit' | 'field-note' | 'case-study' | 'deck' | 'article'
+/** The five families the page tells apart (by illustration); every other resource type reads as a generic publication. */
+export type Treatment = 'brief' | 'report' | 'toolkit' | 'case-study' | 'publication'
 
 export const TREATMENT_BY_TYPE: Record<ResourceType, Treatment> = {
   'policy-brief': 'brief',
@@ -28,11 +29,11 @@ export const TREATMENT_BY_TYPE: Record<ResourceType, Treatment> = {
   research: 'report',
   'white-paper': 'report',
   'toolkit-guide': 'toolkit',
-  'field-note': 'field-note',
   'case-study': 'case-study',
-  presentation: 'deck',
-  article: 'article',
-  other: 'article',
+  'field-note': 'publication',
+  presentation: 'publication',
+  article: 'publication',
+  other: 'publication',
 }
 
 export interface SampleContributor {

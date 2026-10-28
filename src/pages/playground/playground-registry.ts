@@ -88,7 +88,7 @@ export const PLAYGROUNDS: PlaygroundEntry[] = [
     id: 'publication-detail',
     name: 'Publication Detail Page',
     description:
-      'Two versions of a publication page built from today’s upload fields: one shaped by resource type, one with a file showcase and real viewers for PDFs and YouTube videos.',
+      'A publication page built from today’s upload fields: a hero coloured by resource type, then the files read one by one with real viewers for PDFs and YouTube videos.',
     category: 'data-discovery',
     status: 'in-progress',
     icon: BookOpen,
