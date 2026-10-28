@@ -36,7 +36,7 @@ function UseCaseDetailPage() {
   }
 
   return (
-    // -mt-8 cancels <main>'s top padding so the hero band sits flush under the breadcrumb.
+    // -mt-8 cancels <main>'s top padding; the hero sets its own top spacing under the breadcrumb.
     <div className="mx-auto -mt-8 w-full max-w-6xl pb-8">
       <UseCasePreview
         form={form}
