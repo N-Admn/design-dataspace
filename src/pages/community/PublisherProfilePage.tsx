@@ -19,7 +19,6 @@ function PublisherProfilePage() {
         title="Publisher not found"
         description="This person may not have published anything on CivicDataSpace, or the link may be wrong."
         backTo="/community?tab=people"
-        backLabel="Back to Publishers"
       />
     )
   }

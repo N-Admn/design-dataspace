@@ -1,7 +1,9 @@
 import { isValidEmail } from '@/lib/auth-mock'
+import { PROFILE_DESCRIPTION_MAX_LENGTH } from '@/types/profile'
 import { ORGANISATION_NAME_MAX_LENGTH, type OrganisationMetadata } from '@/types/organisation-workspace'
 
-export const ORGANISATION_DESCRIPTION_MAX_LENGTH = 1000
+// Same limit as a person's bio, so both profile descriptions are standardised.
+export const ORGANISATION_DESCRIPTION_MAX_LENGTH = PROFILE_DESCRIPTION_MAX_LENGTH
 
 /** Matches the `isValidUrl` pattern already used in ai-model-validation.ts —
  *  requires an http(s) URL, rather than accepting any URL scheme. */

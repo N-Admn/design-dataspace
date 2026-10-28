@@ -1,10 +1,11 @@
 import * as React from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import { ArrowLeft } from 'lucide-react'
 
 import { EmptyState } from '@/components/shared/EmptyState'
 import { useToast } from '@/components/ui/toast'
 import { useAppData } from '@/context/AppDataContext'
+import { useGoBack } from '@/hooks/use-go-back'
 import { buildCollaborativeDetail } from '@/lib/collaborative-detail-data'
 import { CollaborativeDetailView } from '@/pages/playground/collaborative-detail/CollaborativeDetailView'
 
@@ -13,6 +14,8 @@ import { CollaborativeDetailView } from '@/pages/playground/collaborative-detail
 function CollaborativeDetailPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
+  // Back to wherever the reader came from; the Collaboratives search tab when the page was opened directly.
+  const goBack = useGoBack('/search?type=collaborative')
   const toast = useToast()
   const { datasets, useCases, collaboratives, events, aiModels, organisationWorkspaces, charts } = useAppData()
 
@@ -26,10 +29,10 @@ function CollaborativeDetailPage() {
     return (
       <div className="mx-auto flex max-w-lg flex-col items-center gap-3 py-24 text-center">
         <EmptyState title="Collaborative not found" description="This Collaborative may have been unpublished or does not exist." />
-        <Link to="/search?type=collaboratives" className="flex items-center gap-1.5 text-sm font-medium text-text-brand hover:underline">
+        <button type="button" onClick={goBack} className="flex items-center gap-1.5 text-sm font-medium text-text-brand hover:underline">
           <ArrowLeft className="size-4" />
-          Back to Collaboratives
-        </Link>
+          Back
+        </button>
       </div>
     )
   }
@@ -41,7 +44,7 @@ function CollaborativeDetailPage() {
         data={data}
         hideEmptySections
         unifiedSearch
-        onBack={() => navigate(-1)}
+        onBack={goBack}
         // Collaborate goes to the initiative's own website when it has one; without one it says so instead of doing nothing.
         cta={
           externalUrl

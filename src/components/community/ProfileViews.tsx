@@ -92,7 +92,7 @@ function OrganisationProfileView({
   ]
   return (
     <div className="mx-auto flex w-full max-w-[1400px] flex-col gap-10 py-2">
-      {showBack && <BackLink fallbackTo="/community?tab=organisations" label="Back to Community" />}
+      {showBack && <BackLink fallbackTo="/community?tab=organisations" />}
 
       <Hero
         kind="organisation"
@@ -134,7 +134,7 @@ function PublisherProfileView({
   const Hero = heroLayout === 'banner' ? ProfileBannerHero : ProfileHero
   return (
     <div className="mx-auto flex w-full max-w-[1400px] flex-col gap-10 py-2">
-      {showBack && <BackLink fallbackTo="/community?tab=people" label="Back to Community" />}
+      {showBack && <BackLink fallbackTo="/community?tab=people" />}
 
       <Hero
         kind="individual"
