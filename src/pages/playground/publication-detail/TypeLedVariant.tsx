@@ -1,40 +1,34 @@
 import * as React from 'react'
 import {
+  ArrowLeft,
   ArrowUpRight,
   Building2,
   CalendarDays,
-  ChevronLeft,
-  ChevronRight,
   Download,
-  Eye,
   FileText,
   Globe2,
   Layers,
   MapPin,
-  Presentation,
   Quote,
   Scale,
   Share2,
+  type LucideIcon,
 } from 'lucide-react'
 
 import { EntityAvatar } from '@/components/community/DirectoryParts'
 import { InfoField } from '@/components/shared/InfoField'
-import { ResourcePreviewDialog, type PreviewResource } from '@/components/shared/ResourcePreviewDialog'
-import { SectionHeader } from '@/components/shared/SectionHeader'
-import { Badge } from '@/components/ui/badge'
+import { SocialShareLinks } from '@/components/shared/SocialShareLinks'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Tag } from '@/components/ui/tag'
-import { useToast } from '@/components/ui/toast'
 import { cn } from '@/lib/utils'
 import { LICENSE_TERMS_URLS } from '@/types/dataset'
-import { FileShowcase, UnplayableVideo, YouTubePlayer, parseYouTubeId } from '@/pages/playground/publication-detail/FileShowcase'
+import { FileShowcase } from '@/pages/playground/publication-detail/FileShowcase'
 import {
-  ACCENT,
-  BarFigure,
   CiteBlock,
+  ILLUSTRATION,
   ConnectionsSection,
-  DocumentCover,
   ReadNext,
   formatDate,
   geographyLabel,
@@ -44,67 +38,56 @@ import {
   typeLabel,
   usePrototypeAction,
 } from '@/pages/playground/publication-detail/publication-shared'
-import type { SamplePublication, Treatment } from '@/pages/playground/publication-detail/publication-sample-data'
+import type { SamplePublication } from '@/pages/playground/publication-detail/publication-sample-data'
 
-/** Variant B, "Shaped by type", built only from what today's publication upload flow collects (details, contributors,
- *  classification, the uploaded files and videos), so every type goes live through the one existing flow.
+/** "Shaped by type", built only from what today's publication upload flow collects (details, contributors, classification,
+ *  the uploaded files and videos), so every type goes live through the one existing flow.
  *
- *  The type changes the page subtly, never its fields or interactions:
- *  - its accent colour (the cover tile and the type badge),
- *  - its shape: documents get a portrait cover and a paged reader; presentations a landscape cover and a slide stage that leads;
- *    toolkits and guides lead with their files (a toolkit is a bundle of uploaded templates); articles, field notes and case
- *    studies read as one continuous column,
- *  - the order of its sections.
- *  Interactions are the same everywhere: turn pages, preview a file, download.
+ *  The type shows as a label and a hand-drawn illustration in the title card (policy brief, toolkit, report, case study, or a
+ *  generic publication); colour stays on the brand surfaces the Dataset and Collaborative pages use, and the type never
+ *  changes the fields or interactions. There is no thumbnail: a publication can hold several files, so no one file speaks for
+ *  it. People read it file by file in the file showcase, the same list + viewer as the Dataset page's data files.
  *
- *  With `proposed`, three optional fields from the upload-flow proposal are shown too: key highlights, a pull quote and a
- *  cover image. Containers are borderless soft tiles, the same surface language as the Collaborative and Dataset pages. */
+ *  With `proposed`, two optional fields from the upload-flow proposal are shown too: key highlights and a pull quote. */
 
-type Shape = 'document' | 'slides' | 'bundle' | 'reading'
-
-const SHAPE_BY_TREATMENT: Record<Treatment, Shape> = {
-  brief: 'document',
-  report: 'document',
-  deck: 'slides',
-  toolkit: 'bundle',
-  article: 'reading',
-  'field-note': 'reading',
-  'case-study': 'reading',
-}
-
-/** A borderless tile on the soft page-background fill. */
-const TILE = 'rounded-2xl bg-page-background'
-
-interface FileItem {
-  title: string
-  description?: string
-  extension: string
-  sizeLabel: string
-}
-
-const filesOf = (pub: SamplePublication): FileItem[] => [pub.file, ...(pub.extraFiles ?? [])]
-
-const lengthLabel = (pub: SamplePublication) => {
-  const n = pub.pages.length
-  return treatmentOf(pub) === 'deck' ? `${n} slide${n === 1 ? '' : 's'}` : `${n} page${n === 1 ? '' : 's'}`
-}
+const filesOf = (pub: SamplePublication) => [pub.file, ...(pub.extraFiles ?? [])]
 
 /* ── Hero ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────── */
 
-function Cover({ pub, shape, proposed }: { pub: SamplePublication; shape: Shape; proposed: boolean }) {
-  const accent = ACCENT[treatmentOf(pub)]
-  const landscape = shape === 'slides'
+/** The bar above the bento, as on the Dataset and Collaborative pages: Back on the left; Download and Share on the right. */
+function ActionBar({ pub }: { pub: SamplePublication }) {
+  const prototype = usePrototypeAction()
+  const files = filesOf(pub)
   return (
-    <div className={cn('flex items-center justify-center rounded-2xl p-6 sm:p-8', accent.soft)}>
-      {proposed && pub.coverImageUrl ? (
-        <img
-          src={pub.coverImageUrl}
-          alt=""
-          className={cn('w-full rounded-lg object-cover shadow-lg', landscape ? 'aspect-[16/10] max-w-sm lg:max-w-none' : 'aspect-[3/4] max-w-[9rem] lg:max-w-[15rem]')}
-        />
-      ) : (
-        <DocumentCover pub={pub} landscape={landscape} className={cn('w-full', landscape ? 'max-w-sm lg:max-w-none' : 'max-w-[9rem] lg:max-w-[15rem]')} />
-      )}
+    <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
+      <Button type="button" variant="ghost" size="sm" className="-ml-3 text-text-subdued hover:text-text-default" onClick={() => prototype('Going back')}>
+        <ArrowLeft />
+        Back
+      </Button>
+      <div className="flex items-center gap-2">
+        <Button type="button" size="lg" onClick={() => prototype('Downloading the file')}>
+          <Download className="size-4" aria-hidden="true" />
+          Download {files.length > 1 ? 'all' : pub.file.extension}
+        </Button>
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              className="size-11 rounded-full border-primary bg-transparent text-primary hover:bg-primary/5"
+              aria-label={`Share ${typeLabel(pub).toLowerCase()}`}
+              title="Share"
+            >
+              <Share2 className="size-5" aria-hidden="true" />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent align="end" className="w-64 p-4">
+            <p className="type-label text-text-default">Share this {typeLabel(pub).toLowerCase()}</p>
+            <SocialShareLinks url={window.location.href} title={pub.title} className="mt-3" />
+          </PopoverContent>
+        </Popover>
+      </div>
     </div>
   )
 }
@@ -114,7 +97,7 @@ function Contributors({ pub }: { pub: SamplePublication }) {
     <div className="flex items-center gap-3">
       <div className="flex shrink-0 -space-x-2">
         {pub.contributors.slice(0, 3).map((c) => (
-          <EntityAvatar key={c.name} kind="individual" name={c.name} imageUrl={null} className="size-10 ring-2 ring-page-background" />
+          <EntityAvatar key={c.name} kind="individual" name={c.name} imageUrl={null} className="size-10 ring-2 ring-secondary" />
         ))}
       </div>
       <p className="type-body min-w-0">
@@ -125,246 +108,114 @@ function Contributors({ pub }: { pub: SamplePublication }) {
   )
 }
 
-function Hero({ pub, shape, proposed }: { pub: SamplePublication; shape: Shape; proposed: boolean }) {
+/** One fact on a soft white card, as on the Dataset page's header: a large grey line icon beside a label/value pair. */
+function FactCard({ icon: Icon, label, children }: { icon: LucideIcon; label: string; children: React.ReactNode }) {
+  return (
+    <li className="flex min-w-0 items-center gap-5 rounded-lg bg-card/80 px-6 py-5">
+      <Icon className="size-9 shrink-0 text-[var(--border-strong)]" strokeWidth={1.5} aria-hidden="true" />
+      <div className="flex min-w-0 flex-col gap-0.5">
+        <span className="type-eyebrow text-muted-foreground">{label}</span>
+        <span className="type-label truncate text-[var(--border-strong)]">{children}</span>
+      </div>
+    </li>
+  )
+}
+
+/** The title card on the Dataset page's identity surface: the type, the title, tags and contributors beside the type's
+ *  illustration, then the facts on soft white cards. */
+function TitleCard({ pub }: { pub: SamplePublication }) {
   const prototype = usePrototypeAction()
-  const toast = useToast()
-  const accent = ACCENT[treatmentOf(pub)]
   const files = filesOf(pub)
-  const share = async () => {
-    try {
-      await navigator.clipboard.writeText(window.location.href)
-      toast({ title: 'Link copied' })
-    } catch {
-      prototype('Sharing')
-    }
-  }
-  const facts: { label: string; value: React.ReactNode }[] = [
-    { label: 'Licence', value: licenceLabel(pub) },
-    { label: 'Length', value: lengthLabel(pub) },
-    { label: files.length > 1 ? 'Files' : 'File', value: files.length > 1 ? `${files.length} files` : `${pub.file.extension} · ${pub.file.sizeLabel}` },
-    { label: 'Published', value: formatDate(pub.date) },
-  ]
+  const facts = 3 + (pub.externalLink ? 1 : 0)
 
   return (
-    <header className={cn('grid gap-4', shape === 'slides' ? 'lg:grid-cols-[minmax(0,1fr)_minmax(0,26rem)]' : 'lg:grid-cols-[minmax(0,1fr)_18rem]')}>
-      <div className={cn(TILE, 'flex min-w-0 flex-col gap-5 p-6 sm:p-8')}>
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <Badge variant="outline" className={cn('gap-1.5 border-transparent', accent.soft)}>
-            <span className={cn('size-2 rounded-full', accent.fill)} aria-hidden="true" />
-            {typeLabel(pub)}
-          </Badge>
-          <div className="flex items-center gap-2">
-            <Button type="button" onClick={() => prototype('Downloading the file')}>
-              <Download className="size-4" />
-              Download {files.length > 1 ? 'all' : pub.file.extension}
-            </Button>
-            <Button type="button" variant="outline" size="icon" className="rounded-full bg-card" onClick={share} aria-label="Share">
-              <Share2 className="size-4" />
-            </Button>
+    <div className="flex min-w-0 flex-col gap-8 rounded-2xl bg-secondary p-6 sm:p-8 lg:gap-10 lg:p-10">
+      <div className="flex items-center justify-between gap-8">
+        <div className="flex min-w-0 flex-col gap-5 sm:w-[68%] sm:flex-none">
+          <span className="type-label w-fit rounded-full bg-primary px-3.5 py-1 text-text-on-brand">{typeLabel(pub)}</span>
+          <h1 className="type-display-2 text-pretty break-words text-primary">{pub.title}</h1>
+          <div className="flex flex-wrap gap-2">
+            <Tag onClick={() => prototype('Searching by sector')}>{sectorLabel(pub)}</Tag>
+            <Tag onClick={() => prototype('Searching by geography')}>{geographyLabel(pub)}</Tag>
           </div>
+          <Contributors pub={pub} />
         </div>
-        <h1 className="type-display-1 text-pretty text-text-default">{pub.title}</h1>
-        <p className="type-heading-3 max-w-3xl font-normal text-text-secondary">{pub.description}</p>
-        <div className="flex flex-wrap gap-2">
-          <Tag onClick={() => prototype('Searching by sector')}>{sectorLabel(pub)}</Tag>
-          <Tag onClick={() => prototype('Searching by geography')}>{geographyLabel(pub)}</Tag>
-        </div>
-        <Contributors pub={pub} />
-        <dl className="mt-auto grid grid-cols-2 gap-x-6 gap-y-4 rounded-xl bg-card p-4 sm:grid-cols-4">
-          {facts.map((f) => (
-            <div key={f.label} className="min-w-0">
-              <dt className="type-caption text-text-subdued">{f.label}</dt>
-              <dd className="type-label truncate text-text-brand">{f.value}</dd>
-            </div>
-          ))}
-        </dl>
+        <img
+          src={ILLUSTRATION[treatmentOf(pub)]}
+          alt=""
+          className="hidden w-36 shrink-0 object-contain sm:block md:w-44 lg:mr-6 lg:w-52"
+        />
       </div>
-      <Cover pub={pub} shape={shape} proposed={proposed} />
+      <ul
+        aria-label={`${typeLabel(pub)} details`}
+        style={{ '--fact-cols': facts } as React.CSSProperties}
+        className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-[repeat(var(--fact-cols),minmax(0,1fr))]"
+      >
+        <FactCard icon={Scale} label="Licence">
+          {licenceLabel(pub)}
+        </FactCard>
+        <FactCard icon={FileText} label={files.length > 1 ? 'Files' : 'File'}>
+          {files.length > 1 ? `${files.length} files` : `${pub.file.extension} · ${pub.file.sizeLabel}`}
+        </FactCard>
+        <FactCard icon={CalendarDays} label="Published">
+          {formatDate(pub.date)}
+        </FactCard>
+        {pub.externalLink && (
+          <FactCard icon={Globe2} label="Source">
+            <a
+              href={pub.externalLink}
+              target="_blank"
+              rel="noreferrer"
+              aria-label="Original publication (opens in a new tab)"
+              className="inline-flex max-w-full items-center gap-0.5 rounded-sm underline-offset-2 hover:text-text-brand hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-focus"
+            >
+              <span className="truncate">Original publication</span>
+              <ArrowUpRight className="size-3.5 shrink-0" aria-hidden="true" />
+            </a>
+          </FactCard>
+        )}
+      </ul>
+    </div>
+  )
+}
+
+/** The Collaborative page's stat-panel badge tints, one per highlight, so the three blocks read as a set. */
+const HIGHLIGHT_BADGES = ['bg-chart-1/10', 'bg-chart-3/15', 'bg-chart-4/15']
+
+/** Key highlights as the bento's second row: always three equal columns on the same surface as the title card, every block the
+ *  same height (also when stacked). */
+function HighlightBlocks({ pub }: { pub: SamplePublication }) {
+  const items = pub.keyFindings.slice(0, 3)
+  if (items.length === 0) return null
+  return (
+    <ol aria-label="Key highlights" className="grid auto-rows-fr gap-4 md:grid-cols-3">
+      {items.map((f, i) => (
+        <li key={f} className="flex flex-col gap-4 rounded-2xl bg-secondary p-6 sm:p-8">
+          <span
+            className={cn('type-heading-3 flex size-[45px] shrink-0 items-center justify-center rounded-full tabular-nums text-text-brand', HIGHLIGHT_BADGES[i])}
+            aria-hidden="true"
+          >
+            {i + 1}
+          </span>
+          <p className="type-heading-3 font-normal text-text-default">{f}</p>
+        </li>
+      ))}
+    </ol>
+  )
+}
+
+/** The hero as a bento: the full-width title card, then the three key highlights. */
+function Hero({ pub, proposed }: { pub: SamplePublication; proposed: boolean }) {
+  return (
+    <header className="flex flex-col gap-4">
+      <ActionBar pub={pub} />
+      <TitleCard pub={pub} />
+      {proposed && <HighlightBlocks pub={pub} />}
     </header>
   )
 }
 
-/* ── Reading the file ───────────────────────────────────────────────────────────────────────────────────────────────────────── */
-
-/** One page or slide, drawn as paper. A stand-in for the uploaded PDF/PPTX rendered in the browser. */
-function Sheet({ pub, page }: { pub: SamplePublication; page: number }) {
-  const slides = treatmentOf(pub) === 'deck'
-  const current = pub.pages[page]
-  if (!current) return null
-  return (
-    <article
-      aria-live="polite"
-      className={cn(
-        'mx-auto flex w-full flex-col gap-4 bg-card shadow-sm',
-        slides ? 'aspect-video max-w-4xl justify-center rounded-lg p-6 sm:p-12' : 'min-h-[30rem] max-w-2xl rounded-md p-6 sm:p-12',
-      )}
-    >
-      {!slides && (
-        <header className="type-caption flex justify-between gap-4 text-text-subdued">
-          <span className="min-w-0 truncate">{pub.title}</span>
-          <span className="shrink-0 tabular-nums">{page + 1}</span>
-        </header>
-      )}
-      <h3 className={cn('text-text-brand', slides && page === 0 ? 'type-display-2' : 'type-heading-1')}>{current.heading}</h3>
-      {current.paragraphs.map((p) => (
-        <p key={p} className={cn('type-body', slides ? 'text-text-secondary' : 'text-text-default')}>
-          {p}
-        </p>
-      ))}
-      {current.figure && <BarFigure figure={current.figure} />}
-    </article>
-  )
-}
-
-/** The paged reader: contents on the left (from the file's own bookmarks), the page on a soft tile, previous / next. */
-function PagedReader({ pub, title }: { pub: SamplePublication; title: string }) {
-  const [page, setPage] = React.useState(0)
-  React.useEffect(() => setPage(0), [pub.id])
-  const slides = treatmentOf(pub) === 'deck'
-  const unit = slides ? 'Slide' : 'Page'
-  const total = pub.pages.length
-  const go = (next: number) => setPage(Math.max(0, Math.min(total - 1, next)))
-  return (
-    <section aria-label={title} className="flex flex-col gap-4">
-      <SectionHeader as="h2" title={title} />
-      <div className={cn(TILE, 'grid gap-4 p-3 sm:p-4', !slides && 'lg:grid-cols-[15rem_minmax(0,1fr)]')}>
-        {!slides && (
-          <nav aria-label="Contents" className="flex flex-col gap-1 p-2">
-            <p className="type-eyebrow px-3 pb-1 uppercase text-text-subdued">Contents</p>
-            <ol className="flex flex-col gap-0.5">
-              {pub.pages.map((p, i) => (
-                <li key={`${p.heading}-${i}`}>
-                  <button
-                    type="button"
-                    onClick={() => setPage(i)}
-                    aria-current={i === page ? 'page' : undefined}
-                    className={cn(
-                      'type-body flex w-full gap-2 rounded-lg px-3 py-2 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-focus',
-                      i === page ? 'bg-card font-medium text-text-default' : 'text-text-secondary hover:bg-card/60',
-                    )}
-                  >
-                    <span className="type-caption w-4 shrink-0 pt-0.5 tabular-nums text-text-subdued">{i + 1}</span>
-                    <span className="min-w-0">{p.heading}</span>
-                  </button>
-                </li>
-              ))}
-            </ol>
-          </nav>
-        )}
-        <div className="flex min-w-0 flex-col gap-4 py-2">
-          <Sheet pub={pub} page={page} />
-          <div className="flex items-center justify-between gap-3 px-1">
-            <Button type="button" variant="ghost" size="sm" onClick={() => go(page - 1)} disabled={page === 0}>
-              <ChevronLeft className="size-4" />
-              Previous
-            </Button>
-            <span className="type-label tabular-nums text-text-subdued">
-              {unit} {page + 1} of {total}
-            </span>
-            <Button type="button" variant="ghost" size="sm" onClick={() => go(page + 1)} disabled={page === total - 1}>
-              Next
-              <ChevronRight className="size-4" />
-            </Button>
-          </div>
-        </div>
-      </div>
-    </section>
-  )
-}
-
-/** The continuous reader for article-like types: the file's text as one column, no page chrome. */
-function ContinuousReader({ pub, quote }: { pub: SamplePublication; quote?: SamplePublication['pullQuote'] }) {
-  return (
-    <section aria-label="Read" className="flex max-w-3xl flex-col gap-8">
-      {pub.pages.map((p, i) => (
-        <React.Fragment key={`${p.heading}-${i}`}>
-          <div className="flex flex-col gap-3">
-            <h2 className="type-heading-2 text-text-brand">{p.heading}</h2>
-            {p.paragraphs.map((para) => (
-              <p key={para} className="type-body text-text-default">
-                {para}
-              </p>
-            ))}
-            {p.figure && (
-              <div className={cn(TILE, 'p-5')}>
-                <BarFigure figure={p.figure} />
-              </div>
-            )}
-          </div>
-          {i === 0 && quote && <PullQuote quote={quote} />}
-        </React.Fragment>
-      ))}
-    </section>
-  )
-}
-
-/** The uploaded files: each with its title, description, format and size; preview opens the platform's preview dialog. */
-function FilesSection({ pub, title, description }: { pub: SamplePublication; title: string; description?: string }) {
-  const prototype = usePrototypeAction()
-  const [preview, setPreview] = React.useState<PreviewResource | null>(null)
-  const files = filesOf(pub)
-  const Icon = treatmentOf(pub) === 'deck' ? Presentation : FileText
-  return (
-    <section aria-label={title} className="flex flex-col gap-4">
-      <SectionHeader as="h2" title={title} description={description} />
-      <ul className={cn('grid gap-3', files.length > 1 && 'md:grid-cols-2')}>
-        {files.map((f) => (
-          <li key={f.title} className={cn(TILE, 'flex items-start gap-4 p-4')}>
-            <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-card text-text-brand" aria-hidden="true">
-              <Icon className="size-5" />
-            </span>
-            <div className="flex min-w-0 flex-1 flex-col gap-1">
-              <p className="type-label text-text-default">{f.title}</p>
-              {f.description && <p className="type-body text-text-secondary">{f.description}</p>}
-              <p className="type-caption text-text-subdued">
-                {f.extension} · {f.sizeLabel}
-              </p>
-            </div>
-            <div className="flex shrink-0 items-center gap-1">
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                aria-label={`Preview ${f.title}`}
-                onClick={() => setPreview({ title: f.title, fileName: `${f.title}.${f.extension.toLowerCase()}`, extension: f.extension, sizeLabel: f.sizeLabel })}
-              >
-                <Eye className="size-4" />
-              </Button>
-              <Button type="button" variant="ghost" size="icon" aria-label={`Download ${f.title}`} onClick={() => prototype(`Downloading “${f.title}”`)}>
-                <Download className="size-4" />
-              </Button>
-            </div>
-          </li>
-        ))}
-      </ul>
-      <ResourcePreviewDialog resource={preview} onOpenChange={(open) => !open && setPreview(null)} />
-    </section>
-  )
-}
-
-/* ── Proposed optional fields ───────────────────────────────────────────────────────────────────────────────────────────────── */
-
-/** Key highlights: up to three one-line points, the same for every type. */
-function Highlights({ pub }: { pub: SamplePublication }) {
-  const accent = ACCENT[treatmentOf(pub)]
-  const items = pub.keyFindings.slice(0, 3)
-  if (items.length === 0) return null
-  return (
-    <section aria-label="In brief" className="flex flex-col gap-4">
-      <SectionHeader as="h2" title="In brief" />
-      <ol className={cn('grid gap-4', items.length > 1 && 'md:grid-cols-3')}>
-        {items.map((f, i) => (
-          <li key={f} className={cn(TILE, 'flex flex-col gap-3 p-6')}>
-            <span className={cn('type-heading-3 flex size-9 items-center justify-center rounded-full tabular-nums text-text-brand', accent.soft)} aria-hidden="true">
-              {i + 1}
-            </span>
-            <p className="type-heading-3 font-normal text-text-default">{f}</p>
-          </li>
-        ))}
-      </ol>
-    </section>
-  )
-}
+/* ── The page ───────────────────────────────────────────────────────────────────────────────────────────────────────────────── */
 
 function PullQuote({ quote }: { quote: NonNullable<SamplePublication['pullQuote']> }) {
   return (
@@ -374,73 +225,6 @@ function PullQuote({ quote }: { quote: NonNullable<SamplePublication['pullQuote'
       <figcaption className="type-label text-text-subdued">{quote.attribution}</figcaption>
     </figure>
   )
-}
-
-/* ── The page ───────────────────────────────────────────────────────────────────────────────────────────────────────────────── */
-
-export type Layout = 'shaped' | 'showcase'
-
-function Body({ pub, shape, proposed, layout }: { pub: SamplePublication; shape: Shape; proposed: boolean; layout: Layout }) {
-  const quote = proposed ? pub.pullQuote : undefined
-  const highlights = proposed ? <Highlights pub={pub} /> : null
-  const youtubeId = pub.video ? parseYouTubeId(pub.video.url) : null
-  const video = pub.video ? (
-    <section aria-label="Video" className="flex max-w-3xl flex-col gap-4">
-      <SectionHeader as="h2" title="Watch" description={pub.video.title} />
-      {youtubeId ? <YouTubePlayer id={youtubeId} title={pub.video.title} /> : <UnplayableVideo url={pub.video.url} />}
-    </section>
-  ) : null
-  if (layout === 'showcase') {
-    return (
-      <>
-        {highlights}
-        <FileShowcase pub={pub} />
-        {quote && <PullQuote quote={quote} />}
-      </>
-    )
-  }
-  const extraFiles = (pub.extraFiles?.length ?? 0) > 0
-
-  switch (shape) {
-    case 'slides':
-      return (
-        <>
-          <PagedReader pub={pub} title="Slides" />
-          {video}
-          {highlights}
-          {quote && <PullQuote quote={quote} />}
-        </>
-      )
-    case 'bundle':
-      return (
-        <>
-          <FilesSection pub={pub} title="What’s inside" description={`${filesOf(pub).length} files you can preview or download.`} />
-          {highlights}
-          <PagedReader pub={pub} title={`Read the ${typeLabel(pub).split(' /')[0].toLowerCase()}`} />
-          {quote && <PullQuote quote={quote} />}
-          {video}
-        </>
-      )
-    case 'reading':
-      return (
-        <>
-          {highlights}
-          <ContinuousReader pub={pub} quote={quote} />
-          {extraFiles && <FilesSection pub={pub} title="Files" />}
-          {video}
-        </>
-      )
-    default:
-      return (
-        <>
-          {highlights}
-          <PagedReader pub={pub} title={`Read the ${typeLabel(pub).toLowerCase()}`} />
-          {quote && <PullQuote quote={quote} />}
-          {extraFiles && <FilesSection pub={pub} title="Files" />}
-          {video}
-        </>
-      )
-  }
 }
 
 /** The publication's metadata in the Dataset page's "Dataset information" pattern: icon + label/value fields in three columns,
@@ -541,20 +325,17 @@ function TypeLedVariant({
   pub,
   onOpenPublication,
   proposed = false,
-  layout = 'shaped',
 }: {
   pub: SamplePublication
   onOpenPublication: (id: string) => void
-  /** Show the optional fields from the upload-flow proposal (highlights, pull quote, cover image). */
+  /** Show the optional fields from the upload-flow proposal (key highlights, pull quote). */
   proposed?: boolean
-  /** `shaped`: the body takes the type's shape. `showcase`: the files and videos in the Dataset page's list + viewer layout. */
-  layout?: Layout
 }) {
-  const shape = SHAPE_BY_TREATMENT[treatmentOf(pub)]
   return (
     <div className="flex flex-col gap-12">
-      <Hero pub={pub} shape={shape} proposed={proposed} />
-      <Body pub={pub} shape={shape} proposed={proposed} layout={layout} />
+      <Hero pub={pub} proposed={proposed} />
+      <FileShowcase pub={pub} />
+      {proposed && pub.pullQuote && <PullQuote quote={pub.pullQuote} />}
       <ConnectionsSection pub={pub} headingId="connections-b" headingClassName="type-heading-2 text-text-brand" filled />
       <PublicationInformation pub={pub} />
       <ReadNext pub={pub} onOpen={onOpenPublication} filled />

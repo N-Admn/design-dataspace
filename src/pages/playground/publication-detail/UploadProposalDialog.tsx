@@ -1,26 +1,18 @@
-import * as React from 'react'
-import { Image as ImageIcon } from 'lucide-react'
-
-import { FileUploadField } from '@/components/shared/FileUploadField'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { MAX_IMAGE_BYTES, type UploadedAsset } from '@/lib/generic-upload'
-import { SUPPORTED_IMAGE_EXTENSIONS } from '@/types/event'
 
-/** The upload-flow proposal behind "With proposed fields" on the Shaped by type page: one optional card in the existing
+/** The upload-flow proposal behind "With proposed fields" on the Publication Detail page: one optional card in the existing
  *  Details step, the same for every resource type. A mock built from the form's own controls; nothing is saved. */
 
 const POWERS: [string, string][] = [
-  ['Key highlights', 'The “In brief” block, three numbered tiles under the hero.'],
-  ['Pull quote', 'A large quote after the reader (or after the first section, for article-like types).'],
-  ['Cover image', 'The cover tile in the hero. Without one, a cover is generated in the type’s colour.'],
+  ['Key highlights', 'Three numbered blocks in the type’s colour, the second row of the hero.'],
+  ['Pull quote', 'A large quote after the files.'],
 ]
 
 function UploadProposalDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
-  const [cover, setCover] = React.useState<UploadedAsset | null>(null)
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent variant="center" className="max-w-3xl">
@@ -56,33 +48,22 @@ function UploadProposalDialog({ open, onOpenChange }: { open: boolean; onOpenCha
                   <Input id="proposal-attribution" className="mt-1.5" placeholder="e.g. Dr. Priya Raman" />
                 </div>
               </div>
-              <FileUploadField
-                id="proposal-cover"
-                label="Cover image"
-                helperText="Shown as the publication’s cover. Leave empty to use a generated cover."
-                value={cover}
-                onChange={setCover}
-                extensions={SUPPORTED_IMAGE_EXTENSIONS}
-                maxBytes={MAX_IMAGE_BYTES}
-                fallbackIcon={ImageIcon}
-                dropzoneTitle="Drag and drop a cover image here, or click to browse."
-              />
             </CardContent>
           </Card>
 
           <section aria-label="What each field powers" className="flex flex-col gap-3">
             <h3 className="type-heading-3 text-text-default">What each field powers on the consumer page</h3>
-            <dl className="grid gap-3 sm:grid-cols-3">
+            <dl className="grid auto-rows-fr gap-3 sm:grid-cols-2">
               {POWERS.map(([field, effect]) => (
-                <div key={field} className="rounded-2xl bg-page-background p-4">
+                <div key={field} className="rounded-2xl bg-secondary p-4">
                   <dt className="type-label text-text-default">{field}</dt>
                   <dd className="type-body mt-1 text-text-secondary">{effect}</dd>
                 </div>
               ))}
             </dl>
             <p className="type-caption text-text-subdued">
-              Everything else on the page comes from today’s fields, the uploaded file itself (pages, slides and its bookmarks as
-              contents) or links other records already make (Connected on CivicDataSpace).
+              Everything else on the page comes from today’s fields, the uploaded files themselves (read one by one in the file
+              viewer) or links other records already make (Connected on CivicDataSpace).
             </p>
           </section>
         </div>
