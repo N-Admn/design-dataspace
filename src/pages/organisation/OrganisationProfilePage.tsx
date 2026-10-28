@@ -218,6 +218,9 @@ function OrganisationProfilePage() {
                   aria-invalid={Boolean(visibleErrors.description)}
                   onChange={(e) => update('description', e.target.value)}
                 />
+                <p className="mt-1 text-right text-xs text-muted-foreground">
+                  {draft.description.length} / {ORGANISATION_DESCRIPTION_MAX_LENGTH}
+                </p>
                 <FieldError message={visibleErrors.description} />
               </div>
 

@@ -29,4 +29,6 @@ export const MOCK_PROFILE: ContributorProfile = {
   },
 }
 
-export const BIO_MAX_LENGTH = 500
+/** The most characters a profile description allows: a person's bio and an organisation's description. */
+export const PROFILE_DESCRIPTION_MAX_LENGTH = 500
+export const BIO_MAX_LENGTH = PROFILE_DESCRIPTION_MAX_LENGTH

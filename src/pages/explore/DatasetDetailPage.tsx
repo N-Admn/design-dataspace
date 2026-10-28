@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { Link, useParams, useSearchParams } from 'react-router-dom'
+import { useParams, useSearchParams } from 'react-router-dom'
 import { ArrowLeft } from 'lucide-react'
 
 import { EmptyState } from '@/components/shared/EmptyState'
@@ -55,13 +55,14 @@ function DatasetDetailPage() {
           title="Dataset not found"
           description="This dataset may have been unpublished or does not exist."
         />
-        <Link
-          to="/discover"
+        <button
+          type="button"
+          onClick={goBack}
           className="flex items-center gap-1.5 text-sm font-medium text-text-brand hover:underline"
         >
           <ArrowLeft className="size-4" />
-          Back to Discover
-        </Link>
+          Back
+        </button>
       </div>
     )
   }

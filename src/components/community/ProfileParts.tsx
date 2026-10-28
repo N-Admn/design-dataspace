@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button'
 import { Tag } from '@/components/ui/tag'
 import { ViewTabPanel, ViewTabs } from '@/components/shared/ViewTabs'
 import { GitHubIcon, LinkedInIcon, XIcon } from '@/components/shared/SocialShareLinks'
+import { OneLineTags } from '@/components/shared/OneLineTags'
 import { useToast } from '@/components/ui/toast'
 import { useGoBack } from '@/hooks/use-go-back'
 import {
@@ -28,7 +29,7 @@ import { cn } from '@/lib/utils'
  *  counts of what has been published, the lists of cards for each kind of content, the people, and the not-found state. */
 
 /** Returns to wherever the user came from (the directory, or another profile), or to the directory when the page was opened directly. */
-function BackLink({ fallbackTo, label }: { fallbackTo: string; label: string }) {
+function BackLink({ fallbackTo, label = 'Back' }: { fallbackTo: string; label?: string }) {
   const goBack = useGoBack(fallbackTo)
   return (
     <Button type="button" variant="ghost" size="sm" onClick={goBack} className="-ml-2 self-start text-text-brand">
@@ -385,17 +386,17 @@ function ProfileBannerHero({ kind, name, imageUrl, headline, badge, badgeHref, l
   ]
   return (
     <div className="flex flex-col gap-8 rounded-2xl bg-primary/5 p-6 md:p-8">
-      <section aria-label="Profile" className="grid items-stretch gap-6 md:grid-cols-[minmax(0,14rem)_minmax(0,1fr)] md:gap-8 lg:grid-cols-[minmax(0,18rem)_minmax(0,1fr)]">
-        <div className="aspect-square w-40 self-start overflow-hidden rounded-2xl bg-background md:w-full">
+      <section aria-label="Profile" className="grid items-stretch gap-6 md:h-[25rem] md:grid-cols-[minmax(0,14rem)_minmax(0,1fr)] md:gap-8 lg:grid-cols-[minmax(0,18rem)_minmax(0,1fr)]">
+        <div className="aspect-square w-40 self-start overflow-hidden rounded-2xl bg-background md:aspect-auto md:h-full md:w-full">
           <EntityImage kind={kind} name={name} imageUrl={imageUrl} fill initialsClassName="text-5xl" />
         </div>
-        <div className="flex min-w-0 flex-col gap-[0.6rem]">
+        <div className="flex min-h-0 min-w-0 flex-col gap-[0.6rem]">
           <div className="flex min-w-0 flex-col items-start gap-[0.6rem]">
             {/* A small badge that opens the directory on the tab for this kind of profile. */}
             <Tag size="sm" to={kind === 'organisation' ? '/community?tab=organisations' : '/community?tab=people'} className="bg-background">
               {kind === 'organisation' ? 'Organisations' : 'People'}
             </Tag>
-            <h1 title={name} className="type-heading-1 line-clamp-2 break-words text-black">{name}</h1>
+            <h1 title={name} className="type-heading-1 line-clamp-1 break-words text-black">{name}</h1>
             {/* The name's line box leaves room under its letters, so the designation is pulled up to make the gap look like the others. */}
             {headline && <p className="type-heading-3 -mt-[0.26rem] text-text-default">{headline}</p>}
           </div>
@@ -419,22 +420,12 @@ function ProfileBannerHero({ kind, name, imageUrl, headline, badge, badgeHref, l
               </BannerFact>
             ))}
           </div>
-          {about && <p className="type-body mt-[0.2rem] max-w-4xl whitespace-pre-line text-text-subdued">{about}</p>}
-          {/* The bottom line of the card: the areas of expertise on the left, and the three social profiles on the right. The social profiles
+          {about && <p title={about} className="type-body mt-[0.2rem] line-clamp-5 min-h-[5lh] max-w-4xl whitespace-pre-line text-text-subdued">{about}</p>}
+          {/* The description always reserves five lines, so the card never shifts; the areas of expertise follow it directly, and the bottom line of the card holds the three social profiles on the right. The social profiles
               always show, so the row never changes shape: one that is set is a link in the normal colour, one that is not is grey. */}
-          <div className="mt-auto flex flex-wrap items-end justify-between gap-x-6 gap-y-3 pt-4">
-            {expertise.length > 0 && (
-              <ul className="flex flex-wrap gap-2" aria-label="Areas of expertise">
-                {expertise.map((area) => (
-                  <li key={area}>
-                    <Tag size="sm" to={`/search?q=${encodeURIComponent(area)}`} className="bg-background">
-                      {area}
-                    </Tag>
-                  </li>
-                ))}
-              </ul>
-            )}
-            <ul className="ml-auto flex -space-x-2" aria-label="Social profiles">
+          {expertise.length > 0 && <OneLineTags tags={expertise} label="Areas of contribution" className="mt-1" />}
+          <div className="mt-auto flex items-end justify-between gap-x-6 gap-y-3 pt-2">
+            <ul className="ml-auto flex shrink-0 -space-x-2" aria-label="Social profiles">
               {socials.map(({ label, href, Icon }) => (
                 <li key={label} className="relative hover:z-10 focus-within:z-10">
                   {href ? (
@@ -672,14 +663,15 @@ function MemberCards({ members }: { members: IndividualEntry[] }) {
 }
 
 /** A profile that does not exist, or no longer qualifies: the same not-found treatment as the other public detail pages. */
-function ProfileNotFound({ title, description, backTo, backLabel }: { title: string; description: string; backTo: string; backLabel: string }) {
+function ProfileNotFound({ title, description, backTo }: { title: string; description: string; backTo: string }) {
+  const goBack = useGoBack(backTo)
   return (
     <div className="mx-auto flex max-w-lg flex-col items-center gap-3 py-24 text-center">
       <EmptyState title={title} description={description} />
-      <Link to={backTo} className="flex items-center gap-1.5 text-sm font-medium text-text-brand hover:underline">
+      <button type="button" onClick={goBack} className="flex items-center gap-1.5 text-sm font-medium text-text-brand hover:underline">
         <ArrowLeft className="size-4" aria-hidden="true" />
-        {backLabel}
-      </Link>
+        Back
+      </button>
     </div>
   )
 }

@@ -243,6 +243,9 @@ function CreateOrganisationSideSheet({ open, onOpenChange, onCreated }: CreateOr
                   aria-describedby={visibleErrors.description ? 'org-description-error' : undefined}
                   onChange={(e) => update('description', e.target.value)}
                 />
+                <p className="mt-1 text-right text-xs text-muted-foreground">
+                  {form.description.length} / {ORGANISATION_DESCRIPTION_MAX_LENGTH}
+                </p>
                 <FieldError id="org-description-error" message={visibleErrors.description} />
               </div>
 
