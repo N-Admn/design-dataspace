@@ -1,4 +1,4 @@
-import { Building2, BriefcaseBusiness, Database, Dna, UploadCloud, Users, type LucideIcon } from 'lucide-react'
+import { BookOpen, Building2, BriefcaseBusiness, Database, Dna, UploadCloud, Users, type LucideIcon } from 'lucide-react'
 
 /** The Playground Hub's catalogue. Adding a playground is adding one entry here (plus a route in `App.tsx` if it is a new page):
  *  the hub, its search, its category filters and the "not built yet" page all read from this list. */
@@ -85,6 +85,17 @@ export const PLAYGROUNDS: PlaygroundEntry[] = [
     covers: 'Header comparison only so far',
   },
   {
+    id: 'publication-detail',
+    name: 'Publication Detail Page',
+    description:
+      'Two versions of a publication page built from today’s upload fields: one shaped by resource type, one with a file showcase and real viewers for PDFs and YouTube videos.',
+    category: 'data-discovery',
+    status: 'in-progress',
+    icon: BookOpen,
+    href: '/playground/publication-detail',
+    built: true,
+  },
+  {
     id: 'dataset-contribution',
     name: 'Dataset Contribution Flow',
     description: 'Explore the contributor experience for creating, uploading, and publishing datasets.',
@@ -103,7 +114,8 @@ export const PLAYGROUNDS: PlaygroundEntry[] = [
     status: 'in-progress',
     icon: BriefcaseBusiness,
     href: '/playground/use-case-detail',
-    built: false,
+    built: true,
+    covers: 'Hero directions for titles of any length so far',
   },
 ]
 
