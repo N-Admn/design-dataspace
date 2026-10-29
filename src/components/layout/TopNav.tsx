@@ -33,7 +33,7 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover'
 import { useTrackSearchOrigin } from '@/hooks/use-close-search'
-import { useCompactLayout } from '@/hooks/use-compact-layout'
+import { useHeaderMenuOffset } from '@/hooks/use-header-menu-offset'
 import { useAuth, useGoToProvider, useGoToSignIn } from '@/context/AuthContext'
 import { PAGE_GUTTER_X } from '@/lib/layout'
 import { FeaturedCollaborativeCard } from '@/components/layout/FeaturedCollaborativeCard'
@@ -75,7 +75,7 @@ function AuthButton({ onLogIn }: { onLogIn: () => void }) {
 }
 
 function UserMenu({ onSignOut }: { onSignOut: () => void }) {
-  const compact = useCompactLayout()
+  const menuOffset = useHeaderMenuOffset()
   const navigate = useNavigate()
 
   return (
@@ -92,7 +92,7 @@ function UserMenu({ onSignOut }: { onSignOut: () => void }) {
       <PopoverContent
         align="end"
         // the header is taller than the 36px avatar — drop the card below the header, level with the nav menus
-        sideOffset={compact ? 24 : 34}
+        sideOffset={menuOffset}
         collisionPadding={16}
         className="w-64 rounded-xl p-0 shadow-lg"
       >
@@ -210,7 +210,7 @@ function NavMenu({
   children: React.ReactNode
 }) {
   const open = menus.openMenu === id
-  const compact = useCompactLayout()
+  const menuOffset = useHeaderMenuOffset()
   const triggerRef = useRef<HTMLButtonElement>(null)
   // Radix aligns a menu to its own trigger; shift it so every menu is centred on the header's centre line.
   const [centreOffset, setCentreOffset] = useState(0)
@@ -262,7 +262,7 @@ function NavMenu({
         align="start"
         alignOffset={centreOffset}
         // the header is taller than the trigger, so push the surface below its lower edge
-        sideOffset={compact ? 24 : 34}
+        sideOffset={menuOffset}
         collisionPadding={16}
         className={MENU_SURFACE}
         // Hover-opened menus must not steal keyboard focus, and closing by hover must not pull it back.
