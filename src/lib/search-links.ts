@@ -1,4 +1,4 @@
-import { GEOGRAPHY_OPTIONS } from '@/types/dataset'
+import { GEOGRAPHY_OPTIONS, SECTOR_OPTIONS } from '@/types/dataset'
 import { MODEL_TYPE_OPTIONS } from '@/types/ai-model'
 
 /** Links into the Search page from a badge or tag anywhere in the app. Every such link opens the Search page on the tab of the content
@@ -19,6 +19,8 @@ export const searchTagHref = (type: SearchLinkType, tag: string) => `/search?typ
 
 /** Group titles and value labels for the facets that have no filter-rail group, so their chip reads like the others. */
 export const EXTRA_FACETS: Record<string, { label: string; options: { value: string; label: string }[] }> = {
+  // Sector is a rail group only on AI Models; everywhere else a sector badge still filters, shown as this chip.
+  sector: { label: 'Sector', options: SECTOR_OPTIONS },
   geography: { label: 'Geography', options: GEOGRAPHY_OPTIONS },
   modelType: { label: 'Model type', options: MODEL_TYPE_OPTIONS },
 }

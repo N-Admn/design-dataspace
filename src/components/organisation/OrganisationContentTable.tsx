@@ -1,4 +1,4 @@
-import { FileText, Pencil, Trash2 } from 'lucide-react'
+import { ExternalLink, FileText, Pencil, Trash2 } from 'lucide-react'
 
 import { ManagementTable, type ManagementColumn, type ManagementRowAction } from '@/components/shared/management-table/ManagementTable'
 import { StatusBadge } from '@/components/shared/StatusBadge'
@@ -12,6 +12,8 @@ export interface OrganisationContentItem {
   updatedAt: string
   /** Absent for records saved before organisation attribution existed. */
   createdBy?: string
+  /** The public page of this record. When set, a published item gets a "View live" action. */
+  liveHref?: string
 }
 
 interface OrganisationContentTableProps<T extends OrganisationContentItem> {
@@ -114,6 +116,16 @@ function OrganisationContentTable<T extends OrganisationContentItem>({
       searchMatch={(item, query) => item.title.toLowerCase().includes(query.trim().toLowerCase())}
       getActions={(item) => {
         const actions: ManagementRowAction<T>[] = [
+          ...(item.status === 'published' && item.liveHref
+            ? [
+                {
+                  key: 'view-live',
+                  icon: ExternalLink,
+                  label: () => `View live: ${item.title || 'item'}`,
+                  onClick: () => window.open(item.liveHref, '_blank', 'noopener,noreferrer'),
+                } satisfies ManagementRowAction<T>,
+              ]
+            : []),
           { key: 'edit', icon: Pencil, label: () => `Edit ${item.title || 'item'}`, onClick: () => onOpen(item) },
         ]
         if (onDelete) {

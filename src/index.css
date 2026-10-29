@@ -16,12 +16,34 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* Compact layout: a window under 800px tall or 1280px wide, which is what a Windows laptop at 125–150% display scaling gives the
+ * page. Keep in step with COMPACT_LAYOUT_QUERY in src/hooks/use-compact-layout.ts. */
+@custom-variant compact (@media (max-height: 800px), (max-width: 1279px));
+
 /* Layout constant (not a design token): vertical space consumed by fixed app
- * chrome above the workspace area — 88px TopNav + 36px breadcrumb + 64px page
- * padding (py-8 top + bottom). Referenced by src/lib/layout.ts so the value
- * lives in exactly one place instead of a repeated calc(100vh-188px) literal. */
+ * chrome above the workspace area — TopNav + breadcrumb + page padding (88 + 36 + 64
+ * = 188px; the compact layout below is smaller). Referenced by src/lib/layout.ts so
+ * the value lives in exactly one place instead of a repeated calc(100vh-188px)
+ * literal. App.tsx measures the real value at runtime; this is the first-paint
+ * fallback. */
 :root {
   --layout-chrome-offset: 188px;
+  --nav-height: 88px;
+  --nav-logo-height: 52px;
+  --page-pad-y: 2rem;
+  --discover-min-height: 38rem;
+}
+
+/* Compact layout (see the `compact` variant above): a smaller navbar, less vertical page padding and a shorter minimum for the
+ * one-screen Discover page, so more of the content shows on a short window. */
+@media (max-height: 800px), (max-width: 1279px) {
+  :root {
+    --layout-chrome-offset: 144px;
+    --nav-height: 68px;
+    --nav-logo-height: 44px;
+    --page-pad-y: 1.25rem;
+    --discover-min-height: 30rem;
+  }
 }
 
 @layer base {
@@ -111,6 +133,19 @@
   @media (min-width: 768px) {
     .type-display-2 {
       font-size: 1.75rem;
+    }
+  }
+  /* Compact layout: the three display sizes step down from md up, so a 60px heading does not fill a 1093–1536px window. Phones are
+     unaffected (they already use the smaller sizes). */
+  @media (min-width: 768px) and (max-height: 800px), (min-width: 768px) and (max-width: 1279px) {
+    .type-display {
+      font-size: 2.75rem;
+    }
+    .type-display-1 {
+      font-size: 2rem;
+    }
+    .type-display-2 {
+      font-size: 1.5rem;
     }
   }
   .type-heading-1 {

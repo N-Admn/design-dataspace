@@ -24,6 +24,7 @@ function OrganisationUseCasesPage() {
     status: u.status,
     updatedAt: u.updatedAt,
     createdBy: u.createdBy,
+    liveHref: `/explore/use-cases/${u.id}`,
   }))
 
   const open = (id: string | null) =>

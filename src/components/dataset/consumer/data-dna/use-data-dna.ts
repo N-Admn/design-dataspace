@@ -295,7 +295,7 @@ export function useDataDNAModel(datasetId: string): DataDNAModel | null {
       items: collaboratives.flatMap((r) => {
         const f = live(r)
         return f && f.connections.datasets.some((d) => d.id === datasetId)
-          ? [{ id: r.id, title: f.metadata.name, href: `/dashboard/collaboratives/${r.id}/preview` }]
+          ? [{ id: r.id, title: f.metadata.name, href: `/explore/collaboratives/${r.id}` }]
           : []
       }),
     },

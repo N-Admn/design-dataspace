@@ -100,11 +100,9 @@ function PublicationPreviewPage() {
         <div className="flex items-center gap-2">
           {justPublished ? (
             <>
-              {/* No standalone public page exists for Publications yet — this
-                  preview is the only view, so "Preview" (not "View live") is the
-                  honest label; see the audit's §22 open decision on this gap. */}
-              <Button type="button" variant="outline" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-                Preview
+              {/* Opens the real public page in this tab, as the Event and Use Case previews do. */}
+              <Button type="button" variant="outline" onClick={() => navigate(`/explore/publications/${id}`)}>
+                View live
               </Button>
               <Button type="button" onClick={handleBackToDashboard}>
                 Back to Publications

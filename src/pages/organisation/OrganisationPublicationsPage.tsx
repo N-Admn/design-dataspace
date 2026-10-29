@@ -24,6 +24,7 @@ function OrganisationPublicationsPage() {
     status: p.status,
     updatedAt: p.updatedAt,
     createdBy: p.createdBy,
+    liveHref: `/explore/publications/${p.id}`,
   }))
 
   const open = (id: string | null) =>

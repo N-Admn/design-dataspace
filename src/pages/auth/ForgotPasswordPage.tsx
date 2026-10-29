@@ -2,6 +2,7 @@ import * as React from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { Mail } from 'lucide-react'
 
+import { useAuthReturn } from '@/context/AuthContext'
 import { AuthLayout } from '@/components/auth/AuthLayout'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -12,6 +13,7 @@ import { isValidEmail } from '@/lib/auth-mock'
 function ForgotPasswordPage() {
   const navigate = useNavigate()
   const location = useLocation()
+  const { linkState } = useAuthReturn()
   const prefillEmail = (location.state as { email?: string } | null)?.email ?? ''
 
   const [view, setView] = React.useState<'request' | 'sent'>('request')
@@ -49,7 +51,7 @@ function ForgotPasswordPage() {
           <p className="mt-2 text-sm text-muted-foreground">
             If an account exists for this email, we've sent instructions to reset your password.
           </p>
-          <Button type="button" size="lg" className="mt-6 w-full" onClick={() => navigate('/auth/sign-in')}>
+          <Button type="button" size="lg" className="mt-6 w-full" onClick={() => navigate('/auth/sign-in', { state: linkState() })}>
             Back to Sign In
           </Button>
         </div>
@@ -89,7 +91,7 @@ function ForgotPasswordPage() {
       </form>
 
       <p className="mt-6 text-center text-sm">
-        <Link to="/auth/sign-in" className="font-medium text-primary underline-offset-4 hover:underline focus-visible:underline">
+        <Link to="/auth/sign-in" state={linkState()} className="font-medium text-primary underline-offset-4 hover:underline focus-visible:underline">
           Back to Sign In
         </Link>
       </p>

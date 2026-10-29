@@ -5,7 +5,7 @@ import { ArrowLeft } from 'lucide-react'
 function BackToHome() {
   return (
     <Link
-      to="/"
+      to="/discover"
       className="mx-auto flex w-full max-w-sm items-center gap-1.5 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
     >
       <ArrowLeft className="size-3.5" />
