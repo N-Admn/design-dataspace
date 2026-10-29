@@ -30,6 +30,7 @@ function OrganisationDatasetsPage() {
     status: d.status,
     updatedAt: d.updatedAt,
     createdBy: d.createdBy,
+    liveHref: `/explore/datasets/${d.id}`,
   }))
 
   const openDataset = (id: string) => {

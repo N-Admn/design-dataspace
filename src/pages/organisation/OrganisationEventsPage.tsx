@@ -24,6 +24,7 @@ function OrganisationEventsPage() {
     status: e.status,
     updatedAt: e.updatedAt,
     createdBy: e.createdBy,
+    liveHref: `/explore/events/${e.id}`,
   }))
 
   const open = (id: string | null) =>

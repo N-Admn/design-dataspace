@@ -1,7 +1,8 @@
 import * as React from 'react'
-import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { ArrowLeft, Check, CheckCircle2 } from 'lucide-react'
 
+import { useAuthReturn } from '@/context/AuthContext'
 import { AuthLayout } from '@/components/auth/AuthLayout'
 import { GoogleButton } from '@/components/auth/GoogleButton'
 import { PasswordInput } from '@/components/auth/PasswordInput'
@@ -42,8 +43,8 @@ function BackLink({ label, onClick }: { label: string; onClick: () => void }) {
 }
 
 function SignInPage() {
-  const navigate = useNavigate()
   const location = useLocation()
+  const { complete, linkState } = useAuthReturn()
   const toast = useToast()
 
   const navState = (location.state as { email?: string; openGoogle?: boolean } | null) ?? null
@@ -71,10 +72,10 @@ function SignInPage() {
   // Confirmation states converge on the dashboard without requiring another click.
   React.useEffect(() => {
     if (view === 'account-verified' || view === 'account-created-google') {
-      const timeout = window.setTimeout(() => navigate('/'), 1100)
+      const timeout = window.setTimeout(() => complete(), 1100)
       return () => window.clearTimeout(timeout)
     }
-  }, [view, navigate])
+  }, [view])
 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault()
@@ -106,7 +107,7 @@ function SignInPage() {
       }
 
       toast({ title: 'Welcome back', description: 'Signed in successfully.' })
-      navigate('/')
+      complete()
     }, 500)
   }
 
@@ -117,7 +118,7 @@ function SignInPage() {
     }
     if (account.kind === 'existing-google') {
       toast({ title: 'Welcome back', description: 'Signed in with Google.' })
-      navigate('/')
+      complete()
       return
     }
     if (account.kind === 'existing-password') {
@@ -350,7 +351,7 @@ function SignInPage() {
         <div>
           <div className="flex items-center justify-between">
             <Label htmlFor="signin-password">Password *</Label>
-            <Link to="/auth/forgot-password" state={{ email }} className="text-xs font-medium text-primary underline-offset-4 hover:underline focus-visible:underline">
+            <Link to="/auth/forgot-password" state={linkState({ email })} className="text-xs font-medium text-primary underline-offset-4 hover:underline focus-visible:underline">
               Forgot password?
             </Link>
           </div>

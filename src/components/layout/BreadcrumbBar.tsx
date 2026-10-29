@@ -13,7 +13,7 @@ import { CURRENT_USER_PERSON_ID } from '@/types/organisation-workspace'
 import { cn } from '@/lib/utils'
 
 /** The amber strip shares the shell's page gutter so its text lines up with the header and the content below. */
-const STRIP_CLASS = cn('w-full bg-breadcrumb-background py-2.5', PAGE_GUTTER_X)
+const STRIP_CLASS = cn('w-full bg-breadcrumb-background py-2.5 compact:py-1.5', PAGE_GUTTER_X)
 
 /** The public/consumer landing the site logo itself links to (see TopNav) —
  *  reused here so "Home" points at the same place everywhere. */
@@ -40,6 +40,8 @@ const DATASET_DETAIL_PATTERN = /^\/explore\/datasets\/([^/]+)$/
 const USE_CASE_DETAIL_PATTERN = /^\/explore\/use-cases\/([^/]+)$/
 const COLLABORATIVE_DETAIL_PATTERN = /^\/explore\/collaboratives\/([^/]+)$/
 const EVENT_DETAIL_PATTERN = /^\/explore\/events\/([^/]+)$/
+const AI_MODEL_DETAIL_PATTERN = /^\/explore\/ai-models\/([^/]+)$/
+const PUBLICATION_DETAIL_PATTERN = /^\/explore\/publications\/([^/]+)$/
 /** TopNav's Search item opens the existing search page, so the "Search" crumb points there. */
 const EXPLORE_PATH = '/search'
 
@@ -124,7 +126,7 @@ function Breadcrumbs({ crumbs }: { crumbs: CrumbSpec[] }) {
 function BreadcrumbBar() {
   const location = useLocation()
   const closeSearch = useCloseSearch()
-  const { organisationWorkspaces, datasets, useCases, events, collaboratives, profile } = useAppData()
+  const { organisationWorkspaces, datasets, useCases, events, collaboratives, aiModels, publications, profile } = useAppData()
   const isDashboard = location.pathname === '/'
   const { pathname } = location
 
@@ -223,6 +225,42 @@ function BreadcrumbBar() {
             { label: 'Search', to: EXPLORE_PATH },
             { label: 'Events', to: '/search?type=events' },
             { label: eventName },
+          ]}
+        />
+      </div>
+    )
+  }
+
+  const aiModelMatch = AI_MODEL_DETAIL_PATTERN.exec(pathname)
+  if (aiModelMatch) {
+    const record = aiModels.find((m) => m.id === aiModelMatch[1])
+    const modelName = (record?.status === 'published' ? record.publishedForm?.metadata.name : undefined) || 'AI Model'
+    return (
+      <div data-slot="breadcrumb" className={STRIP_CLASS}>
+        <Breadcrumbs
+          crumbs={[
+            { label: 'Home', to: HOME_PATH },
+            { label: 'Search', to: EXPLORE_PATH },
+            { label: 'AI Models', to: '/search?type=ai-models' },
+            { label: modelName },
+          ]}
+        />
+      </div>
+    )
+  }
+
+  const publicationMatch = PUBLICATION_DETAIL_PATTERN.exec(pathname)
+  if (publicationMatch) {
+    const record = publications.find((p) => p.id === publicationMatch[1])
+    const publicationName = (record?.status === 'published' ? record.publishedForm?.metadata.name : undefined) || 'Publication'
+    return (
+      <div data-slot="breadcrumb" className={STRIP_CLASS}>
+        <Breadcrumbs
+          crumbs={[
+            { label: 'Home', to: HOME_PATH },
+            { label: 'Search', to: EXPLORE_PATH },
+            { label: 'Publications', to: '/search?type=publications' },
+            { label: publicationName },
           ]}
         />
       </div>

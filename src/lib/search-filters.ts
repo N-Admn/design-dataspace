@@ -145,7 +145,9 @@ export function describeActiveFilters(type: TypeFilter, active: Record<string, s
       out.push({ key: group.key, value, group: group.label, label: options.find((o) => o.value === value)?.label ?? value })
     }
   }
+  const railKeys = new Set(FILTER_GROUPS_BY_TYPE[type].map((g) => g.key))
   for (const [key, extra] of Object.entries(EXTRA_FACETS)) {
+    if (railKeys.has(key)) continue
     for (const value of active[key] ?? []) {
       out.push({ key, value, group: extra.label, label: extra.options.find((o) => o.value === value)?.label ?? value })
     }

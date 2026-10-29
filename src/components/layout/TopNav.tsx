@@ -21,7 +21,6 @@ import {
   SEARCH_ROUTE,
   FEATURED_COLLABORATIVES,
   MORE_GROUPS,
-  SIGN_IN_ROUTE,
   WORKSPACE_ROUTE,
   type NavGroup,
   type NavLink,
@@ -34,6 +33,8 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover'
 import { useTrackSearchOrigin } from '@/hooks/use-close-search'
+import { useCompactLayout } from '@/hooks/use-compact-layout'
+import { useAuth, useGoToProvider, useGoToSignIn } from '@/context/AuthContext'
 import { PAGE_GUTTER_X } from '@/lib/layout'
 import { FeaturedCollaborativeCard } from '@/components/layout/FeaturedCollaborativeCard'
 import { cn } from '@/lib/utils'
@@ -74,6 +75,7 @@ function AuthButton({ onLogIn }: { onLogIn: () => void }) {
 }
 
 function UserMenu({ onSignOut }: { onSignOut: () => void }) {
+  const compact = useCompactLayout()
   const navigate = useNavigate()
 
   return (
@@ -89,8 +91,8 @@ function UserMenu({ onSignOut }: { onSignOut: () => void }) {
       </PopoverTrigger>
       <PopoverContent
         align="end"
-        // the 88px header is taller than the 36px avatar — drop the card below the header, level with the nav menus
-        sideOffset={34}
+        // the header is taller than the 36px avatar — drop the card below the header, level with the nav menus
+        sideOffset={compact ? 24 : 34}
         collisionPadding={16}
         className="w-64 rounded-xl p-0 shadow-lg"
       >
@@ -208,6 +210,7 @@ function NavMenu({
   children: React.ReactNode
 }) {
   const open = menus.openMenu === id
+  const compact = useCompactLayout()
   const triggerRef = useRef<HTMLButtonElement>(null)
   // Radix aligns a menu to its own trigger; shift it so every menu is centred on the header's centre line.
   const [centreOffset, setCentreOffset] = useState(0)
@@ -258,8 +261,8 @@ function NavMenu({
       <PopoverContent
         align="start"
         alignOffset={centreOffset}
-        // the 88px header is taller than the trigger, so push the surface below its lower edge
-        sideOffset={34}
+        // the header is taller than the trigger, so push the surface below its lower edge
+        sideOffset={compact ? 24 : 34}
         collisionPadding={16}
         className={MENU_SURFACE}
         // Hover-opened menus must not steal keyboard focus, and closing by hover must not pull it back.
@@ -597,7 +600,9 @@ function AccordionSection({
 }
 
 function TopNav() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const { isSignedIn: isLoggedIn, signOut } = useAuth()
+  const goToSignIn = useGoToSignIn()
+  const goToProvider = useGoToProvider()
   const menus = useNavMenus()
   useTrackSearchOrigin()
   const [mobileOpen, setMobileOpen] = useState(false)
@@ -611,7 +616,6 @@ function TopNav() {
   const [languageOpen, setLanguageOpen] = useState(false)
   const [contactOpen, setContactOpen] = useState(false)
   const { pathname } = useLocation()
-  const navigate = useNavigate()
 
   const closeAll = () => {
     menus.close()
@@ -623,10 +627,10 @@ function TopNav() {
     closeAll()
     if (action === 'contact') setContactOpen(true)
   }
-  // Signed in → workspace; otherwise the authentication page.
+  // Signed in → workspace; otherwise the sign-in page, which brings the visitor to the workspace afterwards.
   const contribute = () => {
     closeAll()
-    navigate(isLoggedIn ? WORKSPACE_ROUTE : SIGN_IN_ROUTE)
+    goToProvider(WORKSPACE_ROUTE)
   }
 
   // Listing categories now open the Search page, so only Community's own destinations are Discover pages.
@@ -644,7 +648,7 @@ function TopNav() {
       <header
         data-chrome="dark"
         className={cn(
-          'flex h-[88px] w-full items-center bg-header-background text-primary-foreground lg:grid lg:grid-cols-[1fr_auto_1fr]',
+          'flex h-[var(--nav-height)] w-full items-center bg-header-background text-primary-foreground lg:grid lg:grid-cols-[1fr_auto_1fr]',
           PAGE_GUTTER_X,
         )}
       >
@@ -655,7 +659,7 @@ function TopNav() {
           <img
             src="/brand/civicdataspace-logo.svg"
             alt="CivicDataSpace — home"
-            className="h-[52px] w-auto"
+            className="h-[var(--nav-logo-height)] w-auto"
           />
         </Link>
 
@@ -735,13 +739,12 @@ function TopNav() {
           {isLoggedIn ? (
             <UserMenu
               onSignOut={() => {
-                setIsLoggedIn(false)
                 closeAll()
-                navigate(SIGN_IN_ROUTE)
+                signOut()
               }}
             />
           ) : (
-            <AuthButton onLogIn={() => setIsLoggedIn(true)} />
+            <AuthButton onLogIn={goToSignIn} />
           )}
         </div>
       </header>
