@@ -1,5 +1,5 @@
 import type { UploadedAsset } from '@/lib/generic-upload'
-import type { EventFormState, EventPublication, EventRecord, EventRelatedContent, EventSpeaker } from '@/types/event'
+import type { EventFormState, EventRecord, EventRelatedContent, EventSpeaker } from '@/types/event'
 import { MOCK_ORGANISATIONS } from '@/lib/mock-organisations'
 
 function fakeAsset(url: string, name: string): UploadedAsset {
@@ -63,40 +63,6 @@ const FULL_RELATED_CONTENT: EventRelatedContent = {
   ],
 }
 
-/** Four representative publications per event — enough to exercise the
- *  Publications carousel (>2 items) on every event page. */
-function mkPublications(prefix: string): EventPublication[] {
-  return [
-    {
-      id: `${prefix}-pub-1`,
-      title: 'Event Summary Report',
-      description: 'A detailed recap of sessions, key takeaways and outcomes from the event.',
-      publicationType: 'report',
-      organisation: 'CivicDataLab',
-    },
-    {
-      id: `${prefix}-pub-2`,
-      title: 'Speaker Presentation Deck',
-      description: 'Slides shared by the speakers during their sessions.',
-      publicationType: 'presentation',
-      organisation: 'CivicDataLab',
-    },
-    {
-      id: `${prefix}-pub-3`,
-      title: 'Background Reading List',
-      description: 'Curated readings distributed to attendees ahead of the event.',
-      publicationType: 'reading-material',
-    },
-    {
-      id: `${prefix}-pub-4`,
-      title: 'Post-Event Policy Brief',
-      description: 'A short brief summarizing policy implications discussed at the event.',
-      publicationType: 'other',
-      organisation: 'CivicDataLab',
-    },
-  ]
-}
-
 const evt1Form: EventFormState = {
   metadata: {
     registrationRequired: true,
@@ -131,7 +97,7 @@ const evt1Form: EventFormState = {
     mkSpeaker('Vikram Mehta', 'Senior Fellow', 'Centre for Policy Research', '38889914'),
     mkSpeaker('Sunita Nair', 'Lead Data Analyst', 'CivicDataLab', '29811345'),
   ],
-  publications: mkPublications('evt1'),
+  publications: [],
   relatedContent: FULL_RELATED_CONTENT,
 }
 
@@ -168,7 +134,7 @@ const evt2Form: EventFormState = {
     mkSpeaker('Rahul Desai', 'Program Director', 'Open Data Institute', '26834972'),
     mkSpeaker('Meera Krishnan', 'Researcher', 'IIT Delhi', '7580822'),
   ],
-  publications: mkPublications('evt2'),
+  publications: [],
   relatedContent: FULL_RELATED_CONTENT,
 }
 
@@ -205,7 +171,7 @@ const evt3Form: EventFormState = {
     mkSpeaker('Arjun Pillai', 'GIS Specialist', 'Bhuvan', '33261949'),
     mkSpeaker('Fatima Sheikh', 'Urban Planner', 'Janaagraha', '21792045'),
   ],
-  publications: mkPublications('evt3'),
+  publications: [],
   relatedContent: FULL_RELATED_CONTENT,
 }
 
@@ -242,7 +208,7 @@ const evt4Form: EventFormState = {
     mkSpeaker('Ravi Kumar', 'Policy Advisor', 'Ministry of Electronics & IT', '11357069'),
     mkSpeaker('Divya Menon', 'Governance Researcher', 'TISS', '21792037'),
   ],
-  publications: mkPublications('evt4'),
+  publications: [],
   relatedContent: FULL_RELATED_CONTENT,
 }
 
@@ -279,7 +245,7 @@ const evt5Form: EventFormState = {
     mkSpeaker('Kavya Reddy', 'Data Scientist', 'CivicDataLab', '30161439'),
     mkSpeaker('Thomas George', 'Facilitator', 'DataMeet', '17164780'),
   ],
-  publications: mkPublications('evt5'),
+  publications: [],
   relatedContent: FULL_RELATED_CONTENT,
 }
 
@@ -317,7 +283,7 @@ const evt6Form: EventFormState = {
     mkSpeaker('Sameer Joshi', 'Dashboard Engineer', 'Gramener', '26872232'),
     mkSpeaker('Priya Raman', 'Trainer', 'CivicDataLab', '27896377'),
   ],
-  publications: mkPublications('evt6'),
+  publications: [],
   relatedContent: FULL_RELATED_CONTENT,
 }
 
@@ -354,7 +320,7 @@ const evt7Form: EventFormState = {
     mkSpeaker('Karan Chawla', 'Economist', 'RBI Research', '32721690'),
     mkSpeaker('Ananya Desai', 'Financial Inclusion Lead', 'MicroSave', '18788182'),
   ],
-  publications: mkPublications('evt7'),
+  publications: [],
   relatedContent: FULL_RELATED_CONTENT,
 }
 
@@ -392,7 +358,7 @@ const evt8Form: EventFormState = {
     mkSpeaker('Rohan Malhotra', 'Panel Moderator', 'Ashoka University', '12775205'),
     mkSpeaker('Lakshmi Iyer', 'Community Lead', 'DataKind Bangalore', '4584064'),
   ],
-  publications: mkPublications('evt8'),
+  publications: [],
   relatedContent: FULL_RELATED_CONTENT,
 }
 
@@ -414,7 +380,7 @@ const evt9Form: EventFormState = {
     registrationEndDate: '',
     registrationEndTime: '',
   },
-  publications: mkPublications('evt9'),
+  publications: [],
 }
 
 // evt-6 is published and live, but has a saved working copy with unpublished

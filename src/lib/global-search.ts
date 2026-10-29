@@ -20,13 +20,10 @@ import { parseAppTimestamp } from '@/lib/format'
  * rather than a separate index; there is no backend search API yet, so this
  * runs entirely client-side over the same data every module already has.
  *
- * Publications have no standalone module/record type — they only exist as
- * sub-items of Events (`EventRecord.form.publications`) — so they're indexed
- * from there. That also means a publication result links to the *event* it
- * belongs to (the only publication route that actually exists), not a
- * publication detail page, and that "Sector"/"Geography" aren't available for
- * publications — a publication carries neither field itself, only its parent
- * event does, and that isn't the same thing.
+ * Publications come from two places: the standalone Publication records,
+ * which open their own detail page, and files attached to an Event
+ * (`EventRecord.form.publications`), which link to that event and carry no
+ * "Geography" of their own.
  */
 
 export type SearchResultType = 'dataset' | 'use-case' | 'publication' | 'collaborative' | 'event' | 'ai-model'

@@ -38,10 +38,10 @@ const PUBLISHER_PROFILE_PATTERN = /^\/publishers\/([^/]+)$/
 const ORG_ROUTE_PATTERN = /^\/organisations\/([^/]+)(?:\/(.*))?$/
 const DATASET_DETAIL_PATTERN = /^\/explore\/datasets\/([^/]+)$/
 const USE_CASE_DETAIL_PATTERN = /^\/explore\/use-cases\/([^/]+)$/
+const PUBLICATION_DETAIL_PATTERN = /^\/explore\/publications\/([^/]+)$/
 const COLLABORATIVE_DETAIL_PATTERN = /^\/explore\/collaboratives\/([^/]+)$/
 const EVENT_DETAIL_PATTERN = /^\/explore\/events\/([^/]+)$/
 const AI_MODEL_DETAIL_PATTERN = /^\/explore\/ai-models\/([^/]+)$/
-const PUBLICATION_DETAIL_PATTERN = /^\/explore\/publications\/([^/]+)$/
 /** TopNav's Search item opens the existing search page, so the "Search" crumb points there. */
 const EXPLORE_PATH = '/search'
 
@@ -194,6 +194,26 @@ function BreadcrumbBar() {
     )
   }
 
+  const publicationMatch = PUBLICATION_DETAIL_PATTERN.exec(pathname)
+  if (publicationMatch) {
+    const record = publications.find((p) => p.id === publicationMatch[1])
+    const publicationName =
+      (record?.status === 'published' ? record.publishedForm?.metadata.name : undefined) || 'Publication'
+    return (
+      <div data-slot="breadcrumb" className={STRIP_CLASS}>
+        <Breadcrumbs
+          crumbs={[
+            { label: 'Home', to: HOME_PATH },
+            { label: 'Search', to: EXPLORE_PATH },
+            // Publications are browsed in global search (Publications tab).
+            { label: 'Publications', to: '/search?type=publications' },
+            { label: publicationName },
+          ]}
+        />
+      </div>
+    )
+  }
+
   const collaborativeMatch = COLLABORATIVE_DETAIL_PATTERN.exec(pathname)
   if (collaborativeMatch) {
     const record = collaboratives.find((c) => c.id === collaborativeMatch[1])
@@ -243,24 +263,6 @@ function BreadcrumbBar() {
             { label: 'Search', to: EXPLORE_PATH },
             { label: 'AI Models', to: '/search?type=ai-models' },
             { label: modelName },
-          ]}
-        />
-      </div>
-    )
-  }
-
-  const publicationMatch = PUBLICATION_DETAIL_PATTERN.exec(pathname)
-  if (publicationMatch) {
-    const record = publications.find((p) => p.id === publicationMatch[1])
-    const publicationName = (record?.status === 'published' ? record.publishedForm?.metadata.name : undefined) || 'Publication'
-    return (
-      <div data-slot="breadcrumb" className={STRIP_CLASS}>
-        <Breadcrumbs
-          crumbs={[
-            { label: 'Home', to: HOME_PATH },
-            { label: 'Search', to: EXPLORE_PATH },
-            { label: 'Publications', to: '/search?type=publications' },
-            { label: publicationName },
           ]}
         />
       </div>

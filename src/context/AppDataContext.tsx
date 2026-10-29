@@ -76,13 +76,17 @@ function loadStoredUseCases(): UseCaseRecord[] | null {
 
 /** Bump when the bundled sample Use Cases / Collaboratives change. A browser holding an older copy then gets the new samples
  * once (records with a sample id are replaced, missing ones added) while records people created themselves are kept. */
-const SEED_VERSION = '2026-10-23-sdg-required'
+const SEED_VERSION = '2026-10-29-no-event-publications'
 const SEED_VERSION_KEY = 'civicdataspace:seed-version'
 
-function reconcileWithSeed<T extends { id: string }>(stored: T[] | null, seed: T[]): T[] {
+/** Publications keep their own seed version, so a change to the sample Publications doesn't reset the other samples. */
+const PUBLICATIONS_SEED_VERSION = '2026-10-29-publication-detail'
+const PUBLICATIONS_SEED_VERSION_KEY = 'civicdataspace:publications-seed-version'
+
+function reconcileWithSeed<T extends { id: string }>(stored: T[] | null, seed: T[], version = SEED_VERSION, key = SEED_VERSION_KEY): T[] {
   if (!stored) return seed
   try {
-    if (window.localStorage.getItem(SEED_VERSION_KEY) === SEED_VERSION) return stored
+    if (window.localStorage.getItem(key) === version) return stored
   } catch {
     return stored
   }
@@ -90,9 +94,9 @@ function reconcileWithSeed<T extends { id: string }>(stored: T[] | null, seed: T
   return [...seed, ...stored.filter((r) => !seedIds.has(r.id))]
 }
 
-function markSeedCurrent() {
+function markSeedCurrent(version = SEED_VERSION, key = SEED_VERSION_KEY) {
   try {
-    window.localStorage.setItem(SEED_VERSION_KEY, SEED_VERSION)
+    window.localStorage.setItem(key, version)
   } catch {
     /* storage unavailable: samples simply stay as bundled */
   }
@@ -418,7 +422,8 @@ function AppDataProvider({ children }: { children: React.ReactNode }) {
   })
   const [publications, setPublications] = React.useState<PublicationRecord[]>(() => {
     const stored = loadStoredPublications()
-    const initial = stored ?? MOCK_PUBLICATION_RECORDS
+    const initial = reconcileWithSeed(stored, MOCK_PUBLICATION_RECORDS, PUBLICATIONS_SEED_VERSION, PUBLICATIONS_SEED_VERSION_KEY)
+    markSeedCurrent(PUBLICATIONS_SEED_VERSION, PUBLICATIONS_SEED_VERSION_KEY)
     bumpPublicationIdCounter(initial)
     return initial
   })

@@ -10,13 +10,13 @@ import type { AIModelRecord } from '@/types/ai-model'
 import type { CollaborativeRecord } from '@/types/collaborative'
 import type { DatasetRecord } from '@/types/dataset'
 import type { EventRecord } from '@/types/event'
+import type { PublicationRecord } from '@/types/publication'
 import {
   CURRENT_USER_PERSON_ID,
   ORGANISATION_TYPE_OPTIONS,
   type OrganisationRecord,
 } from '@/types/organisation-workspace'
 import { MOCK_PROFILE, type ContributorProfile } from '@/types/profile'
-import type { PublicationRecord } from '@/types/publication'
 import type { UseCaseRecord } from '@/types/usecase'
 
 /**

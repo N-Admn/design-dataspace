@@ -23,18 +23,17 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Tag } from '@/components/ui/tag'
 import { cn } from '@/lib/utils'
+import { publicationIllustration } from '@/lib/publication-type'
 import { LICENSE_TERMS_URLS } from '@/types/dataset'
 import { FileShowcase } from '@/pages/playground/publication-detail/FileShowcase'
 import {
   CiteBlock,
-  ILLUSTRATION,
   ConnectionsSection,
   ReadNext,
   formatDate,
   geographyLabel,
   licenceLabel,
   sectorLabel,
-  treatmentOf,
   typeLabel,
   usePrototypeAction,
 } from '@/pages/playground/publication-detail/publication-shared'
@@ -141,7 +140,7 @@ function TitleCard({ pub }: { pub: SamplePublication }) {
           <Contributors pub={pub} />
         </div>
         <img
-          src={ILLUSTRATION[treatmentOf(pub)]}
+          src={publicationIllustration(pub.resourceType)}
           alt=""
           className="hidden w-36 shrink-0 object-contain sm:block md:w-44 lg:mr-6 lg:w-52"
         />

@@ -14,11 +14,6 @@ import { useToast } from '@/components/ui/toast'
 import { cn } from '@/lib/utils'
 import { GEOGRAPHY_OPTIONS, LICENSE_OPTIONS, SECTOR_OPTIONS } from '@/types/dataset'
 import { RESOURCE_TYPE_OPTIONS } from '@/types/publication'
-import caseStudyIllustration from '@/assets/publication-types/case-study.png'
-import policyBriefIllustration from '@/assets/publication-types/policy-brief.png'
-import publicationIllustration from '@/assets/publication-types/publication.png'
-import reportIllustration from '@/assets/publication-types/report.png'
-import toolkitIllustration from '@/assets/publication-types/toolkit-guide.png'
 import {
   TREATMENT_BY_TYPE,
   type Connection,
@@ -41,15 +36,6 @@ export const treatmentOf = (p: SamplePublication): Treatment => TREATMENT_BY_TYP
 export const formatDate = (iso: string) =>
   new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' })
 
-/** Each family's hand-drawn illustration (navy and marigold, the house style; sources in `visuals/publications-detail`). The type
- *  is told apart by the drawing, not by colour, so the page keeps the brand surfaces the Dataset and Collaborative pages use. */
-export const ILLUSTRATION: Record<Treatment, string> = {
-  brief: policyBriefIllustration,
-  report: reportIllustration,
-  toolkit: toolkitIllustration,
-  'case-study': caseStudyIllustration,
-  publication: publicationIllustration,
-}
 
 /** A prototype action: says what would happen instead of going anywhere. */
 export function usePrototypeAction() {

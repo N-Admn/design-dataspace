@@ -40,7 +40,7 @@ interface CollaborativeResourcesProps {
 }
 
 function CollaborativeResources({ connections, onChange }: CollaborativeResourcesProps) {
-  const { datasets, useCases, collaboratives, events, aiModels, organisationWorkspaces, charts } = useAppData()
+  const { datasets, useCases, collaboratives, events, aiModels, organisationWorkspaces, charts, publications } = useAppData()
   const toast = useToast()
   const [addDrawerOpen, setAddDrawerOpen] = React.useState(false)
   const [datasetWizardOpen, setDatasetWizardOpen] = React.useState(false)
@@ -60,10 +60,10 @@ function CollaborativeResources({ connections, onChange }: CollaborativeResource
   )
 
   // Everything that can be connected, from the published records only (drafts are never offered). The search index already holds just
-  // those, with the same descriptive line the Search page shows; publications live inside events, so they come from there.
+  // those, with the same descriptive line the Search page shows; publications include the standalone ones.
   const index = React.useMemo(
-    () => buildSearchIndex({ datasets, useCases, collaboratives, events, aiModels, organisationWorkspaces, charts }),
-    [datasets, useCases, collaboratives, events, aiModels, organisationWorkspaces, charts],
+    () => buildSearchIndex({ datasets, useCases, collaboratives, events, aiModels, organisationWorkspaces, charts, publications }),
+    [datasets, useCases, collaboratives, events, aiModels, organisationWorkspaces, charts, publications],
   )
 
   const allCandidates: ResourceCandidate[] = React.useMemo(() => {

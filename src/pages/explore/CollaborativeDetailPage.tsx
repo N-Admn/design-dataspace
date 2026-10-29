@@ -19,15 +19,15 @@ function CollaborativeDetailPage() {
   // Back to wherever the reader came from; the Collaboratives search tab when the page was opened directly.
   const goBack = useGoBack('/search?type=collaborative')
   const toast = useToast()
-  const { datasets, useCases, collaboratives, events, aiModels, organisationWorkspaces, charts } = useAppData()
+  const { datasets, useCases, collaboratives, events, aiModels, organisationWorkspaces, charts, publications } = useAppData()
   const { isSignedIn } = useAuth()
   // A signed-in member of any organisation workspace contributes; everyone else (signed out, or signed in without an organisation) collaborates.
   const isOrganisationMember = isSignedIn && organisationWorkspaces.some((o) => currentUserMembership(o) !== null)
 
   const record = id ? collaboratives.find((c) => c.id === id) : undefined
   const data = React.useMemo(
-    () => (record ? buildCollaborativeDetail(record, { datasets, useCases, collaboratives, events, aiModels, organisationWorkspaces, charts }) : null),
-    [record, datasets, useCases, collaboratives, events, aiModels, organisationWorkspaces, charts],
+    () => (record ? buildCollaborativeDetail(record, { datasets, useCases, collaboratives, events, aiModels, organisationWorkspaces, charts, publications }) : null),
+    [record, datasets, useCases, collaboratives, events, aiModels, organisationWorkspaces, charts, publications],
   )
 
   if (!record || !data) {

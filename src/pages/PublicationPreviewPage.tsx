@@ -8,13 +8,14 @@ import { PublicationPreview } from '@/components/publication/PublicationPreview'
 import { useToast } from '@/components/ui/toast'
 import { useConfirm } from '@/components/ui/confirm-dialog'
 import { useAppData } from '@/context/AppDataContext'
+import { resolvePublisherByOrganisation } from '@/lib/dataset-publisher'
 import { isPublicationReadyToPublish } from '@/lib/publication-validation'
 import { clearPublicationDraftSnapshot, loadPublicationDraftSnapshot } from '@/lib/publication-draft-storage'
 
 function PublicationPreviewPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-  const { publications, upsertPublication } = useAppData()
+  const { publications, organisationWorkspaces, upsertPublication } = useAppData()
   const confirm = useConfirm()
   const toast = useToast()
   const [isSubmitting, setIsSubmitting] = React.useState(false)
@@ -83,7 +84,7 @@ function PublicationPreviewPage() {
   }
 
   return (
-    <div className="mx-auto flex max-w-4xl flex-col gap-6 py-6">
+    <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 py-6">
       <PreviewActionBar>
         <div>
           <p className="text-sm font-semibold text-foreground">
@@ -137,7 +138,13 @@ function PublicationPreviewPage() {
         </p>
       )}
 
-      <PublicationPreview form={form} publishedAt={record?.updatedAt} />
+      {/* Share the eventual public URL, not this preview route. */}
+      <PublicationPreview
+        form={form}
+        publisher={resolvePublisherByOrganisation(record?.organisationId, record?.createdBy, organisationWorkspaces)}
+        publishedAt={record?.updatedAt}
+        shareUrl={`${window.location.origin}/explore/publications/${id}`}
+      />
     </div>
   )
 }
