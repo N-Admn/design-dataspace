@@ -14,12 +14,12 @@ function CollaborativeDetailPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const toast = useToast()
-  const { datasets, useCases, collaboratives, events, aiModels, organisationWorkspaces, charts } = useAppData()
+  const { datasets, useCases, collaboratives, events, aiModels, organisationWorkspaces, charts, publications } = useAppData()
 
   const record = id ? collaboratives.find((c) => c.id === id) : undefined
   const data = React.useMemo(
-    () => (record ? buildCollaborativeDetail(record, { datasets, useCases, collaboratives, events, aiModels, organisationWorkspaces, charts }) : null),
-    [record, datasets, useCases, collaboratives, events, aiModels, organisationWorkspaces, charts],
+    () => (record ? buildCollaborativeDetail(record, { datasets, useCases, collaboratives, events, aiModels, organisationWorkspaces, charts, publications }) : null),
+    [record, datasets, useCases, collaboratives, events, aiModels, organisationWorkspaces, charts, publications],
   )
 
   if (!record || !data) {

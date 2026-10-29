@@ -15,7 +15,7 @@ import { clearCollaborativeDraftSnapshot, loadCollaborativeDraftSnapshot } from 
 function CollaborativePreviewPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-  const { datasets, useCases, collaboratives, events, aiModels, organisationWorkspaces, charts, upsertCollaborative } = useAppData()
+  const { datasets, useCases, collaboratives, events, aiModels, organisationWorkspaces, charts, publications, upsertCollaborative } = useAppData()
   const confirm = useConfirm()
   const toast = useToast()
   const [isSubmitting, setIsSubmitting] = React.useState(false)
@@ -59,7 +59,7 @@ function CollaborativePreviewPage() {
   }
 
   // The very page consumers will see: the draft's content, with the published datasets and use cases it connects.
-  const detail = buildCollaborativeDetailFromForm(form, record?.updatedAt, { datasets, useCases, collaboratives, events, aiModels, organisationWorkspaces, charts })
+  const detail = buildCollaborativeDetailFromForm(form, record?.updatedAt, { datasets, useCases, collaboratives, events, aiModels, organisationWorkspaces, charts, publications })
   const ready = isCollaborativeReadyToPublish(form, takenCollaborativeSlugs(collaboratives, id))
 
   const handlePublish = async () => {

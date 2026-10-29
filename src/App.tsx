@@ -63,6 +63,7 @@ import { DiscoverPage } from '@/pages/DiscoverPage'
 import { SearchResultsPage } from '@/pages/SearchResultsPage'
 import { UseCasesExplorePage } from '@/pages/explore/UseCasesExplorePage'
 import { UseCaseDetailPage } from '@/pages/explore/UseCaseDetailPage'
+import { PublicationDetailPage } from '@/pages/explore/PublicationDetailPage'
 import { DatasetDetailPage } from '@/pages/explore/DatasetDetailPage'
 import { CollaborativeDetailPage } from '@/pages/explore/CollaborativeDetailPage'
 import { EventDetailPage } from '@/pages/explore/EventDetailPage'
@@ -261,6 +262,7 @@ function AppLayout() {
             <Route path="/explore/use-cases/:id" element={<UseCaseDetailPage />} />
             <Route path="/explore/ai-models" element={<Navigate to="/search?type=ai-models" replace />} />
             <Route path="/explore/publications" element={<Navigate to="/search?type=publications" replace />} />
+            <Route path="/explore/publications/:id" element={<PublicationDetailPage />} />
             <Route path="/explore/events" element={<Navigate to="/search?type=events" replace />} />
             <Route path="/explore/events/:id" element={<EventDetailPage />} />
             <Route path="/collaboratives" element={<Navigate to="/search?type=collaboratives" replace />} />

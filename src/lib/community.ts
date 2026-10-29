@@ -10,6 +10,7 @@ import type { AIModelRecord } from '@/types/ai-model'
 import type { CollaborativeRecord } from '@/types/collaborative'
 import type { DatasetRecord } from '@/types/dataset'
 import type { EventRecord } from '@/types/event'
+import type { PublicationRecord } from '@/types/publication'
 import {
   CURRENT_USER_PERSON_ID,
   ORGANISATION_TYPE_OPTIONS,
@@ -80,6 +81,7 @@ export interface ContributionSource {
   collaboratives: CollaborativeRecord[]
   events: EventRecord[]
   aiModels: AIModelRecord[]
+  publications: PublicationRecord[]
   organisationWorkspaces: OrganisationRecord[]
 }
 
@@ -152,6 +154,10 @@ export function collectContributions(source: ContributionSource): PublicContribu
         { id: e.id, type: 'event', organisationId: e.organisationId },
       )
     }
+  }
+  for (const p of source.publications) {
+    const form = p.status === 'published' ? p.publishedForm : null
+    if (form) add(p, { type: 'publication', title: form.metadata.name || 'Untitled publication', description: form.metadata.description, href: `/explore/publications/${p.id}` })
   }
   for (const m of source.aiModels) {
     const form = m.status === 'published' ? m.publishedForm : null

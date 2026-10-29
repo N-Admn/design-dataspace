@@ -209,20 +209,20 @@ type Ref = `${MockContributionType}:${string}`
 
 /** The published records each person is credited on. A record can be credited to several people, and also to its organisation. */
 export const MOCK_PERSON_CREDITS: Record<string, Ref[]> = {
-  me: ['dataset:ds-1', 'dataset:ds-21', 'use-case:usecase-1', 'use-case:usecase-8', 'collaborative:collaborative-1', 'event:evt-1', 'publication:evt-1-evt1-pub-1'],
-  'person-1': ['use-case:usecase-1', 'use-case:usecase-7', 'collaborative:collaborative-1', 'collaborative:collaborative-4', 'dataset:ds-2', 'dataset:ds-11', 'event:evt-1', 'publication:evt-1-evt1-pub-4'],
+  me: ['dataset:ds-1', 'dataset:ds-21', 'use-case:usecase-1', 'use-case:usecase-8', 'collaborative:collaborative-1', 'event:evt-1', 'publication:publication-sample-policy-brief'],
+  'person-1': ['use-case:usecase-1', 'use-case:usecase-7', 'collaborative:collaborative-1', 'collaborative:collaborative-4', 'dataset:ds-2', 'dataset:ds-11', 'event:evt-1', 'publication:publication-sample-toolkit'],
   'person-2': ['dataset:ds-1', 'dataset:ds-10', 'collaborative:collaborative-3', 'event:evt-6', 'ai-model:ai-model-1', 'use-case:usecase-1'],
   'person-3': ['use-case:usecase-8', 'collaborative:collaborative-1', 'collaborative:collaborative-4', 'collaborative:collaborative-8', 'event:evt-5', 'dataset:ds-16'],
-  'person-4': ['collaborative:collaborative-3', 'dataset:ds-3', 'dataset:ds-15', 'use-case:usecase-3', 'event:evt-2', 'publication:evt-2-evt2-pub-4'],
-  'person-5': ['collaborative:collaborative-3', 'event:evt-6', 'dataset:ds-1', 'publication:evt-6-evt6-pub-1', 'publication:evt-6-evt6-pub-2'],
-  'person-6': ['use-case:usecase-6', 'collaborative:collaborative-1', 'collaborative:collaborative-7', 'event:evt-3', 'dataset:ds-19', 'publication:evt-3-evt3-pub-3'],
+  'person-4': ['collaborative:collaborative-3', 'dataset:ds-3', 'dataset:ds-15', 'use-case:usecase-3', 'event:evt-2', 'publication:publication-sample-case-study'],
+  'person-5': ['collaborative:collaborative-3', 'event:evt-6', 'dataset:ds-1', 'publication:publication-1', 'publication:publication-sample-field-note'],
+  'person-6': ['use-case:usecase-6', 'collaborative:collaborative-1', 'collaborative:collaborative-7', 'event:evt-3', 'dataset:ds-19', 'publication:publication-sample-toolkit'],
   'person-7': ['use-case:usecase-4', 'use-case:usecase-7', 'collaborative:collaborative-1', 'collaborative:collaborative-6', 'dataset:ds-4', 'dataset:ds-9'],
   'person-8': ['use-case:usecase-4', 'collaborative:collaborative-1', 'collaborative:collaborative-6', 'dataset:ds-5', 'dataset:ds-12', 'event:evt-3'],
-  'person-9': ['collaborative:collaborative-6', 'dataset:ds-3', 'dataset:ds-15', 'use-case:usecase-6', 'event:evt-5', 'publication:evt-5-evt5-pub-1'],
-  'person-10': ['use-case:usecase-5', 'collaborative:collaborative-7', 'dataset:ds-10', 'dataset:ds-11', 'event:evt-4', 'publication:evt-4-evt4-pub-2'],
+  'person-9': ['collaborative:collaborative-6', 'dataset:ds-3', 'dataset:ds-15', 'use-case:usecase-6', 'event:evt-5', 'publication:publication-sample-case-study'],
+  'person-10': ['use-case:usecase-5', 'collaborative:collaborative-7', 'dataset:ds-10', 'dataset:ds-11', 'event:evt-4', 'publication:publication-1'],
   'person-11': ['use-case:usecase-6', 'collaborative:collaborative-7', 'dataset:ds-17', 'dataset:ds-18', 'dataset:ds-19'],
   'person-12': ['collaborative:collaborative-6', 'collaborative:collaborative-8', 'dataset:ds-9', 'ai-model:ai-model-1', 'event:evt-2'],
-  'person-13': ['collaborative:collaborative-8', 'collaborative:collaborative-5', 'event:evt-8', 'dataset:ds-13', 'publication:evt-8-evt8-pub-1', 'publication:evt-8-evt8-pub-3'],
+  'person-13': ['collaborative:collaborative-8', 'collaborative:collaborative-5', 'event:evt-8', 'dataset:ds-13', 'publication:publication-sample-field-note', 'publication:publication-sample-policy-brief'],
   'person-14': ['collaborative:collaborative-8', 'event:evt-8', 'event:evt-7', 'dataset:ds-13', 'dataset:ds-14'],
   'person-15': ['collaborative:collaborative-1', 'collaborative:collaborative-6', 'dataset:ds-16', 'dataset:ds-20', 'use-case:usecase-5', 'event:evt-5'],
 }

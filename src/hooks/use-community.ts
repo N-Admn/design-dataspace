@@ -6,21 +6,21 @@ import { buildSearchIndex, type SearchResultItem } from '@/lib/global-search'
 
 /** The Community directory and profiles' shared data, derived once per change to the app's records. */
 function useCommunityDirectory() {
-  const { datasets, useCases, collaboratives, events, aiModels, organisationWorkspaces, profile } = useAppData()
+  const { datasets, useCases, collaboratives, events, aiModels, publications, organisationWorkspaces, profile } = useAppData()
   return React.useMemo(
-    () => buildCommunityDirectory({ datasets, useCases, collaboratives, events, aiModels, organisationWorkspaces }, profile),
-    [datasets, useCases, collaboratives, events, aiModels, organisationWorkspaces, profile],
+    () => buildCommunityDirectory({ datasets, useCases, collaboratives, events, aiModels, publications, organisationWorkspaces }, profile),
+    [datasets, useCases, collaboratives, events, aiModels, publications, organisationWorkspaces, profile],
   )
 }
 
 /** The Search index's card data for every published record, keyed `type:id`, so a profile can show the very cards the Search page
  *  shows (metadata, cover image, publishers) for the records it lists. */
 function useContentCardItems() {
-  const { datasets, useCases, collaboratives, events, aiModels, organisationWorkspaces, charts } = useAppData()
+  const { datasets, useCases, collaboratives, events, aiModels, publications, organisationWorkspaces, charts } = useAppData()
   return React.useMemo(() => {
-    const index = buildSearchIndex({ datasets, useCases, collaboratives, events, aiModels, organisationWorkspaces, charts })
+    const index = buildSearchIndex({ datasets, useCases, collaboratives, events, aiModels, organisationWorkspaces, charts, publications })
     return new Map<string, SearchResultItem>(index.map((item) => [`${item.type}:${item.id}`, item]))
-  }, [datasets, useCases, collaboratives, events, aiModels, organisationWorkspaces, charts])
+  }, [datasets, useCases, collaboratives, events, aiModels, organisationWorkspaces, charts, publications])
 }
 
 export { useCommunityDirectory, useContentCardItems }
