@@ -24,6 +24,7 @@ function OrganisationAIModelsPage() {
     status: m.status,
     updatedAt: m.updatedAt,
     createdBy: m.createdBy,
+    liveHref: `/explore/ai-models/${m.id}`,
   }))
 
   const open = (id: string | null) =>

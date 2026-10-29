@@ -10,7 +10,6 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
 import { WORKSPACE_HEIGHT_CLASS } from '@/lib/layout'
-import { useBreakpointUp } from '@/hooks/use-breakpoint'
 import { ViewTabs } from '@/components/shared/ViewTabs'
 
 // ---------- Shared row-geometry tokens (the validated Datasets reference values) ----------
@@ -175,8 +174,19 @@ function ManagementTable<T, S extends string>({
   loadError = false,
   onRetry,
 }: ManagementTableProps<T, S>) {
-  const isLgUp = useBreakpointUp('lg')
-  const isMdUp = useBreakpointUp('md')
+  // The width the table actually has (the window minus the sidebar and gutters), not the window's: the columns that fit are
+  // shown, so the table never scrolls sideways and the actions column is never cut off, at any window size or zoom.
+  const cardRef = React.useRef<HTMLDivElement>(null)
+  const [availablePx, setAvailablePx] = React.useState<number | null>(null)
+  React.useLayoutEffect(() => {
+    const el = cardRef.current
+    if (!el) return
+    const measure = () => setAvailablePx(el.clientWidth)
+    measure()
+    const observer = new ResizeObserver(measure)
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [])
 
   const [statusTab, setStatusTab] = React.useState<S | 'all'>('all')
   const [query, setQuery] = React.useState('')
@@ -193,17 +203,23 @@ function ManagementTable<T, S extends string>({
 
   const primaryColumn = columns[0]
 
-  const isColumnVisible = React.useCallback(
-    (col: ManagementColumn<T>) => {
-      if (col.optional && !visibleColumns.has(col.key)) return false
-      if (col.responsive === 'lg' && !isLgUp) return false
-      if (col.responsive === 'md' && !isMdUp) return false
-      return true
-    },
-    [visibleColumns, isLgUp, isMdUp],
-  )
-
-  const visibleSecondaryColumns = columns.slice(1).filter(isColumnVisible)
+  const visibleSecondaryColumns = React.useMemo(() => {
+    const wanted = columns.slice(1).filter((c) => !(c.optional && !visibleColumns.has(c.key)))
+    if (availablePx === null) return wanted
+    const remPx = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16
+    const availableRem = availablePx / remPx
+    const width = (list: ManagementColumn<T>[]) =>
+      [PRIMARY_MIN_WIDTH_REM, ...list.map((c) => c.widthRem!), ACTIONS_WIDTH_REM].reduce((sum, rem) => sum + parseFloat(rem), 0)
+    // When they do not all fit, drop the least important first: columns marked 'lg', then 'md', then the rest from the right.
+    const rank = (c: ManagementColumn<T>) => (c.responsive === 'lg' ? 0 : c.responsive === 'md' ? 1 : 2)
+    const dropOrder = wanted.map((c, i) => ({ c, i })).sort((x, y) => rank(x.c) - rank(y.c) || y.i - x.i)
+    let shown = wanted
+    for (const { c } of dropOrder) {
+      if (width(shown) <= availableRem) break
+      shown = shown.filter((col) => col !== c)
+    }
+    return shown
+  }, [columns, visibleColumns, availablePx])
   const columnTemplate = [`minmax(${PRIMARY_MIN_WIDTH_REM}, 1fr)`, ...visibleSecondaryColumns.map((c) => c.widthRem!), ACTIONS_WIDTH_REM].join(' ')
   // Sum of every track's floor width, in rem — below this, columns can no longer coexist
   // without either overlapping or squeezing the primary column to nothing, so the table
@@ -571,7 +587,7 @@ function ManagementTable<T, S extends string>({
   )
 
   return (
-    <Card className={cn('flex flex-col', WORKSPACE_HEIGHT_CLASS)}>
+    <Card ref={cardRef} className={cn('flex flex-col', WORKSPACE_HEIGHT_CLASS)}>
       <CardHeader className="flex-row shrink-0 flex-wrap items-center justify-between gap-3">
         <div>
           <CardTitle>{title}</CardTitle>

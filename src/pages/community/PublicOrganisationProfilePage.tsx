@@ -18,7 +18,6 @@ function PublicOrganisationProfilePage() {
         title="Organisation not found"
         description="This organisation may no longer have a public profile, or the link may be wrong."
         backTo="/community?tab=organisations"
-        backLabel="Back to Organisations"
       />
     )
   }

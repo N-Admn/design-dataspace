@@ -405,8 +405,8 @@ export function ProfilePartsPage() {
       </DocSection>
 
       <DocSection id="back" title="BackLink" description="Returns to wherever the user came from (the directory, or another profile), keeping that page’s search and filters. Opened directly from a shared link, it goes to the directory instead.">
-        <ComponentPreview title="Back link" code={`<BackLink fallbackTo="/community?tab=organisations" label="Back to Community" />`}>
-          <BackLink fallbackTo="/community" label="Back to Community" />
+        <ComponentPreview title="Back link" code={`<BackLink fallbackTo="/community?tab=organisations" />`}>
+          <BackLink fallbackTo="/community" />
         </ComponentPreview>
       </DocSection>
 

@@ -1,4 +1,4 @@
-import { useNavigate, useParams } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
 import { ArrowLeft } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
@@ -12,7 +12,6 @@ const USE_CASE_SEARCH_PATH = '/search?type=use-case'
 
 function UseCaseDetailPage() {
   const { id } = useParams<{ id: string }>()
-  const navigate = useNavigate()
   const { useCases, organisationWorkspaces } = useAppData()
   // Back to wherever the reader came from (usually search, with its query and
   // filters intact); the Use Cases search tab when there's no history.
@@ -28,15 +27,15 @@ function UseCaseDetailPage() {
         <p className="type-body text-muted-foreground">
           This use case may have been unpublished or does not exist.
         </p>
-        <Button type="button" variant="outline" onClick={() => navigate(USE_CASE_SEARCH_PATH)}>
-          Back to Use Cases
+        <Button type="button" variant="outline" onClick={goBack}>
+          Back
         </Button>
       </div>
     )
   }
 
   return (
-    // -mt-8 cancels <main>'s top padding so the hero band sits flush under the breadcrumb.
+    // -mt-8 cancels <main>'s top padding; the hero sets its own top spacing under the breadcrumb.
     <div className="mx-auto -mt-8 w-full max-w-6xl pb-8">
       <UseCasePreview
         form={form}

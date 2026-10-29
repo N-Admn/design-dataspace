@@ -102,6 +102,77 @@ function markSeedCurrent(version = SEED_VERSION, key = SEED_VERSION_KEY) {
   }
 }
 
+/** Datasets, events, charts and the profile are saved the same way as the other content, so a record created in one tab (a preview
+ * opened in a new tab, "View live" on a dataset) is there when another tab loads, and survives a reload. */
+const DATASETS_STORAGE_KEY = 'civicdataspace:datasets'
+const EVENTS_STORAGE_KEY = 'civicdataspace:events'
+const CHARTS_STORAGE_KEY = 'civicdataspace:charts'
+const PROFILE_STORAGE_KEY = 'civicdataspace:profile'
+
+function loadStoredList<T extends { status: string }>(key: string): T[] | null {
+  try {
+    const raw = window.localStorage.getItem(key)
+    if (!raw) return null
+    return normalizeStoredRecords(JSON.parse(raw) as T[])
+  } catch {
+    return null
+  }
+}
+
+function loadStoredProfile(): ContributorProfile {
+  try {
+    const raw = window.localStorage.getItem(PROFILE_STORAGE_KEY)
+    return raw ? { ...MOCK_PROFILE, ...(JSON.parse(raw) as Partial<ContributorProfile>) } : MOCK_PROFILE
+  } catch {
+    return MOCK_PROFILE
+  }
+}
+
+function bumpDatasetIdCounter(records: { id: string }[]) {
+  for (const record of records) {
+    const match = /^dataset-(\d+)$/.exec(record.id)
+    if (match) datasetIdCounter = Math.max(datasetIdCounter, Number(match[1]))
+  }
+}
+
+function bumpEventIdCounter(records: { id: string }[]) {
+  for (const record of records) {
+    const match = /^event-(\d+)$/.exec(record.id)
+    if (match) eventIdCounter = Math.max(eventIdCounter, Number(match[1]))
+  }
+}
+
+function bumpChartIdCounter(records: { id: string }[]) {
+  for (const record of records) {
+    const match = /^chart-(\d+)$/.exec(record.id)
+    if (match) chartIdCounter = Math.max(chartIdCounter, Number(match[1]))
+  }
+}
+
+/** Saves `value` under `key` whenever it changes, and applies a change made in another tab. */
+function usePersistedValue<T>(key: string, value: T, apply: (next: T) => void) {
+  React.useEffect(() => {
+    try {
+      window.localStorage.setItem(key, JSON.stringify(value))
+    } catch {
+      // Ignore storage write failures (e.g. private browsing quota).
+    }
+  }, [key, value])
+  React.useEffect(() => {
+    const handleStorage = (event: StorageEvent) => {
+      if (event.key !== key || !event.newValue) return
+      try {
+        apply(JSON.parse(event.newValue) as T)
+      } catch {
+        // Ignore malformed payloads from other tabs.
+      }
+    }
+    window.addEventListener('storage', handleStorage)
+    return () => window.removeEventListener('storage', handleStorage)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [key])
+}
+
 function bumpUseCaseIdCounter(records: UseCaseRecord[]) {
   for (const record of records) {
     const match = /^usecase-(\d+)$/.exec(record.id)
@@ -314,8 +385,16 @@ interface AppDataContextValue {
 const AppDataContext = React.createContext<AppDataContextValue | null>(null)
 
 function AppDataProvider({ children }: { children: React.ReactNode }) {
-  const [datasets, setDatasets] = React.useState<DatasetRecord[]>(MOCK_DATASETS)
-  const [events, setEvents] = React.useState<EventRecord[]>(MOCK_EVENTS)
+  const [datasets, setDatasets] = React.useState<DatasetRecord[]>(() => {
+    const initial = loadStoredList<DatasetRecord>(DATASETS_STORAGE_KEY) ?? MOCK_DATASETS
+    bumpDatasetIdCounter(initial)
+    return initial
+  })
+  const [events, setEvents] = React.useState<EventRecord[]>(() => {
+    const initial = loadStoredList<EventRecord>(EVENTS_STORAGE_KEY) ?? MOCK_EVENTS
+    bumpEventIdCounter(initial)
+    return initial
+  })
   const [organisations, setOrganisations] = React.useState<Organisation[]>(MOCK_ORGANISATIONS)
   const [useCases, setUseCases] = React.useState<UseCaseRecord[]>(() => {
     const stored = loadStoredUseCases()
@@ -336,7 +415,11 @@ function AppDataProvider({ children }: { children: React.ReactNode }) {
     bumpAIModelIdCounter(initial)
     return initial
   })
-  const [charts, setCharts] = React.useState<ChartRecord[]>(MOCK_CHART_RECORDS)
+  const [charts, setCharts] = React.useState<ChartRecord[]>(() => {
+    const initial = loadStoredList<ChartRecord>(CHARTS_STORAGE_KEY) ?? MOCK_CHART_RECORDS
+    bumpChartIdCounter(initial)
+    return initial
+  })
   const [publications, setPublications] = React.useState<PublicationRecord[]>(() => {
     const stored = loadStoredPublications()
     const initial = reconcileWithSeed(stored, MOCK_PUBLICATION_RECORDS, PUBLICATIONS_SEED_VERSION, PUBLICATIONS_SEED_VERSION_KEY)
@@ -344,7 +427,7 @@ function AppDataProvider({ children }: { children: React.ReactNode }) {
     bumpPublicationIdCounter(initial)
     return initial
   })
-  const [profile, setProfile] = React.useState<ContributorProfile>(MOCK_PROFILE)
+  const [profile, setProfile] = React.useState<ContributorProfile>(loadStoredProfile)
   const [organisationWorkspaces, setOrganisationWorkspaces] = React.useState<OrganisationRecord[]>(() => {
     const stored = loadStoredOrganisationWorkspaces()
     // Workspaces saved in this browser before a seed organisation existed would otherwise hide it: add the missing seeds.
@@ -366,6 +449,20 @@ function AppDataProvider({ children }: { children: React.ReactNode }) {
     bumpOrganisationInvitationIdCounter(initial)
     return initial
   })
+
+  usePersistedValue(DATASETS_STORAGE_KEY, datasets, (next) => {
+    bumpDatasetIdCounter(next)
+    setDatasets(next)
+  })
+  usePersistedValue(EVENTS_STORAGE_KEY, events, (next) => {
+    bumpEventIdCounter(next)
+    setEvents(next)
+  })
+  usePersistedValue(CHARTS_STORAGE_KEY, charts, (next) => {
+    bumpChartIdCounter(next)
+    setCharts(next)
+  })
+  usePersistedValue(PROFILE_STORAGE_KEY, profile, setProfile)
 
   React.useEffect(() => {
     try {

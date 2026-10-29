@@ -11,6 +11,7 @@ import { ToastProvider } from '@/components/ui/toast'
 import { ConfirmProvider } from '@/components/ui/confirm-dialog'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { HelpProvider } from '@/context/HelpContext'
+import { AuthProvider, SIGN_IN_PATH, isProviderPath, useAuth } from '@/context/AuthContext'
 import { cn } from '@/lib/utils'
 import { PAGE_GUTTER_X } from '@/lib/layout'
 import { DashboardPage } from '@/pages/DashboardPage'
@@ -67,6 +68,7 @@ import { PublicationDetailPage } from '@/pages/explore/PublicationDetailPage'
 import { DatasetDetailPage } from '@/pages/explore/DatasetDetailPage'
 import { CollaborativeDetailPage } from '@/pages/explore/CollaborativeDetailPage'
 import { EventDetailPage } from '@/pages/explore/EventDetailPage'
+import { AIModelDetailPage } from '@/pages/explore/AIModelDetailPage'
 import { SignInPage } from '@/pages/auth/SignInPage'
 import { RegisterPage } from '@/pages/auth/RegisterPage'
 import { ForgotPasswordPage } from '@/pages/auth/ForgotPasswordPage'
@@ -81,7 +83,9 @@ function useChromeOffset(routeKey: string) {
     const header = document.querySelector('header[data-chrome="dark"]')
     const crumb = document.querySelector('[data-slot="breadcrumb"]')
     const sync = () => {
-      const mainPad = 64 // px-10 py-8 → 32px top + 32px bottom
+      // The main element's own vertical padding (it is smaller in the compact layout).
+      const main = document.querySelector('main')
+      const mainPad = main ? parseFloat(getComputedStyle(main).paddingTop) + parseFloat(getComputedStyle(main).paddingBottom) : 64
       const px = ((header as HTMLElement | null)?.offsetHeight ?? 88) + ((crumb as HTMLElement | null)?.offsetHeight ?? 0) + mainPad
       root.style.setProperty('--layout-chrome-offset', `${px}px`)
     }
@@ -100,6 +104,7 @@ function useChromeOffset(routeKey: string) {
 
 function AppLayout() {
   const location = useLocation()
+  const { isSignedIn, justSignedOut } = useAuth()
   useChromeOffset(location.pathname)
   const isDashboard = location.pathname === '/'
   const isUseCasePreview = /^\/dashboard\/use-cases\/[^/]+\/preview$/.test(location.pathname)
@@ -142,6 +147,16 @@ function AppLayout() {
   const isAuthRoute = location.pathname.startsWith('/auth/')
   // Chrome-less host for the /design-system Responsive Playground's overlay previews (open Dialog / side sheet).
   const isPlaygroundPreview = location.pathname.startsWith('/design-system/preview/')
+
+  // The provider side (workspace, dashboard, organisation workspaces) is for signed-in people only. Anyone else is sent to
+  // sign in and brought back to the page they asked for; the bare root, which is the workspace, goes to the home page instead.
+  if (isProviderPath(location.pathname) && !isSignedIn) {
+    return location.pathname === '/' || justSignedOut ? (
+      <Navigate to="/discover" replace />
+    ) : (
+      <Navigate to={SIGN_IN_PATH} replace state={{ from: `${location.pathname}${location.search}` }} />
+    )
+  }
 
   // The Collaborative Detail Page playground is a full-page prototype with its own header, so it has no app chrome.
   const isCollaborativeDetailPlayground = location.pathname === '/playground/collaborative-detail'
@@ -195,7 +210,7 @@ function AppLayout() {
           'mx-auto flex w-full flex-1 flex-col',
           // The design-system page is a docs layout: its sidebar sits flush against the left edge and it handles its own
           // content padding, so it opts out of the shared page gutter, vertical padding and max width.
-          isDesignSystem || isDocumentation ? 'max-w-none' : cn('max-w-[1760px] gap-6 py-8', PAGE_GUTTER_X),
+          isDesignSystem || isDocumentation ? 'max-w-none' : cn('max-w-[1760px] gap-6 py-[var(--page-pad-y)]', PAGE_GUTTER_X),
           !hideSidebar && 'md:flex-row',
           // Consumer-facing pages (Explore, Search, Discover, Collaboratives,
           // Forum) sit on a white canvas rather than the app's default grey
@@ -261,6 +276,7 @@ function AppLayout() {
             <Route path="/explore/use-cases" element={<UseCasesExplorePage />} />
             <Route path="/explore/use-cases/:id" element={<UseCaseDetailPage />} />
             <Route path="/explore/ai-models" element={<Navigate to="/search?type=ai-models" replace />} />
+            <Route path="/explore/ai-models/:id" element={<AIModelDetailPage />} />
             <Route path="/explore/publications" element={<Navigate to="/search?type=publications" replace />} />
             <Route path="/explore/publications/:id" element={<PublicationDetailPage />} />
             <Route path="/explore/events" element={<Navigate to="/search?type=events" replace />} />
@@ -277,7 +293,7 @@ function AppLayout() {
             <Route path="/explore/organisations/:organisationId" element={<PublicOrganisationProfilePage />} />
             <Route path="/about" element={<AboutPage />} />
             <Route path="/contact" element={<ComingSoonPage title="Contact Us" />} />
-            <Route path="*" element={<Navigate to="/dashboard/datasets" replace />} />
+            <Route path="*" element={<Navigate to="/discover" replace />} />
           </Routes>
         </div>
       </main>
@@ -295,7 +311,9 @@ function App() {
       <ToastProvider>
         <ConfirmProvider>
           <HelpProvider>
-            <AppLayout />
+            <AuthProvider>
+              <AppLayout />
+            </AuthProvider>
           </HelpProvider>
         </ConfirmProvider>
       </ToastProvider>

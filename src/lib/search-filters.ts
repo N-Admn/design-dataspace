@@ -68,9 +68,11 @@ const sdgGoal: FilterGroupDef = { key: 'sdgGoal', label: 'SDG goals', kind: 'mul
 const resourceType: FilterGroupDef = { key: 'resourceType', label: 'Resource type', kind: 'multi', fixedOptions: RESOURCE_TYPE_OPTIONS }
 const eventType: FilterGroupDef = { key: 'eventType', label: 'Event type', kind: 'multi', fixedOptions: EVENT_TYPE_OPTIONS }
 
+const fileType: FilterGroupDef = { key: 'format', label: 'File type', kind: 'multi' }
+
 const ALL_FILTER_GROUPS: FilterGroupDef[] = [lastUpdated(), sector]
 
-const DATASET_FILTER_GROUPS: FilterGroupDef[] = [lastUpdated(), sector]
+const DATASET_FILTER_GROUPS: FilterGroupDef[] = [lastUpdated(), fileType]
 
 const USE_CASE_FILTER_GROUPS: FilterGroupDef[] = [lastUpdated(), sdgGoal]
 
@@ -126,7 +128,7 @@ export function computeGroupOptions(group: FilterGroupDef, items: SearchResultIt
 }
 
 /** Every URL parameter that carries a filter: the rail's groups, plus the chip-only facets a badge can link to. */
-export const FILTER_URL_KEYS = ['updated', 'sector', 'sdgGoal', 'eventType', 'resourceType', 'geography', 'modelType']
+export const FILTER_URL_KEYS = ['updated', 'sector', 'sdgGoal', 'eventType', 'resourceType', 'format', 'geography', 'modelType']
 
 /** The filter keys that apply on a tab: its rail groups, and the chip-only facets (valid on any tab that has them in its data). */
 export function allowedFilterKeys(type: TypeFilter): Set<string> {
@@ -143,7 +145,9 @@ export function describeActiveFilters(type: TypeFilter, active: Record<string, s
       out.push({ key: group.key, value, group: group.label, label: options.find((o) => o.value === value)?.label ?? value })
     }
   }
+  const railKeys = new Set(FILTER_GROUPS_BY_TYPE[type].map((g) => g.key))
   for (const [key, extra] of Object.entries(EXTRA_FACETS)) {
+    if (railKeys.has(key)) continue
     for (const value of active[key] ?? []) {
       out.push({ key, value, group: extra.label, label: extra.options.find((o) => o.value === value)?.label ?? value })
     }

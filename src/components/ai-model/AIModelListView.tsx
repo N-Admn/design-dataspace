@@ -1,4 +1,4 @@
-import { Archive, Pencil, Sparkles, Trash2 } from 'lucide-react'
+import { Archive, ExternalLink, Pencil, Sparkles, Trash2 } from 'lucide-react'
 
 import { ManagementTable, type ManagementColumn, type ManagementFilterDef, type ManagementRowAction } from '@/components/shared/management-table/ManagementTable'
 import { TruncatedText } from '@/components/shared/TruncatedText'
@@ -148,6 +148,12 @@ function AIModelListView({
       ]
     }
     return [
+      {
+        key: 'view-live',
+        icon: ExternalLink,
+        label: () => `View live: ${name}`,
+        onClick: () => window.open(`/explore/ai-models/${aiModel.id}`, '_blank', 'noopener,noreferrer'),
+      },
       { key: 'edit', icon: Pencil, label: () => `Edit ${name}`, onClick: () => onEditAIModel(aiModel.id) },
       { key: 'unpublish', icon: Archive, label: () => `Unpublish ${name}`, onClick: () => onUnpublishAIModel(aiModel.id), destructive: true },
     ]

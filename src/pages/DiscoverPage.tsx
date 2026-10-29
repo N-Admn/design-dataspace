@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { GlobalSearchField } from '@/components/discover/GlobalSearchField'
 import { Chip } from '@/components/discover/Chip'
 import { CivicDataEcosystem } from '@/components/civic-data-ecosystem/CivicDataEcosystem'
+import { useGoToProvider } from '@/context/AuthContext'
 import { useLandingEntrance } from '@/hooks/use-landing-entrance'
 
 // Typed out, held, erased and replaced in the search field's own placeholder — "Try searching: {example}" —
@@ -32,6 +33,7 @@ function usePrefersReducedMotion(): boolean {
 
 function DiscoverPage() {
   const navigate = useNavigate()
+  const goToProvider = useGoToProvider()
   const [query, setQuery] = React.useState('')
   const [searchFocused, setSearchFocused] = React.useState(false)
   const [exampleIndex, setExampleIndex] = React.useState(0)
@@ -84,13 +86,13 @@ function DiscoverPage() {
 
   return (
     <div className="flex w-full flex-col gap-8">
-      {/* Hero + cards. From `lg` this block is exactly one screen tall (viewport − the 88px navbar − the main
-          area's 2rem top and bottom padding), and the cards take whatever the hero leaves, so the whole composition
+      {/* Hero + cards. From `lg` this block is exactly one screen tall (viewport − the navbar − the main
+          area's top and bottom padding; both are smaller in the compact layout), and the cards take whatever the hero leaves, so the whole composition
           is on screen at rest. Heading and search share the cards' content width (the same max-w-[1400px] cap as the
           dataset and event detail pages), with the topic chips stretched to the search bar's width beneath it. */}
       <div
         ref={entrance.rootRef}
-        className="flex flex-col gap-6 lg:h-[calc(100dvh-88px-4rem)] lg:min-h-[38rem] lg:gap-4"
+        className="flex flex-col gap-6 lg:h-[calc(100dvh-var(--nav-height)-var(--page-pad-y)*2)] lg:min-h-[var(--discover-min-height)] lg:gap-4"
       >
         <section
           style={entrance.heroStyle}
@@ -152,7 +154,7 @@ function DiscoverPage() {
           <p className="text-sm text-muted-foreground">Have data, research, or a project to share?</p>
           <button
             type="button"
-            onClick={() => navigate('/')}
+            onClick={() => goToProvider('/')}
             className="rounded-sm text-left text-sm font-medium text-primary underline-offset-4 transition-colors hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             Contribute to CivicDataSpace →

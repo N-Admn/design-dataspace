@@ -2,6 +2,7 @@ import * as React from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { CheckCircle2 } from 'lucide-react'
 
+import { useAuthReturn } from '@/context/AuthContext'
 import { AuthLayout } from '@/components/auth/AuthLayout'
 import { GoogleButton } from '@/components/auth/GoogleButton'
 import { PasswordInput } from '@/components/auth/PasswordInput'
@@ -23,6 +24,7 @@ interface FormErrors {
 
 function RegisterPage() {
   const navigate = useNavigate()
+  const { from, complete, linkState } = useAuthReturn()
 
   const [view, setView] = React.useState<'register' | 'account-created'>('register')
 
@@ -81,7 +83,7 @@ function RegisterPage() {
   }
 
   const handleGoogleClick = () => {
-    navigate('/auth/sign-in', { state: { openGoogle: true } })
+    navigate('/auth/sign-in', { state: linkState({ openGoogle: true }) })
   }
 
   if (view === 'account-created') {
@@ -93,8 +95,8 @@ function RegisterPage() {
           </div>
           <h1 className="mt-4 type-heading-1 text-primary">Account created</h1>
           <p className="mt-2 text-sm text-muted-foreground">Welcome to CivicDataSpace.</p>
-          <Button type="button" size="lg" className="mt-6 w-full" onClick={() => navigate('/')}>
-            Continue to Dashboard
+          <Button type="button" size="lg" className="mt-6 w-full" onClick={complete}>
+            {from ? 'Continue' : 'Continue to Dashboard'}
           </Button>
         </div>
       </AuthLayout>
@@ -127,7 +129,7 @@ function RegisterPage() {
           {errors.email === 'An account already exists with this email. Sign in instead.' ? (
             <p className="mt-1.5 text-xs font-medium text-destructive">
               An account already exists with this email.{' '}
-              <Link to="/auth/sign-in" state={{ email }} className="underline-offset-2 hover:underline focus-visible:underline">
+              <Link to="/auth/sign-in" state={linkState({ email })} className="underline-offset-2 hover:underline focus-visible:underline">
                 Sign in instead.
               </Link>
             </p>
@@ -223,7 +225,7 @@ function RegisterPage() {
 
       <p className="mt-6 text-center text-sm text-muted-foreground">
         Already have an account?{' '}
-        <Link to="/auth/sign-in" className="font-medium text-primary underline-offset-4 hover:underline focus-visible:underline">
+        <Link to="/auth/sign-in" state={linkState()} className="font-medium text-primary underline-offset-4 hover:underline focus-visible:underline">
           Sign in
         </Link>
       </p>

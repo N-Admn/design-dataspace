@@ -26,7 +26,7 @@ import type { UseCaseRecord } from '@/types/usecase'
  *
  * ## What counts as a published contribution
  * A record of a type with a public page, whose status is `published`, read from its **published snapshot** (`publishedForm`).
- * Drafts, and a working copy's unpublished edits, never count. Publications are the publications listed on a published event
+ * Drafts, and a working copy's unpublished edits, never count. Publications are the standalone published publications and the publications listed on a published event
  * (their page is the event's). Standalone Publications and Charts have no public page yet and are left out. (AI Models link to
  * the same page the Search results use.)
  *
@@ -155,13 +155,13 @@ export function collectContributions(source: ContributionSource): PublicContribu
       )
     }
   }
+  for (const m of source.aiModels) {
+    const form = m.status === 'published' ? m.publishedForm : null
+    if (form) add(m, { type: 'ai-model', title: form.metadata.name || 'Untitled AI Model', description: form.metadata.description, href: `/explore/ai-models/${m.id}` })
+  }
   for (const p of source.publications) {
     const form = p.status === 'published' ? p.publishedForm : null
     if (form) add(p, { type: 'publication', title: form.metadata.name || 'Untitled publication', description: form.metadata.description, href: `/explore/publications/${p.id}` })
-  }
-  for (const m of source.aiModels) {
-    const form = m.status === 'published' ? m.publishedForm : null
-    if (form) add(m, { type: 'ai-model', title: form.metadata.name || 'Untitled AI Model', description: form.metadata.description, href: `/dashboard/ai-models/${m.id}/preview` })
   }
   return out
 }

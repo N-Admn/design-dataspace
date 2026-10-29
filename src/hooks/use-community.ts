@@ -18,9 +18,9 @@ function useCommunityDirectory() {
 function useContentCardItems() {
   const { datasets, useCases, collaboratives, events, aiModels, publications, organisationWorkspaces, charts } = useAppData()
   return React.useMemo(() => {
-    const index = buildSearchIndex({ datasets, useCases, collaboratives, events, aiModels, organisationWorkspaces, charts, publications })
+    const index = buildSearchIndex({ datasets, useCases, collaboratives, events, aiModels, publications, organisationWorkspaces, charts })
     return new Map<string, SearchResultItem>(index.map((item) => [`${item.type}:${item.id}`, item]))
-  }, [datasets, useCases, collaboratives, events, aiModels, organisationWorkspaces, charts, publications])
+  }, [datasets, useCases, collaboratives, events, aiModels, publications, organisationWorkspaces, charts])
 }
 
 export { useCommunityDirectory, useContentCardItems }

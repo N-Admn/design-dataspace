@@ -1,5 +1,5 @@
 /** Vertical space consumed by fixed app chrome above the workspace area:
- *  88px TopNav (`h-[88px]`) + 36px breadcrumb + 64px page padding (`py-8` ×2).
+ *  TopNav (`--nav-height`: 88px, 68px in the compact layout) + breadcrumb + page padding (`--page-pad-y` ×2: 64px, 40px compact).
  *
  *  The px value is defined once as `--layout-chrome-offset` in src/index.css.
  *  The sidebar, the management table and the dashboard all reference that single

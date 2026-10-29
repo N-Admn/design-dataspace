@@ -1,4 +1,4 @@
-import { Archive, FileStack, Pencil, Trash2 } from 'lucide-react'
+import { Archive, ExternalLink, FileStack, Pencil, Trash2 } from 'lucide-react'
 
 import { ManagementTable, type ManagementColumn, type ManagementFilterDef, type ManagementRowAction } from '@/components/shared/management-table/ManagementTable'
 import { TruncatedText } from '@/components/shared/TruncatedText'
@@ -134,6 +134,12 @@ function PublicationListView({
       ]
     }
     return [
+      {
+        key: 'view-live',
+        icon: ExternalLink,
+        label: () => `View live: ${name}`,
+        onClick: () => window.open(`/explore/publications/${record.id}`, '_blank', 'noopener,noreferrer'),
+      },
       { key: 'edit', icon: Pencil, label: () => `Edit ${name}`, onClick: () => onEditPublication(record.id) },
       { key: 'unpublish', icon: Archive, label: () => `Unpublish ${name}`, onClick: () => onUnpublishPublication(record.id), destructive: true },
     ]

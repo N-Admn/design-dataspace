@@ -1,4 +1,4 @@
-import { Archive, Pencil, Trash2, Users2 } from 'lucide-react'
+import { Archive, ExternalLink, Pencil, Trash2, Users2 } from 'lucide-react'
 
 import { ManagementTable, type ManagementColumn, type ManagementFilterDef, type ManagementRowAction } from '@/components/shared/management-table/ManagementTable'
 import { TruncatedText } from '@/components/shared/TruncatedText'
@@ -136,6 +136,12 @@ function CollaborativeListView({
       ]
     }
     return [
+      {
+        key: 'view-live',
+        icon: ExternalLink,
+        label: () => `View live: ${name}`,
+        onClick: () => window.open(`/explore/collaboratives/${collaborative.id}`, '_blank', 'noopener,noreferrer'),
+      },
       { key: 'edit', icon: Pencil, label: () => `Edit ${name}`, onClick: () => onEditCollaborative(collaborative.id) },
       { key: 'unpublish', icon: Archive, label: () => `Unpublish ${name}`, onClick: () => onUnpublishCollaborative(collaborative.id), destructive: true },
     ]

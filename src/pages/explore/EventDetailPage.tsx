@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
 import { ArrowLeft } from 'lucide-react'
 
 import { EmptyState } from '@/components/shared/EmptyState'
@@ -43,10 +43,10 @@ function EventDetailPage() {
     return (
       <div className="mx-auto flex max-w-lg flex-col items-center gap-3 py-24 text-center">
         <EmptyState title="Event not found" description="This event may have been unpublished or does not exist." />
-        <Link to="/discover" className="flex items-center gap-1.5 text-sm font-medium text-text-brand hover:underline">
+        <button type="button" onClick={goBack} className="flex items-center gap-1.5 text-sm font-medium text-text-brand hover:underline">
           <ArrowLeft className="size-4" />
-          Back to Discover
-        </Link>
+          Back
+        </button>
       </div>
     )
   }

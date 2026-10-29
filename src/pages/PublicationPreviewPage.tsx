@@ -101,6 +101,7 @@ function PublicationPreviewPage() {
         <div className="flex items-center gap-2">
           {justPublished ? (
             <>
+              {/* Opens the real public page in this tab, as the Event and Use Case previews do. */}
               <Button type="button" variant="outline" onClick={() => navigate(`/explore/publications/${id}`)}>
                 View live
               </Button>

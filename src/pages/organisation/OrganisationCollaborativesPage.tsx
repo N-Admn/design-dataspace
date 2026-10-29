@@ -24,6 +24,7 @@ function OrganisationCollaborativesPage() {
     status: c.status,
     updatedAt: c.updatedAt,
     createdBy: c.createdBy,
+    liveHref: `/explore/collaboratives/${c.id}`,
   }))
 
   const open = (id: string | null) =>

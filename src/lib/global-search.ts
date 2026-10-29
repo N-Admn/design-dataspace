@@ -182,31 +182,33 @@ export function buildSearchIndex({
 
   for (const d of datasets) {
     if (d.status !== 'published') continue
+    // Visitors see the live version; edits that are saved but not yet published must not show in search.
+    const form = d.publishedForm ?? d.form
     const publisher = resolveDatasetPublisher(d, organisationWorkspaces)
     const chartCount = charts.filter((c) => c.status === 'published' && c.form.datasetId === d.id).length
     items.push({
       id: d.id,
       type: 'dataset',
-      title: d.form.metadata.name || 'Untitled dataset',
-      description: d.form.metadata.description,
+      title: form.metadata.name || 'Untitled dataset',
+      description: form.metadata.description,
       organisation: publisher.name,
-      meta: sectorGeoMeta(d.form.metadata.sector, d.form.metadata.geography),
+      meta: sectorGeoMeta(form.metadata.sector, form.metadata.geography),
       href: `/explore/datasets/${d.id}`,
-      tags: d.form.metadata.tags,
+      tags: form.metadata.tags,
       cardMeta: {
-        geography: d.form.metadata.geography ? optionLabel(GEOGRAPHY_OPTIONS, d.form.metadata.geography) : undefined,
-        formats: Array.from(new Set(d.form.files.map((f) => f.extension.toUpperCase()))),
+        geography: form.metadata.geography ? optionLabel(GEOGRAPHY_OPTIONS, form.metadata.geography) : undefined,
+        formats: Array.from(new Set(form.files.map((f) => f.extension.toUpperCase()))),
         chartCount,
       },
       publishers: [{ name: publisher.name, avatarUrl: publisher.avatarUrl }],
       facets: {
-        sector: d.form.metadata.sector ? [d.form.metadata.sector] : [],
-        geography: d.form.metadata.geography ? [d.form.metadata.geography] : [],
+        sector: form.metadata.sector ? [form.metadata.sector] : [],
+        geography: form.metadata.geography ? [form.metadata.geography] : [],
         organisation: [publisher.name],
-        datasetType: [d.form.datasetType],
-        access: d.form.metadata.accessType ? [d.form.metadata.accessType] : [],
-        format: Array.from(new Set(d.form.files.map((f) => f.extension.toUpperCase()))),
-        license: d.form.metadata.license ? [d.form.metadata.license] : [],
+        datasetType: [form.datasetType],
+        access: form.metadata.accessType ? [form.metadata.accessType] : [],
+        format: Array.from(new Set(form.files.map((f) => f.extension.toUpperCase()))),
+        license: form.metadata.license ? [form.metadata.license] : [],
         updatedAt: d.updatedAt,
       },
     })
@@ -214,38 +216,40 @@ export function buildSearchIndex({
 
   for (const u of useCases) {
     if (u.status !== 'published') continue
-    const organisation = u.form.connections.organizations[0]?.name
+    // Visitors see the live version; edits that are saved but not yet published must not show in search.
+    const form = u.publishedForm ?? u.form
+    const organisation = form.connections.organizations[0]?.name
     // Prefer the connected organisation(s) as the publisher; fall back to the
     // first credited contributor when none is set — still real attribution
     // from the record, never invented.
     const useCasePublishers: SearchResultItem['publishers'] =
-      u.form.connections.organizations.length > 0
-        ? u.form.connections.organizations.map((o) => ({ name: o.name, avatarUrl: orgLogoFor(o.name, o.logo?.dataUrl, o.url) }))
-        : u.form.connections.contributors.slice(0, 1).map((c) => ({ name: c.name, avatarUrl: c.image?.dataUrl ?? null }))
+      form.connections.organizations.length > 0
+        ? form.connections.organizations.map((o) => ({ name: o.name, avatarUrl: orgLogoFor(o.name, o.logo?.dataUrl, o.url) }))
+        : form.connections.contributors.slice(0, 1).map((c) => ({ name: c.name, avatarUrl: c.image?.dataUrl ?? null }))
     items.push({
       id: u.id,
       type: 'use-case',
-      title: u.form.metadata.title || 'Untitled Use Case',
-      description: u.form.metadata.subtitle,
+      title: form.metadata.title || 'Untitled Use Case',
+      description: form.metadata.subtitle,
       organisation,
-      meta: u.form.metadata.sectors.map((s) => optionLabel(SECTOR_OPTIONS, s)).filter(Boolean).join(', ') || undefined,
+      meta: form.metadata.sectors.map((s) => optionLabel(SECTOR_OPTIONS, s)).filter(Boolean).join(', ') || undefined,
       // Public detail page — never the owner's publishing preview under /dashboard.
       href: `/explore/use-cases/${u.id}`,
-      thumbnailUrl: u.form.metadata.thumbnail?.dataUrl ?? null,
-      tags: u.form.metadata.tags,
+      thumbnailUrl: form.metadata.thumbnail?.dataUrl ?? null,
+      tags: form.metadata.tags,
       cardMeta: {
-        datasetCount: u.form.connections.datasets.length,
-        chartCount: u.form.blocks.filter((b) => b.type === 'chart').length,
-        geography: u.form.metadata.geographies[0] ? optionLabel(GEOGRAPHY_OPTIONS, u.form.metadata.geographies[0]) : undefined,
+        datasetCount: form.connections.datasets.length,
+        chartCount: form.blocks.filter((b) => b.type === 'chart').length,
+        geography: form.metadata.geographies[0] ? optionLabel(GEOGRAPHY_OPTIONS, form.metadata.geographies[0]) : undefined,
       },
       publishers: useCasePublishers.length > 0 ? useCasePublishers : undefined,
       facets: {
-        sector: u.form.metadata.sectors,
-        sdgGoal: u.form.metadata.sdgGoals,
-        geography: u.form.metadata.geographies,
-        organisation: u.form.connections.organizations.map((o) => o.name),
-        contributors: u.form.connections.contributors.map((c) => c.name),
-        datasetsUsed: u.form.connections.datasets.map((d) => d.title),
+        sector: form.metadata.sectors,
+        sdgGoal: form.metadata.sdgGoals,
+        geography: form.metadata.geographies,
+        organisation: form.connections.organizations.map((o) => o.name),
+        contributors: form.connections.contributors.map((c) => c.name),
+        datasetsUsed: form.connections.datasets.map((d) => d.title),
         updatedAt: u.updatedAt,
       },
     })
@@ -253,36 +257,38 @@ export function buildSearchIndex({
 
   for (const c of collaboratives) {
     if (c.status !== 'published') continue
-    const orgPeople = c.form.connections.people.filter((p) => p.kind === 'organisation')
+    // Visitors see the live version; edits that are saved but not yet published must not show in search.
+    const form = c.publishedForm ?? c.form
+    const orgPeople = form.connections.people.filter((p) => p.kind === 'organisation')
     const orgNames = orgPeople.map((p) => p.name)
     // Prefer the connected organisations as the publisher(s); fall back to
     // any connected person when the collaborative has none — still real
     // attribution from the record.
-    const collaborativePublishers = (orgPeople.length > 0 ? orgPeople : c.form.connections.people.slice(0, 1)).map(
+    const collaborativePublishers = (orgPeople.length > 0 ? orgPeople : form.connections.people.slice(0, 1)).map(
       (p) => ({ name: p.name, avatarUrl: p.kind === 'organisation' ? orgLogoFor(p.name, p.logo?.dataUrl) : (p.logo?.dataUrl ?? null) }),
     )
     items.push({
       id: c.id,
       type: 'collaborative',
-      title: c.form.metadata.name || 'Untitled Collaborative',
+      title: form.metadata.name || 'Untitled Collaborative',
       organisation: orgNames[0],
-      meta: c.form.metadata.sectors.map((s) => optionLabel(SECTOR_OPTIONS, s)).filter(Boolean).join(', ') || undefined,
+      meta: form.metadata.sectors.map((s) => optionLabel(SECTOR_OPTIONS, s)).filter(Boolean).join(', ') || undefined,
       // The public page: it shows the published snapshot only (the owner's preview shows the working copy and publish controls).
       href: `/explore/collaboratives/${c.id}`,
-      thumbnailUrl: c.form.metadata.image?.dataUrl ?? null,
-      tags: c.form.metadata.tags,
+      thumbnailUrl: form.metadata.image?.dataUrl ?? null,
+      tags: form.metadata.tags,
       cardMeta: {
-        datasetCount: c.form.connections.datasets.length,
-        useCaseCount: c.form.connections.useCases.length,
-        contributorCount: c.form.connections.people.length,
+        datasetCount: form.connections.datasets.length,
+        useCaseCount: form.connections.useCases.length,
+        contributorCount: form.connections.people.length,
       },
       publishers: collaborativePublishers.length > 0 ? collaborativePublishers : undefined,
       // No "Status" facet: the model has no field beyond the internal
       // draft/published lifecycle, which consumer search doesn't expose.
       facets: {
-        sector: c.form.metadata.sectors,
-        sdgGoal: c.form.metadata.sdgGoals,
-        geography: c.form.metadata.geographies,
+        sector: form.metadata.sectors,
+        sdgGoal: form.metadata.sdgGoals,
+        geography: form.metadata.geographies,
         organisation: orgNames,
         updatedAt: c.updatedAt,
       },
@@ -291,47 +297,49 @@ export function buildSearchIndex({
 
   for (const e of events) {
     if (e.status !== 'published') continue
-    const location = [e.form.metadata.city, e.form.metadata.country].filter(Boolean).join(', ')
-    const organiserNames = e.form.organisers.map((o) => o.name)
+    // Visitors see the live version; edits that are saved but not yet published must not show in search.
+    const form = e.publishedForm ?? e.form
+    const location = [form.metadata.city, form.metadata.country].filter(Boolean).join(', ')
+    const organiserNames = form.organisers.map((o) => o.name)
     items.push({
       id: e.id,
       type: 'event',
-      title: e.form.metadata.title || 'Untitled Event',
-      description: e.form.metadata.subtitle,
+      title: form.metadata.title || 'Untitled Event',
+      description: form.metadata.subtitle,
       organisation: organiserNames[0],
-      meta: [e.form.metadata.startDate && formatEventDateRange(e.form.metadata), location].filter(Boolean).join(' · ') || undefined,
+      meta: [form.metadata.startDate && formatEventDateRange(form.metadata), location].filter(Boolean).join(' · ') || undefined,
       href: `/explore/events/${e.id}`,
-      thumbnailUrl: e.form.metadata.coverImage?.dataUrl || EVENT_MOCK_COVER_IMAGE,
+      thumbnailUrl: form.metadata.coverImage?.dataUrl || EVENT_MOCK_COVER_IMAGE,
       cardMeta: {
-        dateRange: e.form.metadata.startDate ? formatEventDateRange(e.form.metadata) : undefined,
+        dateRange: form.metadata.startDate ? formatEventDateRange(form.metadata) : undefined,
         location: location || undefined,
       },
       publishers:
-        e.form.organisers.length > 0
-          ? e.form.organisers.map((o) => ({ name: o.name, avatarUrl: orgLogoFor(o.name, o.logo?.dataUrl, o.url) }))
+        form.organisers.length > 0
+          ? form.organisers.map((o) => ({ name: o.name, avatarUrl: orgLogoFor(o.name, o.logo?.dataUrl, o.url) }))
           : undefined,
       // No "Geography" facet: events have a venue city/country, not a value
       // from the shared GEOGRAPHY_OPTIONS list the other modules use.
       // "Sector" is the event's own Theme/Sector field, which uses the same
       // list as every other module, so a sector filter on All reaches events.
       facets: {
-        sector: e.form.metadata.theme ? [e.form.metadata.theme] : [],
+        sector: form.metadata.theme ? [form.metadata.theme] : [],
         organisation: organiserNames,
-        eventType: e.form.metadata.eventType ? [e.form.metadata.eventType] : [],
-        eventStatus: [eventTimeStatus(e.form.metadata)],
+        eventType: form.metadata.eventType ? [form.metadata.eventType] : [],
+        eventStatus: [eventTimeStatus(form.metadata)],
         updatedAt: e.updatedAt,
       },
     })
 
-    for (const pub of e.form.publications) {
-      const year = e.form.metadata.startDate ? e.form.metadata.startDate.slice(0, 4) : undefined
+    for (const pub of form.publications) {
+      const year = form.metadata.startDate ? form.metadata.startDate.slice(0, 4) : undefined
       items.push({
         id: `${e.id}-${pub.id}`,
         type: 'publication',
         title: pub.title,
         description: pub.description,
         organisation: pub.organisation,
-        meta: e.form.metadata.title ? `From ${e.form.metadata.title}` : undefined,
+        meta: form.metadata.title ? `From ${form.metadata.title}` : undefined,
         href: `/explore/events/${e.id}`,
         cardMeta: {
           year,
@@ -348,7 +356,7 @@ export function buildSearchIndex({
         // without it a sector filter on All would drop every one of them.
         // "Year" is the parent event's year, the closest real date available.
         facets: {
-          sector: e.form.metadata.theme ? [e.form.metadata.theme] : [],
+          sector: form.metadata.theme ? [form.metadata.theme] : [],
           publicationType: pub.publicationType ? [pub.publicationType] : [],
           resourceType: pub.publicationType ? [EVENT_PUBLICATION_RESOURCE_TYPE[pub.publicationType] ?? 'other'] : [],
           organisation: pub.organisation ? [pub.organisation] : [],
@@ -361,20 +369,22 @@ export function buildSearchIndex({
 
   for (const m of aiModels) {
     if (m.status !== 'published') continue
-    const primaryVersion = m.form.versions.find((v) => v.isPrimary) ?? m.form.versions[0]
+    // Visitors see the live version; edits that are saved but not yet published must not show in search.
+    const form = m.publishedForm ?? m.form
+    const primaryVersion = form.versions.find((v) => v.isPrimary) ?? form.versions[0]
     const primaryAccess = getPrimaryAccessMethod(primaryVersion)
     const publisher = resolvePublisherByOrganisation(m.organisationId, m.createdBy, organisationWorkspaces)
     items.push({
       id: m.id,
       type: 'ai-model',
-      title: m.form.metadata.name || 'Untitled AI Model',
-      description: m.form.metadata.description,
-      meta: m.form.metadata.sectors.map((s) => optionLabel(SECTOR_OPTIONS, s)).filter(Boolean).join(', ') || undefined,
-      href: `/dashboard/ai-models/${m.id}/preview`,
-      tags: m.form.metadata.tags,
+      title: form.metadata.name || 'Untitled AI Model',
+      description: form.metadata.description,
+      meta: form.metadata.sectors.map((s) => optionLabel(SECTOR_OPTIONS, s)).filter(Boolean).join(', ') || undefined,
+      href: `/explore/ai-models/${m.id}`,
+      tags: form.metadata.tags,
       cardMeta: {
         version: primaryVersion?.name,
-        modelType: m.form.metadata.modelType ? optionLabel(MODEL_TYPE_OPTIONS, m.form.metadata.modelType) : undefined,
+        modelType: form.metadata.modelType ? optionLabel(MODEL_TYPE_OPTIONS, form.metadata.modelType) : undefined,
         accessMethod: primaryAccess?.provider ? optionLabel(PROVIDER_OPTIONS, primaryAccess.provider) : undefined,
       },
       publishers: [{ name: publisher.name, avatarUrl: publisher.avatarUrl }],
@@ -382,9 +392,9 @@ export function buildSearchIndex({
       // like Dataset's — only per-access-method auth configuration, which
       // isn't a comparable "who can use this" classification.
       facets: {
-        sector: m.form.metadata.sectors,
-        geography: m.form.metadata.geographies,
-        modelType: m.form.metadata.modelType ? [m.form.metadata.modelType] : [],
+        sector: form.metadata.sectors,
+        geography: form.metadata.geographies,
+        modelType: form.metadata.modelType ? [form.metadata.modelType] : [],
         provider: primaryAccess?.provider ? [primaryAccess.provider] : [],
         updatedAt: m.updatedAt,
       },

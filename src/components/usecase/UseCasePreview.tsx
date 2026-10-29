@@ -13,7 +13,6 @@ import {
   type UseCaseCreator,
 } from '@/components/usecase/UseCaseSections'
 import { formatShortDate } from '@/lib/format'
-import { cn } from '@/lib/utils'
 import { GEOGRAPHY_OPTIONS } from '@/types/dataset'
 import type { UseCaseFormState } from '@/types/usecase'
 
@@ -30,9 +29,9 @@ interface UseCasePreviewProps {
   stickyTopClassName?: string
 }
 
-/** The published Use Case page: full-bleed brand-blue hero with the thumbnail
- * beside the title, then the story with a sticky rail, then full-width
- * dashboard, datasets and metadata sections. */
+/** The published Use Case page: a reading-column hero with the thumbnail on a
+ * full-bleed brand-blue band below the title, then the story with a sticky rail,
+ * then full-width dashboard, datasets and metadata sections. */
 function UseCasePreview({
   form,
   creator,
@@ -48,25 +47,16 @@ function UseCasePreview({
 
   return (
     <article className="flex flex-col gap-12 sm:gap-16">
-      {/* Hero — full-bleed brand-blue band. The spread shadow paints the colour
-          past the page container to the viewport edges and the clip-path keeps it
-          from bleeding vertically, so there is no horizontal scroll. */}
-      <header className="bg-workspace-hero-to py-10 shadow-[0_0_0_100vmax_var(--workspace-hero-to)] [clip-path:inset(0_-100vmax)] sm:py-14">
-        <div
-          className={cn(
-            'grid items-center gap-8 lg:gap-12',
-            metadata.thumbnail?.dataUrl && 'md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]',
-          )}
-        >
-          <div className="flex min-w-0 flex-col gap-5">
-            {backLink}
-            <h1 className="type-display tracking-tight text-foreground">{title}</h1>
-            {metadata.subtitle && (
-              <p className="type-heading-3 font-normal text-foreground/75">{metadata.subtitle}</p>
-            )}
-
-            {/* Who created it (one person or one organisation), then where and when. */}
-            <EntityRow name={creator.name} imageUrl={creator.avatarUrl} detail={creator.detail} />
+      {/* Hero — a left-aligned reading column under the back link, wide enough
+          that long titles stay at two or three lines, then the thumbnail on a
+          full-bleed brand-blue band. The spread shadow paints the colour past the
+          page container to the viewport edges and the clip-path keeps it from
+          bleeding vertically, so there is no horizontal scroll. */}
+      <header className="flex flex-col gap-10">
+        <div className="flex flex-col gap-8 pt-6 sm:pt-8">
+          {backLink}
+          <div className="flex max-w-5xl flex-col gap-5">
+            {/* Where and when, then the title, then who created it (one person or one organisation). */}
             {hasPlacement && (
               <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 type-body text-foreground/75">
                 {metadata.geographies.length > 0 && (
@@ -83,12 +73,25 @@ function UseCasePreview({
                 )}
               </div>
             )}
+            <h1 className="type-display-1 text-pretty text-foreground">{title}</h1>
+            {metadata.subtitle && (
+              <p className="type-heading-3 font-normal text-foreground/75">{metadata.subtitle}</p>
+            )}
+            <EntityRow name={creator.name} imageUrl={creator.avatarUrl} detail={creator.detail} />
           </div>
-
-          {metadata.thumbnail?.dataUrl && (
-            <img src={metadata.thumbnail.dataUrl} alt="" className="aspect-[4/3] w-full rounded-xl object-cover" />
-          )}
         </div>
+
+        {metadata.thumbnail?.dataUrl ? (
+          <div className="bg-workspace-hero-to py-8 shadow-[0_0_0_100vmax_var(--workspace-hero-to)] [clip-path:inset(0_-100vmax)] sm:py-10">
+            <img
+              src={metadata.thumbnail.dataUrl}
+              alt=""
+              className="aspect-[2/1] w-full rounded-xl object-cover lg:aspect-[21/8]"
+            />
+          </div>
+        ) : (
+          <div className="border-t border-border-default" />
+        )}
       </header>
 
       {/* Story — sticky share + contents rail on the left, reading column on the right. */}
