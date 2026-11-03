@@ -1,4 +1,5 @@
 import {
+  Bell,
   CalendarDays,
   Database,
   FileStack,
@@ -57,7 +58,10 @@ export const NAV_GROUPS: NavGroup[] = [
   {
     key: 'account',
     label: 'Account',
-    items: [{ key: 'profile', label: 'Profile', icon: User, path: '/dashboard/profile' }],
+    items: [
+      { key: 'notifications', label: 'Notifications', icon: Bell, path: '/dashboard/notifications' },
+      { key: 'profile', label: 'Profile', icon: User, path: '/dashboard/profile' },
+    ],
   },
   {
     key: 'more',

@@ -11,6 +11,10 @@ import { ToastProvider } from '@/components/ui/toast'
 import { ConfirmProvider } from '@/components/ui/confirm-dialog'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { HelpProvider } from '@/context/HelpContext'
+import { NotificationsProvider } from '@/context/NotificationsContext'
+import { RequestActionsProvider } from '@/components/notifications/RequestActions'
+import { DevPrototypeControls } from '@/components/notifications/DevPrototypeControls'
+import { NotificationsPage } from '@/pages/NotificationsPage'
 import { AuthProvider, SIGN_IN_PATH, isProviderPath, useAuth } from '@/context/AuthContext'
 import { cn } from '@/lib/utils'
 import { PAGE_GUTTER_X } from '@/lib/layout'
@@ -246,6 +250,7 @@ function AppLayout() {
             <Route path="/dashboard/publications" element={<PublicationsPage />} />
             <Route path="/dashboard/publications/new" element={<PublicationCreationPage />} />
             <Route path="/dashboard/publications/:id/preview" element={<PublicationPreviewPage />} />
+            <Route path="/dashboard/notifications" element={<NotificationsPage />} />
             <Route path="/dashboard/profile" element={<ProfilePage />} />
             <Route path="/organisations" element={<OrganisationsPage />} />
             <Route path="/organisations/:organisationId" element={<OrganisationDashboardPage />} />
@@ -312,7 +317,13 @@ function App() {
         <ConfirmProvider>
           <HelpProvider>
             <AuthProvider>
-              <AppLayout />
+              <NotificationsProvider>
+                <RequestActionsProvider>
+                  <AppLayout />
+                  {/* Prototype-only: the persona switcher and event simulator are never part of a production build. */}
+                  {import.meta.env.DEV && <DevPrototypeControls />}
+                </RequestActionsProvider>
+              </NotificationsProvider>
             </AuthProvider>
           </HelpProvider>
         </ConfirmProvider>

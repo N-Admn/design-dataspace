@@ -9,8 +9,9 @@ interface ToastOptions {
   title: string
   description?: string
   variant?: ToastVariant
-  /** Optional follow-up link, opened in a new tab (e.g. "View live" after publishing). */
-  action?: { label: string; href: string }
+  /** Optional follow-up: a link opened in a new tab (e.g. "View live" after publishing), or a button that runs `onClick`
+   *  in the app (e.g. "View request"). */
+  action?: { label: string; href: string } | { label: string; onClick: () => void }
 }
 
 interface ToastItem extends ToastOptions {
@@ -60,7 +61,7 @@ function ToastProvider({ children }: { children: React.ReactNode }) {
             <div className="min-w-0 flex-1">
               <p className="text-sm font-medium text-text-default">{t.title}</p>
               {t.description && <p className="mt-0.5 text-xs text-text-subdued">{t.description}</p>}
-              {t.action && (
+              {t.action && 'href' in t.action && (
                 <a
                   href={t.action.href}
                   target="_blank"
@@ -70,6 +71,18 @@ function ToastProvider({ children }: { children: React.ReactNode }) {
                   {t.action.label}
                   <ExternalLink className="size-3.5" aria-hidden="true" />
                 </a>
+              )}
+              {t.action && 'onClick' in t.action && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (t.action && 'onClick' in t.action) t.action.onClick()
+                    dismiss(t.id)
+                  }}
+                  className="type-label mt-1.5 inline-flex items-center gap-1 text-text-brand underline-offset-2 hover:underline"
+                >
+                  {t.action.label}
+                </button>
               )}
             </div>
             <button

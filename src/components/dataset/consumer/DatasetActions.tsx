@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { Copy, Download, FileImage, Share2 } from 'lucide-react'
+import { Copy, Download, FileImage, Lock, Share2 } from 'lucide-react'
 import { toPng } from 'html-to-image'
 
 import { SocialShareLinks } from '@/components/shared/SocialShareLinks'
@@ -13,7 +13,7 @@ const ROW =
   'flex w-full items-center gap-3 rounded-md px-3 py-2 text-left text-sm font-medium text-text-default hover:bg-surface-hovered focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-focus disabled:opacity-50'
 const TRANSPARENT_PIXEL = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'
 
-function DatasetActions({ title }: { title: string }) {
+function DatasetActions({ title, locked = false }: { title: string; locked?: boolean }) {
   const toast = useToast()
   const [exporting, setExporting] = React.useState(false)
 
@@ -52,12 +52,13 @@ function DatasetActions({ title }: { title: string }) {
       <Button
         type="button"
         size="lg"
-        aria-label="Download dataset"
+        aria-label={locked ? 'Download dataset (locked until access is granted)' : 'Download dataset'}
+        disabled={locked}
         onClick={() =>
           toast({ title: 'Download coming soon', description: 'Prototype — dataset downloads are not wired up.' })
         }
       >
-        <Download className="size-4" aria-hidden="true" />
+        {locked ? <Lock className="size-4" aria-hidden="true" /> : <Download className="size-4" aria-hidden="true" />}
         Dataset
       </Button>
       <Popover>

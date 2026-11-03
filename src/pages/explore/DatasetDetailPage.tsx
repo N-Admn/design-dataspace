@@ -10,9 +10,14 @@ import { DatasetDataDNA } from '@/components/dataset/consumer/DatasetDataDNA'
 import { DatasetOverview } from '@/components/dataset/consumer/DatasetOverview'
 import { DatasetDataExplorer } from '@/components/dataset/consumer/DatasetDataExplorer'
 import { DatasetVisualisations } from '@/components/dataset/consumer/DatasetVisualisations'
+import { LockedDataPanel } from '@/components/dataset/consumer/LockedDataPanel'
+import { RestrictedAccessBar } from '@/components/dataset/consumer/RestrictedAccessBar'
 import { useAppData } from '@/context/AppDataContext'
+import { useAuth } from '@/context/AuthContext'
+import { useNotifications } from '@/context/NotificationsContext'
 import { useGoBack } from '@/hooks/use-go-back'
 import { resolveDatasetPublisher } from '@/lib/dataset-publisher'
+import { hasAccess } from '@/lib/notification-model'
 
 const VIEWS = [
   { key: 'data', label: 'Data' },
@@ -28,6 +33,8 @@ const VIEWS = [
 function DatasetDetailPage() {
   const { id } = useParams<{ id: string }>()
   const { datasets, organisationWorkspaces } = useAppData()
+  const { isSignedIn } = useAuth()
+  const { persona, state } = useNotifications()
   const [searchParams] = useSearchParams()
   // Lets a "View live" link deep-link straight to the Visualisations tab
   // (e.g. from a freshly-published Chart, which has no page of its own —
@@ -68,6 +75,8 @@ function DatasetDetailPage() {
   }
 
   const publisher = resolveDatasetPublisher(record, organisationWorkspaces)
+  // Restricted datasets keep their description and file names public; files, data and charts stay locked until access is granted.
+  const locked = !hasAccess(isSignedIn ? persona.id : null, record, state.requests)
 
   return (
     <div className="mx-auto flex w-full max-w-[1400px] flex-col gap-6 py-2">
@@ -81,19 +90,21 @@ function DatasetDetailPage() {
           <ArrowLeft className="size-4" />
           Back
         </button>
-        <DatasetActions title={form.metadata.name} />
+        <DatasetActions title={form.metadata.name} locked={locked} />
       </div>
+
+      <RestrictedAccessBar datasetId={record.id} />
 
       <DatasetDataDNA datasetId={record.id} />
 
       <ViewTabs items={VIEWS} value={view} onChange={setView} idPrefix="dataset-detail" label="Dataset views" />
 
       <ViewTabPanel id="data" idPrefix="dataset-detail" active={view === 'data'}>
-        <DatasetDataExplorer datasetId={record.id} files={form.files} />
+        {locked ? <LockedDataPanel files={form.files} what="data" /> : <DatasetDataExplorer datasetId={record.id} files={form.files} />}
       </ViewTabPanel>
 
       <ViewTabPanel id="visualisations" idPrefix="dataset-detail" active={view === 'visualisations'}>
-        <DatasetVisualisations datasetId={record.id} files={form.files} />
+        {locked ? <LockedDataPanel files={form.files} what="visualisations" /> : <DatasetVisualisations datasetId={record.id} files={form.files} />}
       </ViewTabPanel>
 
       <ViewTabPanel id="overview" idPrefix="dataset-detail" active={view === 'overview'}>

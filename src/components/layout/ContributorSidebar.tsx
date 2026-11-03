@@ -11,6 +11,7 @@ import { HelpSupportPanel } from '@/components/layout/HelpSupportPanel'
 import { cn } from '@/lib/utils'
 import { WORKSPACE_HEIGHT_CLASS } from '@/lib/layout'
 import { MOCK_PROFILE } from '@/types/profile'
+import { useNotifications } from '@/context/NotificationsContext'
 import { NAV_GROUPS, isNavItemActive, visibleNavGroups, type NavGroup, type NavItem } from '@/components/layout/nav-config'
 
 const COLLAPSE_STORAGE_KEY = 'cds-sidebar-collapsed'
@@ -104,11 +105,14 @@ const DEFAULT_IDENTITY: SidebarIdentity = {
 function ContributorSidebar({
   className,
   groups: groupsProp,
-  identity = DEFAULT_IDENTITY,
+  identity: identityProp,
   backLabel = 'My Workspace',
   backTo = '/',
 }: ContributorSidebarProps) {
   const location = useLocation()
+  // The prototype's active person names the workspace; only John Doe has a profile photo.
+  const { persona } = useNotifications()
+  const identity = identityProp ?? (persona.id === 'john' ? DEFAULT_IDENTITY : { avatarLabel: persona.initials, name: persona.name })
   const [storedCollapsed, setCollapsed] = React.useState(readStoredCollapsed)
   const [helpOpen, setHelpOpen] = React.useState(false)
   const [drawerOpen, setDrawerOpen] = React.useState(false)
