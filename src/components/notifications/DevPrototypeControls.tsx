@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { useToast } from '@/components/ui/toast'
 import { useAppData } from '@/context/AppDataContext'
 import { useNotifications } from '@/context/NotificationsContext'
-import { latestRequestBy, managersOf, ownerOfDataset } from '@/lib/notification-model'
+import { collaborativeRole, itemInCollaborative, latestRequestBy, managersOf, ownerOfDataset, requestKindOf } from '@/lib/notification-model'
 import { PERSONAS, getPerson } from '@/lib/notification-personas'
 import { cn } from '@/lib/utils'
 
@@ -14,6 +14,10 @@ const SIMULATED_REASONS = [
   'For an explainer on public data.',
   'Course material for a policy class.',
   'Benchmarking an open-source tool.',
+]
+const COLLABORATIVES_FOR_DEMO = [
+  { id: 'collaborative-1', label: 'CivicDataLab’s collaborative (collaborative-1)' },
+  { id: 'collaborative-4', label: 'John’s personal collaborative (collaborative-4)' },
 ]
 const RESTRICTED_FOR_DEMO = [
   { id: 'ds-1', label: 'CivicDataLab dataset (ds-1)' },
@@ -25,9 +29,10 @@ const RESTRICTED_FOR_DEMO = [
 function DevPrototypeControls() {
   const toast = useToast()
   const { datasets } = useAppData()
-  const { persona, setPersonaId, state, requestAccess, decide, revoke, grant, addDigest, reset } = useNotifications()
+  const { persona, setPersonaId, state, requestAccess, decide, revoke, grant, addDigest, reset, submitItem, addItem, addPartner, sendDigests, collaborativeInfo } = useNotifications()
   const [open, setOpen] = React.useState(false)
   const [datasetId, setDatasetId] = React.useState(RESTRICTED_FOR_DEMO[0].id)
+  const [collabId, setCollabId] = React.useState(COLLABORATIVES_FOR_DEMO[0].id)
 
   const owner = ownerOfDataset(datasets.find((d) => d.id === datasetId))
   const managers = owner ? managersOf(owner) : []
@@ -35,8 +40,8 @@ function DevPrototypeControls() {
     const last = latestRequestBy(state.requests, id, datasetId)
     return !last || (last.status !== 'waiting' && last.status !== 'approved')
   })
-  const waiting = state.requests.filter((r) => r.datasetId === datasetId && r.status === 'waiting')
-  const approved = state.requests.filter((r) => r.datasetId === datasetId && r.status === 'approved' && !r.direct)
+  const waiting = state.requests.filter((r) => requestKindOf(r) === 'access' && r.itemId === datasetId && r.status === 'waiting')
+  const approved = state.requests.filter((r) => requestKindOf(r) === 'access' && r.itemId === datasetId && r.status === 'approved' && !r.direct)
   const firstManager = managers[0]
   const otherManager = (id: string) => managers.find((m) => m !== id) ?? firstManager
 
@@ -70,6 +75,45 @@ function DevPrototypeControls() {
   const simulateDigest = () => {
     addDigest([persona.id], 'Public Health Data Collaborative', `${2 + (state.events.length % 3)} new items were added`)
     say('collaborative update', 'Added to the current person’s Updates tab.')
+  }
+
+  // Collaborative simulations.
+  const collab = collaborativeInfo(collabId)
+  const collabManagers = managersOf(collab.access.owner)
+  const waitingSubmissions = state.requests.filter((r) => requestKindOf(r) === 'submission' && r.collaborativeId === collabId && r.status === 'waiting')
+  const publishedDatasets = datasets.filter((d) => d.status === 'published')
+  const freeDataset = (skip?: (id: string) => boolean) =>
+    publishedDatasets.find((d) => !itemInCollaborative(state.collabItems, collabId, d.id, 'dataset') && !state.requests.some((r) => requestKindOf(r) === 'submission' && r.collaborativeId === collabId && r.itemId === d.id && r.status === 'waiting') && !skip?.(d.id))
+  const partnerPersona = ['meera', 'john'].find((id) => collaborativeRole(id, collab.access, collab.published) === 'partner')
+
+  const simulateSubmission = () => {
+    const submitter = ['priya', 'marcus', 'dev', 'sasha'].find((id) => collaborativeRole(id, collab.access, collab.published) === 'none')
+    const dataset = freeDataset()
+    if (!submitter || !dataset) return say('nothing left to submit on this collaborative')
+    submitItem(submitter, collabId, 'dataset', dataset.id)
+    say(`${getPerson(submitter).name} submitted an item`, dataset.form.metadata.name)
+  }
+  const simulateSubmissionDecision = (decision: 'approved' | 'declined') => {
+    const target = waitingSubmissions[0]
+    if (!target) return say('no waiting submission on this collaborative')
+    const actor = collabManagers.find((m) => m !== persona.id) ?? collabManagers[0]
+    decide(actor, target.id, decision, decision === 'declined' ? 'Outside the focus of this collaborative.' : undefined)
+    say(`${getPerson(actor).name} ${decision === 'approved' ? 'approved' : 'declined'} ${getPerson(target.requesterId).name}’s submission`)
+  }
+  const simulatePartnerAdds = () => {
+    const dataset = freeDataset()
+    if (!partnerPersona || !dataset) return say('no partner can add an item here', 'Add a partner organisation first, or the collaborative has everything.')
+    addItem(partnerPersona, collabId, 'dataset', dataset.id)
+    say(`${getPerson(partnerPersona).name} (partner) added an item`, dataset.form.metadata.name)
+  }
+  const simulateAddPartner = () => {
+    const owner = collabManagers[0]
+    const result = addPartner(owner, collabId, 'org-external-unwomen')
+    say(result.ok ? 'UN Women added as a partner' : 'UN Women is already a partner here', result.ok ? 'Its admin, Meera Joshi, is notified.' : undefined)
+  }
+  const simulateDigests = () => {
+    const sent = sendDigests()
+    say(sent > 0 ? `daily digest sent for ${sent} collaborative${sent === 1 ? '' : 's'}` : 'nothing changed since the last digest')
   }
 
   const buttonClass = 'justify-start'
@@ -137,6 +181,42 @@ function DevPrototypeControls() {
             </Button>
             <Button type="button" variant="outline" size="sm" className={buttonClass} onClick={simulateDigest}>
               Collaborative update for me
+            </Button>
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <label htmlFor="dev-collab" className="type-label text-text-subdued">
+              Simulate on a collaborative
+            </label>
+            <select
+              id="dev-collab"
+              value={collabId}
+              onChange={(e) => setCollabId(e.target.value)}
+              className="h-9 rounded-md border border-border-input bg-surface-default px-2 text-sm text-text-default"
+            >
+              {COLLABORATIVES_FOR_DEMO.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.label}
+                </option>
+              ))}
+            </select>
+            <Button type="button" variant="outline" size="sm" className={buttonClass} onClick={simulateSubmission}>
+              Someone submits an item
+            </Button>
+            <Button type="button" variant="outline" size="sm" className={buttonClass} onClick={() => simulateSubmissionDecision('approved')} disabled={waitingSubmissions.length === 0}>
+              Owner approves the oldest submission
+            </Button>
+            <Button type="button" variant="outline" size="sm" className={buttonClass} onClick={() => simulateSubmissionDecision('declined')} disabled={waitingSubmissions.length === 0}>
+              Owner declines the oldest submission
+            </Button>
+            <Button type="button" variant="outline" size="sm" className={buttonClass} onClick={simulatePartnerAdds}>
+              A partner adds an item (no approval)
+            </Button>
+            <Button type="button" variant="outline" size="sm" className={buttonClass} onClick={simulateAddPartner}>
+              Owner adds UN Women as a partner
+            </Button>
+            <Button type="button" variant="outline" size="sm" className={buttonClass} onClick={simulateDigests}>
+              Send the daily follower digest now
             </Button>
           </div>
 

@@ -1,6 +1,11 @@
 import type {
   AccessRequest,
+  CollaborativeChange,
+  CollaborativeItem,
+  EventType,
   HistoryAction,
+  ItemKind,
+  RequestKind,
   NotificationEvent,
   NotificationItem,
   NotificationState,
@@ -10,7 +15,15 @@ import type {
   RequestStatus,
 } from '@/types/notifications'
 import type { DatasetRecord } from '@/types/dataset'
-import { DEMO_RESTRICTED, PERSONAS, ownerContextLabel } from '@/lib/notification-personas'
+import type { UseCaseRecord } from '@/types/usecase'
+import {
+  DEMO_COLLABORATIVES,
+  DEMO_RESTRICTED,
+  PERSONAS,
+  orgNameOf,
+  ownerContextLabel,
+  type CollaborativeAccess,
+} from '@/lib/notification-personas'
 
 /** Pure rules of the notification system: who owns and decides, who is notified, which tab a request lives in, and what a
  *  person's inbox looks like. Nothing here touches React or storage. */
@@ -25,8 +38,56 @@ export function isRestricted(dataset: DatasetRecord | undefined): boolean {
 export function ownerOfDataset(dataset: DatasetRecord | undefined): OwnerContext | null {
   if (!dataset) return null
   if (DEMO_RESTRICTED[dataset.id]) return DEMO_RESTRICTED[dataset.id]
-  // A restricted dataset the demo table does not name: its organisation, or the signed-in person's own workspace.
-  return { kind: 'personal', personaId: 'john' }
+  return ownerFromWorkspace(dataset.organisationId)
+}
+
+/** Items the demo table does not name: their organisation, or the signed-in person's own workspace. */
+function ownerFromWorkspace(organisationId: string | undefined): OwnerContext {
+  return organisationId ? { kind: 'org', orgId: organisationId, orgName: orgNameOf(organisationId) } : { kind: 'personal', personaId: 'john' }
+}
+
+export function ownerOfUseCase(useCase: UseCaseRecord | undefined): OwnerContext | null {
+  return useCase ? ownerFromWorkspace(useCase.organisationId) : null
+}
+
+export function requestKindOf(request: AccessRequest): RequestKind {
+  return request.kind ?? 'access'
+}
+
+// ---------------------------------------------------------------- collaboratives
+
+export function collaborativeAccess(collaborativeId: string, organisationId: string | undefined): CollaborativeAccess {
+  return DEMO_COLLABORATIVES[collaborativeId] ?? { owner: ownerFromWorkspace(organisationId), partnerOrgIds: [], submit: 'anyone' }
+}
+
+export type CollaborativeRole = 'owner' | 'partner' | 'none'
+
+function hasOrgRole(personaId: string, orgId: string, roles: string[]): boolean {
+  const persona = PERSONAS.find((p) => p.id === personaId)
+  return Boolean(persona?.memberships.some((m) => m.kind === 'org' && m.orgId === orgId && roles.includes(m.role)))
+}
+
+/** The owner side adds items directly (admins and editors of the owning organisation, or the person who owns it). Partners do too,
+ *  once the collaborative is published. Everyone else submits for approval. */
+export function collaborativeRole(personaId: string, access: CollaborativeAccess, published: boolean): CollaborativeRole {
+  const { owner } = access
+  if (owner.kind === 'personal' ? owner.personaId === personaId : hasOrgRole(personaId, owner.orgId, ['admin', 'editor'])) return 'owner'
+  if (published && access.partnerOrgIds.some((orgId) => hasOrgRole(personaId, orgId, ['admin', 'editor']))) return 'partner'
+  return 'none'
+}
+
+export function canSubmit(personaId: string, access: CollaborativeAccess, published: boolean): boolean {
+  const role = collaborativeRole(personaId, access, published)
+  return role !== 'none' || access.submit === 'anyone'
+}
+
+/** The admins of an organisation: who is told when it is made a partner. */
+export function orgAdmins(orgId: string): string[] {
+  return PERSONAS.filter((p) => hasOrgRole(p.id, orgId, ['admin'])).map((p) => p.id)
+}
+
+export function itemInCollaborative(items: CollaborativeItem[], collaborativeId: string, itemId: string, itemKind: ItemKind): boolean {
+  return items.some((i) => i.collaborativeId === collaborativeId && i.itemId === itemId && i.itemKind === itemKind)
 }
 
 /** People who may decide access: a person's own item, or the owning organisation's admins. */
@@ -48,7 +109,7 @@ export function canDecide(personaId: string, owner: OwnerContext): boolean {
 
 export function latestRequestBy(requests: AccessRequest[], personaId: string, datasetId: string): AccessRequest | undefined {
   return requests
-    .filter((r) => r.requesterId === personaId && r.datasetId === datasetId)
+    .filter((r) => requestKindOf(r) === 'access' && r.requesterId === personaId && r.itemId === datasetId)
     .sort((a, b) => b.createdAt - a.createdAt)[0]
 }
 
@@ -76,15 +137,21 @@ export function resolveRecipients(
   switch (event.type) {
     case 'access.requested':
     case 'access.withdrawn':
+    case 'submission.requested':
+    case 'submission.withdrawn':
       recipients = owner ? managersOf(owner) : []
       break
     case 'access.approved':
     case 'access.declined':
     case 'access.revoked':
     case 'access.granted':
+    case 'submission.approved':
+    case 'submission.declined':
       recipients = request ? [request.requesterId] : []
       break
     case 'update.digest':
+    case 'update.partner-added':
+    case 'update.item-added':
       recipients = event.recipientIds ?? []
       break
   }
@@ -122,18 +189,39 @@ export const STATUS_LABELS: Record<RequestStatus, string> = {
   revoked: 'Revoked',
 }
 
-export const HISTORY_LABELS: Record<HistoryAction, string> = {
-  requested: 'requested access',
-  approved: 'approved the request',
-  declined: 'declined the request',
-  withdrawn: 'withdrew the request',
-  revoked: 'revoked access',
-  granted: 'gave access directly',
+const HISTORY_LABELS: Record<RequestKind, Record<HistoryAction, string>> = {
+  access: {
+    requested: 'requested access',
+    approved: 'approved the request',
+    declined: 'declined the request',
+    withdrawn: 'withdrew the request',
+    revoked: 'revoked access',
+    granted: 'gave access directly',
+  },
+  submission: {
+    requested: 'submitted the item',
+    approved: 'approved the submission',
+    declined: 'declined the submission',
+    withdrawn: 'withdrew the submission',
+    revoked: 'removed the item',
+    granted: 'added the item',
+  },
+}
+
+export function historyLabel(kind: RequestKind, action: HistoryAction): string {
+  return HISTORY_LABELS[kind][action]
+}
+
+/** The event type for a step in a request's life, by kind. */
+export function eventTypeFor(kind: RequestKind, action: HistoryAction): EventType {
+  const prefix = kind === 'access' ? 'access' : 'submission'
+  const verb = { requested: 'requested', approved: 'approved', declined: 'declined', withdrawn: 'withdrawn', revoked: 'revoked', granted: 'granted' }[action]
+  return `${prefix}.${verb}` as EventType
 }
 
 // ---------------------------------------------------------------- derived inbox
 
-type OwnerLookup = (datasetId: string) => OwnerContext | null
+type OwnerLookup = (request: AccessRequest) => OwnerContext | null
 
 /** A person's inbox: one row per request they asked or can decide, plus the updates addressed to them. Newest first.
  *  Decisions are shared (the row reads the request's current status); read state is this person's own. */
@@ -151,7 +239,7 @@ export function deriveItems(state: NotificationState, persona: Persona, ownerOf:
   const items: NotificationItem[] = []
 
   for (const request of state.requests) {
-    const owner = ownerOf(request.datasetId)
+    const owner = ownerOf(request)
     const incoming = owner !== null && canDecide(persona.id, owner)
     const outgoing = request.requesterId === persona.id
     if (!incoming && !outgoing) continue
@@ -224,4 +312,44 @@ export function timeAgo(at: number, now: number): string {
 
 export function fullDateTime(at: number): string {
   return new Date(at).toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+}
+
+// ---------------------------------------------------------------- follower digests
+
+function plural(count: number, one: string, many = `${one}s`): string {
+  return `${count} ${count === 1 ? one : many}`
+}
+
+export function summariseChanges(changes: CollaborativeChange[]): string {
+  const items = changes.filter((c) => c.kind === 'item-added')
+  const partners = changes.filter((c) => c.kind === 'partner-added')
+  const parts: string[] = []
+  if (items.length > 0) {
+    const restricted = items.filter((c) => c.restricted).length
+    parts.push(`${plural(items.length, 'new item')}${restricted > 0 ? ` (${restricted} restricted)` : ''}`)
+  }
+  if (partners.length > 0) parts.push(plural(partners.length, 'new partner'))
+  return parts.join(' and ')
+}
+
+export interface PendingDigest {
+  collaborativeId: string
+  recipientIds: string[]
+  detail: string
+  /** The time the digest covers up to, which becomes the collaborative's new `digestedAt`. */
+  coversUntil: number
+}
+
+/** What each collaborative's followers have not yet been told: one summary per collaborative, and only when something changed since
+ *  the last one. */
+export function pendingDigests(state: NotificationState, now: number): PendingDigest[] {
+  const result: PendingDigest[] = []
+  for (const [collaborativeId, followers] of Object.entries(state.follows)) {
+    if (followers.length === 0) continue
+    const since = state.digestedAt[collaborativeId] ?? 0
+    const fresh = state.changes.filter((c) => c.collaborativeId === collaborativeId && c.at > since)
+    if (fresh.length === 0) continue
+    result.push({ collaborativeId, recipientIds: followers, detail: summariseChanges(fresh), coversUntil: now })
+  }
+  return result
 }

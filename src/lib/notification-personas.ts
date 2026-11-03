@@ -43,6 +43,14 @@ export const PERSONAS: Persona[] = [
     memberships: [{ kind: 'personal' }],
   },
   {
+    id: 'meera',
+    name: 'Meera Joshi',
+    initials: 'MJ',
+    email: 'meera.joshi@unwomen.org',
+    blurb: 'Admin at UN Women, a partner on a collaborative',
+    memberships: [{ kind: 'personal' }, { kind: 'org', orgId: 'org-external-unwomen', orgName: 'UN Women', role: 'admin' }],
+  },
+  {
     id: 'marcus',
     name: 'Marcus Bell',
     initials: 'MB',
@@ -56,7 +64,6 @@ export const PERSONAS: Persona[] = [
 const EXTRA_PEOPLE: Person[] = [
   { id: 'sasha', name: 'Sasha Iyer', initials: 'SI', email: 'sasha.iyer@example.org' },
   { id: 'dev', name: 'Dev Malhotra', initials: 'DM', email: 'dev.malhotra@example.org' },
-  { id: 'meera', name: 'Meera Joshi', initials: 'MJ', email: 'meera.joshi@unwomen.org' },
   { id: 'kiran', name: 'Kiran Shah', initials: 'KS', email: 'kiran.shah@okfn.org' },
 ]
 
@@ -80,6 +87,32 @@ export const DEMO_RESTRICTED: Record<string, OwnerContext> = {
   'ds-9': { kind: 'personal', personaId: 'john' },
   'ds-2': { kind: 'org', orgId: 'org-external-okf', orgName: 'Open Knowledge Foundation' },
   'ds-3': { kind: 'org', orgId: 'org-external-unwomen', orgName: 'UN Women' },
+}
+
+/** Organisation names for the demo owners that the mock datasets and use cases only reference by id. */
+const ORG_NAMES: Record<string, string> = {
+  'org-workspace-1': 'CivicDataLab',
+  'org-workspace-2': 'World Health Organization',
+  'org-external-okf': 'Open Knowledge Foundation',
+  'org-external-unwomen': 'UN Women',
+}
+
+export function orgNameOf(orgId: string): string {
+  return ORG_NAMES[orgId] ?? 'An organisation'
+}
+
+/** Who owns a collaborative, who its partner organisations are, and who may submit. The mock collaboratives do not model this
+ *  for the prototype's people, so it is named here; any other collaborative falls back to its organisation, or to John. */
+export interface CollaborativeAccess {
+  owner: OwnerContext
+  partnerOrgIds: string[]
+  /** Who may submit items: anyone signed in, or only partners. */
+  submit: 'anyone' | 'partners'
+}
+
+export const DEMO_COLLABORATIVES: Record<string, CollaborativeAccess> = {
+  'collaborative-1': { owner: { kind: 'org', orgId: 'org-workspace-1', orgName: 'CivicDataLab' }, partnerOrgIds: ['org-external-unwomen'], submit: 'anyone' },
+  'collaborative-4': { owner: { kind: 'personal', personaId: 'john' }, partnerOrgIds: [], submit: 'anyone' },
 }
 
 export function membershipLabel(m: Membership): string {

@@ -65,11 +65,30 @@ Persisted in `localStorage` and kept in sync across open tabs with the `storage`
 
 Gated by `import.meta.env.DEV`, so they never ship.
 
-- **Persona switcher**: John Doe (personal workspace, Admin of CivicDataLab, Editor at another organisation), Anil Rao (second CivicDataLab admin), Rahul Mehta (CivicDataLab editor), Priya Nair (outsider), Marcus Bell (follower).
-- **Simulate**: someone requests access, another admin decides, a follower digest, grant or revoke.
+- **Persona switcher**: John Doe (personal workspace, Admin of CivicDataLab, Editor at another organisation), Anil Rao (second CivicDataLab admin), Rahul Mehta (CivicDataLab editor), Priya Nair (outsider), Meera Joshi (admin of UN Women, a partner on a collaborative), Marcus Bell (follower).
+- **Simulate**: someone requests access, another admin decides, grant or revoke; on a collaborative, someone submits, the owner decides, a partner adds an item, the owner adds a partner, and the daily follower digest.
 - **Reset** prototype data.
 
 Seed data is authored as requests, so the same request reads the same way for every persona.
+
+## Collaborative events (slice 2)
+
+A submission is the same record as an access request (`kind: 'submission'`), so it shares the store, rows, tabs, history sheet, confirmation rules and shared decision state. What differs:
+
+| Event | Who is notified | Where it shows |
+|---|---|---|
+| Item submitted | The collaborative owner, or the owning organisation's admins. **Not partners.** | Pending, with Approve / Decline |
+| Submission approved / declined | The submitter | Approved / Closed, with **Submit again** after a decline |
+| Submission withdrawn | The owner side | Closed |
+| Item added (by an owner, a partner, or an approved submission) | The item's owner, unless they added it, or approved it themselves | Updates |
+| Organisation made a partner | That organisation's admins | Updates |
+| Daily follower digest | Followers | Updates, one row per collaborative |
+
+- Owners (admins and editors of the owning organisation) and partners (admins and editors of a partner organisation, once published) **add directly**, with no approval. Everyone else submits.
+- The collaborative page has a **Take part** bar: Follow / Following, Add item or Submit an item, the person's own submissions with their status, and the items added so far with **Added by** and **Remove**. Only the person who added an item, or the collaborative owner, can remove it.
+- Only published datasets and use cases can be picked. Items already in the collaborative or already waiting are left out. If two people submit the same item, approving the first leaves the second as a harmless duplicate.
+- Follower digests are summaries: they list changes since the last digest, only when something changed, and show restricted items with a count. Prototype triggers it from the DEV controls; in production it is a daily job.
+- Partner rights, the **Contribute** button in the shared collaborative view and the People step are untouched: this work only adds the notification lifecycle.
 
 ## Design and accessibility
 
@@ -85,6 +104,6 @@ Saved items, licence management, download tracking, notification preferences, an
 
 ## Implementation slices
 
-1. **Access-request lifecycle (this slice):** dataset page lock, request dialog, toast, bell, page, history, personas.
-2. Collaborative submissions (owner approval), partner and item-added events, follow and digest.
-3. Visual-only email previews, accessibility pass, design-system documentation.
+1. **Access-request lifecycle (done, tag `notifications-slice-1`):** dataset page lock, request dialog, toast, bell, page, history, personas.
+2. **Collaborative submissions (done, tag `notifications-slice-2`):** submit, owner approval, partner contributions, partner-added and item-added events, follow and digest.
+3. Design-system entries, WCAG contrast checks, visual-only email previews and the remaining accessibility work.

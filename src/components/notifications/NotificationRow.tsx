@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { StatusChip } from '@/components/notifications/StatusChip'
 import { useRequestActions } from '@/components/notifications/RequestActions'
 import { useNotifications } from '@/context/NotificationsContext'
-import { fullDateTime, timeAgo } from '@/lib/notification-model'
+import { fullDateTime, requestKindOf, timeAgo } from '@/lib/notification-model'
 import { getPerson } from '@/lib/notification-personas'
 import { cn } from '@/lib/utils'
 import type { AccessRequest, NotificationItem } from '@/types/notifications'
@@ -27,7 +27,7 @@ const strong = 'font-medium text-text-default'
  *  worded from their side. */
 function useSentence(item: NotificationItem): React.ReactNode {
   const { persona } = useNotifications()
-  const { datasetName } = useRequestActions()
+  const { datasetName, subjectName, collaborativeName } = useRequestActions()
 
   if (item.kind === 'update' && item.event) {
     return (
@@ -37,10 +37,37 @@ function useSentence(item: NotificationItem): React.ReactNode {
     )
   }
   const request = item.request as AccessRequest
-  const dataset = <span className={strong}>{datasetName(request.datasetId)}</span>
+  const dataset = <span className={strong}>{datasetName(request.itemId)}</span>
   const last = request.history[request.history.length - 1]
   const who = (id: string) => (id === persona.id ? 'You' : getPerson(id).name)
   const requester = who(request.requesterId)
+
+  if (requestKindOf(request) === 'submission') {
+    const thing = <span className={strong}>{subjectName(request)}</span>
+    const collab = <span className={strong}>{collaborativeName(request.collaborativeId ?? '')}</span>
+    if (item.direction === 'incoming') {
+      switch (request.status) {
+        case 'waiting':
+          return <><span className={strong}>{requester}</span> submitted {thing} to {collab}</>
+        case 'approved':
+          return <><span className={strong}>{who(last.actorId)}</span> approved <span className={strong}>{requester}</span>’s submission of {thing} to {collab}</>
+        case 'declined':
+          return <><span className={strong}>{who(last.actorId)}</span> declined <span className={strong}>{requester}</span>’s submission of {thing} to {collab}</>
+        default:
+          return <><span className={strong}>{requester}</span> withdrew {thing} from {collab}</>
+      }
+    }
+    switch (request.status) {
+      case 'waiting':
+        return <>You submitted {thing} to {collab}</>
+      case 'approved':
+        return <>Your submission of {thing} to {collab} was approved</>
+      case 'declined':
+        return <>Your submission of {thing} to {collab} was declined</>
+      default:
+        return <>You withdrew {thing} from {collab}</>
+    }
+  }
 
   if (item.direction === 'incoming') {
     switch (request.status) {
@@ -161,7 +188,7 @@ function NotificationRow({ item, now, density = 'page', highlighted = false, onO
                 </Button>
               </>
             )}
-            {incoming && request.status === 'approved' && (
+            {incoming && request.status === 'approved' && requestKindOf(request) === 'access' && (
               <Button type="button" size="sm" variant="outline" onClick={() => actions.revoke(request)}>
                 Revoke access
               </Button>
@@ -175,9 +202,20 @@ function NotificationRow({ item, now, density = 'page', highlighted = false, onO
               </Button>
             )}
             {outgoing && request.status !== 'waiting' && request.status !== 'approved' && (
-              <Button type="button" size="sm" variant="outline" onClick={() => actions.openRequestAccess(request.datasetId)}>
-                <Lock className="size-3.5" aria-hidden="true" />
-                Request access again
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                onClick={() => (requestKindOf(request) === 'submission' && request.collaborativeId ? actions.openPicker(request.collaborativeId, 'submit') : actions.openRequestAccess(request.itemId))}
+              >
+                {requestKindOf(request) === 'submission' ? (
+                  'Submit again'
+                ) : (
+                  <>
+                    <Lock className="size-3.5" aria-hidden="true" />
+                    Request access again
+                  </>
+                )}
               </Button>
             )}
           </div>

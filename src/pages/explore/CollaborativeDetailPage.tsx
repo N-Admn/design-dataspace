@@ -2,6 +2,7 @@ import * as React from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { ArrowLeft } from 'lucide-react'
 
+import { CollaborativeParticipationBar } from '@/components/collaborative/CollaborativeParticipationBar'
 import { EmptyState } from '@/components/shared/EmptyState'
 import { useToast } from '@/components/ui/toast'
 import { useAppData } from '@/context/AppDataContext'
@@ -44,7 +45,8 @@ function CollaborativeDetailPage() {
 
   const externalUrl = data.externalUrl
   return (
-    <div className="mx-auto w-full max-w-[1400px] py-2">
+    <div className="mx-auto flex w-full max-w-[1400px] flex-col gap-6 py-2">
+      <CollaborativeParticipationBar collaborativeId={record.id} />
       <CollaborativeDetailView
         data={data}
         hideEmptySections

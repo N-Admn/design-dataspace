@@ -13,9 +13,21 @@ export interface HistoryEntry {
   reason?: string
 }
 
+/** A request is either someone asking for access to a restricted dataset, or someone submitting an item to a collaborative. Both
+ *  are decided by the owner side, move through the same statuses and share the same rows, history and actions. */
+export type RequestKind = 'access' | 'submission'
+
+export type ItemKind = 'dataset' | 'use-case'
+
 export interface AccessRequest {
   id: string
-  datasetId: string
+  /** Absent on requests saved before collaborative submissions existed; read as `access`. */
+  kind?: RequestKind
+  /** The dataset asked for (access), or the item submitted (submission). */
+  itemId: string
+  itemKind?: ItemKind
+  /** Submissions only: where the item is going. */
+  collaborativeId?: string
   requesterId: string
   reason?: string
   status: RequestStatus
@@ -32,7 +44,13 @@ export type EventType =
   | 'access.withdrawn'
   | 'access.revoked'
   | 'access.granted'
+  | 'submission.requested'
+  | 'submission.approved'
+  | 'submission.declined'
+  | 'submission.withdrawn'
   | 'update.digest'
+  | 'update.partner-added'
+  | 'update.item-added'
 
 export interface NotificationEvent {
   id: string
@@ -49,11 +67,41 @@ export interface NotificationEvent {
   href?: string
 }
 
+/** An item that is in a collaborative, and how it got there. */
+export interface CollaborativeItem {
+  id: string
+  collaborativeId: string
+  itemKind: ItemKind
+  itemId: string
+  addedById: string
+  at: number
+  via: 'owner' | 'partner' | 'approved'
+}
+
+/** Something that happened on a collaborative, kept until the next follower digest summarises it. */
+export interface CollaborativeChange {
+  id: string
+  collaborativeId: string
+  kind: 'item-added' | 'partner-added'
+  at: number
+  /** Whether the item added is restricted, so the digest can show its lock. */
+  restricted?: boolean
+}
+
 export interface NotificationState {
   requests: AccessRequest[]
   events: NotificationEvent[]
   /** Per person: the ids of the events they have read. */
   reads: Record<string, string[]>
+  /** Items in collaboratives, added directly or through an approved submission. */
+  collabItems: CollaborativeItem[]
+  /** Per collaborative: who follows it. */
+  follows: Record<string, string[]>
+  changes: CollaborativeChange[]
+  /** Per collaborative: partner organisations added since the prototype started, on top of the demo roles. */
+  partners: Record<string, string[]>
+  /** Per collaborative: when followers were last sent a digest. */
+  digestedAt: Record<string, number>
 }
 
 /** Who owns a restricted item, and so who decides access to it. */
