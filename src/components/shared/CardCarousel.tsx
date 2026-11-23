@@ -54,25 +54,25 @@ function CardCarousel({ children, className }: { children: React.ReactNode[]; cl
 
       {showArrows && (
         <>
-          <Button
+          <Button shape="round"
             type="button"
             variant="outline"
             size="icon"
             aria-label="Previous"
             disabled={!canPrev}
             onClick={() => scrollByPage(-1)}
-            className="absolute -left-4 top-1/2 hidden -translate-y-1/2 rounded-full bg-surface-default shadow-md sm:flex"
+            className="absolute -left-4 top-1/2 hidden -translate-y-1/2 bg-surface-default shadow-md sm:flex"
           >
             <ChevronLeft className="size-4" />
           </Button>
-          <Button
+          <Button shape="round"
             type="button"
             variant="outline"
             size="icon"
             aria-label="Next"
             disabled={!canNext}
             onClick={() => scrollByPage(1)}
-            className="absolute -right-4 top-1/2 hidden -translate-y-1/2 rounded-full bg-surface-default shadow-md sm:flex"
+            className="absolute -right-4 top-1/2 hidden -translate-y-1/2 bg-surface-default shadow-md sm:flex"
           >
             <ChevronRight className="size-4" />
           </Button>

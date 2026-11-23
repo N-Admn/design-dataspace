@@ -41,6 +41,7 @@
   --radius-md: var(--radius);
   --radius-lg: calc(var(--radius) + 4px);
   --radius-xl: calc(var(--radius) + 8px);
+  --radius-button: 0.375rem;
 
   /* Base, brand & semantic colors */
   --background: #ffffff;
@@ -176,6 +177,7 @@
   --radius-md: var(--radius-md);
   --radius-lg: var(--radius-lg);
   --radius-xl: var(--radius-xl);
+  --radius-button: var(--radius-button);
 
   /* Base, brand & semantic colors */
   --color-background: var(--background);

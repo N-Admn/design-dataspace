@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { Bell, Settings2, Upload } from 'lucide-react'
+import { ArrowRight, Bell, ChevronLeft, ChevronRight, Search, Settings2, Upload } from 'lucide-react'
 
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -65,14 +65,16 @@ export function ButtonPage() {
         </ComponentPreview>
       </DocSection>
 
-      <DocSection id="sizes" title="Sizes" description="default is 40px tall, sm 36px, lg 44px. icon is a 36px square for an icon-only button, which needs an aria-label.">
+      <DocSection id="sizes" title="Sizes" description="default is 40px tall, sm 36px, lg 44px. xs is 32px tall with 12px text, for dense surfaces such as the notification bell. icon is a 36px square for an icon-only button, which needs an aria-label.">
         <ComponentPreview
           title="Button sizes"
-          code={`<Button size="sm">Small</Button>
+          code={`<Button size="xs">Extra small</Button>
+<Button size="sm">Small</Button>
 <Button>Default</Button>
 <Button size="lg">Large</Button>
 <Button size="icon" aria-label="Settings"><Settings2 /></Button>`}
         >
+          <Button size="xs">Extra small</Button>
           <Button size="sm">Small</Button>
           <Button>Default</Button>
           <Button size="lg">Large</Button>
@@ -83,6 +85,43 @@ export function ButtonPage() {
             <Bell />
           </Button>
         </ComponentPreview>
+      </DocSection>
+
+      <DocSection
+        id="shape"
+        title="Shape"
+        description="Every button has the tight button corner (--radius-button, 6px) so it reads as a control, not a card. shape='round' is the one deliberate alternative: a full pill for a text button, a full circle for an icon-only one."
+      >
+        <ComponentPreview
+          title="Round buttons"
+          code={`<Button shape="round" size="icon" aria-label="Search"><Search /></Button>
+<Button shape="round" size="icon" variant="outline" aria-label="Previous"><ChevronLeft /></Button>
+<Button shape="round" size="icon" variant="outline" aria-label="Next"><ChevronRight /></Button>
+<Button shape="round" size="lg">Get started <ArrowRight /></Button>`}
+        >
+          <Button shape="round" size="icon" aria-label="Search">
+            <Search />
+          </Button>
+          <Button shape="round" size="icon" variant="outline" aria-label="Previous">
+            <ChevronLeft />
+          </Button>
+          <Button shape="round" size="icon" variant="outline" aria-label="Next">
+            <ChevronRight />
+          </Button>
+          <Button shape="round" size="lg">
+            Get started <ArrowRight />
+          </Button>
+        </ComponentPreview>
+        <DoDont>
+          <Example tone="do" caption="Use round for search submits, carousel and pager arrows, floating icon actions and a hero call to action.">
+            <Button shape="round" size="icon" aria-label="Search">
+              <Search />
+            </Button>
+          </Example>
+          <Example tone="dont" caption="Don't use round for ordinary form, dialog or table actions. Those keep the default corner so they stay consistent.">
+            <Button shape="round">Save changes</Button>
+          </Example>
+        </DoDont>
       </DocSection>
 
       <DocSection id="with-icon" title="With an icon and disabled" description="Icons are 16px by default; put them before or after the label. A disabled button drops to 50% opacity and ignores pointer events.">
@@ -123,7 +162,8 @@ export function ButtonPage() {
         <PropsTable
           rows={[
             { name: 'variant', type: BUTTON_VARIANTS.map((v) => `'${v}'`).join(' | '), default: "'default'", description: 'The visual style.' },
-            { name: 'size', type: "'default' | 'sm' | 'lg' | 'icon'", default: "'default'", description: 'The height and padding.' },
+            { name: 'size', type: "'xs' | 'sm' | 'default' | 'lg' | 'icon'", default: "'default'", description: 'The height and padding.' },
+            { name: 'shape', type: "'default' | 'round'", default: "'default'", description: 'The corner. default is the 6px button corner; round is a full pill or circle, for search, arrows and hero calls to action.' },
             { name: 'asChild', type: 'boolean', default: 'false', description: 'Render the single child (a link, say) with the button styling instead of a <button>.' },
           ]}
         />

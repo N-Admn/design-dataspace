@@ -1,4 +1,6 @@
 import { useParams } from 'react-router-dom'
+import { OwnerEditButton } from '@/components/shared/OwnerEditButton'
+import { useOwnerEdit } from '@/hooks/use-owner-edit'
 import { ArrowLeft } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
@@ -18,6 +20,7 @@ function UseCaseDetailPage() {
   const goBack = useGoBack(USE_CASE_SEARCH_PATH)
 
   const record = id ? useCases.find((u) => u.id === id) : undefined
+  const onEdit = useOwnerEdit('use-case', record)
   const form = record?.status === 'published' ? record.publishedForm : undefined
 
   if (!form) {
@@ -42,14 +45,17 @@ function UseCaseDetailPage() {
         creator={resolveUseCaseCreator(record, organisationWorkspaces)}
         publishedAt={record?.updatedAt}
         backLink={
-          <button
-            type="button"
-            onClick={goBack}
-            className="type-label flex w-fit items-center gap-1.5 text-foreground/75 transition-colors hover:text-foreground"
-          >
-            <ArrowLeft className="size-4" />
-            Back
-          </button>
+          <div className="flex w-full flex-wrap items-center justify-between gap-3">
+            <button
+              type="button"
+              onClick={goBack}
+              className="type-label flex w-fit items-center gap-1.5 text-foreground/75 transition-colors hover:text-foreground"
+            >
+              <ArrowLeft className="size-4" />
+              Back
+            </button>
+            {onEdit && <OwnerEditButton onEdit={onEdit} noun="use case" />}
+          </div>
         }
       />
     </div>

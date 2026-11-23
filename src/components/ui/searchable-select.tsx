@@ -18,6 +18,10 @@ interface SearchableSelectProps {
   emptyText?: string
   id?: string
   invalid?: boolean
+  /** Show the search box. On by default; turn it off for a short list. */
+  searchable?: boolean
+  /** Names the control for assistive technology; the selected option is announced after it ("Workspace: Personal"). */
+  ariaLabel?: string
 }
 
 function SearchableSelect({
@@ -29,6 +33,8 @@ function SearchableSelect({
   emptyText = 'No results found.',
   id,
   invalid,
+  searchable = true,
+  ariaLabel,
 }: SearchableSelectProps) {
   const [open, setOpen] = React.useState(false)
   const [query, setQuery] = React.useState('')
@@ -53,6 +59,7 @@ function SearchableSelect({
           id={id}
           type="button"
           aria-invalid={invalid || undefined}
+          aria-label={ariaLabel ? `${ariaLabel}: ${selected ? selected.label : placeholder}` : undefined}
           className={cn(
             'flex h-10 w-full items-center justify-between rounded-md border border-border-input bg-surface-default px-3 py-2 text-sm transition-colors',
             'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-focus focus-visible:border-border-focus',
@@ -65,7 +72,8 @@ function SearchableSelect({
           <ChevronDown className="size-4 shrink-0 text-text-subdued" />
         </button>
       </PopoverTrigger>
-      <PopoverContent className="p-0" onOpenAutoFocus={(e) => e.preventDefault()}>
+      <PopoverContent className="p-0" onOpenAutoFocus={searchable ? (e) => e.preventDefault() : undefined}>
+        {searchable && (
         <div className="flex items-center gap-2 border-b border-border-default px-3 py-2">
           <Search className="size-4 shrink-0 text-text-subdued" />
           <input
@@ -76,6 +84,7 @@ function SearchableSelect({
             className="h-6 w-full bg-transparent text-sm outline-none placeholder:text-text-subdued"
           />
         </div>
+        )}
         <div className="max-h-60 overflow-y-auto p-1">
           {filtered.length === 0 && (
             <p className="px-2 py-4 text-center text-sm text-text-subdued">{emptyText}</p>
@@ -84,6 +93,7 @@ function SearchableSelect({
             <button
               key={option.value}
               type="button"
+              aria-pressed={option.value === value}
               onClick={() => {
                 onChange(option.value)
                 setOpen(false)

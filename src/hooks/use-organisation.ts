@@ -22,6 +22,8 @@ function useOrganisation() {
         canEditOrganisation: false,
         canCreateContent: false,
         canPublishOrganisationContent: false,
+        canUnpublishOrganisationContent: false,
+        canDeleteOrganisationContent: false,
       }
 
   return { organisationId: organisationId ?? '', organisation, permissions }

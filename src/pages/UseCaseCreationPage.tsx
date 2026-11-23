@@ -20,6 +20,7 @@ import { clearUseCaseDraftSnapshot, saveUseCaseDraftSnapshot } from '@/lib/useca
 import { isUseCaseReadyToPublish, validateUseCaseConnect } from '@/lib/usecase-validation'
 import { hasUnsavedEdits } from '@/lib/content-status'
 import { emptyUseCaseForm, type UseCaseFormState, type UseCaseMetadata } from '@/types/usecase'
+import { useContentPermissions } from '@/hooks/use-content-permissions'
 
 // Three steps: Builder (basic info + content), Connect (classification, datasets,
 // contributors, organisations), Review (readiness + publish). The former
@@ -140,6 +141,8 @@ function UseCaseCreationPage() {
   }, [step, allStepsValid])
 
   const editingRecord = editingId ? useCases.find((u) => u.id === editingId) : undefined
+  // Publishing an organisation's content is an Admin action; the store refuses it for anyone else.
+  const permissions = useContentPermissions(editingRecord?.organisationId ?? organisationId)
   const hasLiveVersion = editingRecord?.status === 'published'
   const showUnsavedIndicator = hasLiveVersion && hasUnsavedChanges
 
@@ -164,6 +167,10 @@ function UseCaseCreationPage() {
   /** Publish from the editor's Review step. The preview tab can also publish, for
    * contributors who decide there once they've seen the result. */
   const handlePublish = async () => {
+    if (!permissions.canPublish) {
+      toast({ title: permissions.refusal('publish') ?? 'You can’t publish this.', variant: 'error' })
+      return
+    }
     if (!isUseCaseReadyToPublish(form)) return
     const title = form.metadata.title || 'Untitled Use Case'
     const ok = await confirm({

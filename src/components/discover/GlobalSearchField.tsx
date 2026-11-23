@@ -80,11 +80,11 @@ function GlobalSearchField({
           <X className="size-4" />
         </button>
       )}
-      <Button
+      <Button shape="round"
         type="submit"
         size="icon"
         aria-label="Search"
-        className={cn('shrink-0 rounded-full', size === 'lg' ? 'size-12' : 'size-9')}
+        className={cn('shrink-0', size === 'lg' ? 'size-12' : 'size-9')}
       >
         <Search className={size === 'lg' ? 'size-5' : 'size-4'} aria-hidden="true" />
       </Button>

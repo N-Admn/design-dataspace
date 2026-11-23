@@ -10,6 +10,7 @@ import { useConfirm } from '@/components/ui/confirm-dialog'
 import { useAppData } from '@/context/AppDataContext'
 import { isEventInformationValid } from '@/lib/event-validation'
 import { clearEventDraftSnapshot, loadEventDraftSnapshot } from '@/lib/event-draft-storage'
+import { useContentPermissions } from '@/hooks/use-content-permissions'
 
 function EventPreviewPage() {
   const { id } = useParams<{ id: string }>()
@@ -21,6 +22,8 @@ function EventPreviewPage() {
   const [justPublished, setJustPublished] = React.useState(false)
 
   const record = id ? events.find((e) => e.id === id) : undefined
+  // Publishing an organisation's content is an Admin action; the store refuses it for anyone else, so the button says so up front.
+  const permissions = useContentPermissions(record?.organisationId)
   // Load once on mount and freeze — re-reading after our own publish action would
   // pick up the just-updated status and flip "Publish" into "Publish Changes" mid-flow.
   const [snapshot] = React.useState(() => (id ? loadEventDraftSnapshot(id) : null))
@@ -59,6 +62,10 @@ function EventPreviewPage() {
   const ready = isEventInformationValid(form.metadata)
 
   const handlePublish = async () => {
+    if (!permissions.canPublish) {
+      toast({ title: permissions.refusal('publish') ?? 'You can’t publish this.', variant: 'error' })
+      return
+    }
     if (!ready) return
     const ok = await confirm({
       title: hasLiveVersion ? 'Publish changes?' : 'Publish event?',
@@ -116,7 +123,7 @@ function EventPreviewPage() {
               <Button type="button" variant="outline" onClick={handleEditInWorkspace}>
                 Edit in Workspace
               </Button>
-              <Button type="button" onClick={handlePublish} disabled={!ready || isSubmitting}>
+              <Button type="button" onClick={handlePublish} disabled={!ready || isSubmitting || !permissions.canPublish} title={permissions.canPublish ? undefined : (permissions.refusal('publish') ?? undefined)}>
                 {isSubmitting ? (
                   <>
                     <Loader2 className="size-4 animate-spin" />

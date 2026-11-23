@@ -11,7 +11,7 @@ import { CollaborativeHero } from '@/pages/playground/collaborative-detail/Colla
 import { CollaborativeSearch, partyMatches, resourceMatches, searchTerms, type SearchCounts, type SearchFilter, type SearchKind } from '@/pages/playground/collaborative-detail/CollaborativeSearch'
 import { EcosystemTimeline } from '@/pages/playground/collaborative-detail/EcosystemTimeline'
 import { PillTicker } from '@/pages/playground/collaborative-detail/PillTicker'
-import { CollaborativeActions } from '@/pages/playground/collaborative-detail/CollaborativeActions'
+import { CollaborativeActions, type CollaborativeFollow } from '@/pages/playground/collaborative-detail/CollaborativeActions'
 import { CollaborativeQr } from '@/pages/playground/collaborative-detail/CollaborativeQr'
 import { ResourceExplorer, type ResourceKind } from '@/pages/playground/collaborative-detail/ResourceExplorer'
 
@@ -144,6 +144,8 @@ interface CollaborativeDetailViewProps {
   data: CollaborativeDetailData
   /** The primary action, in the bar above the hero. Left out when there is nowhere for it to go. */
   cta?: { tagline: string; label: string; href?: string; onClick?: () => void }
+  /** A Follow toggle, before the primary action. Left out when the reader cannot follow (the contributor's preview). */
+  follow?: CollaborativeFollow
   /** Shows a Back button at the start of the action bar. */
   onBack?: () => void
   /** The collaborative's public address, shared by Share and encoded in the QR code. Defaults to the page's own. */
@@ -153,9 +155,14 @@ interface CollaborativeDetailViewProps {
   hideEmptySections?: boolean
   /** Adds the Collaborative-wide search section, which narrows the sections below it. Every page that shows a collaborative turns it on. */
   unifiedSearch?: boolean
+  /** The signed-in reader's own items in this collaborative (ids). Adds the "My contributions" chip, which narrows the sections to them.
+   *  Left out for a reader who is not signed in. */
+  mine?: { datasets: string[]; useCases: string[] }
+  /** The owner's Edit action, before Share. Left out for everyone else. */
+  onEdit?: () => void
 }
 
-function CollaborativeDetailView({ data, cta, onBack, pageUrl, onOpenResource, hideEmptySections = false, unifiedSearch = false }: CollaborativeDetailViewProps) {
+function CollaborativeDetailView({ data, cta, follow, onBack, pageUrl, onOpenResource, hideEmptySections = false, unifiedSearch = false, mine, onEdit }: CollaborativeDetailViewProps) {
   const [tickerPaused, setTickerPaused] = React.useState(false)
   const heroRef = React.useRef<HTMLDivElement>(null)
   const url = pageUrl ?? (typeof window === 'undefined' ? '' : window.location.href)
@@ -171,19 +178,32 @@ function CollaborativeDetailView({ data, cta, onBack, pageUrl, onOpenResource, h
   const terms = unifiedSearch ? searchTerms(query) : []
   const searching = terms.length > 0
   const partyOf = (p: ConnectedParty) => ({ id: p.id, name: p.name, subtitle: relationshipLabel(p.relationship) })
-  const matchedUseCases = useCases.filter((r) => resourceMatches(r, terms))
-  const matchedPublications = publications.filter((r) => resourceMatches(r, terms))
-  const matchedEvents = events.filter((r) => resourceMatches(r, terms))
-  const matchedDatasets = datasets.filter((r) => resourceMatches(r, terms))
-  const matchedOrganisations = organisations.filter((o) => partyMatches(partyOf(o), terms))
-  const matchedPeople = people.filter((p) => partyMatches(partyOf(p), terms))
+  // "My contributions" narrows every section to the reader's own datasets and use cases; the other kinds have nothing of theirs to show.
+  const [mineOn, setMineOn] = React.useState(false)
+  const onlyMine = unifiedSearch && Boolean(mine) && mineOn
+  const mineDatasets = new Set(mine?.datasets ?? [])
+  const mineUseCases = new Set(mine?.useCases ?? [])
+  const scoped = {
+    datasets: onlyMine ? datasets.filter((r) => mineDatasets.has(r.id)) : datasets,
+    useCases: onlyMine ? useCases.filter((r) => mineUseCases.has(r.id)) : useCases,
+    publications: onlyMine ? [] : publications,
+    events: onlyMine ? [] : events,
+    organisations: onlyMine ? [] : organisations,
+    people: onlyMine ? [] : people,
+  }
+  const matchedUseCases = scoped.useCases.filter((r) => resourceMatches(r, terms))
+  const matchedPublications = scoped.publications.filter((r) => resourceMatches(r, terms))
+  const matchedEvents = scoped.events.filter((r) => resourceMatches(r, terms))
+  const matchedDatasets = scoped.datasets.filter((r) => resourceMatches(r, terms))
+  const matchedOrganisations = scoped.organisations.filter((o) => partyMatches(partyOf(o), terms))
+  const matchedPeople = scoped.people.filter((p) => partyMatches(partyOf(p), terms))
   const counts: SearchCounts = {
-    'use-cases': { matches: matchedUseCases.length, total: useCases.length },
-    publications: { matches: matchedPublications.length, total: publications.length },
-    datasets: { matches: matchedDatasets.length, total: datasets.length },
-    events: { matches: matchedEvents.length, total: events.length },
-    organisations: { matches: matchedOrganisations.length, total: organisations.length },
-    people: { matches: matchedPeople.length, total: people.length },
+    'use-cases': { matches: matchedUseCases.length, total: scoped.useCases.length },
+    publications: { matches: matchedPublications.length, total: scoped.publications.length },
+    datasets: { matches: matchedDatasets.length, total: scoped.datasets.length },
+    events: { matches: matchedEvents.length, total: scoped.events.length },
+    organisations: { matches: matchedOrganisations.length, total: scoped.organisations.length },
+    people: { matches: matchedPeople.length, total: scoped.people.length },
   }
   const showKind = (kind: SearchKind, n: number) => show(n) && (!unifiedSearch || filter === 'all' || filter === kind)
   /** The count in a section's eyebrow: "3 of 12" while a search narrows it. */
@@ -195,7 +215,7 @@ function CollaborativeDetailView({ data, cta, onBack, pageUrl, onOpenResource, h
   return (
     <>
       <section id="introduction" aria-labelledby="introduction-heading" className="scroll-mt-28 pb-10 lg:pb-14">
-        <CollaborativeActions cta={cta} onBack={onBack} url={url} title={data.title} exportRef={heroRef} />
+        <CollaborativeActions cta={cta} follow={follow} onEdit={onEdit} onBack={onBack} url={url} title={data.title} exportRef={heroRef} />
         {/* The whole top section is what "Download visual" exports. */}
         <div ref={heroRef} className="bg-background">
           <CollaborativeHero
@@ -262,11 +282,14 @@ function CollaborativeDetailView({ data, cta, onBack, pageUrl, onOpenResource, h
       {/* One search over everything connected to this collaborative; Use Cases, Organisations, People and Datasets are subdivisions of it. */}
       {unifiedSearch && organisations.length + people.length + datasets.length + useCases.length + publications.length + events.length > 0 && (
         <Section id="explore" title="Explore this collaborative">
-          <CollaborativeSearch query={query} onQueryChange={setQuery} filter={filter} onFilterChange={setFilter} counts={counts} />
+          <CollaborativeSearch query={query} onQueryChange={setQuery} filter={filter} onFilterChange={setFilter} counts={counts} mine={mine && unifiedSearch ? { active: mineOn, count: mineDatasets.size + mineUseCases.size, onToggle: () => setMineOn((v) => !v) } : undefined} />
 
           <div className="mt-10 flex flex-col gap-14 lg:mt-12 lg:gap-16">
-            {showKind('use-cases', useCases.length) && (
-              <Subsection id="use-cases" title="Use Cases" count={countLabel(matchedUseCases.length, useCases.length)} description="Applications of this collaborative's data in practice.">
+            {onlyMine && scoped.datasets.length + scoped.useCases.length === 0 && (
+              <p className={EMPTY}>You haven’t added any datasets or use cases to this collaborative yet.</p>
+            )}
+            {showKind('use-cases', scoped.useCases.length) && (
+              <Subsection id="use-cases" title="Use Cases" count={countLabel(matchedUseCases.length, scoped.useCases.length)} description="Applications of this collaborative's data in practice.">
                 <ResourceExplorer
                   idPrefix="collab-use-cases"
                   noun={{ singular: 'use case', plural: 'use cases' }}
@@ -280,8 +303,8 @@ function CollaborativeDetailView({ data, cta, onBack, pageUrl, onOpenResource, h
               </Subsection>
             )}
 
-            {showKind('publications', publications.length) && (
-              <Subsection id="publications" title="Publications" count={countLabel(matchedPublications.length, publications.length)} description="Reports, briefs and other writing from this collaborative.">
+            {showKind('publications', scoped.publications.length) && (
+              <Subsection id="publications" title="Publications" count={countLabel(matchedPublications.length, scoped.publications.length)} description="Reports, briefs and other writing from this collaborative.">
                 <ResourceExplorer
                   idPrefix="collab-publications"
                   noun={{ singular: 'publication', plural: 'publications' }}
@@ -295,8 +318,8 @@ function CollaborativeDetailView({ data, cta, onBack, pageUrl, onOpenResource, h
               </Subsection>
             )}
 
-            {showKind('datasets', datasets.length) && (
-              <Subsection id="datasets" title="Datasets" count={countLabel(matchedDatasets.length, datasets.length)} description="Evidence and data behind this collaborative. Open any dataset for a closer look.">
+            {showKind('datasets', scoped.datasets.length) && (
+              <Subsection id="datasets" title="Datasets" count={countLabel(matchedDatasets.length, scoped.datasets.length)} description="Evidence and data behind this collaborative. Open any dataset for a closer look.">
                 <ResourceExplorer
                   idPrefix="collab-datasets"
                   noun={{ singular: 'dataset', plural: 'datasets' }}
@@ -310,8 +333,8 @@ function CollaborativeDetailView({ data, cta, onBack, pageUrl, onOpenResource, h
               </Subsection>
             )}
 
-            {showKind('events', events.length) && (
-              <Subsection id="events" title="Events" count={countLabel(matchedEvents.length, events.length)} description="Meetings, workshops and other events connected to this collaborative.">
+            {showKind('events', scoped.events.length) && (
+              <Subsection id="events" title="Events" count={countLabel(matchedEvents.length, scoped.events.length)} description="Meetings, workshops and other events connected to this collaborative.">
                 <ResourceExplorer
                   idPrefix="collab-events"
                   noun={{ singular: 'event', plural: 'events' }}
@@ -325,8 +348,8 @@ function CollaborativeDetailView({ data, cta, onBack, pageUrl, onOpenResource, h
               </Subsection>
             )}
 
-            {showKind('organisations', organisations.length) && (
-              <Subsection id="organisations" title="Organisations" count={countLabel(matchedOrganisations.length, organisations.length)} description="Organisations working together in this collaborative.">
+            {showKind('organisations', scoped.organisations.length) && (
+              <Subsection id="organisations" title="Organisations" count={countLabel(matchedOrganisations.length, scoped.organisations.length)} description="Organisations working together in this collaborative.">
                 {matchedOrganisations.length > 0 && <TickerControls paused={tickerPaused} onToggle={() => setTickerPaused((p) => !p)} />}
                 {matchedOrganisations.length === 0 ? (
                   <p className={EMPTY}>{searching ? noMatch('organisations') : 'No organisations are listed for this collaborative yet.'}</p>
@@ -341,8 +364,8 @@ function CollaborativeDetailView({ data, cta, onBack, pageUrl, onOpenResource, h
               </Subsection>
             )}
 
-            {showKind('people', people.length) && (
-              <Subsection id="people" title="People" count={countLabel(matchedPeople.length, people.length)} description="People contributing to this collaborative.">
+            {showKind('people', scoped.people.length) && (
+              <Subsection id="people" title="People" count={countLabel(matchedPeople.length, scoped.people.length)} description="People contributing to this collaborative.">
                 {matchedPeople.length > 0 && <TickerControls paused={tickerPaused} onToggle={() => setTickerPaused((p) => !p)} />}
                 {matchedPeople.length === 0 ? (
                   <p className={EMPTY}>{searching ? noMatch('people') : 'No people are listed for this collaborative yet.'}</p>

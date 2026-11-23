@@ -10,6 +10,7 @@ import { useConfirm } from '@/components/ui/confirm-dialog'
 import { useAppData } from '@/context/AppDataContext'
 import { isAIModelReadyToPublish } from '@/lib/ai-model-validation'
 import { clearAIModelDraftSnapshot, loadAIModelDraftSnapshot } from '@/lib/ai-model-draft-storage'
+import { useContentPermissions } from '@/hooks/use-content-permissions'
 
 function AIModelPreviewPage() {
   const { id } = useParams<{ id: string }>()
@@ -23,6 +24,8 @@ function AIModelPreviewPage() {
   const [publishFailed, setPublishFailed] = React.useState(false)
 
   const record = id ? aiModels.find((m) => m.id === id) : undefined
+  // Publishing an organisation's content is an Admin action; the store refuses it for anyone else, so the button says so up front.
+  const permissions = useContentPermissions(record?.organisationId)
   // Load once on mount and freeze — re-reading after our own publish action would
   // pick up the just-updated status and flip "Publish" into "Publish Changes" mid-flow.
   const [snapshot] = React.useState(() => (id ? loadAIModelDraftSnapshot(id) : null))
@@ -61,6 +64,10 @@ function AIModelPreviewPage() {
   const ready = isAIModelReadyToPublish(form, otherNames)
 
   const handlePublish = async () => {
+    if (!permissions.canPublish) {
+      toast({ title: permissions.refusal('publish') ?? 'You can’t publish this.', variant: 'error' })
+      return
+    }
     if (!ready) return
     const ok = await confirm({
       title: hasLiveVersion ? 'Publish changes?' : 'Publish AI Model?',
@@ -130,7 +137,7 @@ function AIModelPreviewPage() {
               <Button type="button" variant="outline" onClick={handleEditInWorkspace} disabled={busy}>
                 Edit in Workspace
               </Button>
-              <Button type="button" onClick={handlePublish} disabled={!ready || busy}>
+              <Button type="button" onClick={handlePublish} disabled={!ready || busy || !permissions.canPublish} title={permissions.canPublish ? undefined : (permissions.refusal('publish') ?? undefined)}>
                 {checking ? (
                   <>
                     <Loader2 className="size-4 animate-spin" />

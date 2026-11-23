@@ -4,10 +4,12 @@ import { UseCaseListView } from '@/components/usecase/UseCaseListView'
 import { useToast } from '@/components/ui/toast'
 import { useConfirm } from '@/components/ui/confirm-dialog'
 import { useAppData } from '@/context/AppDataContext'
+import { useManageableRecords } from '@/hooks/use-manageable-records'
 
 function UseCasesPage() {
   const navigate = useNavigate()
-  const { useCases, deleteUseCase, unpublishUseCase } = useAppData()
+  const { useCases: allUseCases, deleteUseCase, unpublishUseCase } = useAppData()
+  const useCases = useManageableRecords(allUseCases)
   const toast = useToast()
   const confirm = useConfirm()
 

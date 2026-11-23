@@ -4,10 +4,12 @@ import { ChartListView } from '@/components/chart/ChartListView'
 import { useToast } from '@/components/ui/toast'
 import { useConfirm } from '@/components/ui/confirm-dialog'
 import { useAppData } from '@/context/AppDataContext'
+import { useManageableRecords } from '@/hooks/use-manageable-records'
 
 function ChartsPage() {
   const navigate = useNavigate()
-  const { charts, deleteChart, unpublishChart } = useAppData()
+  const { charts: allCharts, deleteChart, unpublishChart } = useAppData()
+  const charts = useManageableRecords(allCharts)
   const toast = useToast()
   const confirm = useConfirm()
 

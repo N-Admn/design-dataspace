@@ -39,6 +39,7 @@ const controls = () => import('@/pages/design-system/docs/ControlPages')
 const overlays = () => import('@/pages/design-system/docs/OverlayPages')
 const layout = () => import('@/pages/design-system/docs/LayoutPages')
 const community = () => import('@/pages/design-system/docs/CommunityPages')
+const notifications = () => import('@/pages/design-system/docs/NotificationPages')
 const misc = () => import('@/pages/design-system/docs/MiscPages')
 
 export const DOC_PAGES: DocPageDef[] = [
@@ -57,7 +58,7 @@ export const DOC_PAGES: DocPageDef[] = [
   page('responsive-playground', 'Responsive playground', 'responsive', 'Compare live components and pages at different viewport widths.', misc, 'ResponsivePlaygroundPage'),
 
   page('badge', 'Badge', 'components', 'A non-interactive label for a status or type, plus the shared StatusBadge.', controls, 'BadgePage', ['src/components/ui/badge.tsx', 'src/components/shared/StatusBadge.tsx']),
-  page('button', 'Button', 'components', 'Triggers an action. Seven variants and four sizes, all token-driven.', controls, 'ButtonPage', ['src/components/ui/button.tsx']),
+  page('button', 'Button', 'components', 'Triggers an action. Seven variants, five sizes and a round shape, all token-driven.', controls, 'ButtonPage', ['src/components/ui/button.tsx']),
   page('card', 'Card', 'components', 'A bordered container with header, content and footer slots.', layout, 'CardPage', ['src/components/ui/card.tsx']),
   page('circle-arrow', 'Circle arrow', 'components', 'The decorative arrow affordance on dashboard cards.', layout, 'CircleArrowPage', ['src/components/shared/CircleArrow.tsx']),
   page('confirm-dialog', 'Confirm dialog', 'components', 'One promise-based gate for every confirmation.', overlays, 'ConfirmDialogPage', ['src/components/ui/confirm-dialog.tsx']),
@@ -68,6 +69,8 @@ export const DOC_PAGES: DocPageDef[] = [
   page('filter-badge', 'Filter badge', 'components', 'Badges and tags that open Search with their value applied, and the chips that show it.', community, 'FilterBadgePage', ['src/components/shared/FilterBadge.tsx', 'src/components/shared/SdgBadge.tsx', 'src/components/discover/AppliedFilters.tsx', 'src/lib/search-links.ts']),
   page('form-controls', 'Form controls', 'components', 'Input, textarea, checkbox, radio group and field error.', controls, 'FormControlsPage', ['src/components/ui/input.tsx', 'src/components/ui/textarea.tsx', 'src/components/ui/checkbox.tsx']),
   page('leave-dialog', 'Leave dialog', 'components', 'The unsaved-changes gate for creation and edit flows.', overlays, 'LeaveDialogPage', ['src/components/shared/LeaveCreationDialog.tsx']),
+  page('notifications', 'Notifications', 'components', 'The bell, the Notifications & Requests page, status chips and the request actions behind them.', notifications, 'NotificationSystemPage', ['src/components/notifications/NotificationBell.tsx', 'src/components/notifications/NotificationRow.tsx', 'src/components/notifications/StatusChip.tsx', 'src/components/notifications/RequestActions.tsx', 'src/pages/NotificationsPage.tsx']),
+  page('notification-emails', 'Notification emails', 'components', 'The single welcome email and the email policy: notifications are in-app only. Visual only: nothing is sent.', notifications, 'NotificationEmailsPage', ['src/lib/notification-emails.ts', 'src/components/notifications/EmailPreview.tsx']),
   page('popover', 'Popover', 'components', 'A small floating panel anchored to its trigger.', overlays, 'PopoverPage', ['src/components/ui/popover.tsx']),
   page('preview-action-bar', 'Preview action bar', 'components', 'The sticky bar at the top of every full-preview page.', layout, 'PreviewActionBarPage', ['src/components/shared/PreviewActionBar.tsx']),
   page('review-publish-panel', 'Review publish panel', 'components', 'The call-to-action panel that ends the review step.', layout, 'ReviewPublishPanelPage', ['src/components/shared/ReviewPublishPanel.tsx']),

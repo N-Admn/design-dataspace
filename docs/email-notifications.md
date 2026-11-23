@@ -49,6 +49,25 @@ The minimum set of emails. Everything else is under "Later".
 |[ ]|Your artifact was linked to a collaborative|Artifact owner|Required|—|Any artifact type (dataset, use case, publication, AI model …)|
 |[ ]|Your artifact was linked to a use case|Artifact owner|Required|—|Use case step 2, "Where this dataset is used"|
 
+### E. Restricted access and collaborative submissions
+
+Defined in [restricted-access-and-approvals.md](restricted-access-and-approvals.md). Every one of these also appears in the bell and on the Notifications & Requests page ([notification-system.md](notification-system.md)).
+
+**Who decides:** access requests are decided by the item's owner, or by the owning organisation's **admins**. Collaborative submissions are decided **only by the collaborative owner** (or the owning organisation's admins). Partners add items directly but never approve submissions, so they are not emailed about them.
+
+|Done|Situation|Who gets it|Priority|Notes|
+|-|-|-|-|-|
+|[ ]|Someone requests access to a restricted item|Item owner, or the organisation's admins|Required|Includes the requester's reason. One decision updates it for every admin.|
+|[ ]|Access request approved or declined|The requester|Required|Declined: includes the reason, and the requester can ask again.|
+|[ ]|You've been given access (added directly)|The person, or the organisation's admins|Required|—|
+|[ ]|Your access was revoked|The person, or the organisation's admins|Required|The person can ask again.|
+|[ ]|Access request withdrawn|The item owner, or the organisation's admins|Recommended|Closes the pending request.|
+|[ ]|New submission to a collaborative|The collaborative owner, or the owning organisation's admins|Required|**Not** sent to partners.|
+|[ ]|Submission approved or declined|The submitter|Required|—|
+|[ ]|Your organisation was added as a partner|The partner organisation's admins|Required|Says partners can add items directly once published. Does not mention approving.|
+|[ ]|Your item was added to a collaborative|The item's owner|Required|Not sent if the owner added it themselves.|
+|[ ]|Daily update on a collaborative you follow|Followers|Recommended|One summary a day, only when something changed. Behind a notification setting.|
+
 ### Not sending
 
 * **Every artifact published.** No email each time a dataset (or other non-collaborative artifact) is published.
@@ -142,3 +161,7 @@ Applies to all artifacts. Publishing in general doesn't send an email (see "Not 
 * [ ] **Join requests:** the Request button exists, but there's no screen to approve or decline requests and no "pending" state, so the join-request emails have nothing to hook onto yet.
 * [ ] **Following:** there's no follow or subscribe feature, so emails like "new dataset from an org you follow" aren't possible yet. That would be a separate feature.
 * [ ] **Email settings:** Optional emails, and most publishing emails, should go through a notification settings section in the Profile page. Required account and security emails should always be sent.
+
+### Resolved
+
+* [x] **Who approves collaborative submissions?** Only the collaborative owner (or the owning organisation's admins). Partners don't approve and aren't emailed about submissions. *(Decided with the team.)*

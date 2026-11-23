@@ -1,4 +1,6 @@
 import { useNavigate, useParams } from 'react-router-dom'
+import { OwnerEditButton } from '@/components/shared/OwnerEditButton'
+import { useOwnerEdit } from '@/hooks/use-owner-edit'
 
 import { PublicationPreview } from '@/components/publication/PublicationPreview'
 import { Button } from '@/components/ui/button'
@@ -18,6 +20,7 @@ function PublicationDetailPage() {
   const goBack = useGoBack(PUBLICATION_SEARCH_PATH)
 
   const record = id ? publications.find((p) => p.id === id) : undefined
+  const onEdit = useOwnerEdit('publication', record)
   const form = record?.status === 'published' ? record.publishedForm : undefined
 
   if (!record || !form) {
@@ -34,6 +37,11 @@ function PublicationDetailPage() {
 
   return (
     <div className="mx-auto w-full max-w-6xl pb-8">
+      {onEdit && (
+        <div className="mb-3 flex justify-end">
+          <OwnerEditButton onEdit={onEdit} noun="publication" />
+        </div>
+      )}
       <PublicationPreview
         form={form}
         publisher={resolvePublisherByOrganisation(record.organisationId, record.createdBy, organisationWorkspaces)}
