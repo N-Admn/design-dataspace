@@ -1,6 +1,6 @@
 import type { DatasetRecord } from '@/types/dataset'
 import { organisationLogoUrl } from '@/lib/org-logo'
-import type { OrganisationRecord } from '@/types/organisation-workspace'
+import { CURRENT_USER_PERSON_ID, type OrganisationRecord } from '@/types/organisation-workspace'
 import { MOCK_PROFILE } from '@/types/profile'
 
 export interface DatasetPublisher {
@@ -23,7 +23,7 @@ export interface DatasetPublisher {
  *  Reuses the existing `organisationId` → Organisation Workspace link rather than
  *  introducing a new "publisher" field on `DatasetMetadata`. */
 export function resolveDatasetPublisher(
-  dataset: DatasetRecord,
+  dataset: Pick<DatasetRecord, 'organisationId' | 'createdBy'>,
   organisationWorkspaces: OrganisationRecord[],
 ): DatasetPublisher {
   const org = dataset.organisationId
@@ -65,4 +65,10 @@ export function resolvePublisherByOrganisation(
     name: createdBy || `${MOCK_PROFILE.firstName} ${MOCK_PROFILE.lastName}`,
     avatarUrl: MOCK_PROFILE.avatarDataUrl,
   }
+}
+
+/** Where a record's publisher has a public profile on CivicDataSpace: the organisation's page, or, for content in My
+ *  Workspace, the signed-in member's publisher page (the same attribution the Community directory uses). */
+export function publisherProfileHref(organisationId: string | undefined): string {
+  return organisationId ? `/explore/organisations/${organisationId}` : `/publishers/${CURRENT_USER_PERSON_ID}`
 }

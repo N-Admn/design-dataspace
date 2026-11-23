@@ -76,7 +76,7 @@ function loadStoredUseCases(): UseCaseRecord[] | null {
 
 /** Bump when the bundled sample Use Cases / Collaboratives change. A browser holding an older copy then gets the new samples
  * once (records with a sample id are replaced, missing ones added) while records people created themselves are kept. */
-const SEED_VERSION = '2026-10-29-no-event-publications'
+const SEED_VERSION = '2026-11-23-ai-model-detail'
 const SEED_VERSION_KEY = 'civicdataspace:seed-version'
 
 /** Publications keep their own seed version, so a change to the sample Publications doesn't reset the other samples. */

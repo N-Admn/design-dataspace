@@ -15,10 +15,18 @@ const aiModel1Form: AIModelFormState = {
     languageSupportType: 'specific',
     languages: ['en', 'hi'],
     geographies: ['india'],
-    website: 'https://civicdatalab.in',
+    website: 'https://huggingface.co/civicdatalab/flood-risk-forecaster',
     license: 'cc-by-4.0',
   },
   versions: [
+    {
+      id: 'version-1-2',
+      name: '1.2',
+      lifecycleStage: 'beta',
+      isPrimary: false,
+      updatedAt: '2026-10-21',
+      accessMethods: [],
+    },
     {
       id: 'version-1',
       name: '1.0',
@@ -43,6 +51,14 @@ const aiModel1Form: AIModelFormState = {
           timeoutSeconds: '30',
         },
       ],
+    },
+    {
+      id: 'version-0-9',
+      name: '0.9',
+      lifecycleStage: 'deprecated',
+      isPrimary: false,
+      updatedAt: '2026-03-02',
+      accessMethods: [],
     },
   ],
 }

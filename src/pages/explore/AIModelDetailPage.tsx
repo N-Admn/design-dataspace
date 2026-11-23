@@ -1,16 +1,17 @@
 import { ArrowLeft } from 'lucide-react'
 import { useParams } from 'react-router-dom'
 
-import { AIModelPreview } from '@/components/ai-model/AIModelPreview'
+import { AIModelDetail } from '@/components/ai-model/consumer/AIModelDetail'
 import { EmptyState } from '@/components/shared/EmptyState'
 import { useAppData } from '@/context/AppDataContext'
 import { useGoBack } from '@/hooks/use-go-back'
+import { publisherProfileHref, resolveDatasetPublisher } from '@/lib/dataset-publisher'
 
 /** The public AI Model page (`/explore/ai-models/:id`). Visitors only ever see the live **published** version, the same rule as
  *  the other Explore detail pages; the contributor's preview page is for the contributor alone. */
 function AIModelDetailPage() {
   const { id } = useParams<{ id: string }>()
-  const { aiModels } = useAppData()
+  const { aiModels, organisationWorkspaces } = useAppData()
   const goBack = useGoBack('/search?type=ai-model')
 
   const record = id ? aiModels.find((m) => m.id === id) : undefined
@@ -29,16 +30,14 @@ function AIModelDetailPage() {
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-4xl flex-col gap-6 py-2">
-      <button
-        type="button"
-        onClick={goBack}
-        className="flex w-fit items-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-      >
-        <ArrowLeft className="size-4" />
-        Back
-      </button>
-      <AIModelPreview form={form} />
+    <div className="mx-auto w-full max-w-[1400px] py-2">
+      <AIModelDetail
+        form={form}
+        publisher={resolveDatasetPublisher(record, organisationWorkspaces)}
+        publisherHref={publisherProfileHref(record.organisationId)}
+        updatedAt={record.updatedAt}
+        onBack={goBack}
+      />
     </div>
   )
 }

@@ -4,17 +4,19 @@ import { Loader2, Send } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { PreviewActionBar } from '@/components/shared/PreviewActionBar'
-import { AIModelPreview } from '@/components/ai-model/AIModelPreview'
+import { AIModelDetail } from '@/components/ai-model/consumer/AIModelDetail'
 import { useToast } from '@/components/ui/toast'
 import { useConfirm } from '@/components/ui/confirm-dialog'
 import { useAppData } from '@/context/AppDataContext'
 import { isAIModelReadyToPublish } from '@/lib/ai-model-validation'
+import { publisherProfileHref, resolveDatasetPublisher } from '@/lib/dataset-publisher'
+import { formatTimestamp } from '@/lib/format'
 import { clearAIModelDraftSnapshot, loadAIModelDraftSnapshot } from '@/lib/ai-model-draft-storage'
 
 function AIModelPreviewPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-  const { aiModels, upsertAIModel } = useAppData()
+  const { aiModels, upsertAIModel, organisationWorkspaces } = useAppData()
   const confirm = useConfirm()
   const toast = useToast()
   const [isSubmitting, setIsSubmitting] = React.useState(false)
@@ -100,7 +102,7 @@ function AIModelPreviewPage() {
   const busy = checking || isSubmitting
 
   return (
-    <div className="mx-auto flex max-w-4xl flex-col gap-6 py-6">
+    <div className="mx-auto flex w-full max-w-[1400px] flex-col gap-6 py-6">
       <PreviewActionBar>
         <div>
           <p className="text-sm font-semibold text-foreground">
@@ -166,7 +168,13 @@ function AIModelPreviewPage() {
         </p>
       )}
 
-      <AIModelPreview form={form} />
+      {/* The public page itself, so the contributor sees exactly what will go live. A model not yet saved counts as updated today. */}
+      <AIModelDetail
+        form={form}
+        publisher={resolveDatasetPublisher({ organisationId: record?.organisationId, createdBy: record?.createdBy }, organisationWorkspaces)}
+        publisherHref={publisherProfileHref(record?.organisationId)}
+        updatedAt={record?.updatedAt ?? formatTimestamp(new Date())}
+      />
     </div>
   )
 }
