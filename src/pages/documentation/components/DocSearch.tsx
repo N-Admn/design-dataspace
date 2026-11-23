@@ -96,7 +96,7 @@ function DocSearch({
             <X className="size-4" aria-hidden="true" />
           </button>
         )}
-        <Button type="submit" size="icon" aria-label="Search" className={cn('shrink-0 rounded-full', size === 'lg' ? 'size-9' : 'size-8')}>
+        <Button shape="round" type="submit" size="icon" aria-label="Search" className={cn('shrink-0', size === 'lg' ? 'size-9' : 'size-8')}>
           <Search className="size-4" aria-hidden="true" />
         </Button>
       </form>

@@ -9,8 +9,9 @@ interface ToastOptions {
   title: string
   description?: string
   variant?: ToastVariant
-  /** Optional follow-up link, opened in a new tab (e.g. "View live" after publishing). */
-  action?: { label: string; href: string }
+  /** Optional follow-up: a link opened in a new tab (e.g. "View live" after publishing), or a button that runs `onClick`
+   *  in the app (e.g. "View request"). */
+  action?: { label: string; href: string } | { label: string; onClick: () => void }
 }
 
 interface ToastItem extends ToastOptions {
@@ -45,11 +46,11 @@ function ToastProvider({ children }: { children: React.ReactNode }) {
   return (
     <ToastContext.Provider value={toast}>
       {children}
-      <div className="fixed right-4 top-4 z-[100] flex w-full max-w-sm flex-col gap-2">
+      <div aria-live="polite" className="fixed right-4 top-4 z-[100] flex w-full max-w-sm flex-col gap-2">
         {toasts.map((t) => (
           <div
             key={t.id}
-            role="status"
+            role={t.variant === 'error' ? 'alert' : undefined}
             className="flex items-start gap-2.5 rounded-lg border border-border-default bg-surface-default px-4 py-3 shadow-lg animate-in fade-in-0 slide-in-from-top-2"
           >
             {t.variant === 'error' ? (
@@ -60,7 +61,7 @@ function ToastProvider({ children }: { children: React.ReactNode }) {
             <div className="min-w-0 flex-1">
               <p className="text-sm font-medium text-text-default">{t.title}</p>
               {t.description && <p className="mt-0.5 text-xs text-text-subdued">{t.description}</p>}
-              {t.action && (
+              {t.action && 'href' in t.action && (
                 <a
                   href={t.action.href}
                   target="_blank"
@@ -71,13 +72,25 @@ function ToastProvider({ children }: { children: React.ReactNode }) {
                   <ExternalLink className="size-3.5" aria-hidden="true" />
                 </a>
               )}
+              {t.action && 'onClick' in t.action && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (t.action && 'onClick' in t.action) t.action.onClick()
+                    dismiss(t.id)
+                  }}
+                  className="type-label mt-1.5 inline-flex items-center gap-1 text-text-brand underline-offset-2 hover:underline"
+                >
+                  {t.action.label}
+                </button>
+              )}
             </div>
             <button
               type="button"
               aria-label="Dismiss"
               onClick={() => dismiss(t.id)}
               className={cn(
-                'shrink-0 rounded-md p-0.5 text-text-subdued transition-colors hover:bg-surface-subdued hover:text-text-default',
+                'shrink-0 rounded-button p-0.5 text-text-subdued transition-colors hover:bg-surface-subdued hover:text-text-default',
               )}
             >
               <X className="size-3.5" />

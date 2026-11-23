@@ -12,7 +12,15 @@ import { useToast } from '@/components/ui/toast'
 import { useAppData } from '@/context/AppDataContext'
 import { isValidEmail } from '@/lib/auth-mock'
 import { MOCK_PEOPLE } from '@/lib/mock-people'
-import { ORGANISATION_ROLE_OPTIONS, organisationRoleLabel, type OrganisationRecord, type OrganisationRole } from '@/types/organisation-workspace'
+import { EvaluationScopePicker } from '@/components/organisation/EvaluationScopePicker'
+import {
+  ORGANISATION_ROLE_OPTIONS,
+  organisationRoleLabel,
+  type EvaluationScopeItem,
+  type OrganisationInviteLink,
+  type OrganisationRecord,
+  type OrganisationRole,
+} from '@/types/organisation-workspace'
 
 interface AddMembersSideSheetProps {
   open: boolean
@@ -36,7 +44,7 @@ interface InviteRow {
 }
 
 function AddMembersSideSheet({ open, onOpenChange, organisation }: AddMembersSideSheetProps) {
-  const { inviteOrganisationMember } = useAppData()
+  const { inviteOrganisationMember, createInviteLink } = useAppData()
   const toast = useToast()
 
   const [tab, setTab] = React.useState<'people' | 'link'>('people')
@@ -52,6 +60,12 @@ function AddMembersSideSheet({ open, onOpenChange, organisation }: AddMembersSid
 
   // "Invite via link" tab state.
   const [linkRole, setLinkRole] = React.useState<OrganisationRole | ''>('')
+  // An Evaluator link carries the records the Evaluator will review, so it is generated as an invitation record before it can be copied.
+  const [linkScope, setLinkScope] = React.useState<EvaluationScopeItem[]>([])
+  const [generatedLink, setGeneratedLink] = React.useState<OrganisationInviteLink | null>(null)
+  const [linkError, setLinkError] = React.useState<string | null>(null)
+  // "Invite people": the records every Evaluator in the list will review.
+  const [peopleScope, setPeopleScope] = React.useState<EvaluationScopeItem[]>([])
 
   React.useEffect(() => {
     if (open) {
@@ -63,6 +77,10 @@ function AddMembersSideSheet({ open, onOpenChange, organisation }: AddMembersSid
       setSubmitError(null)
       setSentNames(null)
       setLinkRole('')
+      setLinkScope([])
+      setGeneratedLink(null)
+      setLinkError(null)
+      setPeopleScope([])
     }
   }, [open])
 
@@ -113,9 +131,11 @@ function AddMembersSideSheet({ open, onOpenChange, organisation }: AddMembersSid
   }
 
   const rowsMissingRole = rows.some((r) => !r.role)
+  const hasEvaluatorRow = rows.some((r) => r.role === 'evaluator')
+  const evaluatorScopeMissing = hasEvaluatorRow && peopleScope.length === 0
 
   const handleSendInvite = () => {
-    if (rows.length === 0 || rowsMissingRole) {
+    if (rows.length === 0 || rowsMissingRole || evaluatorScopeMissing) {
       setShowErrors(true)
       return
     }
@@ -128,21 +148,44 @@ function AddMembersSideSheet({ open, onOpenChange, organisation }: AddMembersSid
           name: row.name,
           email: row.email,
           role: row.role as OrganisationRole,
+          evaluationScope: row.role === 'evaluator' ? peopleScope : undefined,
         })
       }
       setSubmitting(false)
       setSentNames(rows.map((r) => r.name))
-    } catch {
+    } catch (error) {
       setSubmitting(false)
-      setSubmitError('We couldn’t send these invitations. Please try again.')
+      setSubmitError(error instanceof Error && error.message ? error.message : 'We couldn’t send these invitations. Please try again.')
     }
   }
 
-  const inviteLink = linkRole ? `https://civicdataspace.org/invite/${organisation.id}?role=${linkRole}` : ''
+  const linkIsEvaluator = linkRole === 'evaluator'
+  // The link points at this app's own invitation page. It names a token, not a person: the organisation, role and (for an Evaluator) records
+  // are kept with the link, and nothing appears in the Invitations tab until someone opens it.
+  const inviteLink = generatedLink ? `${window.location.origin}/invite/${generatedLink.token}` : ''
 
-  const handleCopyLink = async () => {
+  // A link is generated, then copied. Generating it makes no invitation and sends no notification. An Evaluator link cannot be made
+  // without at least one published record.
+  const handleGenerateLink = () => {
     if (!linkRole) {
       setShowErrors(true)
+      return
+    }
+    if (linkIsEvaluator && linkScope.length === 0) {
+      setShowErrors(true)
+      return
+    }
+    try {
+      setGeneratedLink(createInviteLink(organisation.id, { role: linkRole, evaluationScope: linkIsEvaluator ? linkScope : undefined }))
+      setLinkError(null)
+    } catch (error) {
+      setLinkError(error instanceof Error ? error.message : 'We couldn’t generate this link. Please try again.')
+    }
+  }
+
+  const handleCopyLink = async () => {
+    if (!generatedLink) {
+      handleGenerateLink()
       return
     }
     try {
@@ -289,6 +332,16 @@ function AddMembersSideSheet({ open, onOpenChange, organisation }: AddMembersSid
                   {showErrors && rowsMissingRole && <FieldError message="Choose a role for everyone in the list." />}
                 </div>
               )}
+
+              {hasEvaluatorRow && (
+                <EvaluationScopePicker
+                  idPrefix="invite-people-scope"
+                  organisationId={organisation.id}
+                  value={peopleScope}
+                  onChange={setPeopleScope}
+                  error={showErrors && evaluatorScopeMissing ? 'Choose at least one published record for the Evaluators to review.' : null}
+                />
+              )}
             </div>
           </ViewTabPanel>
 
@@ -303,7 +356,12 @@ function AddMembersSideSheet({ open, onOpenChange, organisation }: AddMembersSid
                     id="invite-link-role"
                     options={ORGANISATION_ROLE_OPTIONS}
                     value={linkRole}
-                    onChange={(value) => setLinkRole(value as OrganisationRole)}
+                    onChange={(value) => {
+                      setLinkRole(value as OrganisationRole)
+                      // A link made for one role is not reused for another.
+                      setGeneratedLink(null)
+                      setLinkError(null)
+                    }}
                     placeholder="Select a role..."
                     invalid={showErrors && !linkRole}
                   />
@@ -313,13 +371,32 @@ function AddMembersSideSheet({ open, onOpenChange, organisation }: AddMembersSid
                 ) : (
                   <p className="mt-1.5 text-xs text-text-subdued">
                     {linkRole
-                      ? `Anyone with this link will join as ${organisationRoleLabel(linkRole)}.`
-                      : 'Choose a role — anyone who opens the link will join with that role.'}
+                      ? `Each link works for one person: the first person to open it claims it and joins as ${organisationRoleLabel(linkRole)}.`
+                      : 'Choose a role — the person who opens the link will join with that role.'}
                   </p>
                 )}
               </div>
 
-              {linkRole && (
+              {linkIsEvaluator && !generatedLink && (
+                <EvaluationScopePicker
+                  idPrefix="invite-link-scope"
+                  organisationId={organisation.id}
+                  value={linkScope}
+                  onChange={setLinkScope}
+                  error={showErrors && linkScope.length === 0 ? 'Choose at least one published record to generate an Evaluator link.' : null}
+                />
+              )}
+              {linkError && <FieldError message={linkError} />}
+              {generatedLink && (
+                <p className="text-xs text-text-subdued">
+                  {linkIsEvaluator
+                    ? `This link gives evaluation access to ${generatedLink.evaluationScope?.length ?? 0} published record${(generatedLink.evaluationScope?.length ?? 0) === 1 ? '' : 's'}. Access starts only when the person accepts. `
+                    : ''}
+                  It appears in Invitations as soon as someone opens it, and cannot be used by anyone else after that.
+                </p>
+              )}
+
+              {inviteLink && (
                 <div className="rounded-lg border border-border-default bg-surface-subdued/30 p-3.5">
                   <p className="text-xs font-semibold uppercase tracking-wide text-text-subdued">Invitation link</p>
                   <div className="mt-1.5 flex items-center justify-between gap-3">
@@ -346,7 +423,7 @@ function AddMembersSideSheet({ open, onOpenChange, organisation }: AddMembersSid
           ) : (
             <Button type="button" onClick={handleCopyLink}>
               <Copy className="size-4" />
-              Copy Link
+              {generatedLink ? 'Copy Link' : 'Generate Link'}
             </Button>
           )}
         </div>

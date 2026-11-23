@@ -242,7 +242,7 @@ function ProposedHeader({
         <div className="flex shrink-0 items-start gap-2">
           <button
             type="button"
-            className={`inline-flex h-10 items-center justify-center gap-2 rounded-md border px-4 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${t.share} ${t.ring}`}
+            className={`inline-flex h-10 items-center justify-center gap-2 rounded-button border px-4 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${t.share} ${t.ring}`}
           >
             <Share2 className="size-4" aria-hidden="true" />
             Share
@@ -251,7 +251,7 @@ function ProposedHeader({
           <div className="flex flex-col items-center gap-2">
             <button
               type="button"
-              className={`inline-flex h-10 items-center justify-center gap-2 rounded-md bg-accent px-5 text-sm font-semibold text-accent-foreground transition-colors hover:bg-accent/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${t.ring}`}
+              className={`inline-flex h-10 items-center justify-center gap-2 rounded-button bg-accent px-5 text-sm font-semibold text-accent-foreground transition-colors hover:bg-accent/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${t.ring}`}
             >
               <Download className="size-4" aria-hidden="true" />
               Download

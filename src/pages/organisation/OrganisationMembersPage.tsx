@@ -34,6 +34,8 @@ const TABS = [
 
 const INVITATION_STATUS_LABEL: Record<OrganisationInvitation['status'], string> = {
   pending: 'Pending',
+  accepted: 'Accepted',
+  declined: 'Declined',
   revoked: 'Revoked',
 }
 
@@ -144,6 +146,9 @@ function OrganisationMembersPage() {
           <div className="min-w-0">
             <TruncatedText className="font-medium text-text-default">{i.name}</TruncatedText>
             {i.email && <TruncatedText className="text-xs text-text-subdued">{i.email}</TruncatedText>}
+            {i.via === 'link' && (
+              <TruncatedText className="text-xs text-text-subdued">{i.email ? 'Claimed an invitation link' : 'Claimed an invitation link · no account yet'}</TruncatedText>
+            )}
           </div>
         </div>
       ),
@@ -153,14 +158,23 @@ function OrganisationMembersPage() {
       label: 'Role',
       widthRem: '8rem',
       optional: true,
-      render: (i) => <Badge variant={i.role === 'admin' ? 'accent' : 'secondary'}>{organisationRoleLabel(i.role)}</Badge>,
+      render: (i) => (
+        <div className="flex min-w-0 flex-col items-start gap-0.5">
+          <Badge variant={i.role === 'admin' ? 'accent' : 'secondary'}>{organisationRoleLabel(i.role)}</Badge>
+          {i.role === 'evaluator' && i.evaluationScope && (
+            <span className="text-xs text-text-subdued">
+              {i.evaluationScope.length} record{i.evaluationScope.length === 1 ? '' : 's'}
+            </span>
+          )}
+        </div>
+      ),
     },
     {
       key: 'status',
       label: 'Status',
       widthRem: '8rem',
       optional: true,
-      render: (i) => <Badge variant={i.status === 'pending' ? 'success' : 'secondary'}>{INVITATION_STATUS_LABEL[i.status]}</Badge>,
+      render: (i) => <Badge variant={i.status === 'pending' || i.status === 'accepted' ? 'success' : 'secondary'}>{INVITATION_STATUS_LABEL[i.status]}</Badge>,
     },
     {
       key: 'invited',

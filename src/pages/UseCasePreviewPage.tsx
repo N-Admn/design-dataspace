@@ -11,6 +11,7 @@ import { useAppData } from '@/context/AppDataContext'
 import { resolveUseCaseCreator } from '@/lib/usecase-creator'
 import { isUseCaseReadyToPublish } from '@/lib/usecase-validation'
 import { clearUseCaseDraftSnapshot, loadUseCaseDraftSnapshot } from '@/lib/usecase-draft-storage'
+import { useContentPermissions } from '@/hooks/use-content-permissions'
 
 function UseCasePreviewPage() {
   const { id } = useParams<{ id: string }>()
@@ -22,6 +23,8 @@ function UseCasePreviewPage() {
   const [justPublished, setJustPublished] = React.useState(false)
 
   const record = id ? useCases.find((u) => u.id === id) : undefined
+  // Publishing an organisation's content is an Admin action; the store refuses it for anyone else, so the button says so up front.
+  const permissions = useContentPermissions(record?.organisationId)
   // Load once on mount and freeze — re-reading after our own publish action would
   // pick up the just-updated status and flip "Publish" into "Publish Changes" mid-flow.
   const [snapshot] = React.useState(() => (id ? loadUseCaseDraftSnapshot(id) : null))
@@ -62,6 +65,10 @@ function UseCasePreviewPage() {
   const ready = isUseCaseReadyToPublish(form)
 
   const handlePublish = async () => {
+    if (!permissions.canPublish) {
+      toast({ title: permissions.refusal('publish') ?? 'You can’t publish this.', variant: 'error' })
+      return
+    }
     if (!ready) return
     const ok = await confirm({
       title: hasLiveVersion ? 'Publish changes?' : 'Publish use case?',
@@ -120,7 +127,7 @@ function UseCasePreviewPage() {
               <Button type="button" variant="outline" onClick={handleEditInWorkspace}>
                 Edit in Workspace
               </Button>
-              <Button type="button" onClick={handlePublish} disabled={!ready || isSubmitting}>
+              <Button type="button" onClick={handlePublish} disabled={!ready || isSubmitting || !permissions.canPublish} title={permissions.canPublish ? undefined : (permissions.refusal('publish') ?? undefined)}>
                 {isSubmitting ? (
                   <>
                     <Loader2 className="size-4 animate-spin" />

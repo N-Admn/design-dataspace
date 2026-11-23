@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom'
 
 import { useOrganisation } from '@/hooks/use-organisation'
+import { useEvaluatorScope } from '@/hooks/use-evaluator-scope'
 import { useAppData } from '@/context/AppDataContext'
 import { OrganisationNotFound } from '@/components/organisation/OrganisationNotFound'
 import { OrganisationContentTable, type OrganisationContentItem } from '@/components/organisation/OrganisationContentTable'
@@ -10,14 +11,15 @@ import { useToast } from '@/components/ui/toast'
 function OrganisationPublicationsPage() {
   const navigate = useNavigate()
   const { organisationId, organisation, permissions } = useOrganisation()
-  const { publications, deletePublication } = useAppData()
+  const scope = useEvaluatorScope(organisationId)
+  const { publications, deletePublication, unpublishPublication } = useAppData()
   const confirm = useConfirm()
   const toast = useToast()
 
   if (!organisation) return <OrganisationNotFound />
 
   const returnTo = `/organisations/${organisationId}/publications`
-  const orgPublications = publications.filter((p) => p.organisationId === organisationId)
+  const orgPublications = scope.filter('publication', publications.filter((p) => p.organisationId === organisationId))
   const items: OrganisationContentItem[] = orgPublications.map((p) => ({
     id: p.id,
     title: p.form.metadata.name,
@@ -43,6 +45,22 @@ function OrganisationPublicationsPage() {
     toast({ title: 'Publication deleted', variant: 'success' })
   }
 
+  const handleUnpublish = async (item: OrganisationContentItem) => {
+    const ok = await confirm({
+      title: 'Unpublish this Publication?',
+      description: `"${item.title || 'This item'}" will be removed from public view and moved back to Draft. Anyone assigned to evaluate it loses access, and publishing it again does not restore that.`,
+      confirmLabel: 'Unpublish',
+      variant: 'destructive',
+    })
+    if (!ok) return
+    try {
+      unpublishPublication(item.id)
+      toast({ title: 'Publication unpublished', description: 'Moved back to Draft.', variant: 'success' })
+    } catch (error) {
+      toast({ title: 'You can’t unpublish this', description: error instanceof Error ? error.message : undefined, variant: 'error' })
+    }
+  }
+
   return (
     <OrganisationContentTable
       title="Organisation Publications"
@@ -52,7 +70,8 @@ function OrganisationPublicationsPage() {
       onAdd={permissions.canCreateContent ? () => open(null) : undefined}
       items={items}
       onOpen={(item) => open(item.id)}
-      onDelete={permissions.role === 'admin' ? handleDelete : undefined}
+      onDelete={permissions.canDeleteOrganisationContent ? handleDelete : undefined}
+      onUnpublish={permissions.canUnpublishOrganisationContent ? handleUnpublish : undefined}
       emptyTitle="No organisation publications yet"
       emptyDescription="Publications created by this organisation's members will show up here."
       searchPlaceholder="Search publications..."

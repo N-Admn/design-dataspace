@@ -255,10 +255,10 @@ function DataDNACardV10({ view, exportMode = false }: { view: CardView; exportMo
       <header className="mb-1 flex items-start justify-between gap-4">
         <CardTitle title={view.title} exportMode={exportMode} />
         {/* A round filled icon button (the same treatment as Version 6) that saves the Data DNA. */}
-        <Button
+        <Button shape="round"
           type="button"
           size="icon"
-          className="size-11 shrink-0 rounded-full"
+          className="size-11 shrink-0"
           aria-label="Save Data DNA"
           title="Save Data DNA"
           onClick={() =>

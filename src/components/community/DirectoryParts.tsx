@@ -303,7 +303,7 @@ function DirectoryPagination({
       {/* The controls sit at the right: Previous, the page numbers and Next, then the Go to field when there are many pages. */}
       <div className="ml-auto flex flex-wrap items-center justify-end gap-x-6 gap-y-3">
         <div className="flex flex-wrap items-center justify-end gap-2">
-          <button type="button" disabled={page <= 1} onClick={() => onPage(page - 1)} className="inline-flex h-10 items-center justify-center gap-1.5 rounded-lg bg-muted px-3 text-sm sm:px-5 font-medium text-foreground transition-colors hover:bg-muted/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50">
+          <button type="button" disabled={page <= 1} onClick={() => onPage(page - 1)} className="inline-flex h-10 items-center justify-center gap-1.5 rounded-button bg-muted px-3 text-sm sm:px-5 font-medium text-foreground transition-colors hover:bg-muted/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50">
             Previous
           </button>
           {pageItems(page, pageCount).map((n, i) =>
@@ -327,7 +327,7 @@ function DirectoryPagination({
               </button>
             ),
           )}
-          <button type="button" disabled={page >= pageCount} onClick={() => onPage(page + 1)} className="inline-flex h-10 items-center justify-center gap-1.5 rounded-lg bg-muted px-3 text-sm sm:px-5 font-medium text-foreground transition-colors hover:bg-muted/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50">
+          <button type="button" disabled={page >= pageCount} onClick={() => onPage(page + 1)} className="inline-flex h-10 items-center justify-center gap-1.5 rounded-button bg-muted px-3 text-sm sm:px-5 font-medium text-foreground transition-colors hover:bg-muted/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50">
             Next
           </button>
         </div>

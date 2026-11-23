@@ -1,7 +1,8 @@
-import { Archive, ExternalLink, Pencil, Trash2 } from 'lucide-react'
+import { Archive, Pencil, Trash2 } from 'lucide-react'
 
 import { ManagementTable, type ManagementColumn, type ManagementFilterDef, type ManagementRowAction } from '@/components/shared/management-table/ManagementTable'
 import { Badge } from '@/components/ui/badge'
+import { ContentNameCell } from '@/components/shared/ContentNameCell'
 import { TruncatedText } from '@/components/shared/TruncatedText'
 import { StatusBadge } from '@/components/shared/StatusBadge'
 import { formatEventDateRange, getEventRegistrationState } from '@/lib/event-status'
@@ -43,9 +44,7 @@ function buildColumns(onOpen: (event: EventRecord) => void): ManagementColumn<Ev
     sortable: true,
     compare: (a, b) => (a.form.metadata.title || '').localeCompare(b.form.metadata.title || ''),
     render: (e) => (
-      <button type="button" onClick={() => onOpen(e)} className="block w-full text-left hover:text-primary">
-        <TruncatedText className="min-w-0 flex-1 font-medium text-foreground">{e.form.metadata.title || 'Untitled event'}</TruncatedText>
-      </button>
+      <ContentNameCell name={e.form.metadata.title || 'Untitled event'} liveHref={e.status === 'published' ? `/explore/events/${e.id}` : undefined} onOpen={() => onOpen(e)} />
     ),
   },
   {
@@ -155,12 +154,6 @@ function EventListView({
       ]
     }
     return [
-      {
-        key: 'view-live',
-        icon: ExternalLink,
-        label: () => `View live: ${title}`,
-        onClick: () => window.open(`/explore/events/${event.id}`, '_blank', 'noopener,noreferrer'),
-      },
       { key: 'edit', icon: Pencil, label: () => `Edit ${title}`, onClick: () => onEditEvent(event.id) },
       { key: 'unpublish', icon: Archive, label: () => `Unpublish ${title}`, onClick: () => onUnpublishEvent(event.id), destructive: true },
     ]

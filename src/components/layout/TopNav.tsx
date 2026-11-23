@@ -35,15 +35,11 @@ import {
 import { useTrackSearchOrigin } from '@/hooks/use-close-search'
 import { useHeaderMenuOffset } from '@/hooks/use-header-menu-offset'
 import { useAuth, useGoToProvider, useGoToSignIn } from '@/context/AuthContext'
+import { useNotifications } from '@/context/NotificationsContext'
+import { NotificationBell } from '@/components/notifications/NotificationBell'
 import { PAGE_GUTTER_X } from '@/lib/layout'
 import { FeaturedCollaborativeCard } from '@/components/layout/FeaturedCollaborativeCard'
 import { cn } from '@/lib/utils'
-
-const CURRENT_USER = {
-  name: 'John Doe',
-  email: 'johndoe@gmail.com',
-  initials: 'JD',
-}
 
 type MenuId = 'discover' | 'collaboratives' | 'more'
 
@@ -75,6 +71,7 @@ function AuthButton({ onLogIn }: { onLogIn: () => void }) {
 }
 
 function UserMenu({ onSignOut }: { onSignOut: () => void }) {
+  const user = useNotifications().persona
   const menuOffset = useHeaderMenuOffset()
   const navigate = useNavigate()
 
@@ -86,7 +83,7 @@ function UserMenu({ onSignOut }: { onSignOut: () => void }) {
           aria-label="Account menu"
           className="flex size-9 items-center justify-center rounded-full bg-accent text-sm font-semibold text-accent-foreground outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
         >
-          {CURRENT_USER.initials}
+          {user.initials}
         </button>
       </PopoverTrigger>
       <PopoverContent
@@ -99,14 +96,14 @@ function UserMenu({ onSignOut }: { onSignOut: () => void }) {
         <div className="px-4 py-3">
           <div className="flex items-center gap-3">
             <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-muted text-sm font-semibold text-muted-foreground">
-              {CURRENT_USER.initials}
+              {user.initials}
             </div>
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-semibold text-foreground">
-                {CURRENT_USER.name}
+                {user.name}
               </p>
               <p className="truncate text-xs text-muted-foreground">
-                {CURRENT_USER.email}
+                {user.email}
               </p>
             </div>
           </div>
@@ -601,6 +598,7 @@ function AccordionSection({
 
 function TopNav() {
   const { isSignedIn: isLoggedIn, signOut } = useAuth()
+  const { persona } = useNotifications()
   const goToSignIn = useGoToSignIn()
   const goToProvider = useGoToProvider()
   const menus = useNavMenus()
@@ -736,6 +734,7 @@ function TopNav() {
               onOpenChange={setLanguageOpen}
             />
           </span>
+          {isLoggedIn && <NotificationBell />}
           {isLoggedIn ? (
             <UserMenu
               onSignOut={() => {
@@ -896,7 +895,7 @@ function TopNav() {
       <ContactSupportSheet
         open={contactOpen}
         onOpenChange={setContactOpen}
-        signedInEmail={isLoggedIn ? CURRENT_USER.email : null}
+        signedInEmail={isLoggedIn ? persona.email : null}
       />
     </div>
   )

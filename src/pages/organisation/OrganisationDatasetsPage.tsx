@@ -1,6 +1,8 @@
 import { useState } from 'react'
+import { useLocation } from 'react-router-dom'
 
 import { useOrganisation } from '@/hooks/use-organisation'
+import { useEvaluatorScope } from '@/hooks/use-evaluator-scope'
 import { useAppData } from '@/context/AppDataContext'
 import { OrganisationNotFound } from '@/components/organisation/OrganisationNotFound'
 import { OrganisationContentTable, type OrganisationContentItem } from '@/components/organisation/OrganisationContentTable'
@@ -12,18 +14,21 @@ import type { DatasetType } from '@/types/dataset'
 
 function OrganisationDatasetsPage() {
   const { organisationId, organisation, permissions } = useOrganisation()
-  const { datasets, deleteDataset } = useAppData()
+  const scope = useEvaluatorScope(organisationId)
+  const { datasets, deleteDataset, unpublishDataset } = useAppData()
   const confirm = useConfirm()
   const toast = useToast()
 
-  const [view, setView] = useState<'list' | 'create'>('list')
-  const [activeDatasetId, setActiveDatasetId] = useState<string | null>(null)
+  // Edit on a dataset's public page lands here with the dataset to open.
+  const navState = (useLocation().state as { datasetId?: string; initialStep?: 1 | 2 | 3 } | null) ?? null
+  const [view, setView] = useState<'list' | 'create'>(navState?.datasetId ? 'create' : 'list')
+  const [activeDatasetId, setActiveDatasetId] = useState<string | null>(navState?.datasetId ?? null)
   const [pendingDatasetType, setPendingDatasetType] = useState<DatasetType>('dataset')
   const [showTypeDialog, setShowTypeDialog] = useState(false)
 
   if (!organisation) return <OrganisationNotFound />
 
-  const orgDatasets = datasets.filter((d) => d.organisationId === organisationId)
+  const orgDatasets = scope.filter('dataset', datasets.filter((d) => d.organisationId === organisationId))
   const items: OrganisationContentItem[] = orgDatasets.map((d) => ({
     id: d.id,
     title: d.form.metadata.name,
@@ -60,6 +65,22 @@ function OrganisationDatasetsPage() {
     toast({ title: 'Dataset deleted', variant: 'success' })
   }
 
+  const handleUnpublish = async (item: OrganisationContentItem) => {
+    const ok = await confirm({
+      title: 'Unpublish this dataset?',
+      description: `"${item.title || 'This item'}" will be removed from public view and moved back to Draft. Anyone assigned to evaluate it loses access, and publishing it again does not restore that.`,
+      confirmLabel: 'Unpublish',
+      variant: 'destructive',
+    })
+    if (!ok) return
+    try {
+      unpublishDataset(item.id)
+      toast({ title: 'Dataset unpublished', description: 'Moved back to Draft.', variant: 'success' })
+    } catch (error) {
+      toast({ title: 'You can’t unpublish this', description: error instanceof Error ? error.message : undefined, variant: 'error' })
+    }
+  }
+
   if (view === 'create') {
     return (
       <DatasetCreationFlow
@@ -84,7 +105,8 @@ function OrganisationDatasetsPage() {
         onAdd={permissions.canCreateContent ? handleAddDataset : undefined}
         items={items}
         onOpen={(item) => openDataset(item.id)}
-        onDelete={permissions.role === 'admin' ? handleDelete : undefined}
+        onDelete={permissions.canDeleteOrganisationContent ? handleDelete : undefined}
+        onUnpublish={permissions.canUnpublishOrganisationContent ? handleUnpublish : undefined}
         emptyTitle="No organisation datasets yet"
         emptyDescription="Datasets created by this organisation's members will show up here."
         searchPlaceholder="Search datasets..."

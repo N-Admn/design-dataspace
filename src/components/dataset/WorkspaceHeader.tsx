@@ -45,7 +45,7 @@ function WorkspaceHeader({
           type="button"
           aria-label="Close"
           onClick={onClose}
-          className="flex size-8 shrink-0 items-center justify-center rounded-md text-text-subdued transition-colors hover:bg-surface-subdued hover:text-text-default"
+          className="flex size-8 shrink-0 items-center justify-center rounded-button text-text-subdued transition-colors hover:bg-surface-subdued hover:text-text-default"
         >
           <X className="size-4" />
         </button>

@@ -1,6 +1,7 @@
-import { Archive, ExternalLink, FileText, Pencil, Trash2 } from 'lucide-react'
+import { Archive, FileText, Pencil, Trash2 } from 'lucide-react'
 
 import { ManagementTable, type ManagementColumn, type ManagementFilterDef, type ManagementRowAction } from '@/components/shared/management-table/ManagementTable'
+import { ContentNameCell } from '@/components/shared/ContentNameCell'
 import { TruncatedText } from '@/components/shared/TruncatedText'
 import { StatusBadge } from '@/components/shared/StatusBadge'
 import { formatShortDate, parseAppTimestamp } from '@/lib/format'
@@ -66,14 +67,7 @@ function buildColumns(onOpen: (dataset: DatasetRecord) => void): ManagementColum
     sortable: true,
     compare: (a, b) => (a.form.metadata.name || '').localeCompare(b.form.metadata.name || ''),
     render: (d) => (
-      <button
-        type="button"
-        onClick={() => onOpen(d)}
-        className="flex min-w-0 w-full items-center gap-2 text-left hover:text-text-brand"
-      >
-        <FileText className="size-4 shrink-0 text-text-subdued" />
-        <TruncatedText className="min-w-0 flex-1 font-medium text-text-default">{d.form.metadata.name || 'Untitled dataset'}</TruncatedText>
-      </button>
+      <ContentNameCell name={d.form.metadata.name || 'Untitled dataset'} icon={FileText} liveHref={d.status === 'published' ? `/explore/datasets/${d.id}` : undefined} onOpen={() => onOpen(d)} />
     ),
   },
   {
@@ -175,12 +169,6 @@ function DatasetListView({
       ]
     }
     return [
-      {
-        key: 'view-live',
-        icon: ExternalLink,
-        label: () => `View live: ${name}`,
-        onClick: () => window.open(`/explore/datasets/${dataset.id}`, '_blank', 'noopener,noreferrer'),
-      },
       { key: 'edit', icon: Pencil, label: () => `Edit ${name}`, onClick: () => onEditDataset(dataset.id) },
       { key: 'unpublish', icon: Archive, label: () => `Unpublish ${name}`, onClick: () => onUnpublishDataset(dataset.id), destructive: true },
     ]

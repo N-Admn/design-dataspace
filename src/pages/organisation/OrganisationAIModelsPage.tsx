@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom'
 
 import { useOrganisation } from '@/hooks/use-organisation'
+import { useEvaluatorScope } from '@/hooks/use-evaluator-scope'
 import { useAppData } from '@/context/AppDataContext'
 import { OrganisationNotFound } from '@/components/organisation/OrganisationNotFound'
 import { OrganisationContentTable, type OrganisationContentItem } from '@/components/organisation/OrganisationContentTable'
@@ -10,14 +11,15 @@ import { useToast } from '@/components/ui/toast'
 function OrganisationAIModelsPage() {
   const navigate = useNavigate()
   const { organisationId, organisation, permissions } = useOrganisation()
-  const { aiModels, deleteAIModel } = useAppData()
+  const scope = useEvaluatorScope(organisationId)
+  const { aiModels, deleteAIModel, unpublishAIModel } = useAppData()
   const confirm = useConfirm()
   const toast = useToast()
 
   if (!organisation) return <OrganisationNotFound />
 
   const returnTo = `/organisations/${organisationId}/ai-models`
-  const orgAIModels = aiModels.filter((m) => m.organisationId === organisationId)
+  const orgAIModels = scope.filter('ai-model', aiModels.filter((m) => m.organisationId === organisationId))
   const items: OrganisationContentItem[] = orgAIModels.map((m) => ({
     id: m.id,
     title: m.form.metadata.name,
@@ -43,6 +45,22 @@ function OrganisationAIModelsPage() {
     toast({ title: 'AI Model deleted', variant: 'success' })
   }
 
+  const handleUnpublish = async (item: OrganisationContentItem) => {
+    const ok = await confirm({
+      title: 'Unpublish this AI Model?',
+      description: `"${item.title || 'This item'}" will be removed from public view and moved back to Draft. Anyone assigned to evaluate it loses access, and publishing it again does not restore that.`,
+      confirmLabel: 'Unpublish',
+      variant: 'destructive',
+    })
+    if (!ok) return
+    try {
+      unpublishAIModel(item.id)
+      toast({ title: 'AI Model unpublished', description: 'Moved back to Draft.', variant: 'success' })
+    } catch (error) {
+      toast({ title: 'You can’t unpublish this', description: error instanceof Error ? error.message : undefined, variant: 'error' })
+    }
+  }
+
   return (
     <OrganisationContentTable
       title="Organisation AI Models"
@@ -52,7 +70,8 @@ function OrganisationAIModelsPage() {
       onAdd={permissions.canCreateContent ? () => open(null) : undefined}
       items={items}
       onOpen={(item) => open(item.id)}
-      onDelete={permissions.role === 'admin' ? handleDelete : undefined}
+      onDelete={permissions.canDeleteOrganisationContent ? handleDelete : undefined}
+      onUnpublish={permissions.canUnpublishOrganisationContent ? handleUnpublish : undefined}
       emptyTitle="No organisation AI Models yet"
       emptyDescription="AI Models created by this organisation's members will show up here."
       searchPlaceholder="Search AI Models..."

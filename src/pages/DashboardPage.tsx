@@ -1,16 +1,19 @@
 import { useNavigate } from 'react-router-dom'
-import { ArrowRight, CalendarDays, Database, FolderKanban, Users } from 'lucide-react'
+import { ArrowRight } from 'lucide-react'
+import { Link } from 'react-router-dom'
 
+import { Button } from '@/components/ui/button'
+import { NotificationRow } from '@/components/notifications/NotificationRow'
+import { useNow } from '@/hooks/use-now'
+import type { NotificationItem } from '@/types/notifications'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { CircleArrow } from '@/components/shared/CircleArrow'
 import { useToast } from '@/components/ui/toast'
-import { useAppData } from '@/context/AppDataContext'
-import { parseAppTimestamp } from '@/lib/format'
-import { hasUnpublishedEdits, type ContentStatus } from '@/lib/content-status'
+import { NOTIFICATIONS_PATH } from '@/components/notifications/RequestActions'
+import { useNotifications } from '@/context/NotificationsContext'
 import { DASHBOARD_MIN_HEIGHT_CLASS } from '@/lib/layout'
 import { cn } from '@/lib/utils'
 import { NAV_GROUPS } from '@/components/layout/nav-config'
-import { isOrganisationMember } from '@/types/organisation-workspace'
 
 const ECOSYSTEM_ITEMS = NAV_GROUPS.find((g) => g.key === 'contribution')?.items ?? []
 
@@ -19,119 +22,23 @@ const MODULE_LIST = 'Datasets · Use Cases · AI Models · Collaboratives · Cha
 /** Landing-panel radius — the top step of the shared radius scale (--radius-xl). */
 const PANEL_RADIUS = 'rounded-xl'
 
-type ModuleLabel = 'Dataset' | 'Event' | 'Use Case' | 'Collaborative'
-
-const MODULE_ICONS: Record<ModuleLabel, typeof Database> = {
-  Dataset: Database,
-  Event: CalendarDays,
-  'Use Case': FolderKanban,
-  Collaborative: Users,
-}
-
-interface ResumeItem {
-  id: string
-  title: string
-  moduleLabel: ModuleLabel
-  /** "My Workspace" for personal content, or the owning organisation's name. */
-  workspaceLabel: string
-  status: ContentStatus
-  /** Published item with a saved-but-unpublished working copy. */
-  unpublishedEdits: boolean
-  sortKey: number
-  onContinue: () => void
-}
-
-/** Surface anything the contributor still has open work on: drafts, and published
- * items carrying unpublished edits. */
-function needsAttention(record: { status: ContentStatus; form: unknown; publishedForm: unknown }): boolean {
-  return record.status === 'draft' || hasUnpublishedEdits(record)
-}
+/** How many notifications the dashboard card previews. */
+const RECENT_COUNT = 3
 
 function DashboardPage() {
   const navigate = useNavigate()
   const toast = useToast()
-  const { datasets, events, useCases, collaboratives, organisationWorkspaces, profile } = useAppData()
+  const { items, unreadCount, markItemRead } = useNotifications()
+  const now = useNow()
+  // The same order as the bell: what is waiting for this person's decision first, then the newest of the rest.
+  const recent = [...items.filter((i) => i.needsAction), ...items.filter((i) => !i.needsAction)].slice(0, RECENT_COUNT)
+  const openItem = (item: NotificationItem) => {
+    markItemRead(item)
+    navigate(item.kind === 'request' && item.request ? `${NOTIFICATIONS_PATH}?request=${item.request.id}` : `${NOTIFICATIONS_PATH}?tab=updates`)
+  }
 
   const comingSoon = (label: string) =>
     toast({ title: `${label} coming soon`, description: 'This area isn’t available yet.' })
-
-  // Continue Working aggregates across every workspace the signed-in user
-  // actually works in — My Workspace (content with no organisationId is
-  // always the signed-in user's own, per the Dataset/Event/etc. record
-  // comments) plus each Organisation Workspace they're a member of, scoped to
-  // their own contributions there so a teammate's drafts never show up.
-  const currentUserName = `${profile.firstName} ${profile.lastName}`
-  const myOrgIds = new Set(organisationWorkspaces.filter(isOrganisationMember).map((o) => o.id))
-  const orgNameById = new Map(organisationWorkspaces.map((o) => [o.id, o.metadata.name]))
-
-  function belongsToCurrentUser(record: { organisationId?: string; createdBy?: string }): boolean {
-    if (!record.organisationId) return true
-    return myOrgIds.has(record.organisationId) && record.createdBy === currentUserName
-  }
-
-  function workspaceLabelFor(record: { organisationId?: string }): string {
-    if (!record.organisationId) return 'My Workspace'
-    return orgNameById.get(record.organisationId) ?? 'Organisation Workspace'
-  }
-
-  const resumeDatasets: ResumeItem[] = datasets
-    .filter((d) => needsAttention(d) && belongsToCurrentUser(d))
-    .map((d) => ({
-      id: `dataset-${d.id}`,
-      title: d.form.metadata.name || 'Untitled dataset',
-      moduleLabel: 'Dataset',
-      workspaceLabel: workspaceLabelFor(d),
-      status: d.status,
-      unpublishedEdits: hasUnpublishedEdits(d),
-      sortKey: parseAppTimestamp(d.updatedAt).getTime(),
-      onContinue: () => navigate('/dashboard/datasets', { state: { datasetId: d.id } }),
-    }))
-
-  const resumeEvents: ResumeItem[] = events
-    .filter((e) => needsAttention(e) && belongsToCurrentUser(e))
-    .map((e) => ({
-      id: `event-${e.id}`,
-      title: e.form.metadata.title || 'Untitled event',
-      moduleLabel: 'Event',
-      workspaceLabel: workspaceLabelFor(e),
-      status: e.status,
-      unpublishedEdits: hasUnpublishedEdits(e),
-      sortKey: parseAppTimestamp(e.updatedAt).getTime(),
-      onContinue: () => navigate('/dashboard/events/new', { state: { eventId: e.id, initialStep: 1 } }),
-    }))
-
-  const resumeUseCases: ResumeItem[] = useCases
-    .filter((u) => needsAttention(u) && belongsToCurrentUser(u))
-    .map((u) => ({
-      id: `usecase-${u.id}`,
-      title: u.form.metadata.title || 'Untitled Use Case',
-      moduleLabel: 'Use Case',
-      workspaceLabel: workspaceLabelFor(u),
-      status: u.status,
-      unpublishedEdits: hasUnpublishedEdits(u),
-      sortKey: parseAppTimestamp(u.updatedAt).getTime(),
-      onContinue: () => navigate('/dashboard/use-cases/new', { state: { useCaseId: u.id, initialStep: 1 } }),
-    }))
-
-  const resumeCollaboratives: ResumeItem[] = collaboratives
-    .filter((c) => needsAttention(c) && belongsToCurrentUser(c))
-    .map((c) => ({
-      id: `collaborative-${c.id}`,
-      title: c.form.metadata.name || 'Untitled Collaborative',
-      moduleLabel: 'Collaborative',
-      workspaceLabel: workspaceLabelFor(c),
-      status: c.status,
-      unpublishedEdits: hasUnpublishedEdits(c),
-      sortKey: parseAppTimestamp(c.updatedAt).getTime(),
-      onContinue: () => navigate('/dashboard/collaboratives/new', { state: { collaborativeId: c.id, initialStep: 1 } }),
-    }))
-
-  const allResumeItems = [...resumeDatasets, ...resumeEvents, ...resumeUseCases, ...resumeCollaboratives]
-  // Published items with unpublished edits come first (they have a live version drifting
-  // from the working copy), then plain drafts — each group newest-first.
-  const editedItems = allResumeItems.filter((i) => i.unpublishedEdits).sort((a, b) => b.sortKey - a.sortKey)
-  const draftItems = allResumeItems.filter((i) => !i.unpublishedEdits).sort((a, b) => b.sortKey - a.sortKey)
-  const resumeItems = [...editedItems, ...draftItems].slice(0, 3)
 
   return (
     <div className={cn('flex flex-col gap-10', DASHBOARD_MIN_HEIGHT_CLASS)}>
@@ -147,7 +54,7 @@ function DashboardPage() {
 
           <button
             type="button"
-            onClick={() => navigate('/dashboard/datasets')}
+            onClick={() => navigate('/dashboard')}
             className={cn(
               'flex flex-1 flex-col justify-between gap-8 bg-[linear-gradient(252deg,var(--workspace-hero-from)_0%,var(--workspace-hero-to)_97.53%)] p-8 text-left transition-shadow hover:shadow-md md:min-h-[22rem]',
               PANEL_RADIUS,
@@ -170,7 +77,8 @@ function DashboardPage() {
         </div>
 
         {/* Right column — Organisation Workspace + Continue working */}
-        <div className="flex flex-col gap-6">
+        {/* On wide screens this column takes the height the left panel sets (h-0 + min-h-full), so the notification card keeps a fixed height and its three notifications share it, instead of stretching the page. */}
+        <div className="flex flex-col gap-6 lg:h-0 lg:min-h-full">
           <button
             type="button"
             onClick={() => navigate('/organisations')}
@@ -188,45 +96,31 @@ function DashboardPage() {
             </div>
           </button>
 
-          <div className={cn('flex flex-1 flex-col gap-4 bg-card p-8 md:p-10', PANEL_RADIUS)}>
-            <div>
-              <p className="type-heading-1 text-primary">Continue Working</p>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Pick up where you left off across your personal and organisation workspaces.
-              </p>
-            </div>
-            {resumeItems.length === 0 ? (
-              <p className="text-sm text-muted-foreground">Nothing to work on today.</p>
-            ) : (
-              <div className="flex flex-1 flex-col gap-3">
-                {resumeItems.map((item) => {
-                  const Icon = MODULE_ICONS[item.moduleLabel]
-                  return (
-                    <button
-                      key={item.id}
-                      type="button"
-                      onClick={item.onContinue}
-                      className="flex flex-1 items-center gap-4 rounded-xl bg-muted/60 p-4 text-left transition-colors hover:bg-muted"
-                    >
-                      <div className="flex size-12 shrink-0 items-center justify-center rounded-lg bg-card text-primary">
-                        <Icon className="size-7" />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <p className="truncate text-sm font-semibold text-foreground">{item.title}</p>
-                        <p className="truncate text-xs text-muted-foreground">
-                          {item.moduleLabel} · {item.workspaceLabel}
-                        </p>
-                      </div>
-                      <span className="flex shrink-0 items-center gap-1 text-sm font-medium text-primary">
-                        Continue
-                        <ArrowRight className="size-3.5" />
-                      </span>
-                    </button>
-                  )
-                })}
+          <section aria-labelledby="dashboard-notifications" className={cn('flex flex-1 flex-col gap-4 bg-card p-8 lg:min-h-0 lg:px-10 lg:py-6', PANEL_RADIUS)}>
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <h2 id="dashboard-notifications" className="type-heading-1 text-primary">Notifications &amp; Requests</h2>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  {unreadCount === 0 ? 'You’re all caught up.' : `${unreadCount} unread across your workspaces.`}
+                </p>
               </div>
+              <Button asChild size="sm" variant="outline" className="shrink-0">
+                <Link to={NOTIFICATIONS_PATH} aria-label="See all notifications and requests">
+                  See all
+                  <ArrowRight aria-hidden="true" />
+                </Link>
+              </Button>
+            </div>
+            {recent.length === 0 ? (
+              <p className="text-sm text-muted-foreground">Access requests, submissions and updates will show up here.</p>
+            ) : (
+              <ul className="flex flex-1 flex-col gap-3 [&>li]:border-0 [&>li]:bg-action-primary-default/5 lg:min-h-0 lg:[&>li]:flex lg:[&>li]:min-h-0 lg:[&>li]:flex-1 lg:[&>li]:flex-col lg:[&>li]:justify-center" aria-label="Recent notifications">
+                {recent.map((item) => (
+                  <NotificationRow key={item.id} item={item} now={now} density="compact" onOpen={openItem} />
+                ))}
+              </ul>
             )}
-          </div>
+          </section>
         </div>
       </div>
 

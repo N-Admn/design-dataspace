@@ -1,4 +1,4 @@
-import { Search, X } from 'lucide-react'
+import { Search, User, X } from 'lucide-react'
 
 import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
@@ -60,12 +60,15 @@ function CollaborativeSearch({
   filter,
   onFilterChange,
   counts,
+  mine,
 }: {
   query: string
   onQueryChange: (query: string) => void
   filter: SearchFilter
   onFilterChange: (filter: SearchFilter) => void
   counts: SearchCounts
+  /** The signed-in reader's own chip: narrows every section to what they added. Left out for anyone who is not signed in. */
+  mine?: { active: boolean; count: number; onToggle: () => void }
 }) {
   const searching = searchTerms(query).length > 0
   const kinds = (Object.keys(counts) as SearchKind[]).filter((k) => counts[k].total > 0 && (filter === 'all' || filter === k))
@@ -127,6 +130,23 @@ function CollaborativeSearch({
             </button>
           )
         })}
+        {mine && (
+          <>
+            <span aria-hidden="true" className="mx-1 w-px self-stretch bg-border-default" />
+            <button
+              type="button"
+              aria-pressed={mine.active}
+              onClick={mine.onToggle}
+              className={cn(
+                'inline-flex items-center gap-1.5 rounded-full border px-4 py-1.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-focus focus-visible:ring-offset-2',
+                mine.active ? 'border-primary bg-primary text-primary-foreground' : 'border-border-default text-text-default hover:border-primary/40 hover:text-text-brand',
+              )}
+            >
+              <User className="size-4" aria-hidden="true" />
+              My contributions ({mine.count})
+            </button>
+          </>
+        )}
       </div>
 
       {/* Only while searching: with nothing typed the counts are already on the section headings, so a summary would repeat them. */}

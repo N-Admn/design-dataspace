@@ -1,8 +1,9 @@
-import { ExternalLink, FileText, Pencil, Trash2 } from 'lucide-react'
+import { Archive, FileText, Pencil, Trash2 } from 'lucide-react'
 
 import { ManagementTable, type ManagementColumn, type ManagementRowAction } from '@/components/shared/management-table/ManagementTable'
+import { ContentNameCell } from '@/components/shared/ContentNameCell'
 import { StatusBadge } from '@/components/shared/StatusBadge'
-import { TruncatedText } from '@/components/shared/TruncatedText'
+import { useOrganisation } from '@/hooks/use-organisation'
 import { formatShortDate, parseAppTimestamp } from '@/lib/format'
 
 export interface OrganisationContentItem {
@@ -12,7 +13,7 @@ export interface OrganisationContentItem {
   updatedAt: string
   /** Absent for records saved before organisation attribution existed. */
   createdBy?: string
-  /** The public page of this record. When set, a published item gets a "View live" action. */
+  /** The public page of this record. When set, a published item's name links to it in a new tab. */
   liveHref?: string
 }
 
@@ -26,6 +27,10 @@ interface OrganisationContentTableProps<T extends OrganisationContentItem> {
   items: T[]
   onOpen: (item: T) => void
   onDelete?: (item: T) => void
+  /** Takes a published item back to Draft. Offered only to roles that may unpublish, and only on published rows. */
+  onUnpublish?: (item: T) => void
+  /** Extra row actions for a module, placed before Edit (e.g. a collaborative's Manage items). */
+  extraActions?: (item: T) => ManagementRowAction<T>[]
   emptyTitle: string
   emptyDescription: string
   searchPlaceholder: string
@@ -46,10 +51,14 @@ function OrganisationContentTable<T extends OrganisationContentItem>({
   items,
   onOpen,
   onDelete,
+  onUnpublish,
+  extraActions,
   emptyTitle,
   emptyDescription,
   searchPlaceholder,
 }: OrganisationContentTableProps<T>) {
+  // An Evaluator only reads assigned content: no create, no edit, no delete. The name still links to the live page.
+  const readOnly = useOrganisation().permissions.role === 'evaluator'
   const columns: ManagementColumn<T>[] = [
     {
       key: 'title',
@@ -57,14 +66,7 @@ function OrganisationContentTable<T extends OrganisationContentItem>({
       sortable: true,
       compare: (a, b) => a.title.localeCompare(b.title),
       render: (item) => (
-        <button
-          type="button"
-          onClick={() => onOpen(item)}
-          className="flex min-w-0 w-full items-center gap-2 text-left hover:text-text-brand"
-        >
-          <FileText className="size-4 shrink-0 text-text-subdued" />
-          <TruncatedText className="min-w-0 flex-1 font-medium text-text-default">{item.title || 'Untitled'}</TruncatedText>
-        </button>
+        <ContentNameCell name={item.title || 'Untitled'} icon={FileText} liveHref={item.status === 'published' ? item.liveHref : undefined} onOpen={readOnly ? undefined : () => onOpen(item)} />
       ),
     },
     {
@@ -101,7 +103,7 @@ function OrganisationContentTable<T extends OrganisationContentItem>({
       title={title}
       subtitle={subtitle}
       addLabel={onAdd ? addLabel : undefined}
-      onAdd={onAdd}
+      onAdd={readOnly ? undefined : onAdd}
       items={items}
       getId={(item) => item.id}
       columns={columns}
@@ -115,19 +117,14 @@ function OrganisationContentTable<T extends OrganisationContentItem>({
       searchPlaceholder={searchPlaceholder}
       searchMatch={(item, query) => item.title.toLowerCase().includes(query.trim().toLowerCase())}
       getActions={(item) => {
+        if (readOnly) return []
         const actions: ManagementRowAction<T>[] = [
-          ...(item.status === 'published' && item.liveHref
-            ? [
-                {
-                  key: 'view-live',
-                  icon: ExternalLink,
-                  label: () => `View live: ${item.title || 'item'}`,
-                  onClick: () => window.open(item.liveHref, '_blank', 'noopener,noreferrer'),
-                } satisfies ManagementRowAction<T>,
-              ]
-            : []),
+          ...(extraActions?.(item) ?? []),
           { key: 'edit', icon: Pencil, label: () => `Edit ${item.title || 'item'}`, onClick: () => onOpen(item) },
         ]
+        if (onUnpublish && item.status === 'published') {
+          actions.push({ key: 'unpublish', icon: Archive, label: () => `Unpublish ${item.title || 'item'}`, onClick: () => onUnpublish(item), destructive: true })
+        }
         if (onDelete) {
           actions.push({
             key: 'delete',

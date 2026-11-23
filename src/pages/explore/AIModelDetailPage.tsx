@@ -1,5 +1,7 @@
 import { ArrowLeft } from 'lucide-react'
 import { useParams } from 'react-router-dom'
+import { OwnerEditButton } from '@/components/shared/OwnerEditButton'
+import { useOwnerEdit } from '@/hooks/use-owner-edit'
 
 import { AIModelDetail } from '@/components/ai-model/consumer/AIModelDetail'
 import { EmptyState } from '@/components/shared/EmptyState'
@@ -15,6 +17,7 @@ function AIModelDetailPage() {
   const goBack = useGoBack('/search?type=ai-model')
 
   const record = id ? aiModels.find((m) => m.id === id) : undefined
+  const onEdit = useOwnerEdit('ai-model', record)
   const form = record?.status === 'published' ? record.publishedForm : undefined
 
   if (!record || !form) {
@@ -37,6 +40,7 @@ function AIModelDetailPage() {
         publisherHref={publisherProfileHref(record.organisationId)}
         updatedAt={record.updatedAt}
         onBack={goBack}
+        actions={onEdit && <OwnerEditButton onEdit={onEdit} noun="AI model" />}
       />
     </div>
   )

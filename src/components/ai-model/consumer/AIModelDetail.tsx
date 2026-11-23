@@ -95,7 +95,7 @@ function LifecycleBadge({ stage }: { stage: AILifecycleStage }) {
 
 const MENU_ROW = `flex w-full items-center gap-3 rounded-md px-3 py-2 text-left type-label text-text-default hover:bg-surface-hovered ${FOCUS}`
 
-function AIModelActions({ form }: { form: AIModelFormState }) {
+function AIModelActions({ form, children }: { form: AIModelFormState; children?: React.ReactNode }) {
   const toast = useToast()
   const title = form.metadata.name || 'Untitled AI Model'
   const copyLink = async () => {
@@ -109,6 +109,7 @@ function AIModelActions({ form }: { form: AIModelFormState }) {
 
   return (
     <div className="flex flex-wrap items-center gap-2">
+      {children}
       <Popover>
         <PopoverTrigger asChild>
           <Button
@@ -409,8 +410,9 @@ const VIEWS = [
 ]
 
 /** The AI Model page: Back and Share, the header, then Overview and Versions, following the Dataset page. Used by the public
- *  page and the contributor's preview, so a contributor sees exactly what will go live. Without `onBack` there is no Back. */
-function AIModelDetail({ onBack, ...props }: AIModelDetailProps & { onBack?: () => void }) {
+ *  page and the contributor's preview, so a contributor sees exactly what will go live. Without `onBack` there is no Back.
+ *  `actions` sit before Share, as Edit does on the Dataset page (the public page passes it for the model's owner only). */
+function AIModelDetail({ onBack, actions, ...props }: AIModelDetailProps & { onBack?: () => void; actions?: React.ReactNode }) {
   const [view, setView] = React.useState('overview')
   return (
     <div className="flex flex-col gap-6">
@@ -427,7 +429,7 @@ function AIModelDetail({ onBack, ...props }: AIModelDetailProps & { onBack?: () 
         ) : (
           <span />
         )}
-        <AIModelActions form={props.form} />
+        <AIModelActions form={props.form}>{actions}</AIModelActions>
       </div>
       <AIModelHeader {...props} />
       <ViewTabs items={VIEWS} value={view} onChange={setView} idPrefix="ai-model-detail" label="AI model views" />

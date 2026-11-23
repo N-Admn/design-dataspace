@@ -1,7 +1,8 @@
 import * as React from 'react'
-import { ArrowLeft, ArrowRight, Check, Copy, Download, Mail, Share2 } from 'lucide-react'
+import { ArrowLeft, ArrowRight, BellPlus, BellRing, Check, Copy, Download, Mail, Share2 } from 'lucide-react'
 import { toPng } from 'html-to-image'
 
+import { OwnerEditButton } from '@/components/shared/OwnerEditButton'
 import { Button } from '@/components/ui/button'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { useToast } from '@/components/ui/toast'
@@ -10,8 +11,19 @@ import { useToast } from '@/components/ui/toast'
  *  last. It sits outside the exported visual. Share opens a small menu: copy the link, download the visual, or send the link to a
  *  social network or by email. */
 
+/** Follow / Following for the page's reader. The page owns the state; this only draws the toggle. */
+export interface CollaborativeFollow {
+  following: boolean
+  onToggle: () => void
+  /** Accessible name, kept the same whether or not it is pressed (e.g. "Follow Climate and Health Data Collaborative"). */
+  label: string
+}
+
 export interface CollaborativeActionsProps {
   cta?: { label: string; href?: string; onClick?: () => void }
+  follow?: CollaborativeFollow
+  /** Only given to the owner: an outline Edit before Share, opening the collaborative in its owning workspace. */
+  onEdit?: () => void
   onBack?: () => void
   /** The address to share and to encode in the QR code. */
   url: string
@@ -29,7 +41,7 @@ const FACEBOOK = 'M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388
 const LINKEDIN = 'M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z'
 const WHATSAPP = 'M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z'
 
-function CollaborativeActions({ cta, onBack, url, title, exportRef }: CollaborativeActionsProps) {
+function CollaborativeActions({ cta, follow, onEdit, onBack, url, title, exportRef }: CollaborativeActionsProps) {
   const toast = useToast()
   const [exporting, setExporting] = React.useState(false)
   const [copied, setCopied] = React.useState(false)
@@ -82,6 +94,12 @@ function CollaborativeActions({ cta, onBack, url, title, exportRef }: Collaborat
         <span />
       )}
       <div className="flex flex-wrap items-center gap-2">
+        {follow && (
+          <Button type="button" variant="outline" size="lg" aria-pressed={follow.following} aria-label={follow.label} onClick={follow.onToggle}>
+            {follow.following ? <BellRing aria-hidden="true" /> : <BellPlus aria-hidden="true" />}
+            {follow.following ? 'Following' : 'Follow'}
+          </Button>
+        )}
         {cta &&
           (cta.href ? (
             <Button asChild size="lg">
@@ -96,13 +114,14 @@ function CollaborativeActions({ cta, onBack, url, title, exportRef }: Collaborat
               <ArrowRight />
             </Button>
           ))}
+        {onEdit && <OwnerEditButton onEdit={onEdit} noun="collaborative" />}
         <Popover>
           <PopoverTrigger asChild>
-            <Button
+            <Button shape="round"
               type="button"
               variant="outline"
               size="icon"
-              className="size-11 rounded-full border-primary bg-transparent text-primary hover:bg-primary/5"
+              className="size-11 border-primary bg-transparent text-primary hover:bg-primary/5"
               aria-label="Share collaborative"
               title="Share"
             >

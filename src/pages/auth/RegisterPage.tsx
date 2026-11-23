@@ -95,7 +95,7 @@ function RegisterPage() {
           </div>
           <h1 className="mt-4 type-heading-1 text-primary">Account created</h1>
           <p className="mt-2 text-sm text-muted-foreground">Welcome to CivicDataSpace.</p>
-          <Button type="button" size="lg" className="mt-6 w-full" onClick={complete}>
+          <Button type="button" size="lg" className="mt-6 w-full" onClick={() => complete({ email: email.trim().toLowerCase() }, { registered: true })}>
             {from ? 'Continue' : 'Continue to Dashboard'}
           </Button>
         </div>

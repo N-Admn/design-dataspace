@@ -235,6 +235,9 @@ function ToastExample() {
       <Button variant="outline" onClick={() => toast({ variant: 'error', title: 'Upload failed', description: 'The file exceeds the 10 MB limit.' })}>
         Error toast
       </Button>
+      <Button variant="outline" onClick={() => toast({ title: 'Request sent', description: 'The owner will be notified.', action: { label: 'View request', onClick: () => {} } })}>
+        Toast with a button
+      </Button>
     </>
   )
 }
@@ -248,7 +251,8 @@ export function ToastPage() {
           code={`const toast = useToast()
 
 toast({ title: 'Dataset published', description: 'It is now visible in the catalogue.' })
-toast({ variant: 'error', title: 'Upload failed', description: 'The file exceeds the 10 MB limit.' })`}
+toast({ variant: 'error', title: 'Upload failed', description: 'The file exceeds the 10 MB limit.' })
+toast({ title: 'Request sent', action: { label: 'View request', onClick: () => navigate('/notifications') } })`}
         >
           <ToastExample />
         </ComponentPreview>
@@ -259,6 +263,7 @@ toast({ variant: 'error', title: 'Upload failed', description: 'The file exceeds
             { name: 'title', type: 'string', description: 'The headline.' },
             { name: 'description', type: 'string', description: 'One line of detail.' },
             { name: 'variant', type: "'success' | 'error'", default: "'success'", description: 'success uses a check icon and success-text; error an alert icon and destructive.' },
+            { name: 'action', type: '{ label, href } | { label, onClick }', description: 'One follow-up. A href opens in a new tab; an onClick runs in the app and dismisses the toast. A toast with an action stays up for 8 seconds.' },
           ]}
         />
       </DocSection>

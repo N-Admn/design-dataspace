@@ -10,7 +10,7 @@ import { useToast } from '@/components/ui/toast'
 function OrganisationChartsPage() {
   const navigate = useNavigate()
   const { organisationId, organisation, permissions } = useOrganisation()
-  const { charts, deleteChart } = useAppData()
+  const { charts, deleteChart, unpublishChart } = useAppData()
   const confirm = useConfirm()
   const toast = useToast()
 
@@ -42,6 +42,22 @@ function OrganisationChartsPage() {
     toast({ title: 'Chart deleted', variant: 'success' })
   }
 
+  const handleUnpublish = async (item: OrganisationContentItem) => {
+    const ok = await confirm({
+      title: 'Unpublish this chart?',
+      description: `"${item.title || 'This item'}" will be removed from public view and moved back to Draft. Anyone assigned to evaluate it loses access, and publishing it again does not restore that.`,
+      confirmLabel: 'Unpublish',
+      variant: 'destructive',
+    })
+    if (!ok) return
+    try {
+      unpublishChart(item.id)
+      toast({ title: 'Chart unpublished', description: 'Moved back to Draft.', variant: 'success' })
+    } catch (error) {
+      toast({ title: 'You can’t unpublish this', description: error instanceof Error ? error.message : undefined, variant: 'error' })
+    }
+  }
+
   return (
     <OrganisationContentTable
       title="Organisation Charts"
@@ -51,7 +67,8 @@ function OrganisationChartsPage() {
       onAdd={permissions.canCreateContent ? () => open(null) : undefined}
       items={items}
       onOpen={(item) => open(item.id)}
-      onDelete={permissions.role === 'admin' ? handleDelete : undefined}
+      onDelete={permissions.canDeleteOrganisationContent ? handleDelete : undefined}
+      onUnpublish={permissions.canUnpublishOrganisationContent ? handleUnpublish : undefined}
       emptyTitle="No organisation charts yet"
       emptyDescription="Charts created by this organisation's members will show up here."
       searchPlaceholder="Search charts..."

@@ -1,5 +1,7 @@
 import * as React from 'react'
 import { useParams } from 'react-router-dom'
+import { OwnerEditButton } from '@/components/shared/OwnerEditButton'
+import { useOwnerEdit } from '@/hooks/use-owner-edit'
 import { ArrowLeft } from 'lucide-react'
 
 import { EmptyState } from '@/components/shared/EmptyState'
@@ -35,6 +37,7 @@ function EventDetailPage() {
   )
 
   const record = id ? events.find((e) => e.id === id) : undefined
+  const onEdit = useOwnerEdit('event', record)
   // Consumers only ever see the live published version — same rule as every
   // other Explore detail page (e.g. DatasetDetailPage, UseCaseDetailPage).
   const form = record?.status === 'published' ? record.publishedForm : undefined
@@ -55,14 +58,17 @@ function EventDetailPage() {
 
   return (
     <div className="mx-auto flex w-full max-w-[1400px] flex-col gap-8 py-2">
-      <button
-        type="button"
-        onClick={goBack}
-        className="flex w-fit items-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-      >
-        <ArrowLeft className="size-4" />
-        Back
-      </button>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <button
+          type="button"
+          onClick={goBack}
+          className="flex w-fit items-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+        >
+          <ArrowLeft className="size-4" />
+          Back
+        </button>
+        {onEdit && <OwnerEditButton onEdit={onEdit} noun="event" />}
+      </div>
 
       <EventIdentity metadata={metadata} />
 

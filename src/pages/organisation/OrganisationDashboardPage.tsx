@@ -4,6 +4,7 @@ import { CalendarDays, Database, FileStack, FolderKanban, LineChart, Sparkles, U
 import { useOrganisation } from '@/hooks/use-organisation'
 import { useAppData } from '@/context/AppDataContext'
 import { OrganisationNotFound } from '@/components/organisation/OrganisationNotFound'
+import { Card } from '@/components/ui/card'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { parseAppTimestamp } from '@/lib/format'
 import { hasUnpublishedEdits, type ContentStatus } from '@/lib/content-status'
@@ -124,136 +125,153 @@ function OrganisationDashboardPage() {
       title: d.form.metadata.name || 'Untitled dataset',
       module: 'Dataset',
       updatedAt: d.updatedAt,
-      onContinue: () => navigate('/dashboard/datasets', { state: { datasetId: d.id } }),
+      onContinue: () => navigate(`/organisations/${organisationId}/datasets`, { state: { datasetId: d.id } }),
     })),
     ...orgUseCases.filter(needsAttention).map((u) => ({
       id: `usecase-${u.id}`,
       title: u.form.metadata.title || 'Untitled use case',
       module: 'Use Case',
       updatedAt: u.updatedAt,
-      onContinue: () => navigate('/dashboard/use-cases/new', { state: { useCaseId: u.id, initialStep: 1 } }),
+      onContinue: () => navigate('/dashboard/use-cases/new', { state: { useCaseId: u.id, initialStep: 1, organisationId } }),
     })),
     ...orgEvents.filter(needsAttention).map((e) => ({
       id: `event-${e.id}`,
       title: e.form.metadata.title || 'Untitled event',
       module: 'Event',
       updatedAt: e.updatedAt,
-      onContinue: () => navigate('/dashboard/events/new', { state: { eventId: e.id, initialStep: 1 } }),
+      onContinue: () => navigate('/dashboard/events/new', { state: { eventId: e.id, initialStep: 1, organisationId } }),
     })),
     ...orgAIModels.filter(needsAttention).map((m) => ({
       id: `ai-model-${m.id}`,
       title: m.form.metadata.name || 'Untitled model',
       module: 'AI Model',
       updatedAt: m.updatedAt,
-      onContinue: () => navigate('/dashboard/ai-models/new', { state: { aiModelId: m.id, initialStep: 1 } }),
+      onContinue: () => navigate('/dashboard/ai-models/new', { state: { aiModelId: m.id, initialStep: 1, organisationId } }),
     })),
     ...orgCollaboratives.filter(needsAttention).map((c) => ({
       id: `collaborative-${c.id}`,
       title: c.form.metadata.name || 'Untitled collaborative',
       module: 'Collaborative',
       updatedAt: c.updatedAt,
-      onContinue: () => navigate('/dashboard/collaboratives/new', { state: { collaborativeId: c.id, initialStep: 1 } }),
+      onContinue: () => navigate('/dashboard/collaboratives/new', { state: { collaborativeId: c.id, initialStep: 1, organisationId } }),
     })),
     ...orgPublications.filter(needsAttention).map((p) => ({
       id: `publication-${p.id}`,
       title: p.form.metadata.name || 'Untitled Publication',
       module: 'Publication',
       updatedAt: p.updatedAt,
-      onContinue: () => navigate('/dashboard/publications/new', { state: { publicationId: p.id, initialStep: 1 } }),
+      onContinue: () => navigate('/dashboard/publications/new', { state: { publicationId: p.id, initialStep: 1, organisationId } }),
     })),
     ...orgCharts.filter(needsAttention).map((c) => ({
       id: `chart-${c.id}`,
       title: c.form.name || 'Untitled chart',
       module: 'Chart',
       updatedAt: c.updatedAt,
-      onContinue: () => navigate('/dashboard/charts/new', { state: { chartId: c.id, initialStep: 1 } }),
+      onContinue: () => navigate('/dashboard/charts/new', { state: { chartId: c.id, initialStep: 1, organisationId } }),
     })),
   ]
     .sort((a, b) => parseAppTimestamp(b.updatedAt).getTime() - parseAppTimestamp(a.updatedAt).getTime())
     .slice(0, 5)
 
   return (
-    <div className={cn('flex min-h-0 flex-col gap-8', WORKSPACE_HEIGHT_CLASS)}>
+    <Card className={cn('flex w-full flex-col', WORKSPACE_HEIGHT_CLASS)}>
       <PageHeader
+        className="border-b border-border-default px-6 py-5"
         title={organisation.metadata.name}
         description="Manage datasets, events, use cases and other contributions on behalf of this organisation."
       />
 
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-7">
-        {summary.map((card) => {
-          const Icon = card.icon
-          return (
-            <button
-              key={card.key}
-              type="button"
-              onClick={() => navigate(card.path)}
-              className="flex flex-col items-start gap-2 rounded-xl border border-border-default bg-surface-default p-4 text-left transition-shadow hover:shadow-md"
-            >
-              <Icon className="size-5 text-text-brand" />
-              <p className="type-heading-2 text-text-brand">{card.count}</p>
-              <p className="text-xs text-text-subdued">{card.label}</p>
-            </button>
-          )
-        })}
-      </div>
-
-      <div className="grid min-h-0 flex-1 grid-cols-1 gap-6 lg:grid-cols-2">
-        <div className="flex min-h-0 flex-col gap-4 rounded-xl border border-border-default bg-surface-default p-6">
-          <p className="type-heading-3 text-text-brand">Recent Organisation Activity</p>
-          {activity.length === 0 ? (
-            <p className="text-sm text-text-subdued">No organisation activity yet.</p>
-          ) : (
-            <div className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto">
-              {activity.map((item) => (
+      <div className="flex min-h-0 flex-1 flex-col gap-8 overflow-y-auto px-6 py-6">
+        <section aria-labelledby="organisation-content" className="flex flex-col gap-4">
+          <div>
+            <h2 id="organisation-content" className="type-heading-3 text-text-brand">
+              Organisation content
+            </h2>
+            <p className="mt-1 text-sm text-text-subdued">Everything made on behalf of this organisation.</p>
+          </div>
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-7">
+            {summary.map((card) => {
+              const Icon = card.icon
+              return (
                 <button
-                  key={item.id}
+                  key={card.key}
                   type="button"
-                  onClick={item.onOpen}
-                  className="flex min-h-0 min-w-0 flex-1 flex-col justify-center gap-0.5 rounded-lg bg-surface-subdued px-4 py-3 text-left transition-colors hover:bg-surface-hovered"
+                  onClick={() => navigate(card.path)}
+                  className="flex flex-col items-start gap-2 rounded-lg bg-action-primary-default/5 p-4 text-left outline-none transition-colors hover:bg-action-primary-default/10 focus-visible:ring-2 focus-visible:ring-border-focus focus-visible:ring-offset-2"
                 >
-                  <p className="truncate text-sm font-medium text-text-default">{item.description}</p>
-                  <p className="truncate text-xs text-text-subdued">
-                    {item.contributor ?? 'Unknown member'} · {item.module} · {item.updatedAt}
-                  </p>
+                  <span className="flex size-9 items-center justify-center rounded-lg bg-surface-default text-text-brand">
+                    <Icon className="size-5" aria-hidden="true" />
+                  </span>
+                  <p className="type-heading-2 text-text-brand">{card.count}</p>
+                  <p className="text-xs text-text-subdued">{card.label}</p>
                 </button>
-              ))}
-            </div>
-          )}
-        </div>
+              )
+            })}
+          </div>
+        </section>
 
-        <div className="flex min-h-0 flex-col gap-4 rounded-xl border border-border-default bg-surface-default p-6">
-          <p className="type-heading-3 text-text-brand">Continue Working</p>
-          {continueWorking.length === 0 ? (
-            <p className="text-sm text-text-subdued">Nothing to work on today.</p>
-          ) : (
-            <div className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto">
-              {continueWorking.map((item) => {
-                const Icon = MODULE_ICON[item.module]
-                return (
-                <button
-                  key={item.id}
-                  type="button"
-                  onClick={item.onContinue}
-                  className="flex min-h-0 flex-1 items-center justify-between gap-3 rounded-lg bg-surface-subdued px-4 py-3 text-left transition-colors hover:bg-surface-hovered"
-                >
-                  <div className="flex min-w-0 items-center gap-3">
-                    <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-surface-default text-text-brand">
-                      <Icon className="size-4" />
-                    </span>
-                    <div className="min-w-0">
-                      <p className="truncate text-sm font-semibold text-text-default">{item.title}</p>
-                      <p className="text-xs text-text-subdued">{item.module}</p>
-                    </div>
-                  </div>
-                  <span className="shrink-0 text-sm font-medium text-text-brand">Continue →</span>
-                </button>
-                )
-              })}
-            </div>
-          )}
+        <div className="grid min-h-0 flex-1 grid-cols-1 gap-8 lg:grid-cols-2">
+          <section aria-labelledby="organisation-activity" className="flex min-h-0 flex-col gap-4">
+            <h2 id="organisation-activity" className="type-heading-3 text-text-brand">
+              Recent Organisation Activity
+            </h2>
+            {activity.length === 0 ? (
+              <p className="text-sm text-text-subdued">No organisation activity yet.</p>
+            ) : (
+              <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto">
+                {activity.map((item) => (
+                  <button
+                    key={item.id}
+                    type="button"
+                    onClick={item.onOpen}
+                    className="flex min-h-0 min-w-0 flex-1 flex-col justify-center gap-0.5 rounded-lg bg-action-primary-default/5 px-4 py-3 text-left outline-none transition-colors hover:bg-action-primary-default/10 focus-visible:ring-2 focus-visible:ring-border-focus"
+                  >
+                    <p className="truncate text-sm font-medium text-text-default">{item.description}</p>
+                    <p className="truncate text-xs text-text-subdued">
+                      {item.contributor ?? 'Unknown member'} · {item.module} · {item.updatedAt}
+                    </p>
+                  </button>
+                ))}
+              </div>
+            )}
+          </section>
+
+          <section aria-labelledby="organisation-continue" className="flex min-h-0 flex-col gap-4">
+            <h2 id="organisation-continue" className="type-heading-3 text-text-brand">
+              Continue Working
+            </h2>
+            {continueWorking.length === 0 ? (
+              <p className="text-sm text-text-subdued">Nothing to work on today.</p>
+            ) : (
+              <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto">
+                {continueWorking.map((item) => {
+                  const Icon = MODULE_ICON[item.module]
+                  return (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={item.onContinue}
+                      className="flex min-h-0 flex-1 items-center justify-between gap-3 rounded-lg bg-action-primary-default/5 px-4 py-3 text-left outline-none transition-colors hover:bg-action-primary-default/10 focus-visible:ring-2 focus-visible:ring-border-focus"
+                    >
+                      <div className="flex min-w-0 items-center gap-3">
+                        <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-surface-default text-text-brand">
+                          <Icon className="size-4" aria-hidden="true" />
+                        </span>
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-semibold text-text-default">{item.title}</p>
+                          <p className="text-xs text-text-subdued">{item.module}</p>
+                        </div>
+                      </div>
+                      <span className="shrink-0 text-sm font-medium text-text-brand">Continue →</span>
+                    </button>
+                  )
+                })}
+              </div>
+            )}
+          </section>
         </div>
       </div>
-    </div>
+    </Card>
   )
 }
 

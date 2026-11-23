@@ -4,10 +4,12 @@ import { PublicationListView } from '@/components/publication/PublicationListVie
 import { useToast } from '@/components/ui/toast'
 import { useConfirm } from '@/components/ui/confirm-dialog'
 import { useAppData } from '@/context/AppDataContext'
+import { useManageableRecords } from '@/hooks/use-manageable-records'
 
 function PublicationsPage() {
   const navigate = useNavigate()
-  const { publications, deletePublication, unpublishPublication } = useAppData()
+  const { publications: allPublications, deletePublication, unpublishPublication } = useAppData()
+  const publications = useManageableRecords(allPublications)
   const toast = useToast()
   const confirm = useConfirm()
 

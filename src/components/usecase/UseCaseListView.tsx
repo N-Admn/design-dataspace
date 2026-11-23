@@ -1,6 +1,7 @@
-import { Archive, ExternalLink, FolderKanban, Pencil, Trash2 } from 'lucide-react'
+import { Archive, FolderKanban, Pencil, Trash2 } from 'lucide-react'
 
 import { ManagementTable, type ManagementColumn, type ManagementFilterDef, type ManagementRowAction } from '@/components/shared/management-table/ManagementTable'
+import { ContentNameCell } from '@/components/shared/ContentNameCell'
 import { TruncatedText } from '@/components/shared/TruncatedText'
 import { StatusBadge } from '@/components/shared/StatusBadge'
 import { formatShortDate, parseAppTimestamp } from '@/lib/format'
@@ -44,14 +45,7 @@ function buildColumns(onOpen: (useCase: UseCaseRecord) => void): ManagementColum
     sortable: true,
     compare: (a, b) => (a.form.metadata.title || '').localeCompare(b.form.metadata.title || ''),
     render: (u) => (
-      <button
-        type="button"
-        onClick={() => onOpen(u)}
-        className="flex min-w-0 w-full items-center gap-2 text-left hover:text-primary"
-      >
-        <FolderKanban className="size-4 shrink-0 text-muted-foreground" />
-        <TruncatedText className="min-w-0 flex-1 font-medium text-foreground">{u.form.metadata.title || 'Untitled Use Case'}</TruncatedText>
-      </button>
+      <ContentNameCell name={u.form.metadata.title || 'Untitled Use Case'} icon={FolderKanban} liveHref={u.status === 'published' ? `/explore/use-cases/${u.id}` : undefined} onOpen={() => onOpen(u)} />
     ),
   },
   {
@@ -135,12 +129,6 @@ function UseCaseListView({
       ]
     }
     return [
-      {
-        key: 'view-live',
-        icon: ExternalLink,
-        label: () => `View live: ${title}`,
-        onClick: () => window.open(`/explore/use-cases/${useCase.id}`, '_blank', 'noopener,noreferrer'),
-      },
       { key: 'edit', icon: Pencil, label: () => `Edit ${title}`, onClick: () => onEditUseCase(useCase.id) },
       { key: 'unpublish', icon: Archive, label: () => `Unpublish ${title}`, onClick: () => onUnpublishUseCase(useCase.id), destructive: true },
     ]

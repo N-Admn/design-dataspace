@@ -80,6 +80,7 @@ const RADII = [
   ['--radius-md', 'md', 'rounded-md — default control radius'],
   ['--radius-lg', 'lg', 'rounded-lg'],
   ['--radius-xl', 'xl', 'rounded-xl — cards'],
+  ['--radius-button', 'button', 'rounded-button — buttons only, independent of the scale'],
 ] as const
 
 const SHADOWS = [
@@ -316,7 +317,7 @@ export function TypographyPage() {
 export function BorderRadiusPage() {
   const radius = useCssVar('--radius')
   return (
-    <DocSection id="scale" title="Scale" description={`Base --radius = ${radius || '0.625rem'}; sm, md, lg and xl are derived from it with calc() so the scale stays proportional.`}>
+    <DocSection id="scale" title="Scale" description={`Base --radius = ${radius || '0.625rem'}; sm, md, lg and xl are derived from it with calc() so the scale stays proportional. button is a separate token (0.375rem) used by Button alone, so a button reads as a control rather than a card.`}>
       <div className="flex flex-wrap gap-6">
         {RADII.map(([v, name, note]) => (
           <div key={v} className="flex flex-col items-center gap-2">
