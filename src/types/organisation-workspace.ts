@@ -6,6 +6,7 @@
  * this implementation doesn't make (see the audit report's Known limitations). */
 
 import type { UploadedAsset } from '@/lib/generic-upload'
+import { ACTIVE_MEMBER_IDS } from '@/lib/notification-personas'
 
 export type OrganisationRole = 'admin' | 'editor' | 'evaluator'
 
@@ -85,7 +86,7 @@ export const emptyOrganisationMetadata: OrganisationMetadata = {
   location: '',
 }
 
-export type OrganisationInvitationStatus = 'pending' | 'revoked'
+export type OrganisationInvitationStatus = 'pending' | 'accepted' | 'declined' | 'revoked'
 
 export interface OrganisationInvitation {
   id: string
@@ -98,6 +99,67 @@ export interface OrganisationInvitation {
   role: OrganisationRole
   status: OrganisationInvitationStatus
   invitedAt: string
+  /** Set for a shareable link: nobody is named until someone accepts it. */
+  via?: 'link'
+  /** Evaluator invitations only: the records the Evaluator will be assigned. They become active assignments when the invitation is
+   *  accepted, not before, and only for records that are still published then. */
+  evaluationScope?: EvaluationScopeItem[]
+  invitedByPersonId?: string
+  acceptedAt?: string
+  /** When the invitee answered (accepted or declined). */
+  respondedAt?: string
+  /** Set when the invitation came from a shareable link (see `OrganisationInviteLink`): the link it was claimed through. */
+  linkToken?: string
+}
+
+/** A shareable invitation link. It exists from the moment an Admin generates it, but it is not an invitation yet: it appears in the
+ *  Invitations tab (as a pending invitation) only when someone first opens it and claims it. A claimed link is consumed for good:
+ *  nobody else can claim it, and it is never reset. It is kept by the organisation, with the role and (for an Evaluator) the records
+ *  it was made for. */
+export type OrganisationInviteLinkStatus = 'unclaimed' | 'claimed' | 'revoked'
+
+export interface OrganisationInviteLink {
+  token: string
+  role: OrganisationRole
+  evaluationScope?: EvaluationScopeItem[]
+  createdByPersonId: string
+  createdAt: string
+  status: OrganisationInviteLinkStatus
+  /** Who claimed it. `claimantKey` is the browser that opened it first, always present once claimed. `claimedByKey` is the account it has
+   *  been bound to (an email, or `me` for the prototype's default signed-in person), present once the claimant is signed in. */
+  claimantKey?: string
+  claimedByKey?: string
+  claimedAt?: string
+  /** The pending invitation created at the first claim. */
+  invitationId?: string
+}
+
+/** The content modules an Evaluator can be assigned records from. Charts and Collaboratives are not assignable for now. */
+export type EvaluationModule = 'dataset' | 'use-case' | 'ai-model' | 'publication' | 'event'
+
+/** `active` is the only status that grants access. `invalidated` means the record stopped being published, so the assignment ended and is
+ *  kept as history; republishing never restores it, an Admin has to assign the record again. */
+export type EvaluationAssignmentStatus = 'active' | 'invalidated' | 'revoked'
+
+export interface EvaluationAssignment {
+  id: string
+  /** The Evaluator's `OrganisationMember.personId`. */
+  evaluatorPersonId: string
+  module: EvaluationModule
+  recordId: string
+  assignedByPersonId: string
+  assignedAt: string
+  status: EvaluationAssignmentStatus
+  endedAt?: string
+  /** `record-unpublished`: the record stopped being published. `admin-revoked`: an Admin withdrew it or revoked the Evaluator's evaluation
+   *  access. `membership-ended` / `role-changed`: the person was removed, or is no longer an Evaluator. */
+  endedReason?: 'record-unpublished' | 'record-deleted' | 'admin-revoked' | 'membership-ended' | 'role-changed'
+}
+
+/** One record an Evaluator is (or is to be) assigned. */
+export interface EvaluationScopeItem {
+  module: EvaluationModule
+  recordId: string
 }
 
 export interface OrganisationRecord {
@@ -105,15 +167,23 @@ export interface OrganisationRecord {
   metadata: OrganisationMetadata
   members: OrganisationMember[]
   invitations: OrganisationInvitation[]
+  /** Evaluation assignments for this organisation. Absent on records saved before they existed. */
+  assignments?: EvaluationAssignment[]
+  /** Shareable invitation links made by this organisation's Admins. Absent on records saved before they existed. */
+  inviteLinks?: OrganisationInviteLink[]
+  /** People removed from this organisation, so a later update of the bundled sample never puts them back. Absent until someone is removed. */
+  removedPersonIds?: string[]
   createdAt: string
   updatedAt: string
 }
 
-/** The current signed-in user's synthetic person id — see `OrganisationMember.personId`. */
+/** The synthetic person id the prototype's own profile and public "me" page use — see `OrganisationMember.personId`. It is John Doe's
+ *  profile. Who is acting in a workspace is John, by `ACTIVE_MEMBER_IDS`; see `currentUserMembership`. */
 export const CURRENT_USER_PERSON_ID = 'me'
 
+/** The signed-in person's membership of `org`: the member row that is John Doe (see `ACTIVE_MEMBER_IDS`). */
 export function currentUserMembership(org: OrganisationRecord): OrganisationMember | null {
-  return org.members.find((m) => m.personId === CURRENT_USER_PERSON_ID) ?? null
+  return org.members.find((m) => ACTIVE_MEMBER_IDS.includes(m.personId)) ?? null
 }
 
 export function currentUserRole(org: OrganisationRecord): OrganisationRole | null {

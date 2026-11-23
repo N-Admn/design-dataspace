@@ -23,6 +23,7 @@ import { validateMetadata, isMetadataValid, isDatasetFormPublishable, validatePr
 import { getResourceTitle } from '@/lib/file-validation'
 import { datasetLifecycleMessage } from '@/lib/dataset-lifecycle-messages'
 import { hasUnsavedEdits, type ContentStatus } from '@/lib/content-status'
+import { useContentPermissions } from '@/hooks/use-content-permissions'
 import {
   createEmptyDatasetForm,
   datasetTypeLabel,
@@ -230,6 +231,8 @@ function DatasetCreationFlow({
 
   const editingRecord = editingId ? datasets.find((d) => d.id === editingId) : undefined
   const hasLiveVersion = editingRecord?.status === 'published'
+  // Publishing an organisation's content is an Admin action; the store refuses it for anyone else.
+  const permissions = useContentPermissions(editingRecord?.organisationId ?? organisationId)
   const showUnsavedIndicator = hasLiveVersion && hasUnsavedChanges
 
   /** Persist the working copy. For an already-published dataset this never changes
@@ -270,6 +273,10 @@ function DatasetCreationFlow({
   }
 
   const handlePublish = async () => {
+    if (!permissions.canPublish) {
+      toast({ title: permissions.refusal('publish') ?? 'You can’t publish this.', variant: 'error' })
+      return
+    }
     const promptMetadataOk = form.datasetType !== 'prompt_dataset' || isPromptDatasetMetadataValid(form.promptDatasetMetadata)
     if (!isMetadataValid(form.metadata) || !promptMetadataOk) {
       setShowMetadataErrors(true)
@@ -385,7 +392,7 @@ function DatasetCreationFlow({
         <Step3Review
           form={form}
           datasetId={editingId}
-          canPublish={isDatasetFormPublishable(form)}
+          canPublish={isDatasetFormPublishable(form) && permissions.canPublish}
           hasLiveVersion={hasLiveVersion}
           onEditStep={(targetStep) => setStep(targetStep)}
           onPublish={handlePublish}

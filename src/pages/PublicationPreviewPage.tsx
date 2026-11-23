@@ -10,6 +10,7 @@ import { useConfirm } from '@/components/ui/confirm-dialog'
 import { useAppData } from '@/context/AppDataContext'
 import { isPublicationReadyToPublish } from '@/lib/publication-validation'
 import { clearPublicationDraftSnapshot, loadPublicationDraftSnapshot } from '@/lib/publication-draft-storage'
+import { useContentPermissions } from '@/hooks/use-content-permissions'
 
 function PublicationPreviewPage() {
   const { id } = useParams<{ id: string }>()
@@ -21,6 +22,8 @@ function PublicationPreviewPage() {
   const [justPublished, setJustPublished] = React.useState(false)
 
   const record = id ? publications.find((p) => p.id === id) : undefined
+  // Publishing an organisation's content is an Admin action; the store refuses it for anyone else, so the button says so up front.
+  const permissions = useContentPermissions(record?.organisationId)
   // Load once on mount and freeze — re-reading after our own publish action would
   // pick up the just-updated status and flip "Publish" into "Publish Changes" mid-flow.
   const [snapshot] = React.useState(() => (id ? loadPublicationDraftSnapshot(id) : null))
@@ -57,6 +60,10 @@ function PublicationPreviewPage() {
   const ready = isPublicationReadyToPublish(form)
 
   const handlePublish = async () => {
+    if (!permissions.canPublish) {
+      toast({ title: permissions.refusal('publish') ?? 'You can’t publish this.', variant: 'error' })
+      return
+    }
     if (!ready) return
     const ok = await confirm({
       title: hasLiveVersion ? 'Publish changes?' : 'Publish Publication?',
@@ -113,7 +120,7 @@ function PublicationPreviewPage() {
               <Button type="button" variant="outline" onClick={handleEditInWorkspace}>
                 Edit in Workspace
               </Button>
-              <Button type="button" onClick={handlePublish} disabled={!ready || isSubmitting}>
+              <Button type="button" onClick={handlePublish} disabled={!ready || isSubmitting || !permissions.canPublish} title={permissions.canPublish ? undefined : (permissions.refusal('publish') ?? undefined)}>
                 {isSubmitting ? (
                   <>
                     <Loader2 className="size-4 animate-spin" />

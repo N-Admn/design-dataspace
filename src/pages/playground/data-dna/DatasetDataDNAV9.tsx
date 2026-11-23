@@ -201,10 +201,10 @@ function DatasetDataDNAV9({ datasetId }: { datasetId: string }) {
       <header className="flex items-start justify-between gap-4">
         <h1 className="type-display-1 min-w-0 break-words text-black lg:max-w-[70%]">{model.title}</h1>
         {/* A round filled icon button (the same treatment as Version 6) that saves the Data DNA. */}
-        <Button
+        <Button shape="round"
           type="button"
           size="icon"
-          className="size-11 shrink-0 rounded-full"
+          className="size-11 shrink-0"
           aria-label="Save Data DNA"
           title="Save Data DNA"
           onClick={() =>

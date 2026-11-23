@@ -1,10 +1,13 @@
 import * as React from 'react'
-import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
+import { Navigate, Route, Routes, useLocation, useSearchParams } from 'react-router-dom'
 
 import { TopNav } from '@/components/layout/TopNav'
 import { BreadcrumbBar } from '@/components/layout/BreadcrumbBar'
 import { ContributorSidebar } from '@/components/layout/ContributorSidebar'
 import { OrganisationSidebar } from '@/components/layout/OrganisationSidebar'
+import { ManagementRouteGuard } from '@/components/organisation/ManagementRouteGuard'
+import { InviteLinkPage } from '@/pages/InviteLinkPage'
+import { OrganisationAccessGuard } from '@/components/organisation/OrganisationAccessGuard'
 import { Footer } from '@/components/layout/Footer'
 import { HelpButton } from '@/components/layout/HelpButton'
 import { ToastProvider } from '@/components/ui/toast'
@@ -13,8 +16,10 @@ import { TooltipProvider } from '@/components/ui/tooltip'
 import { HelpProvider } from '@/context/HelpContext'
 import { NotificationsProvider } from '@/context/NotificationsContext'
 import { RequestActionsProvider } from '@/components/notifications/RequestActions'
-import { DevPrototypeControls } from '@/components/notifications/DevPrototypeControls'
 import { NotificationsPage } from '@/pages/NotificationsPage'
+import { MyContributionsPage } from '@/pages/MyContributionsPage'
+import { CollaborativeItemsPage } from '@/pages/CollaborativeItemsPage'
+import { PersonalDashboardPage } from '@/pages/PersonalDashboardPage'
 import { AuthProvider, SIGN_IN_PATH, isProviderPath, useAuth } from '@/context/AuthContext'
 import { cn } from '@/lib/utils'
 import { PAGE_GUTTER_X } from '@/lib/layout'
@@ -81,6 +86,20 @@ import { ForgotPasswordPage } from '@/pages/auth/ForgotPasswordPage'
  *  element's vertical padding) and publish it as `--layout-chrome-offset`, so
  *  workspace/table heights stay correct when the chrome grows at narrow widths
  *  or under text-resize. Falls back to the 188px static value in index.css. */
+/** `/dashboard/following?tab=…` (the old Following & Access page) opens the matching card on the dashboard. */
+function FollowingRedirect() {
+  const [params] = useSearchParams()
+  const tab = params.get('tab')
+  const panel = tab === 'contributions' || tab === 'managing' || tab === 'access' ? tab : 'following'
+  return <Navigate to={`/dashboard?panel=${panel}`} replace />
+}
+
+/** `/dashboard/notifications[?…]` (notifications inside the workspace) opens the standalone page with the same query. */
+function NotificationsRedirect() {
+  const { search } = useLocation()
+  return <Navigate to={`/notifications${search}`} replace />
+}
+
 function useChromeOffset(routeKey: string) {
   React.useLayoutEffect(() => {
     const root = document.documentElement
@@ -124,6 +143,8 @@ function AppLayout() {
   const isPlayground = location.pathname === '/playground' || location.pathname.startsWith('/playground/')
   const isConsumerRoute =
     location.pathname.startsWith('/explore/') ||
+    // The invitation link page is public, on the consumer chrome.
+    location.pathname.startsWith('/invite/') ||
     location.pathname === '/collaboratives' ||
     location.pathname === '/forum' ||
     location.pathname === '/community' ||
@@ -135,11 +156,14 @@ function AppLayout() {
     location.pathname === '/discover' ||
     isPlayground ||
     location.pathname === '/search'
+  // The standalone Notifications page reads like the search results: on the white canvas, filters on the left.
+  const isNotifications = location.pathname === '/notifications'
   const isOrganisationSelector = location.pathname === '/organisations'
   const organisationWorkspaceMatch = /^\/organisations\/([^/]+)/.exec(location.pathname)
   const organisationWorkspaceId = organisationWorkspaceMatch?.[1]
   const hideSidebar =
     isDashboard ||
+    isNotifications ||
     isUseCasePreview ||
     isCollaborativePreview ||
     isAIModelPreview ||
@@ -200,7 +224,7 @@ function AppLayout() {
   }
 
   return (
-    <div className={cn('flex min-h-screen flex-col', isConsumerRoute && 'bg-background')}>
+    <div className={cn('flex min-h-screen flex-col', (isConsumerRoute || isNotifications) && 'bg-background')}>
       <TopNav />
       {!isUseCasePreview &&
         !isCollaborativePreview &&
@@ -221,7 +245,7 @@ function AppLayout() {
           // `body` background — `flex-1` means this always fills the space
           // below the header down to the footer, even when a page's own
           // content is shorter than the viewport.
-          isConsumerRoute && 'bg-background',
+          (isConsumerRoute || isNotifications) && 'bg-background',
         )}
       >
         {!hideSidebar && organisationWorkspaceId && (
@@ -232,37 +256,51 @@ function AppLayout() {
         <div className="order-2 min-w-0 flex-1">
           <Routes>
             <Route path="/" element={<DashboardPage />} />
-            <Route path="/dashboard/datasets" element={<DatasetsPage />} />
-            <Route path="/dashboard/events" element={<EventsPage />} />
-            <Route path="/dashboard/events/new" element={<EventCreationPage />} />
-            <Route path="/dashboard/events/:id/preview" element={<EventPreviewPage />} />
-            <Route path="/dashboard/use-cases" element={<UseCasesPage />} />
-            <Route path="/dashboard/use-cases/new" element={<UseCaseCreationPage />} />
-            <Route path="/dashboard/use-cases/:id/preview" element={<UseCasePreviewPage />} />
-            <Route path="/dashboard/collaboratives" element={<CollaborativesPage />} />
-            <Route path="/dashboard/collaboratives/new" element={<CollaborativeCreationPage />} />
-            <Route path="/dashboard/collaboratives/:id/preview" element={<CollaborativePreviewPage />} />
-            <Route path="/dashboard/ai-models" element={<AIModelsPage />} />
-            <Route path="/dashboard/ai-models/new" element={<AIModelCreationPage />} />
-            <Route path="/dashboard/ai-models/:id/preview" element={<AIModelPreviewPage />} />
-            <Route path="/dashboard/charts" element={<ChartsPage />} />
-            <Route path="/dashboard/charts/new" element={<ChartCreationPage />} />
-            <Route path="/dashboard/publications" element={<PublicationsPage />} />
-            <Route path="/dashboard/publications/new" element={<PublicationCreationPage />} />
-            <Route path="/dashboard/publications/:id/preview" element={<PublicationPreviewPage />} />
-            <Route path="/dashboard/notifications" element={<NotificationsPage />} />
+            {/* Editors and previews are management screens: only an Admin or Editor of the content's organisation gets in. */}
+            <Route element={<ManagementRouteGuard />}>
+              <Route path="/dashboard/datasets" element={<DatasetsPage />} />
+              <Route path="/dashboard/events" element={<EventsPage />} />
+              <Route path="/dashboard/events/new" element={<EventCreationPage />} />
+              <Route path="/dashboard/events/:id/preview" element={<EventPreviewPage />} />
+              <Route path="/dashboard/use-cases" element={<UseCasesPage />} />
+              <Route path="/dashboard/use-cases/new" element={<UseCaseCreationPage />} />
+              <Route path="/dashboard/use-cases/:id/preview" element={<UseCasePreviewPage />} />
+              <Route path="/dashboard/collaboratives" element={<CollaborativesPage />} />
+              <Route path="/dashboard/collaboratives/new" element={<CollaborativeCreationPage />} />
+              <Route path="/dashboard/collaboratives/:id/items" element={<CollaborativeItemsPage />} />
+              <Route path="/dashboard/collaboratives/:id/preview" element={<CollaborativePreviewPage />} />
+              <Route path="/dashboard/ai-models" element={<AIModelsPage />} />
+              <Route path="/dashboard/ai-models/new" element={<AIModelCreationPage />} />
+              <Route path="/dashboard/ai-models/:id/preview" element={<AIModelPreviewPage />} />
+              <Route path="/dashboard/charts" element={<ChartsPage />} />
+              <Route path="/dashboard/charts/new" element={<ChartCreationPage />} />
+              <Route path="/dashboard/publications" element={<PublicationsPage />} />
+              <Route path="/dashboard/publications/new" element={<PublicationCreationPage />} />
+              <Route path="/dashboard/publications/:id/preview" element={<PublicationPreviewPage />} />
+            </Route>
+            <Route path="/dashboard" element={<PersonalDashboardPage />} />
+            <Route path="/dashboard/contributions" element={<MyContributionsPage />} />
+            {/* Following & Access now lives on the dashboard; old links and tabs still arrive. */}
+            <Route path="/dashboard/following" element={<FollowingRedirect />} />
+            <Route path="/notifications" element={<NotificationsPage />} />
+            {/* Notifications used to sit inside the personal workspace; old links and bookmarks still arrive. */}
+            <Route path="/dashboard/notifications" element={<NotificationsRedirect />} />
             <Route path="/dashboard/profile" element={<ProfilePage />} />
             <Route path="/organisations" element={<OrganisationsPage />} />
-            <Route path="/organisations/:organisationId" element={<OrganisationDashboardPage />} />
-            <Route path="/organisations/:organisationId/datasets" element={<OrganisationDatasetsPage />} />
-            <Route path="/organisations/:organisationId/publications" element={<OrganisationPublicationsPage />} />
-            <Route path="/organisations/:organisationId/use-cases" element={<OrganisationUseCasesPage />} />
-            <Route path="/organisations/:organisationId/ai-models" element={<OrganisationAIModelsPage />} />
-            <Route path="/organisations/:organisationId/collaboratives" element={<OrganisationCollaborativesPage />} />
-            <Route path="/organisations/:organisationId/charts" element={<OrganisationChartsPage />} />
-            <Route path="/organisations/:organisationId/events" element={<OrganisationEventsPage />} />
-            <Route path="/organisations/:organisationId/members" element={<OrganisationMembersPage />} />
-            <Route path="/organisations/:organisationId/profile" element={<OrganisationProfilePage />} />
+            {/* Every organisation workspace route goes through one access guard: an Evaluator reaches only their assigned, published content. */}
+            <Route element={<OrganisationAccessGuard />}>
+              <Route path="/organisations/:organisationId" element={<OrganisationDashboardPage />} />
+              <Route path="/organisations/:organisationId/datasets" element={<OrganisationDatasetsPage />} />
+              <Route path="/organisations/:organisationId/publications" element={<OrganisationPublicationsPage />} />
+              <Route path="/organisations/:organisationId/use-cases" element={<OrganisationUseCasesPage />} />
+              <Route path="/organisations/:organisationId/ai-models" element={<OrganisationAIModelsPage />} />
+              <Route path="/organisations/:organisationId/collaboratives" element={<OrganisationCollaborativesPage />} />
+              <Route path="/organisations/:organisationId/charts" element={<OrganisationChartsPage />} />
+              <Route path="/organisations/:organisationId/events" element={<OrganisationEventsPage />} />
+              <Route path="/organisations/:organisationId/members" element={<OrganisationMembersPage />} />
+              <Route path="/organisations/:organisationId/profile" element={<OrganisationProfilePage />} />
+            </Route>
+            <Route path="/invite/:token" element={<InviteLinkPage />} />
             <Route path="/documentation" element={<DocumentationLayout />} />
             <Route path="/documentation/:slug" element={<DocumentationLayout />} />
             <Route path="/design-system" element={<DocsIndexRedirect />} />
@@ -320,8 +358,6 @@ function App() {
               <NotificationsProvider>
                 <RequestActionsProvider>
                   <AppLayout />
-                  {/* Prototype-only: the persona switcher and event simulator are never part of a production build. */}
-                  {import.meta.env.DEV && <DevPrototypeControls />}
                 </RequestActionsProvider>
               </NotificationsProvider>
             </AuthProvider>

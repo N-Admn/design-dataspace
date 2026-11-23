@@ -4,10 +4,12 @@ import { CollaborativeListView } from '@/components/collaborative/CollaborativeL
 import { useToast } from '@/components/ui/toast'
 import { useConfirm } from '@/components/ui/confirm-dialog'
 import { useAppData } from '@/context/AppDataContext'
+import { useManageableRecords } from '@/hooks/use-manageable-records'
 
 function CollaborativesPage() {
   const navigate = useNavigate()
-  const { collaboratives, deleteCollaborative, unpublishCollaborative } = useAppData()
+  const { collaboratives: allCollaboratives, deleteCollaborative, unpublishCollaborative } = useAppData()
+  const collaboratives = useManageableRecords(allCollaboratives)
   const toast = useToast()
   const confirm = useConfirm()
 
@@ -53,6 +55,7 @@ function CollaborativesPage() {
       onEditCollaborative={(id) => openCollaborative(id, 1)}
       onDeleteCollaborative={handleDeleteCollaborative}
       onUnpublishCollaborative={handleUnpublishCollaborative}
+      onManageItems={(id) => navigate(`/dashboard/collaboratives/${id}/items`)}
     />
   )
 }

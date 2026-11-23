@@ -149,7 +149,7 @@ function AboutPage() {
         </BentoCard>
       </div>
 
-      <Button asChild size="lg" className="rounded-full bg-accent text-accent-foreground hover:bg-accent/90">
+      <Button shape="round" asChild size="lg" className="bg-accent text-accent-foreground hover:bg-accent/90">
         <a href="https://civicdatalab.in" target="_blank" rel="noreferrer">
           Learn about CivicDataLab
           <ArrowUpRight />

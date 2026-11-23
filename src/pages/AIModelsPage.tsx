@@ -4,10 +4,12 @@ import { AIModelListView } from '@/components/ai-model/AIModelListView'
 import { useToast } from '@/components/ui/toast'
 import { useConfirm } from '@/components/ui/confirm-dialog'
 import { useAppData } from '@/context/AppDataContext'
+import { useManageableRecords } from '@/hooks/use-manageable-records'
 
 function AIModelsPage() {
   const navigate = useNavigate()
-  const { aiModels, deleteAIModel, unpublishAIModel } = useAppData()
+  const { aiModels: allAiModels, deleteAIModel, unpublishAIModel } = useAppData()
+  const aiModels = useManageableRecords(allAiModels)
   const toast = useToast()
   const confirm = useConfirm()
 

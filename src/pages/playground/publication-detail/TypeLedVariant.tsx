@@ -71,11 +71,11 @@ function ActionBar({ pub }: { pub: SamplePublication }) {
         </Button>
         <Popover>
           <PopoverTrigger asChild>
-            <Button
+            <Button shape="round"
               type="button"
               variant="outline"
               size="icon"
-              className="size-11 rounded-full border-primary bg-transparent text-primary hover:bg-primary/5"
+              className="size-11 border-primary bg-transparent text-primary hover:bg-primary/5"
               aria-label={`Share ${typeLabel(pub).toLowerCase()}`}
               title="Share"
             >

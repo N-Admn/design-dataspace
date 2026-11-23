@@ -193,7 +193,7 @@ function ContributorSidebar({
               to={backTo}
               aria-label={backLabel}
               className={cn(
-                'flex items-center gap-1.5 rounded-md text-sm font-medium text-primary transition-colors hover:bg-muted',
+                'flex items-center gap-1.5 rounded-button text-sm font-medium text-primary transition-colors hover:bg-muted',
                 collapsed ? 'size-8 justify-center' : 'px-2 py-1.5',
               )}
             >
@@ -211,7 +211,7 @@ function ContributorSidebar({
               type="button"
               aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
               onClick={() => setCollapsed((prev) => !prev)}
-              className="flex size-8 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+              className="flex size-8 shrink-0 items-center justify-center rounded-button text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
             >
               {collapsed ? <ChevronRight className="size-4" /> : <ChevronLeft className="size-4" />}
             </button>

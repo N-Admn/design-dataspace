@@ -1,12 +1,32 @@
 import * as React from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 
+import { emitActivity } from '@/lib/activity-events'
+
 /** The mock session. Signing in or registering sets it, signing out clears it; the provider (contributor) pages check it and send
  *  anyone who is not signed in to the sign-in page. It is saved in localStorage so a reload, or a page opened in a new tab,
  *  keeps the visitor signed in. */
 const SESSION_KEY = 'civicdataspace:session'
 
+const ACCOUNT_KEY = 'civicdataspace:session-account'
+
 export const SIGN_IN_PATH = '/auth/sign-in'
+
+/** Who signed in, when the sign-in knew (an email, and a name from Google). The prototype's own default signed-in person, John Doe,
+ *  has no account record: `null`. */
+export interface SessionAccount {
+  email: string
+  name?: string
+}
+
+function readAccount(): SessionAccount | null {
+  try {
+    const raw = window.localStorage.getItem(ACCOUNT_KEY)
+    return raw ? (JSON.parse(raw) as SessionAccount) : null
+  } catch {
+    return null
+  }
+}
 
 function readSession(): boolean {
   try {
@@ -21,7 +41,9 @@ interface AuthContextValue {
   /** True from the moment the visitor signs out until they sign in again, so leaving a provider page after signing out goes to
    *  the home page rather than to the sign-in page. */
   justSignedOut: boolean
-  signIn: () => void
+  /** The account that signed in (see `SessionAccount`), or null for the prototype's default signed-in person. */
+  account: SessionAccount | null
+  signIn: (account?: SessionAccount) => void
   signOut: () => void
 }
 
@@ -30,6 +52,7 @@ const AuthContext = React.createContext<AuthContextValue | null>(null)
 function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isSignedIn, setIsSignedIn] = React.useState(readSession)
   const [justSignedOut, setJustSignedOut] = React.useState(false)
+  const [account, setAccount] = React.useState<SessionAccount | null>(readAccount)
 
   React.useEffect(() => {
     const handleStorage = (event: StorageEvent) => {
@@ -43,26 +66,32 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
     () => ({
       isSignedIn,
       justSignedOut,
-      signIn: () => {
+      account,
+      signIn: (nextAccount?: SessionAccount) => {
         try {
           window.localStorage.setItem(SESSION_KEY, 'signed-in')
+          if (nextAccount) window.localStorage.setItem(ACCOUNT_KEY, JSON.stringify(nextAccount))
+          else window.localStorage.removeItem(ACCOUNT_KEY)
         } catch {
           /* storage unavailable: the session lasts until reload */
         }
+        setAccount(nextAccount ?? null)
         setIsSignedIn(true)
         setJustSignedOut(false)
       },
       signOut: () => {
         try {
           window.localStorage.removeItem(SESSION_KEY)
+          window.localStorage.removeItem(ACCOUNT_KEY)
         } catch {
           /* storage unavailable */
         }
+        setAccount(null)
         setIsSignedIn(false)
         setJustSignedOut(true)
       },
     }),
-    [isSignedIn, justSignedOut],
+    [isSignedIn, justSignedOut, account],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
@@ -76,7 +105,7 @@ function useAuth(): AuthContextValue {
 
 /** Pages that belong to the provider side: the workspace dashboard, every `/dashboard/*` page and the organisation workspaces. */
 export function isProviderPath(pathname: string): boolean {
-  return pathname === '/' || pathname === '/dashboard' || pathname.startsWith('/dashboard/') || pathname === '/organisations' || pathname.startsWith('/organisations/')
+  return pathname === '/' || pathname === '/dashboard' || pathname === '/notifications' || pathname.startsWith('/dashboard/') || pathname === '/organisations' || pathname.startsWith('/organisations/')
 }
 
 /** Opens a provider page from a consumer page: straight there when signed in, otherwise the sign-in page, which returns to `path`
@@ -110,8 +139,12 @@ export function useAuthReturn() {
   return {
     from,
     linkState: (extra?: Record<string, unknown>) => ({ ...extra, ...(from ? { from } : {}) }),
-    complete: () => {
-      signIn()
+    /** `registered` is true when this sign-in is the end of creating a new account: the one moment the welcome notice is written. */
+    complete: (account?: SessionAccount, options?: { registered?: boolean }) => {
+      if (options?.registered && account) {
+        emitActivity({ kind: 'account', action: 'created', email: account.email, actorId: 'system', at: Date.now(), key: `account:${account.email}` })
+      }
+      signIn(account)
       navigate(from ?? '/', { replace: true })
     },
   }

@@ -148,7 +148,7 @@ function OnThisPage({ slug }: { slug: string }) {
               aria-expanded
               aria-controls="on-this-page-list"
               aria-label="Collapse the on this page list"
-              className="inline-flex size-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-control-hover hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="inline-flex size-8 items-center justify-center rounded-button text-muted-foreground transition-colors hover:bg-control-hover hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <PanelRightClose className="size-4" aria-hidden="true" />
             </button>
@@ -177,7 +177,7 @@ function OnThisPage({ slug }: { slug: string }) {
           aria-expanded={false}
           aria-label="Show the on this page list"
           title="On this page"
-          className="inline-flex size-9 items-center justify-center rounded-md border border-border text-muted-foreground transition-colors hover:bg-control-hover hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="inline-flex size-9 items-center justify-center rounded-button border border-border text-muted-foreground transition-colors hover:bg-control-hover hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
           <PanelRightOpen className="size-4" aria-hidden="true" />
         </button>
@@ -263,7 +263,7 @@ function DocsLayout() {
               aria-expanded={menuOpen}
               aria-controls="docs-menu"
               onClick={() => setMenuOpen((o) => !o)}
-              className="inline-flex items-center gap-2 rounded-md border border-border bg-card px-3 py-2 text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="inline-flex items-center gap-2 rounded-button border border-border bg-card px-3 py-2 text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               {menuOpen ? <X className="size-4" aria-hidden="true" /> : <Menu className="size-4" aria-hidden="true" />}
               All pages

@@ -161,10 +161,10 @@ function JoinCard({ name }: { name: string }) {
         <p className="type-heading-3 text-black">Become part of {name.length > 28 ? 'this organisation' : name}</p>
         <p className="type-body text-text-default">Ask the organisation to add you.</p>
       </div>
-      <Button
+      <Button shape="round"
         type="button"
         size="lg"
-        className="shrink-0 self-start rounded-full sm:self-center"
+        className="shrink-0 self-start sm:self-center"
         disabled={requested}
         onClick={() => {
           setRequested(true)

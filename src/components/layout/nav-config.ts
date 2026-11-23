@@ -1,10 +1,11 @@
 import {
-  Bell,
   CalendarDays,
   Database,
   FileStack,
   FolderKanban,
+  Handshake,
   HelpCircle,
+  LayoutDashboard,
   LineChart,
   Sparkles,
   User,
@@ -43,6 +44,14 @@ export interface NavGroup {
 
 export const NAV_GROUPS: NavGroup[] = [
   {
+    key: 'overview',
+    label: 'Overview',
+    items: [
+      { key: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, path: '/dashboard', exactMatch: true },
+      { key: 'my-contributions', label: 'My Contributions', icon: Handshake, path: '/dashboard/contributions' },
+    ],
+  },
+  {
     key: 'contribution',
     label: 'Contribution',
     items: [
@@ -59,7 +68,6 @@ export const NAV_GROUPS: NavGroup[] = [
     key: 'account',
     label: 'Account',
     items: [
-      { key: 'notifications', label: 'Notifications', icon: Bell, path: '/dashboard/notifications' },
       { key: 'profile', label: 'Profile', icon: User, path: '/dashboard/profile' },
     ],
   },

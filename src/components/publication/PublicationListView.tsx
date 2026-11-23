@@ -1,6 +1,7 @@
-import { Archive, ExternalLink, FileStack, Pencil, Trash2 } from 'lucide-react'
+import { Archive, FileStack, Pencil, Trash2 } from 'lucide-react'
 
 import { ManagementTable, type ManagementColumn, type ManagementFilterDef, type ManagementRowAction } from '@/components/shared/management-table/ManagementTable'
+import { ContentNameCell } from '@/components/shared/ContentNameCell'
 import { TruncatedText } from '@/components/shared/TruncatedText'
 import { StatusBadge } from '@/components/shared/StatusBadge'
 import { GEOGRAPHY_OPTIONS, SECTOR_OPTIONS } from '@/types/dataset'
@@ -42,17 +43,8 @@ function buildColumns(onOpen: (record: PublicationRecord) => void): ManagementCo
       sortable: true,
       compare: (a, b) => (a.form.metadata.name || '').localeCompare(b.form.metadata.name || ''),
       render: (r) => (
-        <button
-          type="button"
-          onClick={() => onOpen(r)}
-          className="flex w-full min-w-0 items-center gap-2 text-left hover:text-primary"
-        >
-          <FileStack className="size-4 shrink-0 text-muted-foreground" />
-          <TruncatedText className="min-w-0 flex-1 font-medium text-foreground">
-            {r.form.metadata.name || 'Untitled Publication'}
-          </TruncatedText>
-        </button>
-      ),
+      <ContentNameCell name={r.form.metadata.name || 'Untitled Publication'} icon={FileStack} liveHref={r.status === 'published' ? `/explore/publications/${r.id}` : undefined} onOpen={() => onOpen(r)} />
+    ),
     },
     {
       key: 'type',
@@ -134,12 +126,6 @@ function PublicationListView({
       ]
     }
     return [
-      {
-        key: 'view-live',
-        icon: ExternalLink,
-        label: () => `View live: ${name}`,
-        onClick: () => window.open(`/explore/publications/${record.id}`, '_blank', 'noopener,noreferrer'),
-      },
       { key: 'edit', icon: Pencil, label: () => `Edit ${name}`, onClick: () => onEditPublication(record.id) },
       { key: 'unpublish', icon: Archive, label: () => `Unpublish ${name}`, onClick: () => onUnpublishPublication(record.id), destructive: true },
     ]

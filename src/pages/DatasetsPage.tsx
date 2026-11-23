@@ -8,15 +8,19 @@ import { useToast } from '@/components/ui/toast'
 import { useConfirm } from '@/components/ui/confirm-dialog'
 import { useAppData } from '@/context/AppDataContext'
 import type { DatasetType } from '@/types/dataset'
+import { useManageableRecords } from '@/hooks/use-manageable-records'
 
 type View = 'list' | 'create'
 
 interface DatasetNavState {
   datasetId?: string
+  /** Which step of the creation flow to open on; the page default is the review step. */
+  initialStep?: 1 | 2 | 3
 }
 
 function DatasetsPage() {
-  const { datasets, deleteDataset, unpublishDataset, events } = useAppData()
+  const { datasets: allDatasets, deleteDataset, unpublishDataset, events } = useAppData()
+  const datasets = useManageableRecords(allDatasets)
   const toast = useToast()
   const confirm = useConfirm()
   const location = useLocation()
@@ -25,7 +29,7 @@ function DatasetsPage() {
 
   const [view, setView] = useState<View>(navState?.datasetId ? 'create' : 'list')
   const [activeDatasetId, setActiveDatasetId] = useState<string | null>(navState?.datasetId ?? null)
-  const [activeInitialStep, setActiveInitialStep] = useState<1 | 2 | 3>(3)
+  const [activeInitialStep, setActiveInitialStep] = useState<1 | 2 | 3>(navState?.initialStep ?? 3)
   const [pendingDatasetType, setPendingDatasetType] = useState<DatasetType>('dataset')
   const [showTypeDialog, setShowTypeDialog] = useState(false)
 

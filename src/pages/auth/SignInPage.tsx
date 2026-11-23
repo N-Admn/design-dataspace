@@ -72,7 +72,8 @@ function SignInPage() {
   // Confirmation states converge on the dashboard without requiring another click.
   React.useEffect(() => {
     if (view === 'account-verified' || view === 'account-created-google') {
-      const timeout = window.setTimeout(() => complete(), 1100)
+      const accountSigningIn = view === 'account-verified' ? linkedAccount : pendingNewAccount
+      const timeout = window.setTimeout(() => complete(accountSigningIn ? { email: accountSigningIn.email.toLowerCase(), name: accountSigningIn.name } : undefined, { registered: view === 'account-created-google' }), 1100)
       return () => window.clearTimeout(timeout)
     }
   }, [view])
@@ -107,7 +108,7 @@ function SignInPage() {
       }
 
       toast({ title: 'Welcome back', description: 'Signed in successfully.' })
-      complete()
+      complete({ email: email.trim().toLowerCase() })
     }, 500)
   }
 
@@ -118,7 +119,7 @@ function SignInPage() {
     }
     if (account.kind === 'existing-google') {
       toast({ title: 'Welcome back', description: 'Signed in with Google.' })
-      complete()
+      complete({ email: account.email.toLowerCase(), name: account.name })
       return
     }
     if (account.kind === 'existing-password') {

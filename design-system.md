@@ -255,6 +255,7 @@ Note the font-weight variables are named `--type-font-weight-*`, not `--font-wei
 | `radius.md` | `--radius-md` | `--radius-md` | `var(--radius)` |
 | `radius.lg` | `--radius-lg` | `--radius-lg` | `calc(var(--radius) + 4px)` |
 | `radius.xl` | `--radius-xl` | `--radius-xl` | `calc(var(--radius) + 8px)` |
+| `radius.button` | `--radius-button` | `--radius-button` | `0.375rem` |
 
 `radius.DEFAULT` (`--radius`) is the base; `sm`/`md`/`lg`/`xl` are derived from it with `calc()` so the scale stays proportional. `--radius-md` backs `rounded-md` (the default control radius); cards use `rounded-xl`.
 

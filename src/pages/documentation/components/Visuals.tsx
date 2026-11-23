@@ -74,7 +74,7 @@ function Screenshot({ spec, onEnlarge }: { spec: MediaSpec; onEnlarge: () => voi
         type="button"
         onClick={onEnlarge}
         aria-label={`Enlarge: ${spec.title}`}
-        className="absolute bottom-2 right-2 inline-flex size-9 items-center justify-center rounded-md border border-border bg-background/90 text-foreground hover:bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        className="absolute bottom-2 right-2 inline-flex size-9 items-center justify-center rounded-button border border-border bg-background/90 text-foreground hover:bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
         <Expand className="size-4" aria-hidden="true" />
       </button>

@@ -147,7 +147,7 @@ function BreadcrumbBar() {
         <button
           type="button"
           onClick={closeSearch}
-          className="inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-sm font-medium text-primary transition-colors hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="inline-flex items-center gap-1.5 rounded-button px-2.5 py-1 text-sm font-medium text-primary transition-colors hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
           Close search
           <X className="size-4" aria-hidden="true" />
@@ -339,6 +339,14 @@ function BreadcrumbBar() {
     )
   }
 
+  if (pathname === '/notifications') {
+    return (
+      <div data-slot="breadcrumb" className={STRIP_CLASS}>
+        <Breadcrumbs crumbs={[{ label: 'Home', to: HOME_PATH }, { label: 'Dashboard', to: DASHBOARD_PATH }, { label: 'Notifications' }]} />
+      </div>
+    )
+  }
+
   const orgMatch = ORG_ROUTE_PATTERN.exec(pathname)
 
   // Home → Dashboard are the first two crumbs on every page except the
@@ -393,7 +401,7 @@ function BreadcrumbBar() {
     : [{ label: 'Dashboard', to: DASHBOARD_PATH }, { label: 'My Workspace' }]
 
   const crumbs: CrumbSpec[] = [...workspaceLeadingCrumbs]
-  if (!isDashboard && match) {
+  if (!isDashboard && match && match.item.key !== 'dashboard') {
     crumbs.push({ label: match.item.label })
   }
 

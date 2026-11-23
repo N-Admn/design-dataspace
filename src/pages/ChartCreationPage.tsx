@@ -20,6 +20,7 @@ import type { UploadedAsset } from '@/lib/generic-upload'
 import { validateChartBuild } from '@/lib/chart-validation'
 import { hasUnsavedEdits } from '@/lib/content-status'
 import { emptyChartConfig, emptyChartForm, type ChartConfig, type ChartFormState, type ChartType } from '@/types/chart'
+import { useContentPermissions } from '@/hooks/use-content-permissions'
 
 type ChartStep = 1 | 2
 
@@ -111,6 +112,8 @@ function ChartCreationPage() {
   }
 
   const editingRecord = editingId ? charts.find((c) => c.id === editingId) : undefined
+  // Publishing an organisation's content is an Admin action; the store refuses it for anyone else.
+  const permissions = useContentPermissions(editingRecord?.organisationId ?? organisationId)
   const hasLiveVersion = editingRecord?.status === 'published'
   const showUnsavedIndicator = hasLiveVersion && hasUnsavedChanges
   const readyToPublish = Object.keys(buildErrors).length === 0
@@ -170,6 +173,10 @@ function ChartCreationPage() {
   }
 
   const handlePublish = async () => {
+    if (!permissions.canPublish) {
+      toast({ title: permissions.refusal('publish') ?? 'You can’t publish this.', variant: 'error' })
+      return
+    }
     if (publishState !== 'idle') return
     const ok = await confirm({
       title: hasLiveVersion ? 'Publish changes?' : 'Publish chart?',

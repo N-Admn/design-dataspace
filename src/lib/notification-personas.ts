@@ -1,9 +1,10 @@
+import { canonicalPersonId, membershipsOf, organisationNameOf } from '@/lib/membership-source'
 import type { Membership, OwnerContext, Persona, Person } from '@/types/notifications'
 
 const CIVICDATALAB = { orgId: 'org-workspace-1', orgName: 'CivicDataLab' }
-const OTHER_ORG = { orgId: 'org-workspace-2', orgName: 'World Health Organization' }
 
-/** The people the prototype can sign in as (DEV persona switcher). John is deliberately multi-hat: he has a personal
+/** The people in the prototype. Only John is ever signed in; the others are seeded owners, requesters, partners and followers that the
+ *  notification history, collaboratives and the DEV simulator refer to. John is deliberately multi-hat: he has a personal
  *  workspace, administers CivicDataLab and edits at a second organisation, so one inbox mixes three contexts. */
 export const PERSONAS: Persona[] = [
   {
@@ -11,12 +12,7 @@ export const PERSONAS: Persona[] = [
     name: 'John Doe',
     initials: 'JD',
     email: 'johndoe@gmail.com',
-    blurb: 'Personal workspace · Admin at CivicDataLab · Editor at WHO',
-    memberships: [
-      { kind: 'personal' },
-      { kind: 'org', ...CIVICDATALAB, role: 'admin' },
-      { kind: 'org', ...OTHER_ORG, role: 'editor' },
-    ],
+    blurb: 'Personal workspace · Admin at CivicDataLab · Editor at WHO · Evaluator at UNICEF',
   },
   {
     id: 'anil',
@@ -24,7 +20,6 @@ export const PERSONAS: Persona[] = [
     initials: 'AR',
     email: 'anil.rao@civicdatalab.in',
     blurb: 'Second admin at CivicDataLab',
-    memberships: [{ kind: 'personal' }, { kind: 'org', ...CIVICDATALAB, role: 'admin' }],
   },
   {
     id: 'rahul',
@@ -32,7 +27,6 @@ export const PERSONAS: Persona[] = [
     initials: 'RM',
     email: 'rahul.mehta@civicdatalab.in',
     blurb: 'Editor at CivicDataLab (cannot decide access)',
-    memberships: [{ kind: 'personal' }, { kind: 'org', ...CIVICDATALAB, role: 'editor' }],
   },
   {
     id: 'priya',
@@ -40,7 +34,6 @@ export const PERSONAS: Persona[] = [
     initials: 'PN',
     email: 'priya.nair@unwomen.org',
     blurb: 'Outsider who requests access',
-    memberships: [{ kind: 'personal' }],
   },
   {
     id: 'meera',
@@ -48,7 +41,6 @@ export const PERSONAS: Persona[] = [
     initials: 'MJ',
     email: 'meera.joshi@unwomen.org',
     blurb: 'Admin at UN Women, a partner on a collaborative',
-    memberships: [{ kind: 'personal' }, { kind: 'org', orgId: 'org-external-unwomen', orgName: 'UN Women', role: 'admin' }],
   },
   {
     id: 'marcus',
@@ -56,7 +48,6 @@ export const PERSONAS: Persona[] = [
     initials: 'MB',
     email: 'marcus.bell@example.org',
     blurb: 'Follower of collaboratives',
-    memberships: [{ kind: 'personal' }],
   },
 ]
 
@@ -69,7 +60,14 @@ const EXTRA_PEOPLE: Person[] = [
 
 const PEOPLE_BY_ID = new Map<string, Person>([...PERSONAS, ...EXTRA_PEOPLE].map((p) => [p.id, p]))
 
-export const DEFAULT_PERSONA_ID = 'john'
+/** The prototype has one signed-in person: John Doe. Everything that acts for "the current user" (the workspace, the bell, collaboratives,
+ *  access requests) reads this id. The other people below remain as seeded data: owners, requesters, partners and followers. */
+export const ACTIVE_PERSON_ID = 'john'
+
+/** The ids the organisation workspaces use for the active person: his persona id, and `me`, which the seeded member lists use for him. */
+export const ACTIVE_MEMBER_IDS: string[] = [ACTIVE_PERSON_ID, 'me']
+
+export { canonicalPersonId }
 
 export function getPerson(id: string): Person {
   return PEOPLE_BY_ID.get(id) ?? { id, name: 'Someone', initials: '?', email: '' }
@@ -78,6 +76,9 @@ export function getPerson(id: string): Person {
 export function getPersona(id: string): Persona {
   return PERSONAS.find((p) => p.id === id) ?? PERSONAS[0]
 }
+
+/** The signed-in person. */
+export const ACTIVE_PERSONA: Persona = getPersona(ACTIVE_PERSON_ID)
 
 /** Which of the prototype's datasets are restricted, and who owns them. The real `accessType` field on a dataset also counts
  *  (see `isRestricted`); this table adds demo datasets that the mock data leaves open and names their owners, which the
@@ -89,16 +90,9 @@ export const DEMO_RESTRICTED: Record<string, OwnerContext> = {
   'ds-3': { kind: 'org', orgId: 'org-external-unwomen', orgName: 'UN Women' },
 }
 
-/** Organisation names for the demo owners that the mock datasets and use cases only reference by id. */
-const ORG_NAMES: Record<string, string> = {
-  'org-workspace-1': 'CivicDataLab',
-  'org-workspace-2': 'World Health Organization',
-  'org-external-okf': 'Open Knowledge Foundation',
-  'org-external-unwomen': 'UN Women',
-}
-
+/** An organisation's name, from its workspace; a demo owner without a workspace has its own name. */
 export function orgNameOf(orgId: string): string {
-  return ORG_NAMES[orgId] ?? 'An organisation'
+  return organisationNameOf(orgId) ?? 'An organisation'
 }
 
 /** Who owns a collaborative, who its partner organisations are, and who may submit. The mock collaboratives do not model this
@@ -123,7 +117,7 @@ export function membershipLabel(m: Membership): string {
 /** The context chip for something addressed to `persona` as the owner side. */
 export function ownerContextLabel(persona: Persona, owner: OwnerContext): string {
   if (owner.kind === 'personal') return 'Personal'
-  const m = persona.memberships.find((x) => x.kind === 'org' && x.orgId === owner.orgId)
+  const m = membershipsOf(persona.id).find((x) => x.kind === 'org' && x.orgId === owner.orgId)
   return m ? membershipLabel(m) : owner.orgName
 }
 

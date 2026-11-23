@@ -90,7 +90,7 @@ function LanguagePicker({
           type="button"
           aria-label={`Language: ${selectedLabel}. Select language`}
           aria-haspopup="dialog"
-          className="flex h-11 min-w-8 items-center justify-center rounded-md px-1 text-sm font-medium text-primary-foreground/60 transition-colors hover:text-primary-foreground focus-visible:text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:min-w-9 sm:px-1.5"
+          className="flex h-11 min-w-8 items-center justify-center rounded-button px-1 text-sm font-medium text-primary-foreground/60 transition-colors hover:text-primary-foreground focus-visible:text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:min-w-9 sm:px-1.5"
         >
           <IndicTranslateIcon className="size-6" />
         </button>

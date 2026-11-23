@@ -5,17 +5,18 @@ import { Lock } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
+import { useRestoreFocus } from '@/hooks/use-focus-rescue'
 import { Textarea } from '@/components/ui/textarea'
 import { useToast } from '@/components/ui/toast'
 import { useAppData } from '@/context/AppDataContext'
 import { useNotifications, type ActionResult } from '@/context/NotificationsContext'
 import { HistorySheet } from '@/components/notifications/HistorySheet'
-import { ItemPickerDialog } from '@/components/notifications/ItemPickerDialog'
+import { ItemPickerDrawer } from '@/components/notifications/ItemPickerDrawer'
 import { ownerOfDataset, requestKindOf } from '@/lib/notification-model'
 import { getPerson, ownerName } from '@/lib/notification-personas'
 import type { AccessRequest, ItemKind } from '@/types/notifications'
 
-export const NOTIFICATIONS_PATH = '/dashboard/notifications'
+export const NOTIFICATIONS_PATH = '/notifications'
 
 interface RequestActions {
   /** Opens the reason dialog, then sends the request. */
@@ -55,6 +56,8 @@ function RequestActionsProvider({ children }: { children: React.ReactNode }) {
   const [pending, setPending] = React.useState<Pending>(null)
   const [reason, setReason] = React.useState('')
   const [historyId, setHistoryId] = React.useState<string | null>(null)
+  // Dialogs here open from code, so focus is remembered and returned by hand. If the row that opened one has gone, focus goes to the list.
+  const { remember, onCloseAutoFocus } = useRestoreFocus(() => document.querySelector<HTMLElement>('[data-focus-fallback]'))
 
   const datasetName = React.useCallback(
     (id: string) => datasets.find((d) => d.id === id)?.form.metadata.name || 'this dataset',
@@ -88,8 +91,14 @@ function RequestActionsProvider({ children }: { children: React.ReactNode }) {
     datasetName,
     subjectName,
     collaborativeName: notifications.collaborativeName,
-    openPicker: (collaborativeId, mode) => setPending({ kind: 'pick', collaborativeId, mode }),
-    openRequestAccess: (datasetId) => setPending({ kind: 'request', datasetId }),
+    openPicker: (collaborativeId, mode) => {
+      remember()
+      setPending({ kind: 'pick', collaborativeId, mode })
+    },
+    openRequestAccess: (datasetId) => {
+      remember()
+      setPending({ kind: 'request', datasetId })
+    },
     approve: (request) => {
       const result = notifications.decide(persona.id, request.id, 'approved')
       if (!result.ok) return reportStale(result)
@@ -99,8 +108,14 @@ function RequestActionsProvider({ children }: { children: React.ReactNode }) {
           : { title: 'Access approved', description: `${getPerson(request.requesterId).name} can now open ${datasetName(request.itemId)}.` },
       )
     },
-    decline: (request) => setPending({ kind: 'decline', requestId: request.id }),
-    revoke: (request) => setPending({ kind: 'revoke', requestId: request.id }),
+    decline: (request) => {
+      remember()
+      setPending({ kind: 'decline', requestId: request.id })
+    },
+    revoke: (request) => {
+      remember()
+      setPending({ kind: 'revoke', requestId: request.id })
+    },
     withdraw: (request) => {
       const result = notifications.withdraw(persona.id, request.id)
       if (!result.ok) return reportStale(result)
@@ -110,7 +125,10 @@ function RequestActionsProvider({ children }: { children: React.ReactNode }) {
           : { title: 'Request withdrawn', description: `You can ask for access to ${datasetName(request.itemId)} again later.` },
       )
     },
-    openHistory: (request) => setHistoryId(request.id),
+    openHistory: (request) => {
+      remember()
+      setHistoryId(request.id)
+    },
   }
 
   const submitRequest = () => {
@@ -137,7 +155,14 @@ function RequestActionsProvider({ children }: { children: React.ReactNode }) {
     const result = mode === 'add' ? notifications.addItem(persona.id, collaborativeId, itemKind, itemId) : notifications.submitItem(persona.id, collaborativeId, itemKind, itemId)
     close()
     if (!result.ok) {
-      toast({ title: mode === 'add' ? 'Could not add the item' : 'Could not submit the item', description: result.reason === 'exists' ? 'It is already there, or already waiting.' : 'You are not allowed to do that here.', variant: 'error' })
+      toast({ title: !result.ok && result.reason === 'under-review' ? 'Already under review' : mode === 'add' ? 'Could not add the item' : 'Could not submit the item', description:
+          result.reason === 'under-review'
+            ? 'Someone has already submitted it and the owner has not decided yet.'
+            : result.reason === 'exists'
+              ? 'It is already part of this collaborative.'
+              : result.reason === 'ineligible'
+                ? 'Only published datasets and use cases can be added to a collaborative.'
+                : 'You are not allowed to do that here.', variant: 'error' })
       return
     }
     if (mode === 'add') {
@@ -174,7 +199,7 @@ function RequestActionsProvider({ children }: { children: React.ReactNode }) {
       {children}
 
       <Dialog open={pending?.kind === 'request'} onOpenChange={(open) => !open && close()}>
-        <DialogContent variant="center" className="flex max-w-md flex-col gap-0 p-0">
+        <DialogContent variant="center" className="flex max-w-md flex-col gap-0 p-0" onCloseAutoFocus={onCloseAutoFocus}>
           {pending?.kind === 'request' && (
             <form
               onSubmit={(e) => {
@@ -215,7 +240,7 @@ function RequestActionsProvider({ children }: { children: React.ReactNode }) {
       </Dialog>
 
       <Dialog open={pendingRequest !== undefined} onOpenChange={(open) => !open && close()}>
-        <DialogContent variant="center" className="flex max-w-md flex-col gap-0 p-0">
+        <DialogContent variant="center" className="flex max-w-md flex-col gap-0 p-0" onCloseAutoFocus={onCloseAutoFocus}>
           {pendingRequest && pending && (pending.kind === 'decline' || pending.kind === 'revoke') && (
             <form
               onSubmit={(e) => {
@@ -257,14 +282,15 @@ function RequestActionsProvider({ children }: { children: React.ReactNode }) {
         </DialogContent>
       </Dialog>
 
-      <ItemPickerDialog
+      <ItemPickerDrawer
         collaborativeId={pending?.kind === 'pick' ? pending.collaborativeId : null}
         mode={pending?.kind === 'pick' ? pending.mode : 'submit'}
         onClose={close}
+        onCloseAutoFocus={onCloseAutoFocus}
         onConfirm={(collaborativeId, itemKind, itemId) => confirmPick(collaborativeId, itemKind, itemId)}
       />
 
-      <HistorySheet request={historyRequest} datasetName={historyRequest ? datasetName(historyRequest.itemId) : ''} onClose={() => setHistoryId(null)} />
+      <HistorySheet request={historyRequest} datasetName={historyRequest ? datasetName(historyRequest.itemId) : ''} onClose={() => setHistoryId(null)} onCloseAutoFocus={onCloseAutoFocus} />
     </RequestActionsContext.Provider>
   )
 }

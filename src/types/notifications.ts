@@ -51,6 +51,23 @@ export type EventType =
   | 'update.digest'
   | 'update.partner-added'
   | 'update.item-added'
+  | 'update.invitation-claimed'
+  | 'update.invitation-received'
+  | 'update.invitation-accepted'
+  | 'update.invitation-declined'
+  | 'update.member-added'
+  | 'update.member-removed'
+  | 'update.role-changed'
+  | 'update.account-created'
+  | 'update.announcement'
+  | 'update.content-published'
+  | 'update.content-unpublished'
+  | 'update.content-deleted'
+  | 'update.collaborative-content'
+  | 'update.collaborative-removed'
+  | 'update.collaborative-closed'
+  | 'update.evaluation-assigned'
+  | 'update.evaluation-revoked'
 
 export interface NotificationEvent {
   id: string
@@ -65,6 +82,15 @@ export interface NotificationEvent {
   title?: string
   detail?: string
   href?: string
+  /** Invitation-claimed updates: the invitation they are about, so a later change to the claimant updates this notice instead of adding one. */
+  invitationId?: string
+  /** Invitation-claimed updates: the organisation, so the notice sits in that organisation's workspace. */
+  orgId?: string
+  /** Written by the policy: the same change is never told twice (two tabs, a repeated event). */
+  dedupeKey?: string
+  /** A notice about a restricted dataset: shown only while the reader can still open it. */
+  restrictedDatasetId?: string
+  collaborativeId?: string
 }
 
 /** An item that is in a collaborative, and how it got there. */
@@ -78,7 +104,7 @@ export interface CollaborativeItem {
   via: 'owner' | 'partner' | 'approved'
 }
 
-/** Something that happened on a collaborative, kept until the next follower digest summarises it. */
+/** Something that happened on a collaborative, kept so the Following page can show a collaborative's last change. */
 export interface CollaborativeChange {
   id: string
   collaborativeId: string
@@ -100,8 +126,6 @@ export interface NotificationState {
   changes: CollaborativeChange[]
   /** Per collaborative: partner organisations added since the prototype started, on top of the demo roles. */
   partners: Record<string, string[]>
-  /** Per collaborative: when followers were last sent a digest. */
-  digestedAt: Record<string, number>
 }
 
 /** Who owns a restricted item, and so who decides access to it. */
@@ -109,7 +133,7 @@ export type OwnerContext =
   | { kind: 'personal'; personaId: string }
   | { kind: 'org'; orgId: string; orgName: string }
 
-export type OrgRole = 'admin' | 'editor' | 'viewer' | 'auditor'
+export type OrgRole = 'admin' | 'editor' | 'evaluator' | 'viewer' | 'auditor'
 
 export type Membership = { kind: 'personal' } | { kind: 'org'; orgId: string; orgName: string; role: OrgRole }
 
@@ -121,9 +145,8 @@ export interface Person {
 }
 
 export interface Persona extends Person {
-  /** One line for the persona switcher. */
+  /** One line describing the person's role in the prototype. */
   blurb: string
-  memberships: Membership[]
 }
 
 export type NotificationTab = 'pending' | 'updates' | 'approved' | 'closed'

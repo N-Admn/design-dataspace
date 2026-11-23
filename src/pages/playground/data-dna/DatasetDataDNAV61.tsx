@@ -186,10 +186,10 @@ function DatasetDataDNAV61({ datasetId }: { datasetId: string }) {
         <h1 className="type-heading-1 min-w-0 break-words text-text-brand lg:max-w-[70%]">{model.title}</h1>
         {/* A round filled icon button (the same treatment as the search button) with a download arrow; its accessible name says
             what it downloads. */}
-        <Button
+        <Button shape="round"
           type="button"
           size="icon"
-          className="size-11 shrink-0 rounded-full"
+          className="size-11 shrink-0"
           aria-label="Save Data DNA"
           title="Save Data DNA"
           onClick={() => toast({ title: 'Prototype', description: 'Data DNA downloads are not wired up yet.' })}

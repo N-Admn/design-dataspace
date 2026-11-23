@@ -26,7 +26,7 @@ function CodeBlock({ code, className }: { code: string; className?: string }) {
         type="button"
         onClick={copy}
         aria-label={copied ? 'Copied' : 'Copy code'}
-        className="absolute right-2 top-2 inline-flex size-8 items-center justify-center rounded-md text-primary-foreground/70 transition-colors hover:bg-white/10 hover:text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+        className="absolute right-2 top-2 inline-flex size-8 items-center justify-center rounded-button text-primary-foreground/70 transition-colors hover:bg-white/10 hover:text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
       >
         {copied ? <Check className="size-4" aria-hidden="true" /> : <Copy className="size-4" aria-hidden="true" />}
       </button>

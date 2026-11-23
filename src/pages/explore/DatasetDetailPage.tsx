@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { useParams, useSearchParams } from 'react-router-dom'
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { ArrowLeft } from 'lucide-react'
 
 import { EmptyState } from '@/components/shared/EmptyState'
@@ -17,7 +17,7 @@ import { useAuth } from '@/context/AuthContext'
 import { useNotifications } from '@/context/NotificationsContext'
 import { useGoBack } from '@/hooks/use-go-back'
 import { resolveDatasetPublisher } from '@/lib/dataset-publisher'
-import { hasAccess } from '@/lib/notification-model'
+import { canEditAsOwner, hasAccess, ownerOfDataset } from '@/lib/notification-model'
 
 const VIEWS = [
   { key: 'data', label: 'Data' },
@@ -49,6 +49,7 @@ function DatasetDetailPage() {
   // Discover, a tag filter, …) instead of always the Datasets list —
   // "/explore/datasets" is only the fallback when there's no history at all.
   const goBack = useGoBack('/search?type=dataset')
+  const navigate = useNavigate()
 
   const record = id ? datasets.find((d) => d.id === id) : undefined
   // Consumers only ever see the live published version — same rule as every
@@ -77,6 +78,11 @@ function DatasetDetailPage() {
   const publisher = resolveDatasetPublisher(record, organisationWorkspaces)
   // Restricted datasets keep their description and file names public; files, data and charts stay locked until access is granted.
   const locked = !hasAccess(isSignedIn ? persona.id : null, record, state.requests)
+  // Edit is for the owner only, wherever the dataset is opened from (a collaborative included): it opens the dataset in the workspace that owns it.
+  const owner = ownerOfDataset(record)
+  const canEdit = Boolean(isSignedIn && owner && canEditAsOwner(persona.id, owner))
+  const editInWorkspace = () =>
+    navigate(record.organisationId ? `/organisations/${record.organisationId}/datasets` : '/dashboard/datasets', { state: { datasetId: record.id, initialStep: 1 } })
 
   return (
     <div className="mx-auto flex w-full max-w-[1400px] flex-col gap-6 py-2">
@@ -90,7 +96,7 @@ function DatasetDetailPage() {
           <ArrowLeft className="size-4" />
           Back
         </button>
-        <DatasetActions title={form.metadata.name} locked={locked} />
+        <DatasetActions title={form.metadata.name} locked={locked} onEdit={canEdit ? editInWorkspace : undefined} />
       </div>
 
       <RestrictedAccessBar datasetId={record.id} />

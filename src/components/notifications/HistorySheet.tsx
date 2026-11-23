@@ -9,14 +9,15 @@ interface HistorySheetProps {
   request: AccessRequest | undefined
   datasetName: string
   onClose: () => void
+  onCloseAutoFocus?: (event: Event) => void
 }
 
 /** The request's timeline in a right-hand side sheet: who did what, when, and why. */
-function HistorySheet({ request, datasetName, onClose }: HistorySheetProps) {
+function HistorySheet({ request, datasetName, onClose, onCloseAutoFocus }: HistorySheetProps) {
   const { persona } = useNotifications()
   return (
     <Dialog open={request !== undefined} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent variant="right-drawer" className="gap-0 p-0">
+      <DialogContent variant="right-drawer" className="gap-0 p-0" onCloseAutoFocus={onCloseAutoFocus}>
         {request && (
           <>
             <DialogHeader className="pr-14">

@@ -1,5 +1,7 @@
 import { ArrowLeft } from 'lucide-react'
 import { useParams } from 'react-router-dom'
+import { OwnerEditButton } from '@/components/shared/OwnerEditButton'
+import { useOwnerEdit } from '@/hooks/use-owner-edit'
 
 import { AIModelPreview } from '@/components/ai-model/AIModelPreview'
 import { EmptyState } from '@/components/shared/EmptyState'
@@ -14,6 +16,7 @@ function AIModelDetailPage() {
   const goBack = useGoBack('/search?type=ai-model')
 
   const record = id ? aiModels.find((m) => m.id === id) : undefined
+  const onEdit = useOwnerEdit('ai-model', record)
   const form = record?.status === 'published' ? record.publishedForm : undefined
 
   if (!record || !form) {
@@ -30,14 +33,17 @@ function AIModelDetailPage() {
 
   return (
     <div className="mx-auto flex w-full max-w-4xl flex-col gap-6 py-2">
-      <button
-        type="button"
-        onClick={goBack}
-        className="flex w-fit items-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-      >
-        <ArrowLeft className="size-4" />
-        Back
-      </button>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <button
+          type="button"
+          onClick={goBack}
+          className="flex w-fit items-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+        >
+          <ArrowLeft className="size-4" />
+          Back
+        </button>
+        {onEdit && <OwnerEditButton onEdit={onEdit} noun="AI model" />}
+      </div>
       <AIModelPreview form={form} />
     </div>
   )

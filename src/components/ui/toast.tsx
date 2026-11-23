@@ -46,11 +46,11 @@ function ToastProvider({ children }: { children: React.ReactNode }) {
   return (
     <ToastContext.Provider value={toast}>
       {children}
-      <div className="fixed right-4 top-4 z-[100] flex w-full max-w-sm flex-col gap-2">
+      <div aria-live="polite" className="fixed right-4 top-4 z-[100] flex w-full max-w-sm flex-col gap-2">
         {toasts.map((t) => (
           <div
             key={t.id}
-            role="status"
+            role={t.variant === 'error' ? 'alert' : undefined}
             className="flex items-start gap-2.5 rounded-lg border border-border-default bg-surface-default px-4 py-3 shadow-lg animate-in fade-in-0 slide-in-from-top-2"
           >
             {t.variant === 'error' ? (
@@ -90,7 +90,7 @@ function ToastProvider({ children }: { children: React.ReactNode }) {
               aria-label="Dismiss"
               onClick={() => dismiss(t.id)}
               className={cn(
-                'shrink-0 rounded-md p-0.5 text-text-subdued transition-colors hover:bg-surface-subdued hover:text-text-default',
+                'shrink-0 rounded-button p-0.5 text-text-subdued transition-colors hover:bg-surface-subdued hover:text-text-default',
               )}
             >
               <X className="size-3.5" />

@@ -1,5 +1,7 @@
 import { ArrowLeft } from 'lucide-react'
 import { useParams } from 'react-router-dom'
+import { OwnerEditButton } from '@/components/shared/OwnerEditButton'
+import { useOwnerEdit } from '@/hooks/use-owner-edit'
 
 import { EmptyState } from '@/components/shared/EmptyState'
 import { PublicationPreview } from '@/components/publication/PublicationPreview'
@@ -14,6 +16,7 @@ function PublicationDetailPage() {
   const goBack = useGoBack('/search?type=publication')
 
   const record = id ? publications.find((p) => p.id === id) : undefined
+  const onEdit = useOwnerEdit('publication', record)
   const form = record?.status === 'published' ? record.publishedForm : undefined
 
   if (!record || !form) {
@@ -30,14 +33,17 @@ function PublicationDetailPage() {
 
   return (
     <div className="mx-auto flex w-full max-w-4xl flex-col gap-6 py-2">
-      <button
-        type="button"
-        onClick={goBack}
-        className="flex w-fit items-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-      >
-        <ArrowLeft className="size-4" />
-        Back
-      </button>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <button
+          type="button"
+          onClick={goBack}
+          className="flex w-fit items-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+        >
+          <ArrowLeft className="size-4" />
+          Back
+        </button>
+        {onEdit && <OwnerEditButton onEdit={onEdit} noun="publication" />}
+      </div>
       <PublicationPreview form={form} publishedAt={record.updatedAt} />
     </div>
   )

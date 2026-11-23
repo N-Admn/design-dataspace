@@ -1,6 +1,7 @@
-import { Archive, ExternalLink, Pencil, Trash2, Users2 } from 'lucide-react'
+import { Archive, ListChecks, Pencil, Trash2, Users2 } from 'lucide-react'
 
 import { ManagementTable, type ManagementColumn, type ManagementFilterDef, type ManagementRowAction } from '@/components/shared/management-table/ManagementTable'
+import { ContentNameCell } from '@/components/shared/ContentNameCell'
 import { TruncatedText } from '@/components/shared/TruncatedText'
 import { StatusBadge } from '@/components/shared/StatusBadge'
 import { formatShortDate, parseAppTimestamp } from '@/lib/format'
@@ -14,6 +15,8 @@ interface CollaborativeListViewProps {
   onEditCollaborative: (id: string) => void
   onDeleteCollaborative: (id: string) => void
   onUnpublishCollaborative: (id: string) => void
+  /** Opens the collaborative's Items view (who added what, waiting submissions, partners). Published ones only. */
+  onManageItems?: (id: string) => void
   loading?: boolean
   loadError?: boolean
   onRetry?: () => void
@@ -44,14 +47,7 @@ function buildColumns(onOpen: (collaborative: CollaborativeRecord) => void): Man
     sortable: true,
     compare: (a, b) => (a.form.metadata.name || '').localeCompare(b.form.metadata.name || ''),
     render: (c) => (
-      <button
-        type="button"
-        onClick={() => onOpen(c)}
-        className="flex min-w-0 w-full items-center gap-2 text-left hover:text-primary"
-      >
-        <Users2 className="size-4 shrink-0 text-muted-foreground" />
-        <TruncatedText className="min-w-0 flex-1 font-medium text-foreground">{c.form.metadata.name || 'Untitled Collaborative'}</TruncatedText>
-      </button>
+      <ContentNameCell name={c.form.metadata.name || 'Untitled Collaborative'} icon={Users2} liveHref={c.status === 'published' ? `/explore/collaboratives/${c.id}` : undefined} onOpen={() => onOpen(c)} />
     ),
   },
   {
@@ -119,6 +115,7 @@ function CollaborativeListView({
   onEditCollaborative,
   onDeleteCollaborative,
   onUnpublishCollaborative,
+  onManageItems,
   loading,
   loadError,
   onRetry,
@@ -136,12 +133,7 @@ function CollaborativeListView({
       ]
     }
     return [
-      {
-        key: 'view-live',
-        icon: ExternalLink,
-        label: () => `View live: ${name}`,
-        onClick: () => window.open(`/explore/collaboratives/${collaborative.id}`, '_blank', 'noopener,noreferrer'),
-      },
+      ...(onManageItems ? [{ key: 'items', icon: ListChecks, label: () => `Manage items: ${name}`, onClick: () => onManageItems(collaborative.id) } satisfies ManagementRowAction<CollaborativeRecord>] : []),
       { key: 'edit', icon: Pencil, label: () => `Edit ${name}`, onClick: () => onEditCollaborative(collaborative.id) },
       { key: 'unpublish', icon: Archive, label: () => `Unpublish ${name}`, onClick: () => onUnpublishCollaborative(collaborative.id), destructive: true },
     ]

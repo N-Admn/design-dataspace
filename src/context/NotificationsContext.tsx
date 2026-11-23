@@ -15,57 +15,59 @@ import { useAppData } from '@/context/AppDataContext'
 import {
   canDecide,
   canSubmit,
+  CONTRIBUTABLE_KINDS,
   collaborativeAccess,
   collaborativeRole,
   countUnread,
   deriveItems,
+  type InvitationNoticeSource,
   eventTypeFor,
   isRestricted,
   itemInCollaborative,
   managersOf,
-  orgAdmins,
   ownerOfDataset,
   ownerOfUseCase,
-  pendingDigests,
   requestKindOf,
 } from '@/lib/notification-model'
-import { DEFAULT_PERSONA_ID, getPerson, getPersona, orgNameOf, type CollaborativeAccess } from '@/lib/notification-personas'
+import { subscribeActivity } from '@/lib/activity-events'
+import { collaborativeAudience, collaborativeItemNotice, mayKnowAbout, noticesFor, type Notice, type PolicyContext } from '@/lib/notification-policy'
+import { ACTIVE_PERSON_ID, ACTIVE_PERSONA, PERSONAS, getPerson, orgNameOf, type CollaborativeAccess } from '@/lib/notification-personas'
 import { buildSeed } from '@/lib/notification-seed'
 
 /** The prototype's notification store. Requests (access requests and collaborative submissions) and events are the source of
  *  truth; each person's inbox is derived from them, and read state is kept per person. State lives in localStorage and follows other
- *  open tabs through the `storage` event. The active persona lives in sessionStorage, so two tabs can be two people. */
+ *  open tabs through the `storage` event. The signed-in person is always John Doe. */
 
 const STATE_KEY = 'civicdataspace:notifications:v2'
-const PERSONA_KEY = 'civicdataspace:notifications:persona'
+
+/** An inbox saved in this browser before John's organisation notices existed is given them once, with nothing else changed. */
+function withRoleNotices(saved: NotificationState): NotificationState {
+  const now = Date.now()
+  const missing = buildSeed(now).events.filter((e) => e.id.startsWith('evt-role-') && !saved.events.some((s) => s.id === e.id))
+  if (missing.length === 0) return saved
+  const read = missing.filter((e) => now - e.at > 24 * 3600 * 1000).map((e) => e.id)
+  return { ...saved, events: [...saved.events, ...missing], reads: { ...saved.reads, john: [...(saved.reads.john ?? []), ...read] } }
+}
 
 function loadState(): NotificationState {
   try {
     const raw = window.localStorage.getItem(STATE_KEY)
-    if (raw) return JSON.parse(raw) as NotificationState
+    if (raw) return withRoleNotices(JSON.parse(raw) as NotificationState)
   } catch {
     /* unreadable or unavailable: fall back to the seed */
   }
   return buildSeed(Date.now())
 }
 
-function loadPersonaId(): string {
-  try {
-    return window.sessionStorage.getItem(PERSONA_KEY) ?? DEFAULT_PERSONA_ID
-  } catch {
-    return DEFAULT_PERSONA_ID
-  }
-}
 
 export type ActionResult =
   | { ok: true; request: AccessRequest }
-  | { ok: false; reason: 'already-decided' | 'not-allowed' | 'exists' | 'missing'; request?: AccessRequest; byId?: string }
+  | { ok: false; reason: 'already-decided' | 'not-allowed' | 'ineligible' | 'exists' | 'under-review' | 'missing'; request?: AccessRequest; byId?: string }
 
-export type DirectResult = { ok: true } | { ok: false; reason: 'not-allowed' | 'exists' | 'missing' }
+export type DirectResult = { ok: true } | { ok: false; reason: 'not-allowed' | 'ineligible' | 'exists' | 'missing' }
 
 interface NotificationsContextValue {
   persona: Persona
-  setPersonaId: (id: string) => void
   items: NotificationItem[]
   unreadCount: number
   state: NotificationState
@@ -84,8 +86,12 @@ interface NotificationsContextValue {
   /** Makes an organisation a partner and tells its admins. */
   addPartner: (actorId: string, collaborativeId: string, orgId: string) => DirectResult
   /** Sends each collaborative's followers one summary of what changed since the last one; returns how many went out. */
-  sendDigests: () => number
-  addDigest: (recipientIds: string[], title: string, detail: string) => void
+  /** An important platform announcement (maintenance, a service disruption): the one notice that goes to everyone. */
+  announce: (title: string, detail: string, href?: string) => void
+  /** Tells an organisation's Admins that someone claimed an invitation link. Once per invitation: asking again does nothing. */
+  notifyInvitationClaimed: (notice: { invitationId: string; orgId: string; recipientIds: string[]; title: string; detail: string; href: string }) => void
+  /** Rewords the notice already sent for an invitation (the claimant has since signed in). Never adds a second one. */
+  updateInvitationClaimNotice: (invitationId: string, detail: string) => void
   markItemRead: (item: NotificationItem) => void
   markAllRead: () => void
   reset: () => void
@@ -94,6 +100,10 @@ interface NotificationsContextValue {
   collaborativeName: (collaborativeId: string) => string
   /** Who owns the collaborative, its partners (including ones added in the prototype) and whether it is published. */
   collaborativeInfo: (collaborativeId: string) => { access: CollaborativeAccess; published: boolean }
+  /** Whether an item is already in a collaborative, whichever way it got there. */
+  hasItem: (collaborativeId: string, itemId: string, itemKind: ItemKind) => boolean
+  /** Who owns an item (a person, or an organisation), for credit on the public page. */
+  itemOwner: (itemKind: ItemKind | undefined, itemId: string) => OwnerContext | null
 }
 
 const NotificationsContext = React.createContext<NotificationsContextValue | null>(null)
@@ -102,9 +112,8 @@ let idCounter = 0
 const nextId = (prefix: string) => `${prefix}-${Date.now().toString(36)}-${(idCounter += 1)}`
 
 function NotificationsProvider({ children }: { children: React.ReactNode }) {
-  const { datasets, useCases, collaboratives } = useAppData()
+  const { datasets, useCases, collaboratives, organisationWorkspaces } = useAppData()
   const [state, setState] = React.useState<NotificationState>(loadState)
-  const [personaId, setPersonaIdState] = React.useState(loadPersonaId)
   // Actions read the latest state synchronously so two quick actions never see a stale request.
   const stateRef = React.useRef(state)
   stateRef.current = state
@@ -147,6 +156,22 @@ function NotificationsProvider({ children }: { children: React.ReactNode }) {
     return itemKind === 'use-case' ? ownerOfUseCase(ucs.find((u) => u.id === itemId)) : ownerOfDataset(ds.find((d) => d.id === itemId))
   }, [])
 
+  /** Whether an item is already in a collaborative: added through the flow, or connected by the owner in the editor. */
+  /** Only a published dataset or use case can be put in a collaborative: the kind, that it exists, and that it is live. */
+  const isContributable = (itemKind: ItemKind, itemId: string): boolean => {
+    if (!CONTRIBUTABLE_KINDS.includes(itemKind)) return false
+    const { datasets: ds, useCases: ucs } = dataRef.current
+    const record = itemKind === 'use-case' ? ucs.find((u) => u.id === itemId) : ds.find((d) => d.id === itemId)
+    return record?.status === 'published'
+  }
+
+  const hasItem = React.useCallback((collaborativeId: string, itemId: string, itemKind: ItemKind) => {
+    if (itemInCollaborative(stateRef.current.collabItems, collaborativeId, itemId, itemKind)) return true
+    const form = dataRef.current.collaboratives.find((c) => c.id === collaborativeId)?.publishedForm
+    const connected = itemKind === 'dataset' ? form?.connections.datasets : form?.connections.useCases
+    return Boolean(connected?.some((c) => c.id === itemId))
+  }, [])
+
   const accessOfCollaborative = React.useCallback((collaborativeId: string) => {
     const record = dataRef.current.collaboratives.find((c) => c.id === collaborativeId)
     const base = collaborativeAccess(collaborativeId, record?.organisationId)
@@ -163,8 +188,20 @@ function NotificationsProvider({ children }: { children: React.ReactNode }) {
     [accessOfCollaborative, ownerOfItem],
   )
 
-  const persona = getPersona(personaId)
-  const items = React.useMemo(() => deriveItems(state, persona, ownerOf), [state, persona, ownerOf])
+  const persona = ACTIVE_PERSONA
+  const personaId = persona.id
+  // Who belongs to which organisation, and every direct invitation, come from the organisation store, so a change there re-derives every
+  // inbox row: an invitee's notice is the invitation itself, never a copy.
+  const invitationSources = React.useMemo<InvitationNoticeSource[]>(
+    () => organisationWorkspaces.flatMap((o) => o.invitations.map((invitation) => ({ invitation, organisationId: o.id, organisationName: o.metadata.name }))),
+    [organisationWorkspaces],
+  )
+  // A notice about a restricted dataset is shown only while the reader can still open it: if their access ends, it disappears at once.
+  const mayShow = React.useCallback(
+    (event: NotificationEvent) => !event.restrictedDatasetId || mayKnowAbout(persona.id, datasets.find((d) => d.id === event.restrictedDatasetId), { requests: state.requests }),
+    [persona.id, datasets, state.requests],
+  )
+  const items = React.useMemo(() => deriveItems(state, persona, ownerOf, invitationSources, mayShow), [state, persona, ownerOf, invitationSources, mayShow])
   const unreadCount = React.useMemo(() => countUnread(items), [items])
 
   // ------------------------------------------------------------ writes
@@ -200,11 +237,48 @@ function NotificationsProvider({ children }: { children: React.ReactNode }) {
     })
   }
 
+  /** The facts the notification policy needs to decide who is eligible, read at the moment of the event. */
+  const policyContext = (): PolicyContext => ({
+    activePersonId: ACTIVE_PERSON_ID,
+    datasets: dataRef.current.datasets,
+    collaboratives: dataRef.current.collaboratives.map((c) => ({ id: c.id, organisationId: c.organisationId, name: c.form.metadata.name || 'this collaborative' })),
+    follows: stateRef.current.follows,
+    collabItems: stateRef.current.collabItems,
+    partners: stateRef.current.partners,
+    requests: stateRef.current.requests,
+  })
+
+  /** Writes a notice the policy produced. The same change is never told twice (`dedupeKey`), and nobody is named who the policy did not name. */
+  const pushNotice = (notice: Notice) => {
+    const current = stateRef.current
+    if (current.events.some((e) => e.dedupeKey === notice.key)) return
+    const recipients = [...new Set(notice.recipientIds)]
+    if (recipients.length === 0) return
+    commit({
+      ...current,
+      events: [
+        ...current.events,
+        { id: nextId('evt'), type: notice.type, actorId: 'system', at: Date.now(), recipientIds: recipients, title: notice.title, detail: notice.detail, href: notice.href, orgId: notice.orgId, dedupeKey: notice.key, restrictedDatasetId: notice.restrictedDatasetId, collaborativeId: notice.collaborativeId },
+      ],
+    })
+  }
+
+  // Platform events (content published or removed, membership, roles, evaluator access, a new account) arrive from the stores; the policy
+  // decides who is eligible and each notice is written once.
+  React.useEffect(
+    () =>
+      subscribeActivity((event) => {
+        for (const notice of noticesFor(event, policyContext())) pushNotice(notice)
+      }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [],
+  )
+
   /** Puts an item in a collaborative, tells the item's owner (unless they did it themselves) and notes the change for followers. */
   const placeItem = (actorId: string, addedById: string, collaborativeId: string, itemKind: ItemKind, itemId: string, via: 'owner' | 'partner' | 'approved') => {
     const current = stateRef.current
     // Two people can submit the same item; once the first is approved the item is already there.
-    if (itemInCollaborative(current.collabItems, collaborativeId, itemId, itemKind)) return
+    if (hasItem(collaborativeId, itemId, itemKind)) return
     const at = Date.now()
     const dataset = itemKind === 'dataset' ? dataRef.current.datasets.find((d) => d.id === itemId) : undefined
     commit({
@@ -217,6 +291,13 @@ function NotificationsProvider({ children }: { children: React.ReactNode }) {
     const recipients = owner ? managersOf(owner).filter((id) => id !== addedById) : []
     const addedBy = getPerson(addedById).name
     pushUpdate('update.item-added', actorId, recipients, collaborativeName(collaborativeId), `${addedBy} added your ${itemKind === 'use-case' ? 'use case' : 'dataset'} ${itemName(itemKind, itemId)}`, `/explore/collaboratives/${collaborativeId}`)
+    // The collaborative's managers, followers and partners who are eligible hear about new content once. The item's owner was told above, and
+    // when the item arrived through an approval the managers already know (they decided it, or were told of the decision).
+    const ctx = policyContext()
+    const audience = collaborativeAudience(collaborativeId, ctx)
+    const told = [...recipients, ...(via === 'approved' ? audience.managers : [])]
+    const notice = collaborativeItemNotice('added', collaborativeId, itemKind, itemId, itemName(itemKind, itemId), actorId, addedById, ctx, told, `collab-item:${collaborativeId}:${itemKind}:${itemId}:added:${at}`)
+    if (notice) pushNotice(notice)
   }
 
   const requestAccess = React.useCallback<NotificationsContextValue['requestAccess']>(
@@ -286,8 +367,11 @@ function NotificationsProvider({ children }: { children: React.ReactNode }) {
       const { access, published } = accessOfCollaborative(collaborativeId)
       const current = stateRef.current
       if (!published || !canSubmit(actorId, access, published)) return { ok: false, reason: 'not-allowed' }
-      const waiting = current.requests.find((r) => requestKindOf(r) === 'submission' && r.collaborativeId === collaborativeId && r.itemId === itemId && r.itemKind === itemKind && r.requesterId === actorId && r.status === 'waiting')
-      if (waiting || itemInCollaborative(current.collabItems, collaborativeId, itemId, itemKind)) return { ok: false, reason: 'exists', request: waiting }
+      if (!isContributable(itemKind, itemId)) return { ok: false, reason: 'ineligible' }
+      if (hasItem(collaborativeId, itemId, itemKind)) return { ok: false, reason: 'exists' }
+      // One pending submission per item, whoever sent it: a second one would only make the owner decide the same thing twice.
+      const underReview = current.requests.find((r) => requestKindOf(r) === 'submission' && r.collaborativeId === collaborativeId && r.itemId === itemId && r.itemKind === itemKind && r.status === 'waiting')
+      if (underReview) return { ok: false, reason: 'under-review', request: underReview }
       const request: AccessRequest = { id: nextId('req'), kind: 'submission', itemId, itemKind, collaborativeId, requesterId: actorId, status: 'waiting', createdAt: Date.now(), history: [] }
       return { ok: true, request: record(request, 'requested', actorId, undefined, 'waiting') }
     },
@@ -298,9 +382,12 @@ function NotificationsProvider({ children }: { children: React.ReactNode }) {
     (actorId, collaborativeId, itemKind, itemId) => {
       const { access, published } = accessOfCollaborative(collaborativeId)
       const role = collaborativeRole(actorId, access, published)
-      if (role === 'none') return { ok: false, reason: 'not-allowed' }
-      if (itemInCollaborative(stateRef.current.collabItems, collaborativeId, itemId, itemKind)) return { ok: false, reason: 'exists' }
-      placeItem(actorId, actorId, collaborativeId, itemKind, itemId, role)
+      // Owner, editor and partner add directly, and only to a published collaborative (the Items page says so). Anyone else submits instead.
+      if (role === 'none' || !published) return { ok: false, reason: 'not-allowed' }
+      if (!isContributable(itemKind, itemId)) return { ok: false, reason: 'ineligible' }
+      if (hasItem(collaborativeId, itemId, itemKind)) return { ok: false, reason: 'exists' }
+      // `placeItem` records how it got there: the owner side (owner or editor) or a partner.
+      placeItem(actorId, actorId, collaborativeId, itemKind, itemId, role === 'partner' ? 'partner' : 'owner')
       return { ok: true }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -314,10 +401,13 @@ function NotificationsProvider({ children }: { children: React.ReactNode }) {
       if (!target) return { ok: false, reason: 'missing' }
       const { access, published } = accessOfCollaborative(target.collaborativeId)
       const owner = ownerOfItem(target.itemKind, target.itemId)
-      // Whoever added it, the collaborative's owner, or the item's own owner can take it out.
+      // Whoever added it, the collaborative's governing owner (not an Editor or partner), or the item's own owner can take it out.
       const allowed = target.addedById === actorId || collaborativeRole(actorId, access, published) === 'owner' || (owner !== null && canDecide(actorId, owner))
       if (!allowed) return { ok: false, reason: 'not-allowed' }
       commit({ ...current, collabItems: current.collabItems.filter((i) => i.id !== collabItemId) })
+      // Managers, the contributor, followers and partners who were eligible to know about the item are told it left.
+      const notice = collaborativeItemNotice('removed', target.collaborativeId, target.itemKind, target.itemId, itemName(target.itemKind, target.itemId), actorId, target.addedById, policyContext(), [], `collab-item:${target.collaborativeId}:${target.itemKind}:${target.itemId}:removed:${collabItemId}`)
+      if (notice) pushNotice(notice)
       return { ok: true }
     },
     [accessOfCollaborative, commit, ownerOfItem],
@@ -353,28 +443,48 @@ function NotificationsProvider({ children }: { children: React.ReactNode }) {
         partners: { ...current.partners, [collaborativeId]: [...(current.partners[collaborativeId] ?? []), orgId] },
         changes: [...current.changes, { id: nextId('ch'), collaborativeId, kind: 'partner-added', at: Date.now() }],
       })
-      pushUpdate('update.partner-added', actorId, orgAdmins(orgId), collaborativeName(collaborativeId), `${orgNameOf(orgId)} was added as a partner. You can add items directly once it is published.`, `/explore/collaboratives/${collaborativeId}`)
+      // The partner organisation's managers are told what it can now do; the collaborative's own managers hear that a partner was added.
+      const audience = collaborativeAudience(collaborativeId, policyContext())
+      const partnerManagers = managersOf({ kind: 'org', orgId, orgName: orgNameOf(orgId) }).filter((id) => id !== actorId)
+      const stamp = Date.now()
+      pushNotice({ type: 'update.partner-added', recipientIds: partnerManagers, title: collaborativeName(collaborativeId), detail: `${orgNameOf(orgId)} was added as a partner. You can add items directly once it is published.`, href: `/explore/collaboratives/${collaborativeId}`, collaborativeId, key: `partner:${collaborativeId}:${orgId}:partner:${stamp}` })
+      pushNotice({ type: 'update.partner-added', recipientIds: audience.managers.filter((id) => id !== actorId && !partnerManagers.includes(id)), title: collaborativeName(collaborativeId), detail: `${orgNameOf(orgId)} was added as a partner of this collaborative.`, href: `/explore/collaboratives/${collaborativeId}`, collaborativeId, key: `partner:${collaborativeId}:${orgId}:managers:${stamp}` })
       return { ok: true }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [accessOfCollaborative, commit, collaborativeName],
   )
 
-  const sendDigests = React.useCallback(() => {
-    const now = Date.now()
-    const due = pendingDigests(stateRef.current, now)
-    for (const digest of due) {
-      pushUpdate('update.digest', 'system', digest.recipientIds, collaborativeName(digest.collaborativeId), digest.detail, `/explore/collaboratives/${digest.collaborativeId}`)
-      const current = stateRef.current
-      commit({ ...current, digestedAt: { ...current.digestedAt, [digest.collaborativeId]: digest.coversUntil } })
-    }
-    return due.length
+  const announce = React.useCallback<NotificationsContextValue['announce']>(
+    (title, detail, href) => pushNotice({ type: 'update.announcement', recipientIds: PERSONAS.map((p) => p.id), title, detail, href, key: `announcement:${Date.now()}:${title}` }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [commit, collaborativeName])
+    [commit],
+  )
 
-  const addDigest = React.useCallback(
-    (recipientIds: string[], title: string, detail: string) => pushUpdate('update.digest', 'system', recipientIds, title, detail, '/collaboratives'),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+  const notifyInvitationClaimed = React.useCallback<NotificationsContextValue['notifyInvitationClaimed']>(
+    (notice) => {
+      const current = stateRef.current
+      // One notice per invitation, however many times the link is opened, the page re-renders or signup is retried.
+      if (current.events.some((e) => e.type === 'update.invitation-claimed' && e.invitationId === notice.invitationId)) return
+      const recipients = [...new Set(notice.recipientIds)]
+      if (recipients.length === 0) return
+      commit({
+        ...current,
+        events: [
+          ...current.events,
+          { id: nextId('evt'), type: 'update.invitation-claimed', actorId: 'system', at: Date.now(), recipientIds: recipients, title: notice.title, detail: notice.detail, href: notice.href, invitationId: notice.invitationId, orgId: notice.orgId },
+        ],
+      })
+    },
+    [commit],
+  )
+
+  const updateInvitationClaimNotice = React.useCallback<NotificationsContextValue['updateInvitationClaimNotice']>(
+    (invitationId, detail) => {
+      const current = stateRef.current
+      if (!current.events.some((e) => e.type === 'update.invitation-claimed' && e.invitationId === invitationId && e.detail !== detail)) return
+      commit({ ...current, events: current.events.map((e) => (e.type === 'update.invitation-claimed' && e.invitationId === invitationId ? { ...e, detail } : e)) })
+    },
     [commit],
   )
 
@@ -393,20 +503,11 @@ function NotificationsProvider({ children }: { children: React.ReactNode }) {
   const markItemRead = React.useCallback((item: NotificationItem) => markIds(item.eventIds), [markIds])
   const markAllRead = React.useCallback(() => markIds(items.flatMap((i) => i.eventIds)), [items, markIds])
 
-  const setPersonaId = React.useCallback((id: string) => {
-    try {
-      window.sessionStorage.setItem(PERSONA_KEY, id)
-    } catch {
-      /* the persona then lasts until reload */
-    }
-    setPersonaIdState(id)
-  }, [])
-
   const reset = React.useCallback(() => commit(buildSeed(Date.now())), [commit])
 
   const value = React.useMemo<NotificationsContextValue>(
-    () => ({ persona, setPersonaId, items, unreadCount, state, requestAccess, withdraw, decide, revoke, grant, submitItem, addItem, removeItem, follow, unfollow, addPartner, sendDigests, addDigest, markItemRead, markAllRead, reset, itemName, collaborativeName, collaborativeInfo: accessOfCollaborative }),
-    [persona, setPersonaId, items, unreadCount, state, requestAccess, withdraw, decide, revoke, grant, submitItem, addItem, removeItem, follow, unfollow, addPartner, sendDigests, addDigest, markItemRead, markAllRead, reset, itemName, collaborativeName, accessOfCollaborative],
+    () => ({ persona, items, unreadCount, state, requestAccess, withdraw, decide, revoke, grant, submitItem, addItem, removeItem, follow, unfollow, addPartner, announce, notifyInvitationClaimed, updateInvitationClaimNotice, markItemRead, markAllRead, reset, itemName, collaborativeName, collaborativeInfo: accessOfCollaborative, hasItem, itemOwner: ownerOfItem }),
+    [persona, items, unreadCount, state, requestAccess, withdraw, decide, revoke, grant, submitItem, addItem, removeItem, follow, unfollow, addPartner, announce, notifyInvitationClaimed, updateInvitationClaimNotice, markItemRead, markAllRead, reset, itemName, collaborativeName, accessOfCollaborative, hasItem, ownerOfItem],
   )
 
   return <NotificationsContext.Provider value={value}>{children}</NotificationsContext.Provider>

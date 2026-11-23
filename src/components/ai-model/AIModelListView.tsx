@@ -1,6 +1,7 @@
-import { Archive, ExternalLink, Pencil, Sparkles, Trash2 } from 'lucide-react'
+import { Archive, Pencil, Sparkles, Trash2 } from 'lucide-react'
 
 import { ManagementTable, type ManagementColumn, type ManagementFilterDef, type ManagementRowAction } from '@/components/shared/management-table/ManagementTable'
+import { ContentNameCell } from '@/components/shared/ContentNameCell'
 import { TruncatedText } from '@/components/shared/TruncatedText'
 import { StatusBadge } from '@/components/shared/StatusBadge'
 import { Badge } from '@/components/ui/badge'
@@ -44,14 +45,7 @@ function buildColumns(onOpen: (aiModel: AIModelRecord) => void): ManagementColum
     sortable: true,
     compare: (a, b) => (a.form.metadata.name || '').localeCompare(b.form.metadata.name || ''),
     render: (m) => (
-      <button
-        type="button"
-        onClick={() => onOpen(m)}
-        className="flex min-w-0 w-full items-center gap-2 text-left hover:text-primary"
-      >
-        <Sparkles className="size-4 shrink-0 text-muted-foreground" />
-        <TruncatedText className="min-w-0 flex-1 font-medium text-foreground">{m.form.metadata.name || 'Untitled AI Model'}</TruncatedText>
-      </button>
+      <ContentNameCell name={m.form.metadata.name || 'Untitled AI Model'} icon={Sparkles} liveHref={m.status === 'published' ? `/explore/ai-models/${m.id}` : undefined} onOpen={() => onOpen(m)} />
     ),
   },
   {
@@ -148,12 +142,6 @@ function AIModelListView({
       ]
     }
     return [
-      {
-        key: 'view-live',
-        icon: ExternalLink,
-        label: () => `View live: ${name}`,
-        onClick: () => window.open(`/explore/ai-models/${aiModel.id}`, '_blank', 'noopener,noreferrer'),
-      },
       { key: 'edit', icon: Pencil, label: () => `Edit ${name}`, onClick: () => onEditAIModel(aiModel.id) },
       { key: 'unpublish', icon: Archive, label: () => `Unpublish ${name}`, onClick: () => onUnpublishAIModel(aiModel.id), destructive: true },
     ]

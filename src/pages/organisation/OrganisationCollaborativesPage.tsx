@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom'
+import { ListChecks } from 'lucide-react'
 
 import { useOrganisation } from '@/hooks/use-organisation'
 import { useAppData } from '@/context/AppDataContext'
@@ -10,7 +11,7 @@ import { useToast } from '@/components/ui/toast'
 function OrganisationCollaborativesPage() {
   const navigate = useNavigate()
   const { organisationId, organisation, permissions } = useOrganisation()
-  const { collaboratives, deleteCollaborative } = useAppData()
+  const { collaboratives, deleteCollaborative, unpublishCollaborative } = useAppData()
   const confirm = useConfirm()
   const toast = useToast()
 
@@ -43,6 +44,22 @@ function OrganisationCollaborativesPage() {
     toast({ title: 'Collaborative deleted', variant: 'success' })
   }
 
+  const handleUnpublish = async (item: OrganisationContentItem) => {
+    const ok = await confirm({
+      title: 'Unpublish this Collaborative?',
+      description: `"${item.title || 'This item'}" will be removed from public view and moved back to Draft. Anyone assigned to evaluate it loses access, and publishing it again does not restore that.`,
+      confirmLabel: 'Unpublish',
+      variant: 'destructive',
+    })
+    if (!ok) return
+    try {
+      unpublishCollaborative(item.id)
+      toast({ title: 'Collaborative unpublished', description: 'Moved back to Draft.', variant: 'success' })
+    } catch (error) {
+      toast({ title: 'You can’t unpublish this', description: error instanceof Error ? error.message : undefined, variant: 'error' })
+    }
+  }
+
   return (
     <OrganisationContentTable
       title="Organisation Collaboratives"
@@ -52,7 +69,13 @@ function OrganisationCollaborativesPage() {
       onAdd={permissions.canCreateContent ? () => open(null) : undefined}
       items={items}
       onOpen={(item) => open(item.id)}
-      onDelete={permissions.role === 'admin' ? handleDelete : undefined}
+      onDelete={permissions.canDeleteOrganisationContent ? handleDelete : undefined}
+      onUnpublish={permissions.canUnpublishOrganisationContent ? handleUnpublish : undefined}
+      extraActions={(item) =>
+        item.status === 'published'
+          ? [{ key: 'items', icon: ListChecks, label: () => `Manage items: ${item.title || 'collaborative'}`, onClick: () => navigate(`/dashboard/collaboratives/${item.id}/items`) }]
+          : []
+      }
       emptyTitle="No organisation collaboratives yet"
       emptyDescription="Collaboratives created by this organisation's members will show up here."
       searchPlaceholder="Search collaboratives..."

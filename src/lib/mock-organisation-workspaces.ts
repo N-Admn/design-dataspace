@@ -2,7 +2,7 @@ import { MOCK_PROFILE } from '@/types/profile'
 import type { OrganisationRecord } from '@/types/organisation-workspace'
 
 /** Real organisations that round out the public Organisations directory, with their real websites so their logos can be looked up (see
- *  `lib/org-logo.ts`). The current user ('me') is not a member of any of them, so "My Organisations" is unaffected. None has published
+ *  `lib/org-logo.ts`). Their one placeholder admin is nobody the prototype can sign in as; the only person with a seat in one of them is John, an editor at the World Health Organization (added below). None has published
  *  content: they show how an organisation with a valid public profile stays in the Organisations directory but is left out of
  *  Publishers. Names and websites are real; the short descriptions and everything else about them here are illustrative only. */
 function directoryOrganisation(
@@ -38,14 +38,22 @@ function directoryOrganisation(
   }
 }
 
+function withMembers(org: OrganisationRecord, extra: OrganisationRecord['members']): OrganisationRecord {
+  return { ...org, members: [...org.members, ...extra] }
+}
+
 const DIRECTORY_SEED_ORGANISATIONS: OrganisationRecord[] = [
-  directoryOrganisation(2, {
-    name: 'World Health Organization',
-    type: 'other',
-    description: 'The United Nations agency for international public health, setting norms and supporting countries on health systems, data and emergencies.',
-    website: 'https://who.int',
-    location: 'Geneva, Switzerland',
-  }),
+  withMembers(
+    directoryOrganisation(2, {
+      name: 'World Health Organization',
+      type: 'other',
+      description: 'The United Nations agency for international public health, setting norms and supporting countries on health systems, data and emergencies.',
+      website: 'https://who.int',
+      location: 'Geneva, Switzerland',
+    }),
+    // John is also an Editor at WHO (his persona says so), so the workspace and the notification system agree on where he belongs.
+    [{ id: 'org2-member-2', personId: 'me', name: 'John Doe', role: 'editor', joinedAt: '12/03/2026 10:00:00', updatedAt: '12/03/2026 10:00:00' }],
+  ),
   directoryOrganisation(3, {
     name: 'UN Environment Programme',
     type: 'other',
@@ -60,20 +68,38 @@ const DIRECTORY_SEED_ORGANISATIONS: OrganisationRecord[] = [
     website: 'https://mohfw.gov.in',
     location: 'New Delhi, India',
   }),
-  directoryOrganisation(5, {
-    name: 'UNICEF',
-    type: 'other',
-    description: "The United Nations agency working for children's health, nutrition, education and protection.",
-    website: 'https://unicef.org',
-    location: 'New York, United States',
-  }),
-  directoryOrganisation(6, {
+  {
+    ...withMembers(
+      directoryOrganisation(5, {
+        name: 'UNICEF',
+        type: 'other',
+        description: "The United Nations agency working for children's health, nutrition, education and protection.",
+        website: 'https://unicef.org',
+        location: 'New York, United States',
+      }),
+      // John is an Evaluator at UNICEF, so one signed-in person can see all three roles: Admin at CivicDataLab, Editor at WHO, Evaluator here.
+      [{ id: 'org5-member-2', personId: 'me', name: 'John Doe', role: 'evaluator', joinedAt: '02/06/2026 10:00:00', updatedAt: '02/06/2026 10:00:00' }],
+    ),
+    // What John is assigned to evaluate: a published dataset and a published event. UNICEF also holds a published event (evt-5) that is not
+    // assigned to him, which stays out of his view.
+    assignments: [
+      { id: 'evaluation-assignment-seed-1', evaluatorPersonId: 'me', module: 'dataset', recordId: 'ds-4', assignedByPersonId: 'directory-member-5', assignedAt: '10/08/2026 09:30:00', status: 'active' },
+      { id: 'evaluation-assignment-seed-2', evaluatorPersonId: 'me', module: 'event', recordId: 'evt-2', assignedByPersonId: 'directory-member-5', assignedAt: '10/08/2026 09:30:00', status: 'active' },
+    ],
+  },
+  {
+    ...directoryOrganisation(6, {
     name: 'Wellcome Trust',
     type: 'non-profit',
     description: 'A global charitable foundation that funds research in health, including climate and health.',
     website: 'https://wellcome.org',
     location: 'London, United Kingdom',
   }),
+    // An open invitation to John: it appears in his notifications, where he can accept or decline it.
+    invitations: [
+      { id: 'org6-invitation-1', personId: 'me', name: 'John Doe', role: 'admin', status: 'pending', invitedAt: '18/11/2026 11:15:00', invitedByPersonId: 'directory-member-6' },
+    ],
+  },
   directoryOrganisation(7, {
     name: 'London School of Hygiene & Tropical Medicine',
     type: 'academic',
@@ -88,13 +114,19 @@ const DIRECTORY_SEED_ORGANISATIONS: OrganisationRecord[] = [
     website: 'https://niti.gov.in',
     location: 'New Delhi, India',
   }),
-  directoryOrganisation(9, {
+  {
+    ...directoryOrganisation(9, {
     name: 'Gates Foundation',
     type: 'non-profit',
     description: 'A private foundation funding work on global health, development and data for decision-making.',
     website: 'https://gatesfoundation.org',
     location: 'Seattle, United States',
   }),
+    // An open invitation to John: it appears in his notifications, where he can accept or decline it.
+    invitations: [
+      { id: 'org9-invitation-1', personId: 'me', name: 'John Doe', role: 'editor', status: 'pending', invitedAt: '18/11/2026 11:15:00', invitedByPersonId: 'directory-member-9' },
+    ],
+  },
   directoryOrganisation(10, {
     name: 'Food and Agriculture Organization of the United Nations',
     type: 'other',
@@ -159,6 +191,16 @@ export const MOCK_ORGANISATION_WORKSPACES: OrganisationRecord[] = [
         updatedAt: '14/02/2026 11:30:00',
       },
       {
+        // Second admin at CivicDataLab: one of the prototype's personas (Anil Rao), so the workspace knows him as the persona does.
+        id: 'org1-member-4',
+        personId: 'anil',
+        name: 'Anil Rao',
+        email: 'anil.rao@civicdatalab.in',
+        role: 'admin',
+        joinedAt: '20/01/2026 10:00:00',
+        updatedAt: '20/01/2026 10:00:00',
+      },
+      {
         id: 'org1-member-3',
         personId: 'person-5',
         name: 'Sana Khan',
@@ -192,6 +234,53 @@ export const MOCK_ORGANISATION_WORKSPACES: OrganisationRecord[] = [
         role: 'editor',
         status: 'revoked',
         invitedAt: '05/08/2026 14:00:00',
+      },
+      // Two invitation links that people have claimed and not yet accepted: the notices about them are in John's notifications.
+      {
+        id: 'org1-invitation-4',
+        personId: 'account:dev.malhotra@example.org',
+        name: 'Dev Malhotra',
+        email: 'dev.malhotra@example.org',
+        role: 'editor',
+        status: 'pending',
+        invitedAt: '17/11/2026 09:10:00',
+        via: 'link',
+        linkToken: 'inv-seed-dev-malhotra',
+        invitedByPersonId: 'john',
+      },
+      {
+        id: 'org1-invitation-5',
+        personId: 'account:sasha.iyer@example.org',
+        name: 'Sasha Iyer',
+        email: 'sasha.iyer@example.org',
+        role: 'evaluator',
+        status: 'pending',
+        invitedAt: '16/11/2026 16:40:00',
+        via: 'link',
+        linkToken: 'inv-seed-sasha-iyer',
+        invitedByPersonId: 'john',
+        evaluationScope: [
+          { module: 'dataset', recordId: 'ds-1' },
+          { module: 'ai-model', recordId: 'ai-model-1' },
+        ],
+      },
+    ],
+    inviteLinks: [
+      { token: 'inv-seed-dev-malhotra', role: 'editor', createdByPersonId: 'john', createdAt: '17/11/2026 08:55:00', status: 'claimed', claimantKey: 'browser-seed-dev', claimedByKey: 'dev.malhotra@example.org', claimedAt: '17/11/2026 09:10:00', invitationId: 'org1-invitation-4' },
+      {
+        token: 'inv-seed-sasha-iyer',
+        role: 'evaluator',
+        evaluationScope: [
+          { module: 'dataset', recordId: 'ds-1' },
+          { module: 'ai-model', recordId: 'ai-model-1' },
+        ],
+        createdByPersonId: 'john',
+        createdAt: '16/11/2026 16:20:00',
+        status: 'claimed',
+        claimantKey: 'browser-seed-sasha',
+        claimedByKey: 'sasha.iyer@example.org',
+        claimedAt: '16/11/2026 16:40:00',
+        invitationId: 'org1-invitation-5',
       },
     ],
     createdAt: '10/01/2026 09:00:00',

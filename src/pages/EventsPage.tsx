@@ -4,10 +4,12 @@ import { EventListView } from '@/components/event/EventListView'
 import { useToast } from '@/components/ui/toast'
 import { useConfirm } from '@/components/ui/confirm-dialog'
 import { useAppData } from '@/context/AppDataContext'
+import { useManageableRecords } from '@/hooks/use-manageable-records'
 
 function EventsPage() {
   const navigate = useNavigate()
-  const { events, deleteEvent, unpublishEvent } = useAppData()
+  const { events: allEvents, deleteEvent, unpublishEvent } = useAppData()
+  const events = useManageableRecords(allEvents)
   const toast = useToast()
   const confirm = useConfirm()
 

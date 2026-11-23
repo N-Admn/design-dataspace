@@ -94,7 +94,7 @@ function RichTextEditor({
         aria-label={action.label}
         onMouseDown={(e) => e.preventDefault()}
         onClick={() => runCommand(action)}
-        className="flex size-7 items-center justify-center rounded-md text-text-subdued transition-colors hover:bg-surface-subdued hover:text-text-default"
+        className="flex size-7 items-center justify-center rounded-button text-text-subdued transition-colors hover:bg-surface-subdued hover:text-text-default"
       >
         <Icon className="size-3.5" />
       </button>
