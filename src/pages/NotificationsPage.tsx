@@ -8,6 +8,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { SearchableSelect } from '@/components/ui/searchable-select'
 import { BackLink } from '@/components/shared/BackLink'
 import { EmptyState } from '@/components/shared/EmptyState'
+import { DirectoryPagination } from '@/components/community/DirectoryParts'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { ViewTabs } from '@/components/shared/ViewTabs'
 import { NotificationRow } from '@/components/notifications/NotificationRow'
@@ -24,6 +25,8 @@ import type { NotificationItem } from '@/types/notifications'
 type Category = 'all' | 'pending' | 'approved' | 'closed'
 
 const ALL_WORKSPACES = 'all'
+/** Notifications per page. A longer feed is paged, as on the search results. */
+const PAGE_SIZE = 10
 /** From this many workspace options the dropdown gets a search box. */
 const SEARCHABLE_FROM = 6
 
@@ -60,6 +63,8 @@ function NotificationsPage() {
   const [workspace, setWorkspace] = React.useState<string>(ALL_WORKSPACES)
   const [unreadOnly, setUnreadOnly] = React.useState(false)
   const [flash, setFlash] = React.useState<string | null>(null)
+  const [page, setPage] = React.useState(1)
+  const listTopRef = React.useRef<HTMLDivElement>(null)
 
   // A link from the bell, a toast or an email lands on the right tab with the row in view and flashing once.
   const handledLink = React.useRef<string | null>(null)
@@ -69,6 +74,10 @@ function NotificationsPage() {
     setCategory(categoryFromTab(linkedItem.tab) ?? 'all')
     setWorkspace(ALL_WORKSPACES)
     setUnreadOnly(false)
+    // The linked row may sit on a later page: open the page it is on.
+    const landing = categoryFromTab(linkedItem.tab) ?? 'all'
+    const position = items.filter((i) => landing === 'all' || i.tab === landing).findIndex((i) => i.id === linkedItem.id)
+    setPage(position < 0 ? 1 : Math.floor(position / PAGE_SIZE) + 1)
     setFlash(linkedItem.id)
     markItemRead(linkedItem)
     const scroll = window.setTimeout(() => document.querySelector(`[data-notification-id="${linkedItem.id}"]`)?.scrollIntoView({ block: 'center', behavior: 'smooth' }), 60)
@@ -77,6 +86,7 @@ function NotificationsPage() {
       window.clearTimeout(scroll)
       window.clearTimeout(stop)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [linkedRequest, linkedItem, markItemRead])
 
   React.useEffect(() => {
@@ -108,15 +118,28 @@ function NotificationsPage() {
 
   // Approving or declining moves a row out of this tab; keyboard focus stays on the list instead of falling to the page.
   // `items` is already newest first (deriveItems), and filtering keeps that order, so the feed is newest first with no sort control.
-  const rows = filtered
+  // Any change of filter starts again at page 1; a row that leaves the list never strands the reader on an empty page.
+  const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
+  const currentPage = Math.min(page, pageCount)
+  const rows = React.useMemo(() => filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE), [filtered, currentPage])
   const panelRef = useFocusRescue(rows)
+  const goToPage = (next: number) => {
+    setPage(next)
+    listTopRef.current?.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' })
+  }
 
   const openItem = (item: NotificationItem) => {
     markItemRead(item)
     if (item.kind === 'update' && item.event?.href) navigate(item.event.href)
   }
 
+  const changeWorkspace = (next: string) => {
+    setPage(1)
+    setWorkspace(next)
+  }
+
   const changeCategory = (next: string) => {
+    setPage(1)
     setCategory(next as Category)
     setParams({}, { replace: true })
   }
@@ -163,11 +186,11 @@ function NotificationsPage() {
 
       <div className="flex flex-col gap-7 lg:flex-row">
         {/* Filter rail, as on the search results: the workspace is the filter. Below lg it becomes a dropdown above the feed. */}
-        <aside aria-label="Filters" className="hidden w-full shrink-0 lg:block lg:w-[18%] lg:border-r lg:border-border-default lg:pr-6">
+        <aside aria-label="Filters" className="hidden w-full shrink-0 lg:sticky lg:top-6 lg:block lg:max-h-[calc(100dvh-3rem)] lg:w-[18%] lg:self-start lg:overflow-y-auto lg:border-r lg:border-border-default lg:pr-6">
           <p className="text-sm font-bold uppercase tracking-wider text-foreground">Filter by</p>
           <fieldset className="mt-6 flex flex-col">
             <legend className="mb-3.5 text-sm font-semibold text-foreground">Workspace</legend>
-            <RadioGroup value={workspace} onValueChange={setWorkspace} aria-label="Workspace" className="gap-3.5">
+            <RadioGroup value={workspace} onValueChange={changeWorkspace} aria-label="Workspace" className="gap-3.5">
               {workspaceOptions.map((option) => (
                 <div key={option.value} className="flex items-start justify-between gap-3">
                   <span className="flex min-w-0 items-start gap-2">
@@ -198,7 +221,10 @@ function NotificationsPage() {
             <button
               type="button"
               aria-pressed={unreadOnly}
-              onClick={() => setUnreadOnly((v) => !v)}
+              onClick={() => {
+                setPage(1)
+                setUnreadOnly((v) => !v)
+              }}
               className={cn(
                 'ml-auto inline-flex min-h-[24px] shrink-0 items-center gap-2 rounded-sm pb-2 text-sm sm:pb-0 font-medium outline-none transition-colors focus-visible:ring-2 focus-visible:ring-border-focus focus-visible:ring-offset-2',
                 unreadOnly ? 'text-text-brand' : 'text-text-subdued hover:text-text-default',
@@ -212,7 +238,7 @@ function NotificationsPage() {
             <SearchableSelect
               options={workspaceOptions}
               value={workspace}
-              onChange={setWorkspace}
+              onChange={changeWorkspace}
               placeholder="All workspaces"
               searchPlaceholder="Search workspaces"
               emptyText="No workspace matches."
@@ -234,14 +260,20 @@ function NotificationsPage() {
             data-focus-fallback
             className="outline-none"
           >
+            <div ref={listTopRef} className="scroll-mt-6" />
             {rows.length === 0 ? (
               <EmptyState icon={Bell} title={emptyTitle} description={emptyDescription} />
             ) : (
-              <ul className="flex flex-col gap-5" aria-label="Notifications">
-                {rows.map((item) => (
-                  <NotificationRow key={item.id} item={item} now={now} highlighted={flash === item.id} onOpen={openItem} />
-                ))}
-              </ul>
+              <>
+                <ul className="flex flex-col gap-5" aria-label="Notifications">
+                  {rows.map((item) => (
+                    <NotificationRow key={item.id} item={item} now={now} highlighted={flash === item.id} onOpen={openItem} />
+                  ))}
+                </ul>
+                <div className="mt-8">
+                  <DirectoryPagination page={currentPage} pageCount={pageCount} onPage={goToPage} total={filtered.length} pageSize={PAGE_SIZE} />
+                </div>
+              </>
             )}
           </div>
         </div>

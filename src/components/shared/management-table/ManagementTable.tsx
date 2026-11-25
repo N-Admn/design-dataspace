@@ -465,7 +465,7 @@ function ManagementTable<T, S extends string>({
   const showPagination = !loading && !loadError && sorted.length > 0
 
   const statusTabsRow = statuses && (
-    <div className="flex shrink-0 items-center gap-1 border-b border-border px-5" role="tablist">
+    <div className="flex shrink-0 items-center gap-1 overflow-x-auto border-b border-border px-5" role="tablist">
       {publishedTabs.map((tab) => {
         const isActive = tab.key === statusTab
         return (
@@ -476,7 +476,7 @@ function ManagementTable<T, S extends string>({
             aria-selected={isActive}
             onClick={() => handleStatusTabChange(tab.key)}
             className={cn(
-              'flex items-center gap-1.5 border-b-2 px-3 py-3 text-sm font-medium transition-colors',
+              'flex shrink-0 items-center gap-1.5 whitespace-nowrap border-b-2 px-3 py-3 text-sm font-medium transition-colors',
               isActive ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground',
             )}
           >
@@ -616,10 +616,10 @@ function ManagementTable<T, S extends string>({
 
       {showPagination && (
         <div className="flex shrink-0 items-center justify-between border-t border-border px-5" style={{ height: FOOTER_HEIGHT_REM }}>
-          <p className="text-xs text-muted-foreground">
+          <p className="hidden text-xs text-muted-foreground sm:block">
             Showing {pageStart + 1}–{Math.min(pageStart + PAGE_SIZE, sorted.length)} of {sorted.length}
           </p>
-          <div className="flex items-center gap-3">
+          <div className="flex w-full items-center justify-between gap-3 sm:w-auto">
             <Button type="button" variant="outline" size="sm" disabled={currentPage === 1} onClick={() => setPage((p) => Math.max(1, p - 1))}>
               <ChevronLeft className="size-4" />
               Previous

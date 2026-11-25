@@ -1,11 +1,11 @@
 import * as React from 'react'
+import { ArrowUpRight } from 'lucide-react'
 
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { SearchableSelect } from '@/components/ui/searchable-select'
-import { useConfirm } from '@/components/ui/confirm-dialog'
-import { useToast } from '@/components/ui/toast'
+import { AssignedRecordsList } from '@/components/organisation/AssignedRecordsList'
 import { EvaluationScopePicker } from '@/components/organisation/EvaluationScopePicker'
 import { useAppData } from '@/context/AppDataContext'
 import { EVALUATION_PICKER_MODULES } from '@/lib/evaluation-assignments'
@@ -19,10 +19,15 @@ import {
   type OrganisationRole,
 } from '@/types/organisation-workspace'
 
+/** Where an Evaluator reviews their assigned AI models. */
+const PARAKH_AI_URL = '#'
+
 interface EditMemberRoleSideSheetProps {
   organisation: OrganisationRecord
   member: OrganisationMember | null
   onOpenChange: (open: boolean) => void
+  /** Shown as Remove Member in the footer; omitted when the person cannot be removed (the last Admin) or the viewer may not. */
+  onRemove?: (member: OrganisationMember) => void
 }
 
 /** The records an Evaluator is assigned right now, among the kinds this drawer manages. */
@@ -32,13 +37,11 @@ function activeScopeOf(organisation: OrganisationRecord, member: OrganisationMem
     .map((a) => ({ module: a.module, recordId: a.recordId }))
 }
 
-function EditMemberRoleSideSheet({ organisation, member, onOpenChange }: EditMemberRoleSideSheetProps) {
-  const { updateOrganisationMemberRole, setEvaluatorAssignments, revokeEvaluatorAccess } = useAppData()
-  const confirm = useConfirm()
-  const toast = useToast()
+function EditMemberRoleSideSheet({ organisation, member, onOpenChange, onRemove }: EditMemberRoleSideSheetProps) {
+  const { updateOrganisationMemberRole, setEvaluatorAssignments } = useAppData()
   const [role, setRole] = React.useState<OrganisationRole | ''>('')
   const [scope, setScope] = React.useState<EvaluationScopeItem[]>([])
-  // Bumped when the scope is reset from outside the picker (revoking access), so the picker starts again from the new value.
+  // Bumped when a different member is opened, so the picker starts again from that member's records.
   const [pickerKey, setPickerKey] = React.useState(0)
   const [showErrors, setShowErrors] = React.useState(false)
   const [saveError, setSaveError] = React.useState<string | null>(null)
@@ -62,7 +65,6 @@ function EditMemberRoleSideSheet({ organisation, member, onOpenChange }: EditMem
   const isEvaluatorMember = member.role === 'evaluator'
   const needsScope = role === 'evaluator'
   const scopeMissing = needsScope && scope.length === 0
-  const hasActiveAssignments = (organisation.assignments ?? []).some((a) => a.status === 'active' && a.evaluatorPersonId === member.personId)
 
   const handleSave = () => {
     if (!role || wouldRemoveLastAdmin) return
@@ -88,25 +90,6 @@ function EditMemberRoleSideSheet({ organisation, member, onOpenChange }: EditMem
     }
   }
 
-  // Ends all evaluation access at once but leaves the person in the organisation; removing them stays a separate action.
-  const handleRevokeAccess = async () => {
-    const ok = await confirm({
-      title: 'Revoke evaluation access',
-      description: `${member.name} will no longer be able to open any of the content assigned to them. They stay a member of ${organisation.metadata.name}, and you can assign content to them again later.`,
-      confirmLabel: 'Revoke access',
-      variant: 'destructive',
-    })
-    if (!ok) return
-    const result = revokeEvaluatorAccess(organisation.id, member.personId)
-    if (!result.ok) {
-      setSaveError(result.message)
-      return
-    }
-    setScope([])
-    setPickerKey((k) => k + 1)
-    toast({ title: 'Evaluation access revoked.', variant: 'success' })
-  }
-
   return (
     <Dialog open={member !== null} onOpenChange={onOpenChange}>
       <DialogContent variant="right-drawer" className="gap-0 p-0">
@@ -128,12 +111,22 @@ function EditMemberRoleSideSheet({ organisation, member, onOpenChange }: EditMem
             <div>
               <p className="type-eyebrow text-text-subdued">Member</p>
               <p className="mt-1 text-sm font-semibold text-text-default">{member.name}</p>
+              {member.email && <p className="text-xs text-text-subdued">{member.email}</p>}
             </div>
 
             <div>
               <p className="type-eyebrow text-text-subdued">Current role</p>
               <p className="mt-1 text-sm text-text-default">{organisationRoleLabel(member.role)}</p>
             </div>
+
+            {isEvaluatorMember && (
+              <div>
+                <p className="type-eyebrow text-text-subdued">Records assigned ({activeScopeOf(organisation, member).length})</p>
+                <div className="mt-1.5">
+                  <AssignedRecordsList organisationId={organisation.id} scope={activeScopeOf(organisation, member)} />
+                </div>
+              </div>
+            )}
 
             <div>
               <Label htmlFor="edit-member-role">New role</Label>
@@ -161,13 +154,14 @@ function EditMemberRoleSideSheet({ organisation, member, onOpenChange }: EditMem
               <EvaluationScopePicker
                 key={pickerKey}
                 idPrefix="edit-member-scope"
+                modules={['ai-model']}
                 organisationId={organisation.id}
                 value={scope}
                 onChange={setScope}
                 error={
                   showErrors && scopeMissing
                     ? isEvaluatorMember
-                      ? 'Choose at least one published record, or revoke evaluation access.'
+                      ? 'Choose at least one published AI model for this Evaluator to review.'
                       : 'Choose at least one published record for this Evaluator to review.'
                     : null
                 }
@@ -177,24 +171,36 @@ function EditMemberRoleSideSheet({ organisation, member, onOpenChange }: EditMem
             {isEvaluatorMember && (
               <div className="flex items-center justify-between gap-3 rounded-lg border border-border-default px-4 py-3">
                 <div className="min-w-0">
-                  <p className="text-sm font-semibold text-text-default">Revoke evaluation access</p>
-                  <p className="text-xs text-text-subdued">Removes access to all assigned content. {member.name} stays in the organisation.</p>
+                  <p className="text-sm font-semibold text-text-default">You will be taken to ParakhAI</p>
+                  <p className="text-xs text-text-subdued">Your assignment AI Models for evaluation will listed on ParakhAI.</p>
                 </div>
-                <Button type="button" variant="outline" size="sm" className="shrink-0" onClick={handleRevokeAccess} disabled={!hasActiveAssignments}>
-                  Revoke access
+                <Button asChild variant="outline" size="sm" className="shrink-0">
+                  <a href={PARAKH_AI_URL} target="_blank" rel="noopener noreferrer">
+                    ParakhAI
+                    <ArrowUpRight className="h-4 w-4" aria-hidden="true" />
+                  </a>
                 </Button>
               </div>
             )}
           </div>
         </div>
 
-        <div className="flex shrink-0 items-center justify-end gap-3 border-t border-border-default px-6 py-4">
-          <Button type="button" variant="ghost" onClick={() => onOpenChange(false)} disabled={saving}>
-            Cancel
-          </Button>
-          <Button type="button" onClick={handleSave} disabled={saving || !role || wouldRemoveLastAdmin}>
-            Save Changes
-          </Button>
+        <div className="flex shrink-0 items-center justify-between gap-3 border-t border-border-default px-6 py-4">
+          {onRemove ? (
+            <Button type="button" variant="outline" className="text-destructive hover:text-destructive" onClick={() => onRemove(member)} disabled={saving}>
+              Remove Member
+            </Button>
+          ) : (
+            <span />
+          )}
+          <div className="flex items-center gap-3">
+            <Button type="button" variant="ghost" onClick={() => onOpenChange(false)} disabled={saving}>
+              Cancel
+            </Button>
+            <Button type="button" onClick={handleSave} disabled={saving || !role || wouldRemoveLastAdmin}>
+              Save Changes
+            </Button>
+          </div>
         </div>
       </DialogContent>
     </Dialog>

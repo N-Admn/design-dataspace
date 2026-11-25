@@ -3,6 +3,7 @@ import * as React from 'react'
 import { formatTimestamp } from '@/lib/format'
 import { resolveLifecycle } from '@/lib/content-status'
 import { diffActivity, emitActivity, type ActivitySnapshot } from '@/lib/activity-events'
+import { invitationStatus, isPastDeadline } from '@/lib/organisation-invitations'
 import { generateInviteToken, resolveClaim, type ClaimIdentity, type ClaimOutcome } from '@/lib/invite-links'
 import {
   EVALUATION_PICKER_MODULES,
@@ -463,6 +464,15 @@ interface AppDataContextValue {
   /** Ends every active assignment of an Evaluator and keeps their membership. Admin only. */
   revokeEvaluatorAccess: (organisationId: string, evaluatorPersonId: string) => AssignmentActionResult
   revokeOrganisationInvitation: (organisationId: string, invitationId: string) => void
+  /** Sends a pending direct invitation again. Admin only; link invitations are shared by copying the link, not resent. */
+  resendOrganisationInvitation: (organisationId: string, invitationId: string) => void
+  /** Changes the role of a pending invitation (and of the link it came from, if any). An Evaluator needs at least one published record.
+   *  Admin only; an invitation that was answered, revoked or has expired is history and cannot change. */
+  updateOrganisationInvitationRole: (organisationId: string, invitationId: string, role: OrganisationRole, evaluationScope?: EvaluationScopeItem[]) => void
+  /** Changes the role of a link nobody has claimed yet. A claimed link keeps its claimant; change the invitation instead. Admin only. */
+  updateInviteLinkRole: (organisationId: string, token: string, role: OrganisationRole, evaluationScope?: EvaluationScopeItem[]) => void
+  /** Closes a link nobody has claimed yet, for good. A claimed link is closed by revoking its invitation. Admin only. */
+  revokeInviteLink: (organisationId: string, token: string) => void
   /** Assigns a published record to an Evaluator. Refused (and nothing saved) unless the signed-in user is an Admin, the person is an
    *  Evaluator of the organisation, and the record is one of the organisation's published records. */
   assignEvaluation: (organisationId: string, input: { evaluatorPersonId: string; module: EvaluationModule; recordId: string }) => AssignmentCheck
@@ -1299,6 +1309,8 @@ function AppDataProvider({ children }: { children: React.ReactNode }) {
     const invitation = org?.invitations.find((i) => i.id === invitationId)
     if (!org || !invitation) return { ok: false, reason: 'missing', message: 'This invitation does not exist.' }
     if (invitation.status !== 'pending') return { ok: false, reason: 'not-pending', message: `This invitation was already ${invitation.status}.` }
+    if (isPastDeadline(invitation.expiresAt)) return { ok: false, reason: 'not-pending', message: 'This invitation has expired.' }
+    if (isPastDeadline(invitation.expiresAt)) return { ok: false, reason: 'not-pending', message: 'This invitation has expired.' }
     const existing = org.members.find((m) => memberMatches(m, person))
     if (existing && !allowExisting) return { ok: false, reason: 'already-member', message: 'This person is already a member.' }
     if (existing && existing.role === 'admin' && invitation.role !== 'admin' && isLastAdmin(org, existing)) {
@@ -1355,6 +1367,7 @@ function AppDataProvider({ children }: { children: React.ReactNode }) {
       if (!org || !invitation) return { ok: false, reason: 'missing', message: 'This invitation does not exist.' }
       if (invitation.via === 'link') return { ok: false, reason: 'not-invitee', message: 'This invitation is answered through its link.' }
       if (invitation.status !== 'pending') return { ok: false, reason: 'not-pending', message: `This invitation was already ${invitation.status}.` }
+      if (isPastDeadline(invitation.expiresAt)) return { ok: false, reason: 'not-pending', message: 'This invitation has expired.' }
       const invitee = invitation.personId
         ? canonicalPersonId(invitation.personId) === canonicalPersonId(person.personId)
         : Boolean(invitation.email && person.email && invitation.email.toLowerCase() === person.email.toLowerCase())
@@ -1508,6 +1521,85 @@ function AppDataProvider({ children }: { children: React.ReactNode }) {
     )
   }, [])
 
+  const resendOrganisationInvitation = React.useCallback((organisationId: string, invitationId: string) => {
+    authoriseAdmin(organisationId, 'resend invitations')
+    const target = organisationById(organisationId)?.invitations.find((i) => i.id === invitationId)
+    if (!target) throw new Error('This invitation does not exist.')
+    if (target.via === 'link') throw new Error('An invitation link is shared by copying it, not resent.')
+    if (invitationStatus(target) !== 'pending') throw new Error('Only a pending invitation can be resent.')
+    const timestamp = formatTimestamp(new Date())
+    setOrganisationWorkspaces((prev) =>
+      prev.map((o) => (o.id === organisationId ? { ...o, updatedAt: timestamp, invitations: o.invitations.map((i) => (i.id === invitationId ? { ...i, resentAt: timestamp } : i)) } : o)),
+    )
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  const updateOrganisationInvitationRole = React.useCallback(
+    (organisationId: string, invitationId: string, role: OrganisationRole, evaluationScope?: EvaluationScopeItem[]) => {
+      authoriseAdmin(organisationId, 'change invited roles')
+      const org = organisationById(organisationId)
+      const target = org?.invitations.find((i) => i.id === invitationId)
+      if (!org || !target) throw new Error('This invitation does not exist.')
+      if (invitationStatus(target) !== 'pending') throw new Error('Only a pending invitation can change role.')
+      if (role === 'evaluator') {
+        const problem = checkEvaluationScope(org, evaluationScope, findAssignableRecord)
+        if (problem) throw new Error(problem)
+      }
+      const scope = role === 'evaluator' ? evaluationScope : undefined
+      const timestamp = formatTimestamp(new Date())
+      setOrganisationWorkspaces((prev) =>
+        prev.map((o) =>
+          o.id === organisationId
+            ? {
+                ...o,
+                updatedAt: timestamp,
+                invitations: o.invitations.map((i) => (i.id === invitationId ? { ...i, role, evaluationScope: scope } : i)),
+                // The link keeps agreeing with the invitation it made.
+                inviteLinks: o.inviteLinks?.map((l) => (l.invitationId === invitationId ? { ...l, role, evaluationScope: scope } : l)),
+              }
+            : o,
+        ),
+      )
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [findAssignableRecord],
+  )
+
+  const updateInviteLinkRole = React.useCallback(
+    (organisationId: string, token: string, role: OrganisationRole, evaluationScope?: EvaluationScopeItem[]) => {
+      authoriseAdmin(organisationId, 'change invited roles')
+      const org = organisationById(organisationId)
+      const link = org?.inviteLinks?.find((l) => l.token === token)
+      if (!org || !link) throw new Error('This invitation link does not exist.')
+      if (link.status !== 'unclaimed' || isPastDeadline(link.expiresAt)) throw new Error('Only a link nobody has claimed yet can change role.')
+      if (role === 'evaluator') {
+        const problem = checkEvaluationScope(org, evaluationScope, findAssignableRecord)
+        if (problem) throw new Error(problem)
+      }
+      const timestamp = formatTimestamp(new Date())
+      setOrganisationWorkspaces((prev) =>
+        prev.map((o) =>
+          o.id === organisationId ? { ...o, updatedAt: timestamp, inviteLinks: o.inviteLinks?.map((l) => (l.token === token ? { ...l, role, evaluationScope: role === 'evaluator' ? evaluationScope : undefined } : l)) } : o,
+        ),
+      )
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [findAssignableRecord],
+  )
+
+  const revokeInviteLink = React.useCallback((organisationId: string, token: string) => {
+    authoriseAdmin(organisationId, 'revoke invitation links')
+    const link = organisationById(organisationId)?.inviteLinks?.find((l) => l.token === token)
+    if (!link) throw new Error('This invitation link does not exist.')
+    if (link.status === 'claimed') throw new Error('This link was already claimed. Revoke its invitation instead.')
+    if (link.status === 'revoked') throw new Error('This link was already revoked.')
+    const timestamp = formatTimestamp(new Date())
+    setOrganisationWorkspaces((prev) =>
+      prev.map((o) => (o.id === organisationId ? { ...o, updatedAt: timestamp, inviteLinks: o.inviteLinks?.map((l) => (l.token === token ? { ...l, status: 'revoked' as const } : l)) } : o)),
+    )
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   const value = React.useMemo<AppDataContextValue>(
     () => ({
       datasets,
@@ -1550,6 +1642,10 @@ function AppDataProvider({ children }: { children: React.ReactNode }) {
       removeOrganisationMember,
       inviteOrganisationMember,
       revokeOrganisationInvitation,
+      resendOrganisationInvitation,
+      updateOrganisationInvitationRole,
+      updateInviteLinkRole,
+      revokeInviteLink,
       assignEvaluation,
       createInviteLink,
       claimInviteLink,

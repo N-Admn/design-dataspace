@@ -7,6 +7,7 @@
  *   - A person who is already a member does not claim (and so does not use up) a link.
  *   - A revoked invitation, or a revoked link, is closed for good. */
 
+import { isPastDeadline } from '@/lib/organisation-invitations'
 import type { OrganisationInvitation, OrganisationInviteLink, OrganisationRecord } from '@/types/organisation-workspace'
 
 /** Who is opening the link. `key` identifies the account (an email, or `me` for the prototype's default signed-in person). */
@@ -102,6 +103,9 @@ function resolveClaim(
       organisation,
     }
   }
+
+  // An unclaimed link past its deadline can no longer be claimed. (A link claimed in time keeps its invitation, which expires on its own.)
+  if (isPastDeadline(link.expiresAt)) return { outcome: { status: 'revoked', organisation }, organisation }
 
   // Unclaimed. Someone who already belongs to the organisation has nothing to join, so opening it does not use the link up.
   if (identity && isMemberIdentity(organisation, identity)) return { outcome: { status: 'already-member', organisation }, organisation }
