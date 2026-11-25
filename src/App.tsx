@@ -61,6 +61,7 @@ import { CollaborativeDetailPlayground } from '@/pages/playground/collaborative-
 import { CommunityProfilePlayground } from '@/pages/playground/community-profile/CommunityProfilePlayground'
 import { PublicationDetailPlayground } from '@/pages/playground/publication-detail/PublicationDetailPlayground'
 import { UseCaseDetailPlayground } from '@/pages/playground/use-case-detail/UseCaseDetailPlayground'
+import { NotificationCardsPlayground } from '@/pages/playground/notification-cards/NotificationCardsPlayground'
 import { PlaygroundHubPage } from '@/pages/playground/PlaygroundHubPage'
 import { PlaygroundPlaceholderPage } from '@/pages/playground/PlaygroundPlaceholderPage'
 import { PlaygroundPreviewPage } from '@/pages/design-system/PlaygroundPreviewPage'
@@ -308,6 +309,7 @@ function AppLayout() {
             <Route path="/playground" element={<PlaygroundHubPage />} />
             <Route path="/playground/dataset-header" element={<DatasetHeaderPlayground />} />
             <Route path="/playground/publication-detail" element={<PublicationDetailPlayground />} />
+            <Route path="/playground/notification-cards" element={<NotificationCardsPlayground />} />
             <Route path="/playground/use-case-detail" element={<UseCaseDetailPlayground />} />
             <Route path="/playground/:playgroundId" element={<PlaygroundPlaceholderPage />} />
             <Route path="/discover" element={<DiscoverPage />} />

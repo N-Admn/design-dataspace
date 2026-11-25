@@ -14,18 +14,21 @@ interface EvaluationScopePickerProps {
   /** Shown under the picker, e.g. "Choose at least one record". */
   error?: string | null
   idPrefix: string
+  /** Offer only these content types. With a single one the type selector is hidden and that type's records are shown directly. */
+  modules?: EvaluationModule[]
 }
 
 /** Chooses what an Evaluator will review: one or more content types, then for each a searchable multi-select of the organisation's
  *  published records. Only published records are offered; this is the single control both the invitation and the member drawers use. */
-function EvaluationScopePicker({ organisationId, value, onChange, error, idPrefix }: EvaluationScopePickerProps) {
+function EvaluationScopePicker({ organisationId, value, onChange, error, idPrefix, modules = EVALUATION_PICKER_MODULES }: EvaluationScopePickerProps) {
   const { byModule } = usePublishedEvaluationRecords(organisationId)
-  const [types, setTypes] = React.useState<EvaluationModule[]>(() => EVALUATION_PICKER_MODULES.filter((m) => value.some((v) => v.module === m)))
+  const [types, setTypes] = React.useState<EvaluationModule[]>(() => (modules.length === 1 ? modules : modules.filter((m) => value.some((v) => v.module === m))))
 
-  const typeOptions = EVALUATION_PICKER_MODULES.map((m) => ({ value: m, label: EVALUATION_MODULE_LABEL[m] }))
+  const single = modules.length === 1
+  const typeOptions = modules.map((m) => ({ value: m, label: EVALUATION_MODULE_LABEL[m] }))
 
   const changeTypes = (next: string[]) => {
-    const kept = EVALUATION_PICKER_MODULES.filter((m) => next.includes(m))
+    const kept = modules.filter((m) => next.includes(m))
     setTypes(kept)
     // Records of a type that was unticked are dropped with it.
     onChange(value.filter((v) => kept.includes(v.module)))
@@ -44,6 +47,7 @@ function EvaluationScopePicker({ organisationId, value, onChange, error, idPrefi
         </p>
       </div>
 
+      {!single && (
       <div>
         <Label htmlFor={`${idPrefix}-types`}>
           Content types <span className="text-text-critical-strong">*</span>
@@ -60,6 +64,7 @@ function EvaluationScopePicker({ organisationId, value, onChange, error, idPrefi
           />
         </div>
       </div>
+      )}
 
       {types.map((module) => {
         const options = byModule[module]

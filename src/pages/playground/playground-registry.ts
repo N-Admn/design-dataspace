@@ -1,9 +1,9 @@
-import { BookOpen, Building2, BriefcaseBusiness, Database, Dna, UploadCloud, Users, type LucideIcon } from 'lucide-react'
+import { Bell, BookOpen, Building2, BriefcaseBusiness, Database, Dna, UploadCloud, Users, type LucideIcon } from 'lucide-react'
 
 /** The Playground Hub's catalogue. Adding a playground is adding one entry here (plus a route in `App.tsx` if it is a new page):
  *  the hub, its search, its category filters and the "not built yet" page all read from this list. */
 
-export type PlaygroundCategory = 'data-discovery' | 'contribution-flows' | 'collaboratives' | 'community'
+export type PlaygroundCategory = 'data-discovery' | 'contribution-flows' | 'collaboratives' | 'community' | 'notifications'
 export type PlaygroundStatus = 'in-progress' | 'ready-for-review' | 'archived'
 
 export const PLAYGROUND_CATEGORIES: { key: PlaygroundCategory; label: string }[] = [
@@ -11,6 +11,7 @@ export const PLAYGROUND_CATEGORIES: { key: PlaygroundCategory; label: string }[]
   { key: 'contribution-flows', label: 'Contribution Flows' },
   { key: 'collaboratives', label: 'Collaboratives' },
   { key: 'community', label: 'Community' },
+  { key: 'notifications', label: 'Notifications' },
 ]
 
 export const PLAYGROUND_STATUSES: Record<PlaygroundStatus, { label: string; variant: 'warning' | 'success' | 'muted' }> = {
@@ -70,6 +71,17 @@ export const PLAYGROUNDS: PlaygroundEntry[] = [
     status: 'in-progress',
     icon: Building2,
     href: '/playground/community-profile',
+    built: true,
+  },
+  {
+    id: 'notification-cards',
+    name: 'Notification Cards',
+    description:
+      'Every kind of notification card in one place: access requests, collaborative submissions, organisation, evaluator, content and collaborative updates, shown as the page card and the bell card.',
+    category: 'notifications',
+    status: 'in-progress',
+    icon: Bell,
+    href: '/playground/notification-cards',
     built: true,
   },
   {

@@ -110,6 +110,10 @@ export interface OrganisationInvitation {
   respondedAt?: string
   /** Set when the invitation came from a shareable link (see `OrganisationInviteLink`): the link it was claimed through. */
   linkToken?: string
+  /** When an Admin last sent a direct invitation again. `invitedAt` stays the date it was first sent. */
+  resentAt?: string
+  /** Optional deadline: a pending invitation past it reads as Expired and can no longer be accepted. Nothing sets it by default. */
+  expiresAt?: string
 }
 
 /** A shareable invitation link. It exists from the moment an Admin generates it, but it is not an invitation yet: it appears in the
@@ -132,6 +136,8 @@ export interface OrganisationInviteLink {
   claimedAt?: string
   /** The pending invitation created at the first claim. */
   invitationId?: string
+  /** Optional deadline for claiming: an unclaimed link past it reads as Expired and can no longer be claimed. Nothing sets it by default. */
+  expiresAt?: string
 }
 
 /** The content modules an Evaluator can be assigned records from. Charts and Collaboratives are not assignable for now. */
